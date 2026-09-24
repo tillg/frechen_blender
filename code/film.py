@@ -1,5 +1,6 @@
 """Walkthrough camera: orbit around the house, enter via the east entrance (Windfang),
-Stube -> Küche/Essen -> stairs -> OG Flur -> Schlafen (SE) -> Schlafen/Yoga (NW).
+Stube -> Küche/Essen -> NW room (end of the corridor, right) -> Musikzimmer -> Arbeitszimmer
+-> Windfang -> stairs -> OG Flur -> Schlafen (SE) -> Schlafen/Yoga (NW).
 
 Creates camera "FL_Kamera_Rundgang" (baked per-frame keys) and point lights in the
 collection "Innenlicht". Neither touches the "Haus" collection. Re-running replaces both.
@@ -24,10 +25,18 @@ ROUTE = [
     ("path", [(27.44, 6.44), (18.0, 6.98), (14.9, 6.98), (13.6, 7.10), (12.3, 7.20),
               (11.4, 7.20), (11.4, 6.10), (11.6, 4.0)], EYE, WALK),
     ("look", [(11.8, 0.0), (15.0, 3.0), (9.8, 5.0), (8.8, 1.8)], 2.2),
-    ("path", [(11.6, 4.0), (10.0, 1.8), (8.8, 1.8), (6.5, 2.0)], EYE, WALK),
+    ("path", [(11.6, 4.0), (10.0, 2.65), (8.8, 2.65), (6.2, 2.65)], EYE, WALK),  # past the table
     ("look", [(3.0, 1.5), (6.5, 5.5)], 2.2),
-    ("path", [(6.5, 2.0), (7.5, 4.5), (7.5, 6.1), (7.5, 7.0), (11.0, 7.0), (11.8, 7.5),
-              (11.6, 8.0), (11.19, 8.0)], EYE, WALK),
+    ("path", [(6.2, 2.65), (7.5, 4.5), (7.5, 6.1), (7.5, 7.0), (4.87, 7.2), (4.87, 8.5),
+              (4.87, 9.6), (4.3, 10.6)], EYE, WALK),                      # NW room
+    ("look", [(3.0, 12.4), (2.8, 9.2), (6.0, 11.5)], 2.2),
+    ("path", [(4.3, 10.6), (4.87, 9.4), (4.87, 7.4), (7.75, 7.3), (7.8, 8.2), (7.85, 9.6),
+              (8.6, 10.6)], EYE, WALK),                                   # Musikzimmer
+    ("look", [(7.0, 12.4), (9.2, 9.0), (10.5, 11.5)], 2.2),
+    ("path", [(8.6, 10.6), (10.3, 10.7), (11.2, 10.75), (12.4, 10.6)], EYE, WALK),  # Arbeitszimmer
+    ("look", [(13.0, 12.4), (14.3, 10.8), (12.5, 9.2)], 2.2),
+    ("path", [(12.4, 10.6), (13.9, 9.6), (14.0, 8.9), (14.0, 8.2), (13.6, 7.3), (12.3, 7.2),
+              (11.8, 7.5), (11.6, 8.0), (11.19, 8.0)], EYE, WALK),       # Windfang -> stair
     ("stair", (11.19, 8.0, EYE), (7.62, 8.0, Z_OG + EYE), STAIR_SPEED),
     ("path", [(7.62, 8.0), (7.0, 8.0), (7.0, 7.1), (11.1, 7.1), (11.1, 6.2), (12.0, 3.8)],
      Z_OG + EYE, WALK),
