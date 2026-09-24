@@ -39,7 +39,6 @@ WOOD_OLD = ((0.045, 0.032, 0.024), (0.17, 0.12, 0.085))       # weathered balcon
 MAT_DEF = {
     "Putz":       dict(rgba=(0.93, 0.92, 0.88, 1), bump=(45, 0.6)),
     "Decke":      dict(rgba=(0.80, 0.80, 0.78, 1)),
-    "Boden":      dict(rgba=(0.62, 0.46, 0.30, 1)),
     "Dach":       dict(rgba=(0.17, 0.17, 0.19, 1)),
     "Holz":       dict(wood=(*WOOD_OLD, "z")),
     "Rahmen":     dict(rgba=(0.45, 0.28, 0.14, 1)),
@@ -48,9 +47,12 @@ MAT_DEF = {
     "Innentuer":  dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "z")),    # pine
     "Kiefer":     dict(wood=((0.30, 0.21, 0.12), (0.55, 0.43, 0.29), "z")),    # limed pine (stair)
     "Stufe":      dict(wood=((0.20, 0.07, 0.02), (0.42, 0.17, 0.05), "x")),    # worn treads
+    "Eiche":      dict(wood=((0.06, 0.025, 0.008), (0.26, 0.11, 0.035), "x")),    # oak planks
+    "Kalkstein":  dict(speck=((0.40, 0.28, 0.16), (0.62, 0.48, 0.32), 25), hue=0.04),
     "Laerche":    dict(wood=((0.38, 0.14, 0.040), (0.62, 0.27, 0.085), "z")),   # fresh larch
     "FichteX":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "x")),     # spruce soffit
     "FichteY":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "y")),
+    "FichteZ":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "z")),
     "Glas":       dict(rgba=(0.70, 0.85, 0.95, 0.25), alpha=0.25, rough=0.1),
     "Milchglas":  dict(rgba=(0.90, 0.90, 0.88, 0.85), alpha=0.85, rough=0.4),
     "Wiese":      dict(speck=((0.05, 0.12, 0.025), (0.12, 0.20, 0.04), 3)),
@@ -170,13 +172,13 @@ def box(coll, obj, mat, x0, x1, y0, y1, z0, z1, rnd=None):
     add(coll, obj, mat, v, f, rnd)
 
 
-def prism_x(coll, obj, mat, x0, x1, prof):
+def prism_x(coll, obj, mat, x0, x1, prof, rnd=None):
     """Extrude a (y, z) profile polygon from x0 to x1."""
     n = len(prof)
     v = [(x0, y, z) for y, z in prof] + [(x1, y, z) for y, z in prof]
     f = [list(range(n))[::-1], list(range(n, 2 * n))]
     f += [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
-    add(coll, obj, mat, v, f)
+    add(coll, obj, mat, v, f, rnd)
 
 
 def roof_profile(ya, yb, fb, ft):
@@ -283,14 +285,19 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     ax = "x" if (x1 - x0) >= (y1 - y0) else "y"
     u0, u1, t0, t1 = (x0, x1, y0, y1) if ax == "x" else (y0, y1, x0, x1)
 
+    # all parts of one opening share one "rnd" value: frame pieces overlap at the corners in
+    # the same plane, so they must shade identically or they z-fight
+    st = {"r": None}
+
     def B(m, ua, ub, ta, tb, za, zb, o=obj):
         if ax == "x":
-            box(coll, o, m, ua, ub, ta, tb, za, zb)
+            box(coll, o, m, ua, ub, ta, tb, za, zb, st["r"])
         else:
-            box(coll, o, m, ta, tb, ua, ub, za, zb)
+            box(coll, o, m, ta, tb, ua, ub, za, zb, st["r"])
 
     cur = u0
     for op in sorted(ops):
+        st["r"] = random.random()
         a, b, sill, head, kind = op[:5]
         sh = len(op) > 5 and op[5]
         if out:
@@ -377,11 +384,13 @@ def interior(coll, x0, x1, y0, y1, doors=(), z0=0.0, z1=Z_EG_TOP, head=DOOR_H):
 
 
 # ---------------------------------------------------------------- doors
-def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, mat="Innentuer"):
+def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style="panel", mat="Innentuer"):
     """Interior door after door_inside_1st_floor.jpg: pine, six panels (2 small on top,
     2 tall, 2 lower), lining + architraves. The leaf is opened fully and lies flat against
     the room-side wall face next to the hinge jamb, so the walkthrough camera passes freely;
-    flat=False (a room corner is too close for that): opened 90 deg into the room."""
+    flat=False (a room corner is too close for that): opened 90 deg into the room.
+    hinge "ab" = double door (one leaf on each jamb). style "glazed" = Windfang door after
+    door_windfang.jpg: frosted 2 x 2 panes above, two raised panels below, heavy head casing."""
     P, o, lin, arc, LT = frame(ax), coll + "_Innentueren", 0.025, 0.07, 0.04
     # thick walls keep a plaster reveal; the frame only lines the room-side 12 cm
     d = min(t1 - t0, 0.12)
@@ -395,23 +404,33 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, mat="I
         lbox(coll, o, mat, P, a - arc, a + lin, ta, tb, z0, head + arc)
         lbox(coll, o, mat, P, b - lin, b + arc, ta, tb, z0, head + arc)
         lbox(coll, o, mat, P, a - arc, b + arc, ta, tb, head - lin, head + arc)
-    LW, LH = b - a - 2 * lin - 0.006, head - lin - z0 - 0.015
+        if style == "glazed":                                      # heavy head board on top
+            tp = (ta - 0.02, tb) if ta < t0 else (ta, tb + 0.02)
+            lbox(coll, o, mat, P, a - arc - 0.03, b + arc + 0.03, *tp, head + arc, head + arc + 0.10)
+    hinges = ["a", "b"] if hinge == "ab" else [hinge]
+    LW, LH = (b - a - 2 * lin) / len(hinges) - 0.006, head - lin - z0 - 0.015
     tf = t1 if swing > 0 else t0
-    zl, rl = z0 + 0.01, 0.8 + 0.2 * random.random()   # stiles/rails light, panels darker
-    if flat:
-        uh, su = (a, -1) if hinge == "a" else (b, 1)  # leaf runs away from the opening
-        off = 0.017 + LT / 2                          # clear of the architrave
-        L = lambda w, d: (uh + su * w, tf + swing * (off + d))
-    else:
-        uh, su = (a + lin, 1) if hinge == "a" else (b - lin, -1)
-        L = lambda w, d: (uh + su * (d + LT / 2), tf + swing * w)
+    zl = z0 + 0.01
+    for hg in hinges:
+        rl = 0.8 + 0.2 * random.random()                          # stiles/rails light, panels darker
+        if flat:
+            uh, su = (a, -1) if hg == "a" else (b, 1)             # leaf runs away from the opening
+            off = 0.017 + LT / 2                                  # clear of the architrave
+            L = lambda w, d, uh=uh, su=su, off=off: (uh + su * w, tf + swing * (off + d))
+        else:
+            uh, su = (a + lin, 1) if hg == "a" else (b - lin, -1)
+            L = lambda w, d, uh=uh, su=su: (uh + su * (d + LT / 2), tf + swing * w)
 
-    def part(w0, w1, d0, d1, za, zb, r=rl):   # leaf-local: w from hinge, d across, z up
-        (ua, ta), (ub, tb) = L(w0, d0), L(w1, d1)
-        lbox(coll, o, mat, P, ua, ub, ta, tb, zl + za, zl + zb, r)
+        def part(w0, w1, d0, d1, za, zb, r=rl, m=mat, L=L):     # leaf-local: w from hinge, d across
+            (ua, ta), (ub, tb) = L(w0, d0), L(w1, d1)
+            lbox(coll, o, m, P, ua, ub, ta, tb, zl + za, zl + zb, r)
 
+        LEAVES.append((coll, [P(*L(0, -LT / 2), zl), P(*L(LW, LT / 2), zl + LH)]))
+        (glazed_leaf if style == "glazed" else six_panel_leaf)(part, LW, LH)
+
+
+def six_panel_leaf(part, LW, LH):
     part(0, LW, -0.012, 0.012, 0, LH, 0.05)                        # core = panel ground
-    LEAVES.append((coll, [P(*L(0, -LT / 2), zl), P(*L(LW, LT / 2), zl + LH)]))
     rows = [0.091, 0.271, 0.112, 0.31, 0.05, 0.149, 0.046]         # bottom -> top, from the photo
     s = LH / sum(rows)
     zs = [0]
@@ -427,6 +446,34 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, mat="I
     for i in (1, 3, 5):                                            # raised fields
         for wa, wb in cols:
             part(wa + 0.03, wb - 0.03, -0.016, 0.016, zs[i] + 0.03, zs[i + 1] - 0.03, 0.4)
+
+
+def glazed_leaf(part, LW, LH):
+    """door_windfang.jpg, bottom -> top: rail, panel, rail, panel, lock rail, frosted glass
+    (2 x 2 panes, top row short), top rail."""
+    rows = [0.07, 0.13, 0.04, 0.13, 0.09, 0.47, 0.07]
+    s = LH / sum(rows)
+    zs = [0]
+    for r in rows:
+        zs.append(zs[-1] + r * s)
+    st = 0.13 * LW
+    part(0, st, -0.02, 0.02, 0, LH)
+    part(LW - st, LW, -0.02, 0.02, 0, LH)
+    for i in (0, 2, 4, 6):                                         # rails
+        part(st, LW - st, -0.02, 0.02, zs[i], zs[i + 1])
+    for i in (1, 3):                                               # panels: ground + raised field
+        part(st, LW - st, -0.012, 0.012, zs[i], zs[i + 1], 0.05)
+        part(st + 0.03, LW - st - 0.03, -0.016, 0.016, zs[i] + 0.03, zs[i + 1] - 0.03, 0.4)
+    g0, g1 = zs[5], zs[6]
+    part(st, LW - st, -0.003, 0.003, g0, g1, m="Milchglas")
+    c = LW / 2
+    part(c - 0.015, c + 0.015, -0.015, 0.015, g0, g1)                        # glazing bars
+    zb = g0 + (g1 - g0) * 0.76
+    part(st, LW - st, -0.015, 0.015, zb - 0.015, zb + 0.015)
+    for dd in (-1, 1):                                                       # black lever handles
+        h = LW - st / 2                                                      # on the free-edge stile
+        part(h - 0.02, h + 0.02, dd * 0.02, dd * 0.03, zs[4], zs[4] + 0.16, 0.5, "Eisen")
+        part(h - 0.14, h, dd * 0.03, dd * 0.045, zs[4] + 0.10, zs[4] + 0.12, 0.5, "Eisen")
 
 
 def entrance_door():
@@ -543,8 +590,8 @@ def build_eg():
     # interior walls; doors: (a, b, swing, hinge) get an opened leaf, (a, b) stay open passages
     interior(c, 6.024, 6.174, 8.876, 12.473)
     interior(c, 2.657, 14.575, 8.576, 8.876,
-             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (9.780, 10.719, 1, "b", False),
-              (13.517, 14.575, 1, "a")])
+             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (13.517, 14.575, 1, "a")])
+    # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656, [(0.824, 1.853, 1, "b", False)])
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
     interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (9.13, 9.97, -1, "b", False)])
@@ -558,10 +605,74 @@ def build_eg():
     interior(c, 0.31, 2.358, 10.10, 10.25)                  # new: Bad / WC Großeltern
     interior(c, 11.13, 11.28, 8.876, 12.473, [(9.6, 11.9)])  # new: Musikraum / Büro
     interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
-    interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45)])   # new: Windfang
+    interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
     # Kachelofen
     box(c, "EG_Kachelofen", "Kachel", 9.06, 10.56, 4.34, 5.849, 0, 1.9)
     build_stairs()
+    for x0, x1 in ((4.26, 6.05), (6.05, 7.85)):             # dining table (plan: two joined tables)
+        table("EG", x0 + 0.002, x1 - 0.002, 1.18, 1.91)
+    for x in (4.58, 5.15, 5.73, 6.39, 6.95, 7.53):          # 14 chairs as in the plan
+        chair("EG", x, 2.12, 0, -1)
+        chair("EG", x, 0.97, 0, 1)
+    chair("EG", 4.05, 1.545, 1, 0)
+    chair("EG", 8.06, 1.545, -1, 0)
+
+
+# ---------------------------------------------------------------- furniture
+def post(coll, obj, mat, p0, p1, w, rnd=None):
+    """Square post of width w from bottom centre p0 to top centre p1 (may lean)."""
+    v = [(p[0] + sx * w / 2, p[1] + sy * w / 2, p[2]) for p in (p0, p1)
+         for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+    f = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    add(coll, obj, mat, v, f, rnd)
+
+
+def table(coll, x0, x1, y0, y1, h=0.76):
+    """Inn table after table_shape.png: spruce top on an apron, legs splayed outwards,
+    foot rail frame just above the floor."""
+    o = coll + "_Tisch"
+    box(coll, o, "FichteX", x0, x1, y0, y1, h - 0.04, h)                      # top
+    ti, fi, lw = 0.13, 0.06, 0.07                                             # leg inset top / foot
+    ax0, ax1, ay0, ay1 = x0 + ti - lw / 2, x1 - ti + lw / 2, y0 + ti - lw / 2, y1 - ti + lw / 2
+    za = (h - 0.14, h - 0.04)
+    for ya, yb in ((ay0, ay0 + 0.025), (ay1 - 0.025, ay1)):                   # apron
+        box(coll, o, "FichteX", ax0, ax1, ya, yb, *za)
+    for xa, xb in ((ax0, ax0 + 0.025), (ax1 - 0.025, ax1)):
+        box(coll, o, "FichteY", xa, xb, ay0, ay1, *za)
+    feet = []
+    for sx, sy in ((0, 0), (1, 0), (1, 1), (0, 1)):
+        tx, ty = (x1 - ti, x0 + ti)[sx == 0], (y1 - ti, y0 + ti)[sy == 0]
+        fx, fy = (x1 - fi, x0 + fi)[sx == 0], (y1 - fi, y0 + fi)[sy == 0]
+        post(coll, o, "FichteZ", (fx, fy, 0.012), (tx, ty, h - 0.04), lw)
+        feet.append((fx, fy))
+    zf = (0.03, 0.09)                                                          # foot rails
+    (fx0, fy0), (fx1, fy1) = feet[0], feet[2]
+    for y in (fy0, fy1):
+        box(coll, o, "FichteX", fx0, fx1, y - 0.02, y + 0.02, *zf)
+    for x in (fx0, fx1):
+        box(coll, o, "FichteY", x - 0.02, x + 0.02, fy0 + 0.02, fy1 - 0.02, *zf)
+
+
+def chair(coll, cx, cy, fx, fy):
+    """Simple spruce chair centred at (cx, cy), facing the table in direction (fx, fy):
+    four legs, seat, rear legs running up into the back posts, two back slats, side stretchers."""
+    o, W = coll + "_Stuehle", 0.42
+
+    def part(m, u0, u1, v0, v1, z0, z1):                   # u across, v from front (table) to back
+        (xa, ya), (xb, yb) = [(cx + fx * (W / 2 - v) - fy * u, cy + fy * (W / 2 - v) + fx * u)
+                              for u, v in ((u0, v0), (u1, v1))]
+        if abs(fx) > 0:                                     # grain along the part's long axis
+            m = {"FichteX": "FichteY", "FichteY": "FichteX"}.get(m, m)
+        box(coll, o, m, xa, xb, ya, yb, z0, z1, r)
+
+    r, l, h = random.random(), 0.035, W / 2
+    part("FichteX", -h, h, 0, W, 0.43, 0.46)                                   # seat
+    for u in (-h, h - l):
+        part("FichteZ", u, u + l, 0.01, 0.01 + l, 0, 0.43)                     # front legs
+        part("FichteZ", u, u + l, W - l, W, 0, 0.92)                           # rear legs + posts
+        part("FichteY", u, u + l, 0.01 + l, W - l, 0.13, 0.16)                 # side stretchers
+    for z in (0.62, 0.80):                                                     # back slats
+        part("FichteX", -h + l, h - l, W - 0.03, W - 0.01, z, z + 0.08)
 
 
 # ---------------------------------------------------------------- stairs
@@ -592,7 +703,7 @@ def build_stairs():
     """Straight stair (15 x 18.0/25.5, from the plan) after stairs_indoor.png: warm treads and
     risers, closed stringer on the open (south) side with turned balusters, sloping handrail,
     plank newel post with a rounded top; the same railing runs round the stairwell in the OG.
-    The space under the stair is closed with plaster."""
+    The space under the stair stays open (stepped underside, second stringer along the wall)."""
     c, o, g, P = "EG", "EG_Treppe", "EG_Gelaender", frame("x")
     ys0, ys1 = ST_Y0, ST_Y0 + 0.05                        # stringer on the open side
     for i in range(1, ST_N):
@@ -602,10 +713,9 @@ def build_stairs():
     xt = ST_X0 - (ST_N - 1) * ST_RUN                      # top: OG floor edge
     xk = ST_X0 - (0.32 - ST_RISE) * ST_RUN / ST_RISE      # stringer bottom meets the floor
     bot = lambda x: max(stair_line(x) - 0.32, 0.0)
-    sweep(c, o, "Kiefer", P, [((x, bot(x)), (x, stair_line(x) + 0.10)) for x in (xt, xk, ST_X0 + 0.04)],
-          ys0, ys1)
-    column(c, o, "Putz", P, xt, xk, const(0.0), bot, ys0 + 0.01, ys1 - 0.01)   # closed underside
-    box(c, o, "Putz", xt, xt + 0.05, ys1, ST_Y1, 0, Z_EG_TOP)                    # end wall under the top
+    for ya, yb in ((ys0, ys1), (ST_Y1, 8.57)):            # open side / wall side (up to the wall)
+        sweep(c, o, "Kiefer", P, [((x, bot(x)), (x, stair_line(x) + 0.10)) for x in (xt, xk, ST_X0 + 0.04)],
+              ya, yb)
     # balusters, handrail, newel
     yb, hr = (ys0 + ys1) / 2, 0.90                        # handrail height above the nosing line
     n = int((ST_X0 - 0.25 - xt) / 0.13)
@@ -625,8 +735,9 @@ def build_stairs():
     hx0, hx1, hy0, hy1 = STAIR_HOLE
     zf, o = Z_OG + 0.01, "OG_Gelaender"
     xg = ST_X0 - (zf + 0.10 - hr - ST_RISE) * ST_RUN / ST_RISE
-    box("OG", o, "Kiefer", hx0, hx1, hy0 - 0.045, hy0, Z_EG_TOP - 0.02, zf + 0.10)        # edge boards
-    box("OG", o, "Kiefer", hx1, hx1 + 0.045, hy0 - 0.045, hy1, Z_EG_TOP - 0.02, zf + 0.10)
+    # edge boards stand 6 mm proud into the opening so the slab edge face is hidden (no z-fight)
+    box("OG", o, "Kiefer", hx0, hx1 + 0.045, hy0 - 0.045, hy0 + 0.006, Z_EG_TOP - 0.02, zf + 0.10)
+    box("OG", o, "Kiefer", hx1 - 0.006, hx1 + 0.045, hy0 + 0.006, hy1, Z_EG_TOP - 0.02, zf + 0.10)
     for x0_, y0_, x1_, y1_ in ((xg, hy0 - 0.022, hx1 + 0.022, hy0 - 0.022),
                                (hx1 + 0.022, hy0 + 0.1, hx1 + 0.022, hy1)):
         m = int(math.dist((x0_, y0_), (x1_, y1_)) / 0.13)
@@ -696,23 +807,24 @@ def build_cladding():
         for x0, ya, yb, zw, woff in GABLE_WIN:
             if abs(x0 - face) < 0.03:
                 holes.append((ya, yb, const(zw), (lambda u, w=woff: roof_top(u) - w), False))
+                r = random.random()
                 for ua, ub in ((ya - 0.09, ya), (yb, yb + 0.09)):
                     column(c, o, M, P, ua, ub, const(zw - 0.09),
-                           lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T)
-                lbox(c, o, M, P, ya - 0.09, yb + 0.09, face - T - 0.02, face - T, zw - 0.09, zw)
+                           lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T, r)
+                lbox(c, o, M, P, ya - 0.09, yb + 0.09, face - T - 0.02, face - T, zw - 0.09, zw, r)
                 column(c, o, M, P, ya, yb, lambda u, w=woff: roof_top(u) - w,
-                       lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T)
+                       lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T, r)
         boards(c, o, M, P, u0, u1, const(zb), top, face - T, face, bw, holes, cuts=[RIDGE_Y])
         for op in ops:
             if op["kind"] == "I":                 # the back door has its own heavy frame
                 continue
             a, b, s, h = op["a"], op["b"], op["sill"], op["head"]
-            tr = (face - T - 0.02, face - T)
-            lbox(c, o, M, P, a - 0.09, a, *tr, max(s - 0.09, zb), h + 0.09)
-            lbox(c, o, M, P, b, b + 0.09, *tr, max(s - 0.09, zb), h + 0.09)
-            lbox(c, o, M, P, a, b, *tr, h, h + 0.09)
+            tr, r = (face - T - 0.02, face - T), random.random()      # one rnd per trim (see wall)
+            lbox(c, o, M, P, a - 0.09, a, *tr, max(s - 0.09, zb), h + 0.09, r)
+            lbox(c, o, M, P, b, b + 0.09, *tr, max(s - 0.09, zb), h + 0.09, r)
+            lbox(c, o, M, P, a, b, *tr, h, h + 0.09, r)
             if s > zb + 0.1:
-                lbox(c, o, M, P, a - 0.09, b + 0.09, face - T - 0.05, face - T, s - 0.06, s)
+                lbox(c, o, M, P, a - 0.09, b + 0.09, face - T - 0.05, face - T, s - 0.06, s, r)
             if op["kind"] == "W":
                 n = max(2, int((b - a) / 0.2))
                 for k in range(1, n + 1):
@@ -742,11 +854,55 @@ def slab(coll, obj, mat, z0, z1, inset=0.0, hole=None):
             box(coll, obj, mat, x0, x1, y0, y1, z0, z1)
 
 
+CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.358, 6.723, 8.506)]   # Flur/Windfang, back hall
+CORRIDOR_OG = [(2.71, 14.575, 6.35, 8.57)]
+
+
+def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=()):
+    """Rows along x (row widths cycling through `widths`), pieces of random length, skipping
+    the exclusion rectangles. Rows are split at exclusion edges so pieces never overlap them."""
+    y, i = y0, 0
+    while y1 - y > 0.02:
+        ya, yb = y, min(y + widths[i % len(widths)], y1)
+        y, i = yb, i + 1
+        cuts = sorted({ya, yb} | {e for r in excl for e in r[2:] if ya < e < yb})
+        for ra, rb in zip(cuts[:-1], cuts[1:]):
+            gaps = sorted((r[0], r[1]) for r in excl if r[2] <= ra + 1e-6 and rb <= r[3] + 1e-6)
+            spans, cur = [], x0
+            for ga, gb in gaps:
+                if ga > cur:
+                    spans.append((cur, min(ga, x1)))
+                cur = max(cur, gb)
+            if cur < x1:
+                spans.append((cur, x1))
+            for sa, sb in spans:
+                l = sa - random.uniform(0, lengths[1])            # stagger the joints row by row
+                while l < sb:
+                    la, lb = max(l, sa), min(l + random.uniform(*lengths), sb)
+                    l = lb if lb > l else sb
+                    if lb - la > 0.01:
+                        box(coll, obj, mat, la + joint / 2, lb - joint / 2, ra + joint / 2, rb - joint / 2, z0, z1)
+
+
+def floor_cover(coll, z, corridors, hole=None):
+    """Floors after inside_floor_rooms.jpg (oak planks in all rooms) and
+    stone_floor_corridor.jpg (limestone slabs in the corridors); dark base shows in the joints."""
+    o, ex = coll + "_Bodenbelag", [hole] if hole else []
+    for x0, x1, y0, y1 in FOOT:
+        tiles(coll, o, "Eiche", x0, x1, y0, y1, z + 0.002, z + 0.014, [0.2], (1.2, 2.4), 0.003,
+              corridors + ex)
+    for x0, x1, y0, y1 in corridors:
+        tiles(coll, o, "Kalkstein", x0, x1, y0, y1, z + 0.002, z + 0.018, [0.5, 0.4, 0.55, 0.45],
+              (0.35, 0.8), 0.006, ex)
+
+
 def build_slabs():
     slab("EG", "EG_Bodenplatte", "Decke", -0.30, 0.0)
-    slab("EG", "EG_Boden", "Boden", 0.0, 0.01, inset=0.2)
+    slab("EG", "EG_Boden", "Fuge", 0.0, 0.01, inset=0.2)
     slab("OG", "OG_Decke_EG", "Decke", Z_EG_TOP, Z_OG, hole=STAIR_HOLE)
-    slab("OG", "OG_Boden", "Boden", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
+    slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
+    floor_cover("EG", 0.0, CORRIDOR_EG)
+    floor_cover("OG", Z_OG, CORRIDOR_OG, STAIR_HOLE)
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 
 
@@ -770,15 +926,16 @@ def gable(x0, x1, y0, y1, windows=(), woff=0.7):
         else:
             prism_x(c, "Giebel", "Putz", x0, x1, roof_profile(ya, yb, lambda y: zb, lambda y: zw))
             prism_x(c, "Giebel", "Putz", x0, x1, roof_profile(ya, yb, top_w, roof_under))
+            r = random.random()                  # shared by the frame pieces (see wall)
             prism_x(c, "Giebel_Fenster", "Glas", xm - 0.005, xm + 0.005,
                     roof_profile(ya, yb, lambda y: zw, top_w))
             prism_x(c, "Giebel_Fenster", "Laerche", xm - 0.04, xm + 0.04,
-                    roof_profile(ya, yb, lambda y: zw, lambda y: zw + 0.06))
+                    roof_profile(ya, yb, lambda y: zw, lambda y: zw + 0.06), r)
             prism_x(c, "Giebel_Fenster", "Laerche", xm - 0.04, xm + 0.04,
-                    roof_profile(ya, yb, lambda y: top_w(y) - 0.06, top_w))
+                    roof_profile(ya, yb, lambda y: top_w(y) - 0.06, top_w), r)
             for yy in (ya, yb - 0.06):
                 prism_x(c, "Giebel_Fenster", "Laerche", xm - 0.04, xm + 0.04,
-                        roof_profile(yy, yy + 0.06, lambda y: zw, top_w))
+                        roof_profile(yy, yy + 0.06, lambda y: zw, top_w), r)
 
 
 def build_roof():

@@ -3,7 +3,7 @@
 ![Ansicht von Südosten](docs/images/ansicht_suedost.png)
 ![Ansicht von Nordwesten](docs/images/ansicht_nordwest.png)
 
-3D-Modell des Hauses, erzeugt aus den ALLPLAN-Plänen (Grundriss EG/OG, Ansichten, M 1:100).
+3D-Modell des Hauses, erzeugt aus den Architekten-Plänen (Grundriss EG/OG, Ansichten, M 1:100).
 
 ## Struktur
 
@@ -20,7 +20,7 @@
 
 | Skript | Macht |
 |---|---|
-| `build_house.py` | baut das Haus komplett neu (Collection „Haus“), inkl. Details nach den Fotos: Rundbogen-Haustür, Hintertür mit Ovalfenster, Stuben-Nische mit Segmentbogen, Kassettentüren innen (geöffnet), Fenster mit Lärchenrahmen und Sprossen, Terrassentüren (und die großen Westfenster) in Lärche, Lärchenschalung der ganzen Westseite, Balkone in Lärche mit Baluster-Ausschnitten, Treppe mit gedrechseltem Geländer (auch um das Treppenloch im OG), Sparren/Pfetten und Untersicht, Granit-Terrasse mit Kiesstreifen und Beeten, Außenleuchten. **Achtung:** überschreibt Handänderungen im Modell |
+| `build_house.py` | baut das Haus komplett neu (Collection „Haus“), inkl. Details nach den Fotos: Rundbogen-Haustür, Hintertür mit Ovalfenster, Stuben-Nische mit Segmentbogen, Kassettentüren innen (geöffnet), verglaste Doppeltür zum Windfang, Fenster mit Lärchenrahmen und Sprossen, Terrassentüren (und die großen Westfenster) in Lärche, Lärchenschalung der ganzen Westseite, Balkone in Lärche mit Baluster-Ausschnitten, Treppe mit gedrechseltem Geländer (auch um das Treppenloch im OG, darunter frei), Kalksteinplatten in den Fluren und Eichendielen in den Zimmern, großer Wirtshaustisch mit 14 Stühlen in Küche/Essen, Sparren/Pfetten und Untersicht, Granit-Terrasse mit Kiesstreifen und Beeten, Außenleuchten. **Achtung:** überschreibt Handänderungen im Modell |
 | `paint.py` | Farben (Putz/Fenster RAL 9010, Läden RAL 5014; Türen bleiben Naturholz) und weiße Querbretter an den Läden – nach `build_house.py` erneut ausführen |
 | `windrose.py` | Windrose (eigene Collection, bleibt bei Neubau erhalten) |
 | `garden.py` | Wiese (Geometry-Nodes-Streuung, im Viewport 10 %) und Lavendel in den Beeten (eigene Collection „Garten“) – nach `build_house.py` erneut ausführen |
