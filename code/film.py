@@ -194,26 +194,11 @@ def build_camera():
 
 
 def open_entrance_door():
-    """Film only: remove the closed east entrance door panel and put an opened one (swung in)."""
-    import bmesh
-    ob = bpy.data.objects.get("EG_Fenster_Tueren")
-    if ob:
-        tuer = [i for i, m in enumerate(ob.data.materials) if m and m.name == "FL_Tuer"]
-        bm = bmesh.new(); bm.from_mesh(ob.data)
-        dead = [f for f in bm.faces if f.material_index in tuer
-                and f.calc_center_median().x > 14.5 and 6.4 < f.calc_center_median().y < 7.6]
-        bmesh.ops.delete(bm, geom=dead, context="FACES")
-        bm.to_mesh(ob.data); bm.free()
-    c = bpy.data.collections["Innenlicht"]
-    old = bpy.data.objects.get("Film_Haustuer_offen")
+    """Film only: swing the entrance door leaf (pivot = hinge, from build_house.py) inwards."""
+    old = bpy.data.objects.get("Film_Haustuer_offen")      # box stand-in of earlier versions
     if old:
         bpy.data.objects.remove(old)
-    x0, x1, y0, y1, z0, z1 = 13.78, 14.71, 6.52, 6.57, 0.02, 2.14
-    v = [(x, y, z) for z in (z0, z1) for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1))]
-    me = bpy.data.meshes.new("Film_Haustuer_offen")
-    me.from_pydata(v, [], [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)])
-    me.materials.append(bpy.data.materials["FL_Tuer"])
-    c.objects.link(bpy.data.objects.new("Film_Haustuer_offen", me))
+    bpy.data.objects["EG_Haustuer"].rotation_euler.z = math.radians(90)
 
 
 def main():
