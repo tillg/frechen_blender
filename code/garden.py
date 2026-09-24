@@ -1,5 +1,5 @@
-"""Plants: tall meadow grass around the house (grass_in_front_of_house.png) and lavender
-bushes in the two beds along the walls (bushes_around_the_house.png).
+"""Plants: tall meadow grass around the house (grass_in_front_of_house.png) and green, leafy
+shrubs in the two soil beds along the walls (placement after bushes_around_the_house.png).
 
 Lives in its own collection "Garten"; run after build_house.py (it reads the beds, terrace,
 shed etc. from the scene to know where no grass grows). Re-running replaces the collection.
@@ -61,25 +61,19 @@ def grass_shader(nt):
     bsdf.inputs["Roughness"].default_value = 0.6
 
 
-def lavender_shader(nt):
+def leaf_shader(nt):
+    """Green leaves; per-leaf shade from the face attribute "rnd"."""
     N, L = nt.nodes.new, nt.links.new
     out, bsdf = N("ShaderNodeOutputMaterial"), N("ShaderNodeBsdfPrincipled")
     L(bsdf.outputs["BSDF"], out.inputs["Surface"])
-    tc = N("ShaderNodeTexCoord")
-    nz = N("ShaderNodeTexNoise")
-    nz.inputs["Scale"].default_value, nz.inputs["Detail"].default_value = 60, 10
+    attr = N("ShaderNodeAttribute"); attr.attribute_name = "rnd"
     ramp = N("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].color = (0.035, 0.045, 0.03, 1)
-    ramp.color_ramp.elements[1].color = (0.20, 0.23, 0.16, 1)
-    ramp.color_ramp.elements[0].position, ramp.color_ramp.elements[1].position = 0.4, 0.62
-    bump = N("ShaderNodeBump")
-    bump.inputs["Strength"].default_value, bump.inputs["Distance"].default_value = 1.0, 0.03
-    L(tc.outputs["Object"], nz.inputs["Vector"])
-    L(nz.outputs["Fac"], ramp.inputs["Fac"])
+    el = ramp.color_ramp.elements
+    el[0].color, el[1].color = (0.012, 0.045, 0.008, 1), (0.10, 0.26, 0.035, 1)
+    mid = el.new(0.6); mid.color = (0.035, 0.12, 0.018, 1)
+    L(attr.outputs["Fac"], ramp.inputs["Fac"])
     L(ramp.outputs["Color"], bsdf.inputs["Base Color"])
-    L(nz.outputs["Fac"], bump.inputs["Height"])
-    L(bump.outputs["Normal"], bsdf.inputs["Normal"])
-    bsdf.inputs["Roughness"].default_value = 0.9
+    bsdf.inputs["Roughness"].default_value = 0.55
 
 
 # ---------------------------------------------------------------- meadow
@@ -197,33 +191,35 @@ def scatter_nodes(clump):
     return ng
 
 
-# ---------------------------------------------------------------- lavender
+# ---------------------------------------------------------------- shrubs
 def bush(c, mat, x, y, r, h):
-    """Dense lumpy core plus ~400 upright stalks (crossed quads) for the twiggy outline."""
+    """Rounded shrub: dark core blob covered with ~1400 small leaves (diamond quads, facing
+    roughly outwards), each leaf with its own shade (face attribute rnd)."""
     bm = bmesh.new()
     bmesh.ops.create_icosphere(bm, subdivisions=3, radius=1.0)
     seed = Vector((x * 3.1, y * 2.7, 0))
-    shape = lambda n: 1 + 0.18 * noise.noise(n * 2.5 + seed) + 0.08 * noise.noise(n * 9 + seed)
-    core = 0.8
+    shape = lambda n: 1 + 0.15 * noise.noise(n * 2.5 + seed) + 0.06 * noise.noise(n * 9 + seed)
+    surf = lambda n, k: Vector((n.x * r * k, n.y * r * k, max(n.z, -0.1) * h * k * 0.9 + h * 0.1))
     for v in bm.verts:
         n = v.co.normalized()
-        d = shape(n) * core
-        v.co = Vector((n.x * r * d, n.y * r * d, max(n.z, -0.1) * h * d * 0.9 + h * 0.1))
-    for _ in range(400):
-        n = Vector((random.gauss(0, 1), random.gauss(0, 1), abs(random.gauss(0, 1)) + 0.25)).normalized()
-        d = shape(n) * core * 0.95
-        p = Vector((n.x * r * d, n.y * r * d, n.z * h * d * 0.9 + h * 0.1))
-        tip = p + (n + Vector((0, 0, 1.3))).normalized() * random.uniform(0.08, 0.2)
-        a = random.uniform(0, math.pi)
-        for side in (Vector((math.cos(a), math.sin(a), 0)), Vector((-math.sin(a), math.cos(a), 0))):
-            w = side * 0.004
-            q = [bm.verts.new(co) for co in (p - w, p + w, tip + w * 0.3, tip - w * 0.3)]
-            bm.faces.new(q)
-    me = bpy.data.meshes.new("GA_Lavendel")
+        v.co = surf(n, shape(n) * 0.85)
+    shades = [0.0] * len(bm.faces)
+    for _ in range(1400):
+        n = Vector((random.gauss(0, 1), random.gauss(0, 1), random.gauss(0, 1) + 0.35)).normalized()
+        p = surf(n, shape(n) * random.uniform(0.86, 1.0))
+        out = (n + Vector((random.gauss(0, 0.5), random.gauss(0, 0.5), random.gauss(0, 0.5)))).normalized()
+        t1 = out.cross(Vector((0, 0, 1)) if abs(out.z) < 0.9 else Vector((1, 0, 0))).normalized()
+        t2 = out.cross(t1)
+        sz = random.uniform(0.028, 0.05)
+        q = [bm.verts.new(p + t1 * sz), bm.verts.new(p + t2 * sz * 0.45),
+             bm.verts.new(p - t1 * sz), bm.verts.new(p - t2 * sz * 0.45)]
+        bm.faces.new(q)
+        shades.append(random.random() ** 0.8 * (0.6 + 0.4 * max(n.z, 0)))   # lighter on top
+    me = bpy.data.meshes.new("GA_Strauch")
     bm.to_mesh(me); bm.free()
-    me.shade_smooth()
+    me.attributes.new("rnd", "FLOAT", "FACE").data.foreach_set("value", shades)
     me.materials.append(mat)
-    ob = bpy.data.objects.new("GA_Lavendel", me)
+    ob = bpy.data.objects.new("GA_Strauch", me)
     ob.location = (x, y, -0.03)
     c.objects.link(ob)
 
@@ -251,9 +247,9 @@ def main():
     em = emitter(c)
     mod = em.modifiers.new("Wiese", "NODES")
     mod.node_group = scatter_nodes(clump)
-    lav = material("GA_Lavendel", lavender_shader)
+    leaves = material("GA_Blaetter", leaf_shader)
     for bed in ("Beet_Ost", "Beet_West"):
-        plant_bed(c, lav, bed)
+        plant_bed(c, leaves, bed)
     return len(em.data.polygons)
 
 

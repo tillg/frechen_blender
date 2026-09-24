@@ -56,12 +56,17 @@ MAT_DEF = {
     "Glas":       dict(rgba=(0.70, 0.85, 0.95, 0.25), alpha=0.25, rough=0.1),
     "Milchglas":  dict(rgba=(0.90, 0.90, 0.88, 0.85), alpha=0.85, rough=0.4),
     "Wiese":      dict(speck=((0.05, 0.12, 0.025), (0.12, 0.20, 0.04), 3)),
-    "Kachel":     dict(rgba=(0.35, 0.47, 0.42, 1)),
+    "Kachel":     dict(rgba=(0.35, 0.47, 0.42, 1), rough=0.35),               # glazed; colour: paint.py
+    "Schiefer":   dict(speck=((0.06, 0.065, 0.07), (0.20, 0.21, 0.22), 12), hue=0.03),
+    "Feuer":      dict(rgba=(1.0, 0.22, 0.02, 1), emit=1.2),
     "Kies":       dict(speck=((0.30, 0.28, 0.25), (0.62, 0.60, 0.56), 150), bump=(150, 0.5)),
     "Erde":       dict(speck=((0.025, 0.014, 0.008), (0.07, 0.04, 0.022), 60), bump=(60, 0.6)),
     "Granit":     dict(speck=((0.30, 0.29, 0.26), (0.62, 0.58, 0.50), 220), hue=0.06),
     "Fuge":       dict(rgba=(0.16, 0.16, 0.15, 1)),
     "Kiesel":     dict(rgba=(0.52, 0.50, 0.46, 1), rough=0.5),
+    "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
+    "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
+    "Spiegel":    dict(rgba=(0.92, 0.92, 0.92, 1), metal=1.0, rough=0.02),
     "Eisen":      dict(rgba=(0.018, 0.018, 0.02, 1), metal=0.4, rough=0.45),
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
@@ -583,7 +588,7 @@ def build_eg():
     wall(c, 14.351, W_OUT, 0.415, 6.349, z0, z1, [(1.254, 4.880, 0, 2.2, "GD")], out=+1)
     wall(c, 0, 0.31, 5.145, 12.473, z0, z1, [
         (5.724, 6.324, 1.57, 2.17, "W"), (7.408, 8.377, 0, 2.3, "I"),
-        (9.460, 10.060, 1.57, 2.17, "W")], out=-1)
+        (9.12, 9.69, 1.57, 2.17, "W")], out=-1)      # WC Großeltern ("Fenster wird verschoben")
     wall(c, 0.31, 2.358, 5.145, 5.475, z0, z1)              # WC south (towards Schuppen)
     wall(c, 2.358, 2.772, 0.415, 5.849, z0, z1)             # west wall Speis/Essen
     entrance_door(); back_door()
@@ -592,9 +597,11 @@ def build_eg():
     interior(c, 2.657, 14.575, 8.576, 8.876,
              [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (13.517, 14.575, 1, "a")])
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
-    interior(c, 0.31, 2.358, 8.506, 8.656, [(0.824, 1.853, 1, "b", False)])
+    interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
-    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (9.13, 9.97, -1, "b", False)])
+    # Großeltern: WC door from the bedroom; the Bad is open to the bedroom (unhatched in the plan)
+    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (9.02, 9.90, 1, "b", False),
+                                              (10.33, 12.33)])
     interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, -1, "a")])   # Küche door
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
@@ -602,12 +609,11 @@ def build_eg():
     interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580, -1, "b")])
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
-    interior(c, 0.31, 2.358, 10.10, 10.25)                  # new: Bad / WC Großeltern
+    interior(c, 0.31, 2.358, 10.10, 10.25)                  # new: WC (south) / Bad (north) Großeltern
     interior(c, 11.13, 11.28, 8.876, 12.473, [(9.6, 11.9)])  # new: Musikraum / Büro
     interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
-    # Kachelofen
-    box(c, "EG_Kachelofen", "Kachel", 9.06, 10.56, 4.34, 5.849, 0, 1.9)
+    kachelofen()
     build_stairs()
     for x0, x1 in ((4.26, 6.05), (6.05, 7.85)):             # dining table (plan: two joined tables)
         table("EG", x0 + 0.002, x1 - 0.002, 1.18, 1.91)
@@ -616,6 +622,168 @@ def build_eg():
         chair("EG", x, 0.97, 0, 1)
     chair("EG", 4.05, 1.545, 1, 0)
     chair("EG", 8.06, 1.545, -1, 0)
+
+
+# ---------------------------------------------------------------- Kachelofen
+def tiles_on(o, P, u0, u1, z0, z1, face, out, tw=0.20, th=0.24):
+    """Panel tiles (with a raised field) on a face at t = face, facing direction out (+1/-1)."""
+    nu, nz = max(1, round((u1 - u0) / tw)), max(1, round((z1 - z0) / th))
+    for i in range(nu):
+        for j in range(nz):
+            ua, ub = u0 + (u1 - u0) * i / nu + 0.002, u0 + (u1 - u0) * (i + 1) / nu - 0.002
+            za, zb = z0 + (z1 - z0) * j / nz + 0.002, z0 + (z1 - z0) * (j + 1) / nz - 0.002
+            r = random.random()
+            lbox("EG", o, "Kachel", P, ua, ub, face, face + out * 0.015, za, zb, r)
+            lbox("EG", o, "Kachel", P, ua + 0.03, ub - 0.03, face + out * 0.015, face + out * 0.022,
+                 za + 0.03, zb - 0.03, r)
+
+
+def cornice(o, x0, x1, y0, y1, z, sides):
+    """Stepped tile ledge round a block (sides that face the room: S, E)."""
+    for dz, pr in ((0.0, 0.03), (0.04, 0.06)):
+        box("EG", o, "Kachel", x0, x1 + (pr if "E" in sides else 0), y0 - (pr if "S" in sides else 0), y1,
+            z + dz, z + dz + 0.04)
+
+
+def kachelofen():
+    """Tiled stove in the Stube after ofen_stuben.jpg, tiles in the shutter blue (RAL 5014, set
+    in paint.py): white plaster body with firebox, tiled corner column and upper tier, tile
+    ledges, wooden stove bench with an arched opening and round tiles, slate hearth.
+    Body = plan footprint; the bench runs south along the west wall (east would block the
+    Stube door)."""
+    o, x0, x1, y0, y1 = "EG_Kachelofen", 9.06, 10.56, 4.34, 5.849
+    PX, PY = frame("x"), frame("y")
+    box("EG", o, "Putz", x0, x1, y0, y1, 0.02, 1.22)                          # body
+    fx0, fx1 = 9.35, 9.90                                                      # firebox (south)
+    for ua, ub, za, zb in ((fx0 - 0.05, fx0, 0.30, 1.05), (fx1, fx1 + 0.05, 0.30, 1.05),
+                           (fx0, fx1, 0.30, 0.36), (fx0, fx1, 0.99, 1.05)):          # black frame
+        lbox("EG", o, "Eisen", PX, ua, ub, y0 - 0.03, y0, za, zb)
+    lbox("EG", o, "Feuer", PX, fx0, fx1, y0 - 0.005, y0 - 0.0, 0.36, 0.99)
+    lbox("EG", o, "Eisen", PX, fx1 - 0.06, fx1 - 0.04, y0 - 0.06, y0 - 0.025, 0.55, 0.85)   # handle
+    tx0, ty1 = 10.16, 4.74                                                     # tiled corner column
+    box("EG", o, "Putz", tx0, x1, y0, ty1, 0.02, 1.22)
+    tiles_on(o, PX, tx0, x1, 0.04, 1.20, y0, -1)
+    tiles_on(o, PY, y0, ty1, 0.04, 1.20, x1, 1)
+    cornice(o, x0, x1, y0, y1, 1.22, "SE")
+    uy0 = 4.90                                                                 # upper tier (back half)
+    box("EG", o, "Putz", x0, x1, uy0, y1, 1.30, 1.80)
+    tiles_on(o, PX, x0 + 0.02, x1, 1.32, 1.78, uy0, -1, th=0.23)
+    tiles_on(o, PY, uy0, y1, 1.32, 1.78, x1, 1, th=0.23)
+    cornice(o, x0, x1, uy0, y1, 1.80, "SE")
+    box("EG", o, "Putz", x0, 10.20, 5.25, y1, 1.88, 2.08)                     # top step
+    cornice(o, x0, 10.20, 5.25, y1, 2.08, "SE")
+    # stove bench along the west wall, warm back wall with round tiles
+    bx0, bx1, by0 = 9.06, 9.66, 3.0
+    arc = [(3.35 + 0.30 * (1 - math.cos(math.pi * i / 16)), 0.30 * math.sin(math.pi * i / 16) + 0.05)
+           for i in range(17)]                                                 # opening under the bench
+    box("EG", o, "Putz", bx0, bx1, by0, 3.35, 0.02, 0.42)
+    box("EG", o, "Putz", bx0, bx1, 3.95, y0, 0.02, 0.42)
+    sweep("EG", o, "Putz", PY, [((u, z), (u, 0.42)) for u, z in arc], bx0, bx1)
+    box("EG", o, "Putz", bx0, bx1, 3.35, 3.95, 0.02, 0.05)
+    box("EG", o, "Eiche", bx0, bx1 + 0.04, by0, y0, 0.42, 0.47)                 # seat
+    box("EG", o, "Putz", bx0, 9.26, by0, y0, 0.47, 1.22)                        # back
+    cornice(o, bx0, 9.26, by0, y0, 1.22, "E")
+    k = 16
+    for yc in (3.35, 3.8, 4.2):
+        for r, t in ((0.09, 0.02), (0.06, 0.035)):                             # round bowl tiles
+            v = [(9.26 + dt, yc + r * math.cos(2 * math.pi * i / k), 0.85 + r * math.sin(2 * math.pi * i / k))
+                 for dt in (0.0, t) for i in range(k)]
+            f = [list(range(k))[::-1], list(range(k, 2 * k))]
+            f += [(i, (i + 1) % k, k + (i + 1) % k, k + i) for i in range(k)]
+            add("EG", o, "Kachel", v, f)
+    # slate hearth in front of body and bench
+    for xa, xb, ya, yb in ((bx1 + 0.04, x1 + 0.45, 3.5, y0), (x1, x1 + 0.45, y0, y1)):
+        tiles("EG", o, "Schiefer", xa, xb, ya, yb, 0.012, 0.022, [0.45, 0.4], (0.4, 0.7), 0.006)
+
+
+# ---------------------------------------------------------------- sanitary (positions from the plans)
+def xy_prism(coll, obj, mat, pts, z0, z1, rnd=None):
+    """Extrude a horizontal (x, y) outline from z0 to z1."""
+    n = len(pts)
+    v = [(x, y, z0) for x, y in pts] + [(x, y, z1) for x, y in pts]
+    f = [list(range(n))[::-1], list(range(n, 2 * n))]
+    f += [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+    add(coll, obj, mat, v, f, rnd)
+
+
+def at_wall(wx, wy, fx, fy):
+    """Map (u along the wall, v into the room) to world, from wall point (wx, wy) facing (fx, fy)."""
+    return lambda u, v: (wx + fx * v - fy * u, wy + fy * v + fx * u)
+
+
+def rounded(M, w, d, v0=0.0, n=12):
+    """Outline with a straight back at v0 and a semi-elliptic front (width w, depth d)."""
+    r = min(d, w / 2)
+    pts = [M(-w / 2, v0), M(w / 2, v0)]
+    pts += [M(w / 2 * math.cos(math.pi * i / n), v0 + d - r + r * math.sin(math.pi * i / n)) for i in range(n + 1)]
+    return pts
+
+
+def toilet(coll, wx, wy, fx, fy, z=0.0):
+    """Wall-hung toilet with a chrome flush plate."""
+    o, M = coll + "_Sanitaer", at_wall(wx, wy, fx, fy)
+    xy_prism(coll, o, "Keramik", rounded(M, 0.30, 0.46, 0.04), z + 0.22, z + 0.30)
+    xy_prism(coll, o, "Keramik", rounded(M, 0.36, 0.55), z + 0.30, z + 0.40)
+    xy_prism(coll, o, "Keramik", rounded(M, 0.37, 0.56, 0.02), z + 0.40, z + 0.425)       # seat
+    (xa, ya), (xb, yb) = M(-0.12, 0.0), M(0.12, 0.012)
+    box(coll, o, "Metall", xa, xb, ya, yb, z + 0.98, z + 1.14)
+
+
+def basin(coll, wx, wy, fx, fy, w=0.60, d=0.46, z=0.0, mirror=True):
+    """Washbasin (rounded front) with tap and a mirror above."""
+    o, M = coll + "_Sanitaer", at_wall(wx, wy, fx, fy)
+    xy_prism(coll, o, "Keramik", rounded(M, w * 0.7, d * 0.8), z + 0.66, z + 0.80)
+    xy_prism(coll, o, "Keramik", rounded(M, w, d), z + 0.80, z + 0.86)
+    xy_prism(coll, o, "Metall", [M(-0.02, 0.03), M(0.02, 0.03), M(0.02, 0.14), M(-0.02, 0.14)], z + 0.86, z + 0.97)
+    if mirror:
+        (xa, ya), (xb, yb) = M(-w / 2, 0.0), M(w / 2, 0.008)
+        box(coll, o, "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
+
+
+def shower(coll, x0, x1, y0, y1, glass, head, z=0.0):
+    """Shower tray, glass panels [(xa, ya, xb, yb) along an open edge], head on wall `head`
+    = (wx, wy, fx, fy)."""
+    o = coll + "_Sanitaer"
+    box(coll, o, "Keramik", x0, x1, y0, y1, z + 0.015, z + 0.045)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    box(coll, o, "Metall", cx - 0.05, cx + 0.05, cy - 0.05, cy + 0.05, z + 0.045, z + 0.047)
+    for xa, ya, xb, yb in glass:
+        box(coll, o, "Glas", xa - 0.004, xb + 0.004, ya - 0.004, yb + 0.004, z + 0.045, z + 2.0)
+        box(coll, o, "Metall", xa - 0.012, xb + 0.012, ya - 0.012, yb + 0.012, z + 2.0, z + 2.02)
+    M = at_wall(*head)
+    (xa, ya), (xb, yb) = M(-0.012, 0.0), M(0.012, 0.03)
+    box(coll, o, "Metall", xa, xb, ya, yb, z + 1.0, z + 2.05)                      # riser
+    (xa, ya), (xb, yb) = M(-0.012, 0.03), M(0.012, 0.30)
+    box(coll, o, "Metall", xa, xb, ya, yb, z + 2.03, z + 2.05)                     # arm
+    k, (hx, hy) = 16, M(0, 0.30)
+    xy_prism(coll, o, "Metall", [(hx + 0.12 * math.cos(2 * math.pi * i / k), hy + 0.12 * math.sin(2 * math.pi * i / k))
+                                 for i in range(k)], z + 2.00, z + 2.02)
+
+
+def build_sanitary():
+    """Bathrooms and toilets after the fixtures drawn in grundriss_eg/og.png."""
+    zo = Z_OG + 0.0
+    # EG Bad Großeltern (N): corner shower NW, basin on the west wall
+    shower("EG", 0.31, 1.10, 11.66, 12.473, [(1.10, 11.66, 1.10, 12.473), (0.31, 11.66, 0.70, 11.66)],
+           (0.70, 12.473, 0, -1))
+    basin("EG", 0.31, 11.0, 1, 0)
+    # EG WC Großeltern (S): toilet on the south wall, hand basin on the north wall
+    toilet("EG", 1.455, 8.656, 0, 1)
+    basin("EG", 1.45, 10.10, 0, -1, w=0.40, d=0.28)
+    # EG WC by the back hall
+    toilet("EG", 1.325, 5.475, 0, 1)
+    # OG Bad NW: basin on the north wall, shower in the south alcove
+    basin("OG", 0.885, 8.57, 0, -1, w=0.62, d=0.48, z=zo)
+    shower("OG", 1.67, 2.57, 5.46, 6.44, [(2.10, 6.44, 2.57, 6.44)], (2.12, 5.46, 0, 1), z=zo)
+    # OG WC 2,26: toilet on the west wall below the window
+    toilet("OG", 0.31, 6.0, 1, 0, z=zo)
+    # OG Bad S: corner shower NW, basin on the south wall
+    shower("OG", 5.59, 6.57, 1.64, 2.62, [(6.57, 1.64, 6.57, 2.62), (5.59, 1.64, 6.05, 1.64)],
+           (6.08, 2.62, 0, -1), z=zo)
+    basin("OG", 6.11, 0.40, 0, 1, w=0.62, d=0.48, z=zo)
+    # OG WC 2,30: toilet on the south wall, hand basin on the east wall
+    toilet("OG", 9.26, 3.98, 0, 1, z=zo)
+    basin("OG", 10.0, 5.2, -1, 0, w=0.40, d=0.28, z=zo)
 
 
 # ---------------------------------------------------------------- furniture
@@ -781,7 +949,7 @@ def build_og():
     interior(c, 1.57, 1.67, 5.46, 6.44, (), z0, z1)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
     interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
-    interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58, 1, "a")], z0, z1, H)
+    interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58, -1, "a")], z0, z1, H)    # Bad door opens inwards (plan)
     interior(c, 10.0, 10.15, 3.84, 6.06, (), z0, z1)                 # WC 2,30 (new)
     interior(c, 8.72, 10.0, 3.84, 3.98, (), z0, z1)
 
@@ -1094,7 +1262,7 @@ def lamp(x, y, z, nx, ny):
 
 def build_terrace():
     """After terrasse_and_outside_lamps.jpeg: granite slabs of mixed size in rows along the
-    wall, a pebble strip against the wall, gravel beds for the bushes (garden.py plants them)."""
+    wall, a pebble strip against the wall, soil beds for the bushes (garden.py plants them)."""
     c = "Umgebung"
     tw, strip = 4.0, 0.25
     bed_e = (W_OUT, W_OUT + strip + 0.6, 7.9, 12.8)          # east, north of the entrance
@@ -1138,7 +1306,7 @@ def build_terrace():
         for _ in range(n):
             pebble(random.uniform(x0 + 0.02, x1 - 0.02), random.uniform(y0 + 0.02, y1 - 0.02))
     for name, (x0, x1, y0, y1) in (("Beet_Ost", bed_e), ("Beet_West", bed_w)):
-        box(c, name, "Kies", x0, x1, y0, y1, -0.10, -0.03)
+        box(c, name, "Erde", x0, x1, y0, y1, -0.10, -0.02)          # brown soil, above the joint base
 
 
 def pebble(x, y):
@@ -1216,6 +1384,49 @@ def build_shed():
     v = base + [(x, y, z + 0.08) for x, y, z in base]
     add(c, o, "Dach", v, [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6),
                           (3, 0, 4, 7)])
+
+
+# ---------------------------------------------------------------- room names on the floor
+# (name, floor, x, y, rotation in degrees so it reads correctly from the room's door)
+ROOM_NAMES = [
+    ("Stube", "EG", 11.9, 2.8, 180), ("Küche", "EG", 7.0, 4.4, 180), ("Speis", "EG", 3.9, 4.4, 90),
+    ("Bibliothek", "EG", 12.9, 10.7, 0), ("Oma & Opa", "EG", 4.3, 10.8, 0),
+    ("Nadine & Till", "OG", 11.5, 3.2, 180), ("Waschküche", "OG", 7.1, 4.4, 180),
+    ("Saschi", "OG", 4.1, 3.2, 180), ("Bichlach", "OG", 11.9, 10.6, 0), ("Jugend", "OG", 7.6, 10.6, 0),
+    ("Yoga", "OG", 3.2, 10.6, 0),
+]
+
+
+def build_room_names():
+    """Names in cream letters on the floor (text converted to mesh, 0.40 m high)."""
+    for coll_name in ("EG", "OG"):
+        z = (0.0 if coll_name == "EG" else Z_OG) + 0.0153
+        me_all = []
+        for name, c, x, y, rot in ROOM_NAMES:
+            if c != coll_name:
+                continue
+            cu = bpy.data.curves.new("tmp_name", "FONT")
+            cu.body, cu.size, cu.align_x, cu.align_y, cu.extrude = name, 0.40, "CENTER", "CENTER", 0.0008
+            tmp = bpy.data.objects.new("tmp_name", cu)
+            tmp.location, tmp.rotation_euler.z = (x, y, z), math.radians(rot)
+            bpy.context.scene.collection.objects.link(tmp)
+            me_all.append(tmp)
+        bpy.context.view_layer.update()
+        dg = bpy.context.evaluated_depsgraph_get()
+        import bmesh
+        bm = bmesh.new()
+        for tmp in me_all:
+            m = bpy.data.meshes.new_from_object(tmp.evaluated_get(dg))
+            m.transform(tmp.matrix_world)
+            bm.from_mesh(m)
+            bpy.data.meshes.remove(m)
+            cu = tmp.data
+            bpy.data.objects.remove(tmp)
+            bpy.data.curves.remove(cu)
+        me = bpy.data.meshes.new(coll_name + "_Raumnamen")
+        bm.to_mesh(me); bm.free()
+        me.materials.append(MAT["Schrift"])
+        coll(coll_name).objects.link(bpy.data.objects.new(coll_name + "_Raumnamen", me))
 
 
 # ---------------------------------------------------------------- reference plans (hidden)
@@ -1341,9 +1552,10 @@ def main():
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); SMOOTH.clear(); LEAVES.clear()
     make_materials()
     reset_collections()
-    build_eg(); build_og(); build_slabs(); build_roof(); build_outside()
+    build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
     flush_geometry()
+    build_room_names()
     build_references()
     setup_scene()
 
