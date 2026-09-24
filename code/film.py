@@ -1,0 +1,233 @@
+"""Walkthrough camera: orbit around the house, enter via the east entrance (Windfang),
+Stube -> Küche/Essen -> stairs -> OG Flur -> Schlafen (SE) -> Schlafen/Yoga (NW).
+
+Creates camera "FL_Kamera_Rundgang" (baked per-frame keys) and point lights in the
+collection "Innenlicht". Neither touches the "Haus" collection. Re-running replaces both.
+Run inside Blender: exec(open(".../code/film.py").read())
+"""
+import bpy, math
+
+FPS = 25
+EYE = 1.65                  # eye height above floor
+Z_OG = 2.70
+WALK, STAIR_SPEED = 1.3, 0.8
+HOUSE_C = (7.44, 6.44)
+
+
+# ---------------------------------------------------------------- route
+def orbit(a0, a1, secs, center=(7.44, 6.44), rx=20.0, ry=18.0, z=EYE, look=(7.44, 6.44, 3.0)):
+    return ("orbit", a0, a1, secs, center, rx, ry, z, look)
+
+
+ROUTE = [
+    orbit(-45, -360, 24),
+    ("path", [(27.44, 6.44), (18.0, 6.98), (14.9, 6.98), (13.6, 7.10), (12.3, 7.20),
+              (11.4, 7.20), (11.4, 6.10), (11.6, 4.0)], EYE, WALK),
+    ("look", [(11.8, 0.0), (15.0, 3.0), (9.8, 5.0), (8.8, 1.8)], 2.2),
+    ("path", [(11.6, 4.0), (10.0, 1.8), (8.8, 1.8), (6.5, 2.0)], EYE, WALK),
+    ("look", [(3.0, 1.5), (6.5, 5.5)], 2.2),
+    ("path", [(6.5, 2.0), (7.5, 4.5), (7.5, 6.1), (7.5, 7.0), (11.0, 7.0), (11.8, 7.5),
+              (11.6, 8.0), (11.19, 8.0)], EYE, WALK),
+    ("stair", (11.19, 8.0, EYE), (7.62, 8.0, Z_OG + EYE), STAIR_SPEED),
+    ("path", [(7.62, 8.0), (7.0, 8.0), (7.0, 7.1), (11.1, 7.1), (11.1, 6.2), (12.0, 3.8)],
+     Z_OG + EYE, WALK),
+    ("look", [(10.27, 0.0), (15.0, 4.6), (9.0, 3.0)], 2.2),
+    ("path", [(12.0, 3.8), (11.1, 6.2), (11.1, 7.1), (3.66, 7.1), (3.66, 8.7), (4.0, 10.6)],
+     Z_OG + EYE, WALK),
+    ("look", [(4.33, 13.0), (0.0, 9.5), (7.0, 13.0)], 2.2),
+    ("hold", 1.5),
+]
+
+
+def polyline_samples(pts, speed):
+    """Points along polyline at constant speed, one per frame."""
+    segs = list(zip(pts[:-1], pts[1:]))
+    lens = [math.dist(a, b) for a, b in segs]
+    total = sum(lens)
+    n = max(2, int(total / speed * FPS))
+    out = []
+    for i in range(n + 1):
+        s, k = total * i / n, 0
+        while k < len(lens) - 1 and s > lens[k]:
+            s -= lens[k]; k += 1
+        (ax, ay, *az), (bx, by, *bz) = segs[k]
+        t = s / lens[k] if lens[k] else 0
+        p = [ax + (bx - ax) * t, ay + (by - ay) * t]
+        if az:
+            p.append(az[0] + (bz[0] - az[0]) * t)
+        out.append(p)
+    return out
+
+
+def heading(dx, dy):
+    return math.atan2(dy, dx)
+
+
+def build_frames():
+    frames = []              # (x, y, z, yaw, pitch, lens)
+    lens_in, lens_out = 16.0, 24.0
+    for seg in ROUTE:
+        kind = seg[0]
+        if kind == "orbit":
+            _, a0, a1, secs, (cx, cy), rx, ry, z, (lx, ly, lz) = seg
+            n = int(secs * FPS)
+            for i in range(n + 1):
+                a = math.radians(a0 + (a1 - a0) * i / n)
+                x, y = cx + rx * math.cos(a), cy + ry * math.sin(a)
+                d = math.dist((x, y), (lx, ly))
+                frames.append((x, y, z, heading(lx - x, ly - y), math.atan2(lz - z, d), lens_out))
+        elif kind in ("path", "stair"):
+            if kind == "path":
+                _, pts, z, speed = seg
+                pts3 = [(x, y, z) for x, y in pts]
+            else:
+                _, a, b, speed = seg
+                pts3 = [a, b]
+            smp = polyline_samples(pts3, speed)
+            look_ahead = int(1.8 / speed * FPS)
+            for i, p in enumerate(smp):
+                q = smp[min(i + look_ahead, len(smp) - 1)]
+                if q == p:
+                    yaw, pitch = frames[-1][3], 0.0
+                else:
+                    yaw = heading(q[0] - p[0], q[1] - p[1])
+                    pitch = math.atan2(q[2] - p[2], math.dist(p[:2], q[:2])) * 0.6
+                # zoom out while approaching the entrance, stay wide inside
+                lens = lens_out if p[0] > 18 else (lens_in if p[0] < 15.5 or p[2] > 2 else
+                                                   lens_in + (lens_out - lens_in) * (p[0] - 15.5) / 2.5)
+                if frames and frames[-1][5] == lens_in:
+                    lens = lens_in
+                frames.append((p[0], p[1], p[2], yaw, pitch, lens))
+        elif kind == "look":
+            _, targets, secs = seg
+            x, y, z, yaw0, _, lens = frames[-1]
+            for tx, ty in targets:
+                yaw1 = heading(tx - x, ty - y)
+                while yaw1 - yaw0 > math.pi: yaw1 -= 2 * math.pi
+                while yaw1 - yaw0 < -math.pi: yaw1 += 2 * math.pi
+                n = int(secs * FPS)
+                for i in range(1, n + 1):
+                    t = i / n
+                    t = t * t * (3 - 2 * t)            # ease in/out
+                    frames.append((x, y, z, yaw0 + (yaw1 - yaw0) * t, -0.03, lens))
+                yaw0 = yaw1
+        elif kind == "hold":
+            frames += [frames[-1]] * int(seg[1] * FPS)
+    return frames
+
+
+def unwrap(vals):
+    out = [vals[0]]
+    for v in vals[1:]:
+        while v - out[-1] > math.pi: v -= 2 * math.pi
+        while v - out[-1] < -math.pi: v += 2 * math.pi
+        out.append(v)
+    return out
+
+
+def smooth(vals, w):
+    n, h = len(vals), w // 2
+    return [sum(vals[max(0, i - h):min(n, i + h + 1)]) / (min(n, i + h + 1) - max(0, i - h))
+            for i in range(n)]
+
+
+# ---------------------------------------------------------------- interior lights
+ROOM_LIGHTS = [  # (x, y, floor z)
+    (13.5, 7.5, 0), (5.0, 7.4, 0), (10.0, 7.0, 0), (11.7, 3.2, 0), (7.0, 4.5, 0), (5.5, 1.8, 0),
+    (13.0, 10.7, 0), (10.2, 10.7, 0), (4.3, 10.7, 0), (7.6, 10.7, 0), (1.3, 11.3, 0),
+    (1.3, 7.5, 0), (4.0, 4.3, 0),
+    (5.0, 7.4, Z_OG), (10.0, 7.0, Z_OG), (12.0, 3.0, Z_OG), (4.0, 3.0, Z_OG), (7.0, 4.3, Z_OG),
+    (7.0, 1.5, Z_OG), (3.0, 10.7, Z_OG), (7.6, 10.7, Z_OG), (11.8, 10.7, Z_OG), (1.4, 7.4, Z_OG),
+]
+
+
+def build_lights():
+    c = bpy.data.collections.get("Innenlicht")
+    if c:
+        for ob in list(c.objects):
+            bpy.data.objects.remove(ob)
+    else:
+        c = bpy.data.collections.new("Innenlicht")
+        bpy.context.scene.collection.children.link(c)
+    for i, (x, y, z) in enumerate(ROOM_LIGHTS):
+        ld = bpy.data.lights.new(f"Innenlicht_{i:02d}", "POINT")
+        ld.energy, ld.color, ld.shadow_soft_size = 250, (1.0, 0.9, 0.78), 0.3
+        ld.use_shadow = False       # fill light only; 23 shadow casters overflowed the shadow pool -> flicker
+        ob = bpy.data.objects.new(ld.name, ld)
+        ob.location = (x, y, z + 2.1)
+        c.objects.link(ob)
+
+
+# ---------------------------------------------------------------- camera
+def build_camera():
+    sc = bpy.context.scene
+    old = bpy.data.objects.get("FL_Kamera_Rundgang")
+    if old:
+        bpy.data.objects.remove(old)
+    cd = bpy.data.cameras.new("FL_Kamera_Rundgang")
+    cd.clip_start, cd.clip_end, cd.sensor_width = 0.05, 300, 36
+    cam = bpy.data.objects.new("FL_Kamera_Rundgang", cd)
+    sc.collection.objects.link(cam)
+
+    fr = build_frames()
+    xs, ys, zs = (smooth([f[k] for f in fr], 13) for k in range(3))
+    yaws = smooth(unwrap([f[3] for f in fr]), 21)
+    pitches = smooth([f[4] for f in fr], 21)
+    lenses = smooth([f[5] for f in fr], 25)
+
+    cam.animation_data_create()
+    act = bpy.data.actions.new("FL_Rundgang")
+    cam.animation_data.action = act
+    # write keys via keyframe_insert (robust across the Blender 5 layered-action API)
+    for i in range(len(fr)):
+        f = i + 1
+        cam.location = (xs[i], ys[i], zs[i])
+        cam.rotation_euler = (math.pi / 2 + pitches[i], 0.0, yaws[i] - math.pi / 2)
+        cd.lens = lenses[i]
+        cam.keyframe_insert("location", frame=f)
+        cam.keyframe_insert("rotation_euler", frame=f)
+        cd.keyframe_insert("lens", frame=f)
+    sc.frame_start, sc.frame_end = 1, len(fr)
+    sc.render.fps = FPS
+    sc.camera = cam
+    return len(fr)
+
+
+def open_entrance_door():
+    """Film only: remove the closed east entrance door panel and put an opened one (swung in)."""
+    import bmesh
+    ob = bpy.data.objects.get("EG_Fenster_Tueren")
+    if ob:
+        tuer = [i for i, m in enumerate(ob.data.materials) if m and m.name == "FL_Tuer"]
+        bm = bmesh.new(); bm.from_mesh(ob.data)
+        dead = [f for f in bm.faces if f.material_index in tuer
+                and f.calc_center_median().x > 14.5 and 6.4 < f.calc_center_median().y < 7.6]
+        bmesh.ops.delete(bm, geom=dead, context="FACES")
+        bm.to_mesh(ob.data); bm.free()
+    c = bpy.data.collections["Innenlicht"]
+    old = bpy.data.objects.get("Film_Haustuer_offen")
+    if old:
+        bpy.data.objects.remove(old)
+    x0, x1, y0, y1, z0, z1 = 13.78, 14.71, 6.52, 6.57, 0.02, 2.14
+    v = [(x, y, z) for z in (z0, z1) for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1))]
+    me = bpy.data.meshes.new("Film_Haustuer_offen")
+    me.from_pydata(v, [], [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)])
+    me.materials.append(bpy.data.materials["FL_Tuer"])
+    c.objects.link(bpy.data.objects.new("Film_Haustuer_offen", me))
+
+
+def main():
+    build_lights()
+    open_entrance_door()
+    n = build_camera()
+    sc = bpy.context.scene
+    sc.render.engine = "BLENDER_EEVEE"
+    sc.eevee.taa_render_samples = 16
+    sc.eevee.shadow_pool_size = "1024"
+    sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 1280, 720, 100
+    sc.render.image_settings.file_format = "PNG"
+    sc.render.filepath = "/Users/tgartner/git/frechen_blender/tmp/film/frame_"
+    return n
+
+
+N_FRAMES = main()
