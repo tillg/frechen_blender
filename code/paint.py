@@ -4,11 +4,11 @@ Run inside Blender: exec(open(".../code/paint.py").read())  – re-running is sa
 
   Fassade      RAL 9010 Reinweiß     Fenster  RAL 9010 Reinweiß
   Fensterläden RAL 5014 Taubenblau (weiße Querbretter)
-  Haustür      RAL 5008 Graublau
+  Türen bleiben Naturholz (Materialien aus build_house.py)
 """
 import bpy, bmesh
 
-RAL = {"9010": (241, 236, 225), "5014": (99, 125, 150), "5008": (43, 58, 68)}
+RAL = {"9010": (241, 236, 225), "5014": (99, 125, 150)}
 
 
 def lin(rgb):
@@ -77,7 +77,6 @@ def main():
     set_color("FL_Putz", RAL["9010"])
     set_color("FL_Rahmen", RAL["9010"])
     set_color("FL_Laden", RAL["5014"])
-    set_color("FL_Tuer", RAL["5008"])
     # shed battens used the shutter material – keep them wood
     shed = bpy.data.objects.get("Schuppen_Holz")
     if shed:

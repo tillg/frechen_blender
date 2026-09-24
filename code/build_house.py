@@ -3,11 +3,12 @@
 Coordinates in metres: origin = outer SW corner of the main house, +X = east, +Y = north, Z = up.
 EG wall segments come from the vector data of "Grundriss Frechenlehen EG.pdf" (gray wall fills);
 OG walls and all heights were measured from the plans/elevations (approx. +-5 cm).
+Details (doors, balconies, cladding, terrace, lamps, eaves) follow the photos in input/.
 
 Run inside Blender (e.g. via the Blender MCP server):  exec(open(".../code/build_house.py").read())
 Re-running replaces the "Haus" collection.
 """
-import bpy, math, os
+import bpy, math, os, random
 from mathutils import Vector
 
 PROJECT = "/Users/tgartner/git/frechen_blender"
@@ -18,6 +19,8 @@ SLOPE, ROOF_T = 0.3635, 0.10            # ~20 deg pitch; thin eave edge as drawn
 EAVE_OH, GABLE_OH = 1.34, 1.49          # overhang at eaves (N/S) and gables (E/W), measured
 Z_EG_TOP, Z_OG, Z_OG_TOP, Z_ATTIC = 2.40, 2.70, 4.90, 5.10
 DOOR_H = 2.0                            # interior door height
+SOFFIT = 0.02                           # board layer under the roof
+SHED_TOP = 2.53                         # shed roof top where it meets the house
 
 
 def roof_top(y):
@@ -29,59 +32,142 @@ def roof_under(y):
 
 
 # ---------------------------------------------------------------- materials
+# rgba: plain colour. wood: (dark, light, grain axis) – procedural grain in object space.
+# speck: (c1, c2, scale) – speckled stone. bump: (scale, strength). "rnd" face attribute
+# (one random value per part) varies brightness so boards and slabs read as single pieces.
+WOOD_OLD = ((0.045, 0.032, 0.024), (0.17, 0.12, 0.085))       # weathered balcony / shed
 MAT_DEF = {
-    "Putz":      (0.93, 0.92, 0.88, 1),
-    "Decke":     (0.80, 0.80, 0.78, 1),
-    "Boden":     (0.62, 0.46, 0.30, 1),
-    "Dach":      (0.17, 0.17, 0.19, 1),
-    "Holz":      (0.36, 0.21, 0.10, 1),
-    "Rahmen":    (0.45, 0.28, 0.14, 1),
-    "Laden":     (0.30, 0.17, 0.08, 1),
-    "Tuer":      (0.28, 0.16, 0.08, 1),
-    "Glas":      (0.70, 0.85, 0.95, 0.25),
-    "Stein":     (0.62, 0.61, 0.58, 1),
-    "Wiese":     (0.24, 0.42, 0.18, 1),
-    "Kachel":    (0.35, 0.47, 0.42, 1),
-    "Kies":      (0.55, 0.52, 0.47, 1),
+    "Putz":       dict(rgba=(0.93, 0.92, 0.88, 1), bump=(45, 0.6)),
+    "Decke":      dict(rgba=(0.80, 0.80, 0.78, 1)),
+    "Boden":      dict(rgba=(0.62, 0.46, 0.30, 1)),
+    "Dach":       dict(rgba=(0.17, 0.17, 0.19, 1)),
+    "Holz":       dict(wood=(*WOOD_OLD, "z")),
+    "Rahmen":     dict(rgba=(0.45, 0.28, 0.14, 1)),
+    "Laden":      dict(rgba=(0.30, 0.17, 0.08, 1)),
+    "Tuer":       dict(wood=((0.07, 0.022, 0.006), (0.36, 0.11, 0.028), "z")),   # stained larch
+    "Innentuer":  dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "z")),    # pine
+    "Kiefer":     dict(wood=((0.30, 0.21, 0.12), (0.55, 0.43, 0.29), "z")),    # limed pine (stair)
+    "Stufe":      dict(wood=((0.20, 0.07, 0.02), (0.42, 0.17, 0.05), "x")),    # worn treads
+    "Laerche":    dict(wood=((0.38, 0.14, 0.040), (0.62, 0.27, 0.085), "z")),   # fresh larch
+    "FichteX":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "x")),     # spruce soffit
+    "FichteY":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "y")),
+    "Glas":       dict(rgba=(0.70, 0.85, 0.95, 0.25), alpha=0.25, rough=0.1),
+    "Milchglas":  dict(rgba=(0.90, 0.90, 0.88, 0.85), alpha=0.85, rough=0.4),
+    "Wiese":      dict(speck=((0.05, 0.12, 0.025), (0.12, 0.20, 0.04), 3)),
+    "Kachel":     dict(rgba=(0.35, 0.47, 0.42, 1)),
+    "Kies":       dict(speck=((0.30, 0.28, 0.25), (0.62, 0.60, 0.56), 150), bump=(150, 0.5)),
+    "Erde":       dict(speck=((0.025, 0.014, 0.008), (0.07, 0.04, 0.022), 60), bump=(60, 0.6)),
+    "Granit":     dict(speck=((0.30, 0.29, 0.26), (0.62, 0.58, 0.50), 220), hue=0.06),
+    "Fuge":       dict(rgba=(0.16, 0.16, 0.15, 1)),
+    "Kiesel":     dict(rgba=(0.52, 0.50, 0.46, 1), rough=0.5),
+    "Eisen":      dict(rgba=(0.018, 0.018, 0.02, 1), metal=0.4, rough=0.45),
+    "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
+    "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
+    "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
+    "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),
 }
 MAT = {}
 
 
 def make_materials():
-    for name, rgba in MAT_DEF.items():
+    for name, d in MAT_DEF.items():
         m = bpy.data.materials.get("FL_" + name) or bpy.data.materials.new("FL_" + name)
         m.use_nodes = True
+        nt = m.node_tree
+        nt.nodes.clear()
+        N = nt.nodes.new
+        L = nt.links.new
+        out = N("ShaderNodeOutputMaterial")
+        bsdf = N("ShaderNodeBsdfPrincipled")
+        bsdf.name = "Principled BSDF"
+        L(bsdf.outputs["BSDF"], out.inputs["Surface"])
+        rgba = d.get("rgba") or (*[(a + b) / 2 for a, b in zip(*(d.get("wood") or d["speck"])[:2])], 1)
         m.diffuse_color = rgba
-        bsdf = m.node_tree.nodes.get("Principled BSDF")
         bsdf.inputs["Base Color"].default_value = rgba
-        bsdf.inputs["Roughness"].default_value = 0.1 if name == "Glas" else 0.8
-        if name == "Glas":
-            bsdf.inputs["Alpha"].default_value = 0.25
+        bsdf.inputs["Roughness"].default_value = d.get("rough", 0.8)
+        bsdf.inputs["Metallic"].default_value = d.get("metal", 0.0)
+        if "alpha" in d:
+            bsdf.inputs["Alpha"].default_value = d["alpha"]
             m.surface_render_method = "BLENDED"
+        if "emit" in d:
+            bsdf.inputs["Emission Color"].default_value = rgba
+            bsdf.inputs["Emission Strength"].default_value = d["emit"]
+        coord = N("ShaderNodeTexCoord")
+        height = None
+        if "wood" in d or "speck" in d:
+            c1, c2 = (d.get("wood") or d["speck"])[:2]
+            mp = N("ShaderNodeMapping")
+            if "wood" in d:
+                ax = d["wood"][2]
+                mp.inputs["Scale"].default_value = [1.5 if a == ax else 60.0 for a in "xyz"]
+            else:
+                mp.inputs["Scale"].default_value = [d["speck"][2]] * 3
+            noise = N("ShaderNodeTexNoise")
+            noise.inputs["Detail"].default_value = 6
+            noise.inputs["Roughness"].default_value = 0.6
+            ramp = N("ShaderNodeValToRGB")
+            ramp.color_ramp.elements[0].position, ramp.color_ramp.elements[1].position = 0.35, 0.68
+            ramp.color_ramp.elements[0].color = (*c1, 1)
+            ramp.color_ramp.elements[1].color = (*c2, 1)
+            attr = N("ShaderNodeAttribute"); attr.attribute_name = "rnd"
+            val = N("ShaderNodeMath"); val.operation = "MULTIPLY_ADD"
+            val.inputs[1].default_value, val.inputs[2].default_value = 0.5, 0.75
+            hue = N("ShaderNodeMath"); hue.operation = "MULTIPLY_ADD"
+            hue.inputs[1].default_value = d.get("hue", 0.0)
+            hue.inputs[2].default_value = 0.5 - d.get("hue", 0.0) / 2
+            hs = N("ShaderNodeHueSaturation")
+            L(coord.outputs["Object"], mp.inputs["Vector"])
+            L(mp.outputs["Vector"], noise.inputs["Vector"])
+            L(noise.outputs["Fac"], ramp.inputs["Fac"])
+            L(ramp.outputs["Color"], hs.inputs["Color"])
+            L(attr.outputs["Fac"], val.inputs[0]); L(val.outputs[0], hs.inputs["Value"])
+            L(attr.outputs["Fac"], hue.inputs[0]); L(hue.outputs[0], hs.inputs["Hue"])
+            L(hs.outputs["Color"], bsdf.inputs["Base Color"])
+            if "wood" in d:
+                height, strength = noise.outputs["Fac"], 0.15
+        if "bump" in d:
+            bn = N("ShaderNodeTexNoise")
+            bn.inputs["Scale"].default_value = d["bump"][0]
+            bn.inputs["Detail"].default_value = 8
+            L(coord.outputs["Object"], bn.inputs["Vector"])
+            height, strength = bn.outputs["Fac"], d["bump"][1]
+        if height:
+            bump = N("ShaderNodeBump")
+            bump.inputs["Strength"].default_value = strength
+            bump.inputs["Distance"].default_value = 0.01
+            L(height, bump.inputs["Height"])
+            L(bump.outputs["Normal"], bsdf.inputs["Normal"])
         MAT[name] = m
 
 
 # ---------------------------------------------------------------- geometry accumulator
-GEO = {}   # (collection, object) -> {"v": [...], "f": [...], "m": [...]}
+GEO = {}      # (collection, object) -> {"v": [...], "f": [...], "m": [...], "r": [...]}
+SMOOTH = set()  # objects shaded smooth
+PIVOT = {}    # object -> origin (for parts that get animated, e.g. the entrance door)
+OPENINGS = []  # exterior wall openings, used by the west cladding
+LEAVES = []    # opened interior door leaves (collection, [corner, corner]) – for clash checks
+GABLE_WIN = []
 
 
-def add(coll, obj, mat, verts, faces):
-    g = GEO.setdefault((coll, obj), {"v": [], "f": [], "m": []})
+def add(coll, obj, mat, verts, faces, rnd=None):
+    g = GEO.setdefault((coll, obj), {"v": [], "f": [], "m": [], "r": []})
     off = len(g["v"])
     g["v"] += verts
+    r = random.random() if rnd is None else rnd
     for f in faces:
         g["f"].append([i + off for i in f])
         g["m"].append(mat)
+        g["r"].append(r)
 
 
-def box(coll, obj, mat, x0, x1, y0, y1, z0, z1):
+def box(coll, obj, mat, x0, x1, y0, y1, z0, z1, rnd=None):
     x0, x1 = sorted((x0, x1)); y0, y1 = sorted((y0, y1)); z0, z1 = sorted((z0, z1))
     if min(x1 - x0, y1 - y0, z1 - z0) < 1e-4:
         return
     v = [(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
          (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)]
     f = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
-    add(coll, obj, mat, v, f)
+    add(coll, obj, mat, v, f, rnd)
 
 
 def prism_x(coll, obj, mat, x0, x1, prof):
@@ -98,13 +184,100 @@ def roof_profile(ya, yb, fb, ft):
     return [(y, fb(y)) for y in ys] + [(y, ft(y)) for y in reversed(ys)]
 
 
+# Local frames: u runs along a wall, t across it, z up. P maps (u, t, z) to world.
+def frame(ax):
+    return (lambda u, t, z: (u, t, z)) if ax == "x" else (lambda u, t, z: (t, u, z))
+
+
+def lbox(coll, obj, mat, P, u0, u1, t0, t1, z0, z1, rnd=None):
+    a, b = P(u0, t0, z0), P(u1, t1, z1)
+    box(coll, obj, mat, a[0], b[0], a[1], b[1], a[2], b[2], rnd)
+
+
+def sweep(coll, obj, mat, P, pairs, t0, t1, rnd=None):
+    """Closed band through a list of ((u, z) bottom, (u, z) top) cross sections, extruded t0..t1.
+    Covers arches (bottom = arc), sloped board tops, scalloped edges and annulus sectors."""
+    if len(pairs) < 2:
+        return
+    v = []
+    for (ub, zb), (ut, zt) in pairs:
+        v += [P(ub, t0, zb), P(ub, t1, zb), P(ut, t0, zt), P(ut, t1, zt)]
+    f = []
+    for i in range(len(pairs) - 1):
+        a, b = 4 * i, 4 * i + 4
+        f += [(a, b, b + 2, a + 2), (a + 1, a + 3, b + 3, b + 1),
+              (a, a + 1, b + 1, b), (a + 2, b + 2, b + 3, a + 3)]
+    e = 4 * (len(pairs) - 1)
+    f += [(0, 2, 3, 1), (e, e + 1, e + 3, e + 2)]
+    add(coll, obj, mat, v, f, rnd)
+
+
+def column(coll, obj, mat, P, u0, u1, zb, zt, t0, t1, rnd=None):
+    """Board between u0..u1 whose bottom/top follow zb(u)/zt(u) (evaluated at both ends)."""
+    sweep(coll, obj, mat, P, [((u, zb(u)), (u, zt(u))) for u in (u0, u1)], t0, t1, rnd)
+
+
+def prism(coll, obj, mat, P, pts, t0, t1, rnd=None):
+    """Extrude a (u, z) polygon (may be concave, e.g. a board with notches) from t0 to t1."""
+    n = len(pts)
+    v = [P(u, t0, z) for u, z in pts] + [P(u, t1, z) for u, z in pts]
+    f = [list(range(n))[::-1], list(range(n, 2 * n))]
+    f += [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+    add(coll, obj, mat, v, f, rnd)
+
+
+def const(c):
+    return lambda u: c
+
+
+def boards(coll, obj, mat, P, u0, u1, zb, zt, t0, t1, bw, holes=(), cuts=(), alt=0.004):
+    """Vertical boards side by side from u0 to u1, bottom/top zb(u)/zt(u), skipping holes.
+
+    holes: (ua, ub, lo(u), hi(u), curved) – the board part between lo and hi is left out.
+    Curved holes are sampled every 2 cm so their outline stays smooth. cuts: extra u values
+    where boards are split (e.g. the ridge, where the top line kinks). Every other board
+    stands `alt` proud on both faces so the joints read as shadow lines."""
+    edges = [u0 + k * bw for k in range(int((u1 - u0) / bw) + 1)] + [u1]
+    edges = sorted(set(round(e, 5) for e in edges if u0 <= e <= u1))
+    for k, (ba, bb) in enumerate(zip(edges[:-1], edges[1:])):
+        if bb - ba < 0.005:
+            continue
+        pts = {ba, bb} | {c for c in cuts if ba < c < bb}
+        for ua, ub, lo, hi, curved in holes:
+            pts |= {p for p in (ua, ub) if ba < p < bb}
+            if curved:
+                n = int((min(bb, ub) - max(ba, ua)) / 0.02)
+                pts |= {max(ba, ua) + (min(bb, ub) - max(ba, ua)) * i / (n + 1) for i in range(1, n + 1)}
+        pts = sorted(pts)
+        r, d = random.random(), alt * (k % 2)
+        for p, q in zip(pts[:-1], pts[1:]):
+            m = (p + q) / 2
+            segs = [(zb, zt)]
+            for ua, ub, lo, hi, _ in holes:
+                if not (ua - 1e-6 <= p and q <= ub + 1e-6):
+                    continue
+                new = []
+                for fb, ft in segs:
+                    if lo(m) > fb(m) + 1e-4:
+                        new.append((fb, (lambda u, ft=ft, lo=lo: min(ft(u), lo(u)))))
+                    if hi(m) < ft(m) - 1e-4:
+                        new.append(((lambda u, fb=fb, hi=hi: max(fb(u), hi(u))), ft))
+                segs = new
+            for fb, ft in segs:
+                if ft(m) - fb(m) > 1e-3:
+                    column(coll, obj, mat, P, p, q, fb, ft, t0 - d, t1 + d, r)
+
+
 # ---------------------------------------------------------------- walls with openings
 def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     """Straight wall (axis-aligned box) with openings.
 
     ops: (a, b, sill, head, kind[, shutters]) along the wall's long axis.
-    kind: W window, FD french door, SL sliding door, D solid door, I interior opening (no fill).
+    kind: W window, FD french door, GD glazed terrace door (larch, 4x2 panes per leaf),
+          D solid door, I opening without fill (filled by a dedicated door builder).
     out: +1 / -1 = side of the thin axis that faces outside (for shutters).
+    Windows / french doors after window_from_outside.jpeg: larch frame, one or two sashes,
+    each divided by glazing bars (windows 2 panes high, french doors 3).
     """
     obj, fo = coll + "_Waende", coll + "_Fenster_Tueren"
     ax = "x" if (x1 - x0) >= (y1 - y0) else "y"
@@ -120,6 +293,9 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     for op in sorted(ops):
         a, b, sill, head, kind = op[:5]
         sh = len(op) > 5 and op[5]
+        if out:
+            OPENINGS.append(dict(ax=ax, face=t0 if out < 0 else t1, a=a, b=b, sill=sill, head=head,
+                                 kind=kind))
         B(mat, cur, a, t0, t1, z0, z1)
         B(mat, a, b, t0, t1, z0, sill)
         B(mat, a, b, t0, t1, head, z1)
@@ -127,18 +303,32 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
         if kind == "I":
             continue
         tm, fd, fw = (t0 + t1) / 2, 0.04, 0.06
-        B("Rahmen", a, a + fw, tm - fd, tm + fd, sill, head, fo)
-        B("Rahmen", b - fw, b, tm - fd, tm + fd, sill, head, fo)
-        B("Rahmen", a, b, tm - fd, tm + fd, head - fw, head, fo)
+        if kind == "GD":
+            glazed_door(B, fo, a, b, sill, head, tm)
+            continue
+        F = "Laerche"
+        B(F, a, a + fw, tm - fd, tm + fd, sill, head, fo)
+        B(F, b - fw, b, tm - fd, tm + fd, sill, head, fo)
+        B(F, a, b, tm - fd, tm + fd, head - fw, head, fo)
         if kind == "D":
             B("Tuer", a + fw, b - fw, tm - 0.025, tm + 0.025, sill, head - fw, fo)
         else:
-            B("Rahmen", a, b, tm - fd, tm + fd, sill, sill + fw, fo)
-            n = 3 if kind == "SL" else (2 if b - a > 0.75 else 1)
-            for k in range(1, n):
-                c = a + (b - a) * k / n
-                B("Rahmen", c - fw / 2, c + fw / 2, tm - fd, tm + fd, sill, head, fo)
-            B("Glas", a + fw, b - fw, tm - 0.005, tm + 0.005, sill + fw, head - fw, fo)
+            B(F, a, b, tm - fd, tm + fd, sill, sill + fw, fo)
+            n = 2 if b - a > 0.75 else 1
+            rows = 3 if head - sill > 1.6 else 2
+            sw, sf, gb = (b - a - 2 * fw) / n, 0.05, 0.03
+            za, zb = sill + fw, head - fw
+            for k in range(n):                                   # sashes
+                sa, sb = a + fw + k * sw, a + fw + (k + 1) * sw
+                B(F, sa, sa + sf, tm - 0.03, tm + 0.03, za, zb, fo)
+                B(F, sb - sf, sb, tm - 0.03, tm + 0.03, za, zb, fo)
+                B(F, sa, sb, tm - 0.03, tm + 0.03, za, za + sf * 1.4, fo)
+                B(F, sa, sb, tm - 0.03, tm + 0.03, zb - sf, zb, fo)
+                g0, g1 = za + sf * 1.4, zb - sf
+                for r in range(1, rows):
+                    zr = g0 + (g1 - g0) * (0.52 if rows == 2 else r / rows)
+                    B(F, sa + sf, sb - sf, tm - 0.02, tm + 0.02, zr - gb / 2, zr + gb / 2, fo)
+                B("Glas", sa + sf, sb - sf, tm - 0.004, tm + 0.004, g0, g1, fo)
         if sh and out:
             w = (b - a) / 2
             ta, tb = (t1, t1 + 0.03) if out > 0 else (t0 - 0.03, t0)
@@ -147,8 +337,186 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     B(mat, cur, u1, t0, t1, z0, z1)
 
 
+def glazed_door(B, fo, a, b, sill, head, tm):
+    """Terrace door after glass_door_to_terrasse.jpg: larch frame, leaves of ~0.95 m (at least
+    two), each with 2 x 4 panes. Also used for the big west windows."""
+    M, fw = "Laerche", 0.07
+    B(M, a, a + fw, tm - 0.045, tm + 0.045, sill, head, fo)
+    B(M, b - fw, b, tm - 0.045, tm + 0.045, sill, head, fo)
+    B(M, a, b, tm - 0.045, tm + 0.045, head - fw, head, fo)
+    B(M, a, b, tm - 0.045, tm + 0.045, sill, sill + 0.03, fo)
+    n = max(2, round((b - a) / 0.95))
+    lw = (b - a - 2 * fw) / n
+    za, zb = sill + 0.03, head - fw
+    for k in range(n):
+        la, lb = a + fw + k * lw, a + fw + (k + 1) * lw
+        st, tr, br = 0.07, 0.07, 0.12
+        B(M, la, la + st, tm - 0.035, tm + 0.035, za, zb, fo)
+        B(M, lb - st, lb, tm - 0.035, tm + 0.035, za, zb, fo)
+        B(M, la, lb, tm - 0.035, tm + 0.035, zb - tr, zb, fo)
+        B(M, la, lb, tm - 0.035, tm + 0.035, za, za + br, fo)
+        ga, gb, g0, g1 = la + st, lb - st, za + br, zb - tr
+        B("Glas", ga, gb, tm - 0.004, tm + 0.004, g0, g1, fo)
+        c = (ga + gb) / 2
+        B(M, c - 0.017, c + 0.017, tm - 0.025, tm + 0.025, g0, g1, fo)
+        for r in (1, 2, 3):
+            zr = g0 + (g1 - g0) * r / 4
+            B(M, ga, gb, tm - 0.025, tm + 0.025, zr - 0.017, zr + 0.017, fo)
+
+
 def interior(coll, x0, x1, y0, y1, doors=(), z0=0.0, z1=Z_EG_TOP, head=DOOR_H):
-    wall(coll, x0, x1, y0, y1, z0, z1, [(a, b, z0, z0 + head, "I") for a, b in doors])
+    """doors: (a, b) = open passage, or (a, b, swing, hinge[, flat]) = opening with an opened
+    door leaf; swing +1/-1 = room side along the thin axis, hinge "a"/"b" = which jamb carries
+    the leaf, flat=False: leaf at 90 deg instead of against the wall (see panel_door)."""
+    wall(coll, x0, x1, y0, y1, z0, z1, [(d[0], d[1], z0, z0 + head, "I") for d in doors])
+    ax = "x" if (x1 - x0) >= (y1 - y0) else "y"
+    t0, t1 = (y0, y1) if ax == "x" else (x0, x1)
+    for d in doors:
+        if len(d) > 2:
+            panel_door(coll, ax, d[0], d[1], t0, t1, z0, z0 + head, *d[2:])
+
+
+# ---------------------------------------------------------------- doors
+def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, mat="Innentuer"):
+    """Interior door after door_inside_1st_floor.jpg: pine, six panels (2 small on top,
+    2 tall, 2 lower), lining + architraves. The leaf is opened fully and lies flat against
+    the room-side wall face next to the hinge jamb, so the walkthrough camera passes freely;
+    flat=False (a room corner is too close for that): opened 90 deg into the room."""
+    P, o, lin, arc, LT = frame(ax), coll + "_Innentueren", 0.025, 0.07, 0.04
+    # thick walls keep a plaster reveal; the frame only lines the room-side 12 cm
+    d = min(t1 - t0, 0.12)
+    la, lb = (t1 - d, t1) if swing > 0 else (t0, t0 + d)
+    for ua, ub in ((a, a + lin), (b - lin, b)):
+        lbox(coll, o, mat, P, ua, ub, la, lb, z0, head)
+    lbox(coll, o, mat, P, a, b, la, lb, head - lin, head)
+    faces = [(t0 - 0.015, t0), (t1, t1 + 0.015)] if d == t1 - t0 else \
+        [(t1, t1 + 0.015)] if swing > 0 else [(t0 - 0.015, t0)]
+    for ta, tb in faces:
+        lbox(coll, o, mat, P, a - arc, a + lin, ta, tb, z0, head + arc)
+        lbox(coll, o, mat, P, b - lin, b + arc, ta, tb, z0, head + arc)
+        lbox(coll, o, mat, P, a - arc, b + arc, ta, tb, head - lin, head + arc)
+    LW, LH = b - a - 2 * lin - 0.006, head - lin - z0 - 0.015
+    tf = t1 if swing > 0 else t0
+    zl, rl = z0 + 0.01, 0.8 + 0.2 * random.random()   # stiles/rails light, panels darker
+    if flat:
+        uh, su = (a, -1) if hinge == "a" else (b, 1)  # leaf runs away from the opening
+        off = 0.017 + LT / 2                          # clear of the architrave
+        L = lambda w, d: (uh + su * w, tf + swing * (off + d))
+    else:
+        uh, su = (a + lin, 1) if hinge == "a" else (b - lin, -1)
+        L = lambda w, d: (uh + su * (d + LT / 2), tf + swing * w)
+
+    def part(w0, w1, d0, d1, za, zb, r=rl):   # leaf-local: w from hinge, d across, z up
+        (ua, ta), (ub, tb) = L(w0, d0), L(w1, d1)
+        lbox(coll, o, mat, P, ua, ub, ta, tb, zl + za, zl + zb, r)
+
+    part(0, LW, -0.012, 0.012, 0, LH, 0.05)                        # core = panel ground
+    LEAVES.append((coll, [P(*L(0, -LT / 2), zl), P(*L(LW, LT / 2), zl + LH)]))
+    rows = [0.091, 0.271, 0.112, 0.31, 0.05, 0.149, 0.046]         # bottom -> top, from the photo
+    s = LH / sum(rows)
+    zs = [0]
+    for r in rows:
+        zs.append(zs[-1] + r * s)
+    st, mu = 0.09 / 0.82 * LW, 0.13 / 0.82 * LW
+    cols = [(st, (LW - mu) / 2), ((LW + mu) / 2, LW - st)]
+    part(0, st, -0.02, 0.02, 0, LH)
+    part(LW - st, LW, -0.02, 0.02, 0, LH)
+    part((LW - mu) / 2, (LW + mu) / 2, -0.02, 0.02, 0, LH)
+    for i in (0, 2, 4, 6):                                         # rails
+        part(st, LW - st, -0.02, 0.02, zs[i], zs[i + 1])
+    for i in (1, 3, 5):                                            # raised fields
+        for wa, wb in cols:
+            part(wa + 0.03, wb - 0.03, -0.016, 0.016, zs[i] + 0.03, zs[i + 1] - 0.03, 0.4)
+
+
+def entrance_door():
+    """Main entrance (east wall) after entrance_door_from_outside.png / main_door_seen_from_inside:
+    round-arched opening with a thick plaster surround, dark stained board door with a small
+    square window and black iron fittings. The leaf is its own object (pivot = hinge) so the
+    film can swing it open."""
+    c, P = "EG", frame("y")
+    a, b, head, t0, t1 = 6.458, 7.507, 2.2, 14.575, W_OUT
+    R, uc, tm, fw = (b - a) / 2, (a + b) / 2, (t0 + t1) / 2, 0.07
+    zs = head - R
+    arc = lambda r, n=32: [(uc - r * math.cos(math.pi * i / n), zs + r * math.sin(math.pi * i / n))
+                           for i in range(n + 1)]
+    # plaster between the rectangular wall opening and the arch
+    sweep(c, "EG_Waende", "Putz", P, [(p, (p[0], head)) for p in arc(R)], t0, t1)
+    # raised plaster surround on the outside face
+    sweep(c, "EG_Waende", "Putz", P, list(zip(arc(R), arc(R + 0.16))), t1, t1 + 0.04)
+    lbox(c, "EG_Waende", "Putz", P, a - 0.16, a, t1, t1 + 0.04, 0, zs)
+    lbox(c, "EG_Waende", "Putz", P, b, b + 0.16, t1, t1 + 0.04, 0, zs)
+    # frame
+    o = "EG_Fenster_Tueren"
+    lbox(c, o, "Tuer", P, a, a + fw, tm - 0.05, tm + 0.05, 0, zs)
+    lbox(c, o, "Tuer", P, b - fw, b, tm - 0.05, tm + 0.05, 0, zs)
+    sweep(c, o, "Tuer", P, list(zip(arc(R - fw), arc(R))), tm - 0.05, tm + 0.05)
+    # leaf: vertical boards clipped by the arch, square window
+    o, ri = "EG_Haustuer", R - fw - 0.004
+    top = lambda u: zs + math.sqrt(max(ri * ri - (u - uc) ** 2, 0))
+    wa, wb, w0, w1 = uc - 0.14, uc + 0.14, 1.46, 1.81
+    boards(c, o, "Tuer", P, a + fw + 0.004, b - fw - 0.004, const(0.01), top,
+           tm - 0.025, tm + 0.025, 0.095, holes=[(wa, wb, const(w0), const(w1), False)], alt=0.01,
+           cuts=[uc - ri + 0.01 * i for i in range(1, 12)] + [uc + ri - 0.01 * i for i in range(1, 12)])
+    lbox(c, o, "Glas", P, wa, wb, tm - 0.003, tm + 0.003, w0, w1)
+    for s in (1, -1):
+        ts = tm + s * 0.025
+        tt = ts + s * 0.012
+        lbox(c, o, "Tuer", P, wa - 0.03, wb + 0.03, ts, tt, w0 - 0.03, w0)       # window moulding
+        lbox(c, o, "Tuer", P, wa - 0.03, wb + 0.03, ts, tt, w1, w1 + 0.03)
+        lbox(c, o, "Tuer", P, wa - 0.03, wa, ts, tt, w0, w1)
+        lbox(c, o, "Tuer", P, wb, wb + 0.03, ts, tt, w0, w1)
+        hu = b - fw - 0.09                                                     # handle side = north
+        lbox(c, o, "Eisen", P, hu - 0.025, hu + 0.025, ts, ts + s * 0.01, 0.92, 1.2)
+        lbox(c, o, "Eisen", P, hu - 0.012, hu + 0.012, ts, ts + s * 0.05, 1.10, 1.125)
+        lbox(c, o, "Eisen", P, hu - 0.13, hu + 0.012, ts + s * 0.04, ts + s * 0.055, 1.10, 1.125)
+    lbox(c, o, "Metall", P, b - fw - 0.11, b - fw - 0.05, tm + 0.025, tm + 0.04, 1.40, 1.45)
+    PIVOT[o] = P(a + fw, tm, 0)
+
+
+def back_door():
+    """Back door (west wall) after back_door_of_the_house.jpg: heavy dark frame, weathered
+    plank leaf with an oval window behind four cream iron bars."""
+    c, P = "EG", frame("y")
+    a, b, head = 7.408, 8.377, 2.3
+    fw, o = 0.09, "EG_Fenster_Tueren"
+    lbox(c, o, "Holz", P, a, a + fw, -0.05, 0.08, 0, head)
+    lbox(c, o, "Holz", P, b - fw, b, -0.05, 0.08, 0, head)
+    lbox(c, o, "Holz", P, a, b, -0.05, 0.08, head - fw, head)
+    o = "EG_Hintertuer"
+    la, lb, lt = a + fw + 0.004, b - fw - 0.004, head - fw - 0.004
+    uc, zc, ea, eb = (la + lb) / 2, 0.82 * lt, 0.19, 0.28
+    half = lambda u: eb * math.sqrt(max(1 - ((u - uc) / ea) ** 2, 0))
+    boards(c, o, "Holz", P, la, lb, const(0.01), const(lt), 0.0, 0.05, 0.135,
+           holes=[(uc - ea, uc + ea, lambda u: zc - half(u), lambda u: zc + half(u), True)])
+    lbox(c, o, "Milchglas", P, uc - ea - 0.02, uc + ea + 0.02, 0.024, 0.026, zc - eb - 0.02, zc + eb + 0.02)
+    ring = [(uc + ea * math.cos(2 * math.pi * i / 48), zc + eb * math.sin(2 * math.pi * i / 48))
+            for i in range(49)]
+    ring2 = [(uc + (ea + 0.035) * math.cos(2 * math.pi * i / 48),
+              zc + (eb + 0.035) * math.sin(2 * math.pi * i / 48)) for i in range(49)]
+    sweep(c, o, "Holz", P, list(zip(ring, ring2)), -0.012, 0.0)
+    for du in (-0.13, -0.045, 0.045, 0.13):                                  # bars
+        lbox(c, o, "Gitter", P, uc + du - 0.015, uc + du + 0.015, -0.022, -0.012,
+             zc - eb - 0.06, zc + eb + 0.06)
+    lbox(c, o, "Eisen", P, la, lb, -0.008, 0.0, 0.97, 1.03)                  # strap
+    lbox(c, o, "Metall", P, la + 0.06, la + 0.14, -0.02, 0.0, 1.02, 1.12)     # lock (south side)
+
+
+def stube_niche():
+    """Door between corridor and Stube after shape_door_into_stuben.jpeg: a deep niche with a
+    shallow segmental arch on the corridor side; the door (frame + leaf, opened into the Stube)
+    sits in the remaining thin wall layer on the Stube side."""
+    c, P = "EG", frame("x")
+    da, db = 11.004, 11.803                  # door opening (from the plan)
+    na, nb = da - 0.20, db + 0.20            # niche, wider than the door
+    y0, ys, y1 = 5.849, 5.97, 6.349          # Stube face / back of niche / corridor face
+    crown, rise = 2.30, 0.28
+    Rn, uc = ((nb - na) ** 2 / 4 + rise ** 2) / (2 * rise), (na + nb) / 2
+    arch = lambda u: crown - Rn + math.sqrt(max(Rn * Rn - (u - uc) ** 2, 0))
+    us = [na + (nb - na) * i / 24 for i in range(25)]
+    sweep(c, "EG_Waende", "Putz", P, [((u, arch(u)), (u, Z_EG_TOP)) for u in us], ys, y1)
+    wall(c, na, nb, y0, ys, 0, Z_EG_TOP, [(da, db, 0, DOOR_H, "I")])
+    panel_door(c, "x", da, db, y0, ys, 0, DOOR_H, -1, "b")
 
 
 # ---------------------------------------------------------------- EG
@@ -161,26 +529,30 @@ def build_eg():
         (12.867, 13.766, 0, 2.0, "FD", 1)], out=+1)
     wall(c, 2.358, W_OUT, 0, 0.415, z0, z1, [
         (3.831, 4.730, 1.03, 2.0, "W", 1), (6.618, 7.917, 1.03, 2.0, "W", 1),
-        (9.785, 13.741, 0, 2.2, "SL")], out=-1)
+        (9.785, 13.741, 0, 2.2, "GD")], out=-1)
     wall(c, 14.575, W_OUT, 6.349, 12.473, z0, z1, [
-        (6.458, 7.507, 0, 2.2, "D"), (8.007, 8.476, 1.2, 2.1, "W"),
+        (6.458, 7.507, 0, 2.2, "I"), (8.007, 8.476, 1.2, 2.1, "W"),
         (10.315, 11.214, 1.0, 2.0, "W", 1)], out=+1)
-    wall(c, 14.351, W_OUT, 0.415, 6.349, z0, z1, [(1.254, 4.880, 0, 2.2, "SL")], out=+1)
+    wall(c, 14.351, W_OUT, 0.415, 6.349, z0, z1, [(1.254, 4.880, 0, 2.2, "GD")], out=+1)
     wall(c, 0, 0.31, 5.145, 12.473, z0, z1, [
-        (5.724, 6.324, 1.57, 2.17, "W"), (7.408, 8.377, 0, 2.3, "D"),
+        (5.724, 6.324, 1.57, 2.17, "W"), (7.408, 8.377, 0, 2.3, "I"),
         (9.460, 10.060, 1.57, 2.17, "W")], out=-1)
     wall(c, 0.31, 2.358, 5.145, 5.475, z0, z1)              # WC south (towards Schuppen)
     wall(c, 2.358, 2.772, 0.415, 5.849, z0, z1)             # west wall Speis/Essen
-    # interior walls
+    entrance_door(); back_door()
+    # interior walls; doors: (a, b, swing, hinge) get an opened leaf, (a, b) stay open passages
     interior(c, 6.024, 6.174, 8.876, 12.473)
     interior(c, 2.657, 14.575, 8.576, 8.876,
-             [(4.406, 5.335), (7.333, 8.282), (9.780, 10.719), (13.517, 14.575)])
-    interior(c, 0.31, 2.358, 8.506, 8.656, [(0.824, 1.853)])
-    interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218)])
-    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506), (9.13, 9.97)])
-    interior(c, 2.358, 14.351, 5.849, 6.349, [(7.045, 7.944), (11.004, 11.803)])
+             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (9.780, 10.719, 1, "b", False),
+              (13.517, 14.575, 1, "a")])
+    interior(c, 0.31, 2.358, 8.506, 8.656, [(0.824, 1.853, 1, "b", False)])
+    interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
+    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (9.13, 9.97, -1, "b", False)])
+    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, -1, "a")])   # Küche door
+    stube_niche()                                                         # 10.804 .. 12.003
+    interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
-    interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580)])
+    interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580, -1, "b")])
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     interior(c, 0.31, 2.358, 10.10, 10.25)                  # new: Bad / WC Großeltern
@@ -189,10 +561,79 @@ def build_eg():
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45)])   # new: Windfang
     # Kachelofen
     box(c, "EG_Kachelofen", "Kachel", 9.06, 10.56, 4.34, 5.849, 0, 1.9)
-    # stair 15 x 18.0/25.5, starts at x=11.19 and rises westwards to OG
-    for i in range(1, 15):
-        box(c, "EG_Treppe", "Holz", 11.19 - i * 0.255, 11.19 - (i - 1) * 0.255,
-            7.56, 8.45, 0, i * 0.18)
+    build_stairs()
+
+
+# ---------------------------------------------------------------- stairs
+ST_X0, ST_Y0, ST_Y1, ST_RUN, ST_RISE, ST_N = 11.19, 7.56, 8.45, 0.255, 0.18, 15
+
+
+def stair_line(x):
+    """Nosing line of the stair (rises westwards from x = ST_X0 to the OG floor)."""
+    return ST_RISE + (ST_X0 - x) * ST_RISE / ST_RUN
+
+
+def baluster(coll, obj, x, y, z0, z1):
+    """Turned baluster (8-sided lathe) after stairs_indoor.png: square-ish ends, rings, bulbs."""
+    prof = [(0, 0.021), (0.10, 0.021), (0.11, 0.013), (0.14, 0.018), (0.17, 0.012), (0.34, 0.017),
+            (0.52, 0.011), (0.58, 0.016), (0.62, 0.011), (0.80, 0.014), (0.86, 0.018),
+            (0.89, 0.021), (1, 0.021)]
+    k = 8
+    rings = [[(x + r * math.cos(2 * math.pi * (j + 0.5) / k), y + r * math.sin(2 * math.pi * (j + 0.5) / k),
+               z0 + (z1 - z0) * s) for j in range(k)] for s, r in prof]
+    v = [p for r in rings for p in r]
+    f = [(i * k + j, i * k + (j + 1) % k, (i + 1) * k + (j + 1) % k, (i + 1) * k + j)
+         for i in range(len(rings) - 1) for j in range(k)]
+    f += [list(range(k))[::-1], list(range((len(rings) - 1) * k, len(rings) * k))]
+    add(coll, obj, "Kiefer", v, f)
+
+
+def build_stairs():
+    """Straight stair (15 x 18.0/25.5, from the plan) after stairs_indoor.png: warm treads and
+    risers, closed stringer on the open (south) side with turned balusters, sloping handrail,
+    plank newel post with a rounded top; the same railing runs round the stairwell in the OG.
+    The space under the stair is closed with plaster."""
+    c, o, g, P = "EG", "EG_Treppe", "EG_Gelaender", frame("x")
+    ys0, ys1 = ST_Y0, ST_Y0 + 0.05                        # stringer on the open side
+    for i in range(1, ST_N):
+        xe = ST_X0 - (i - 1) * ST_RUN                     # riser position of step i
+        box(c, o, "Stufe", xe - ST_RUN, xe + 0.03, ys1, ST_Y1, i * ST_RISE - 0.04, i * ST_RISE)
+        box(c, o, "Stufe", xe - 0.02, xe, ys1, ST_Y1, (i - 1) * ST_RISE, i * ST_RISE - 0.04)
+    xt = ST_X0 - (ST_N - 1) * ST_RUN                      # top: OG floor edge
+    xk = ST_X0 - (0.32 - ST_RISE) * ST_RUN / ST_RISE      # stringer bottom meets the floor
+    bot = lambda x: max(stair_line(x) - 0.32, 0.0)
+    sweep(c, o, "Kiefer", P, [((x, bot(x)), (x, stair_line(x) + 0.10)) for x in (xt, xk, ST_X0 + 0.04)],
+          ys0, ys1)
+    column(c, o, "Putz", P, xt, xk, const(0.0), bot, ys0 + 0.01, ys1 - 0.01)   # closed underside
+    box(c, o, "Putz", xt, xt + 0.05, ys1, ST_Y1, 0, Z_EG_TOP)                    # end wall under the top
+    # balusters, handrail, newel
+    yb, hr = (ys0 + ys1) / 2, 0.90                        # handrail height above the nosing line
+    n = int((ST_X0 - 0.25 - xt) / 0.13)
+    for k in range(n + 1):
+        x = ST_X0 - 0.25 - (ST_X0 - 0.25 - xt) * k / n
+        baluster(c, g, x, yb, stair_line(x) + 0.10, stair_line(x) + hr - 0.04)
+    column(c, g, "Kiefer", P, xt, ST_X0 + 0.02, lambda x: stair_line(x) + hr - 0.04,
+           lambda x: stair_line(x) + hr + 0.02, yb - 0.03, yb + 0.03)
+    np_top = stair_line(ST_X0) + hr + 0.12
+    newel = [(ST_X0 - 0.04, 0.0), (ST_X0 + 0.16, 0.0), (ST_X0 + 0.16, np_top - 0.25)]
+    newel += [(ST_X0 + 0.06 + 0.10 * math.cos(math.pi / 2 * i / 8), np_top - 0.25 + 0.25 * math.sin(math.pi / 2 * i / 8))
+              for i in range(1, 9)]
+    newel += [(ST_X0 - 0.04, np_top - 0.05)]
+    prism(c, g, "Kiefer", P, newel, yb - 0.03, yb + 0.03)
+    # OG: railing on the slab edge of the stairwell, from where the stair handrail has dropped
+    # below the OG floor, and along the east edge
+    hx0, hx1, hy0, hy1 = STAIR_HOLE
+    zf, o = Z_OG + 0.01, "OG_Gelaender"
+    xg = ST_X0 - (zf + 0.10 - hr - ST_RISE) * ST_RUN / ST_RISE
+    box("OG", o, "Kiefer", hx0, hx1, hy0 - 0.045, hy0, Z_EG_TOP - 0.02, zf + 0.10)        # edge boards
+    box("OG", o, "Kiefer", hx1, hx1 + 0.045, hy0 - 0.045, hy1, Z_EG_TOP - 0.02, zf + 0.10)
+    for x0_, y0_, x1_, y1_ in ((xg, hy0 - 0.022, hx1 + 0.022, hy0 - 0.022),
+                               (hx1 + 0.022, hy0 + 0.1, hx1 + 0.022, hy1)):
+        m = int(math.dist((x0_, y0_), (x1_, y1_)) / 0.13)
+        for k in range(m + 1):
+            baluster("OG", o, x0_ + (x1_ - x0_) * k / m, y0_ + (y1_ - y0_) * k / m, zf + 0.10, zf + hr - 0.04)
+    box("OG", o, "Kiefer", xg - 0.03, hx1 + 0.052, hy0 - 0.052, hy0 + 0.008, zf + hr - 0.04, zf + hr + 0.02)
+    box("OG", o, "Kiefer", hx1 - 0.008, hx1 + 0.052, hy0, hy1, zf + hr - 0.04, zf + hr + 0.02)
 
 
 # ---------------------------------------------------------------- OG
@@ -203,8 +644,8 @@ def build_og():
     wall(c, 0, W_OUT, 12.485, D_OUT, z0, z1,
          [fd(3.88, 4.78), fd(6.97, 7.87), fd(10.03, 10.95), fd(12.91, 13.80)], out=+1)
     wall(c, 0, 0.31, 5.12, 12.485, z0, z1, [
-        (11.26, 12.23, z0, 4.66, "FD"), (8.96, 9.95, z0, 4.66, "FD"),
-        (6.77, 7.76, z0, 4.66, "FD"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)
+        (11.26, 12.23, z0, 4.66, "GD"), (8.96, 9.95, z0, 4.66, "GD"),     # like the Stube doors
+        (6.77, 7.76, z0, 4.66, "GD"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)
     wall(c, 0.31, 2.71, 5.12, 5.46, z0, z1)
     wall(c, 2.37, 2.71, 0, 5.12, z0, z1, [(2.03, 2.92, 3.70, 4.70, "W", 1)], out=-1)
     wall(c, 2.71, W_OUT, 0, 0.40, z0, z1,
@@ -217,19 +658,69 @@ def build_og():
     box(c, "OG_Waende", "Putz", 2.37, W_OUT, 0, 0.40, z1, roof_under(0))
     # interior
     H = DOOR_H
-    interior(c, 0.31, 14.575, 8.57, 8.86, [(3.17, 4.15), (7.28, 8.17), (12.30, 13.18)], z0, z1, H)
+    interior(c, 0.31, 14.575, 8.57, 8.86,
+             [(3.17, 4.15, 1, "a"), (7.28, 8.17, 1, "a"), (12.30, 13.18, 1, "a")], z0, z1, H)
     interior(c, 6.05, 6.21, 8.86, 12.485, (), z0, z1)
     interior(c, 9.08, 9.25, 8.86, 12.485, (), z0, z1)
-    interior(c, 2.57, 2.71, 5.46, 8.57, [(7.66, 8.47)], z0, z1, H)
+    interior(c, 2.57, 2.71, 5.46, 8.57, [(7.66, 8.47, -1, "a")], z0, z1, H)
     interior(c, 2.71, 14.35, 6.06, 6.35,
-             [(4.02, 4.87), (7.15, 8.17), (8.76, 9.65), (10.66, 11.51)], z0, z1, H)
-    interior(c, 0.31, 1.57, 6.44, 6.54, [(0.55, 1.35)], z0, z1, H)   # WC 2,26
+             [(4.02, 4.87, -1, "a"), (7.15, 8.17, -1, "a"), (8.76, 9.65, -1, "b", False),
+              (10.66, 11.51, -1, "b")], z0, z1, H)
+    interior(c, 0.31, 1.57, 6.44, 6.54, [(0.55, 1.35, -1, "b", False)], z0, z1, H)   # WC 2,26
     interior(c, 1.57, 1.67, 5.46, 6.44, (), z0, z1)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
     interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
-    interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58)], z0, z1, H)
+    interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58, 1, "a")], z0, z1, H)
     interior(c, 10.0, 10.15, 3.84, 6.06, (), z0, z1)                 # WC 2,30 (new)
     interior(c, 8.72, 10.0, 3.84, 3.98, (), z0, z1)
+
+
+# ---------------------------------------------------------------- west cladding
+def build_cladding():
+    """The west side takes the weather, so the whole west face (EG, OG, gable and the part
+    above the shed) is clad with vertical larch boards, after
+    outside_wall_structure_back_of_the_house.png. Openings get board trims; the small windows
+    get vertical iron bars."""
+    c, o, M, bw, T = "Dach", "Verschalung_West", "Laerche", 0.17, 0.025
+    top = lambda y: roof_under(y) - SOFFIT
+    # (frame, face coordinate, u range, bottom, openings on that face)
+    faces = [
+        ("y", 0.0, 5.145, D_OUT, 0.25),        # main west face
+        ("y", 2.358, 0.0, 5.12, SHED_TOP),     # above the shed
+    ]
+    for ax, face, u0, u1, zb in faces:
+        P = frame(ax)
+        ops = [op for op in OPENINGS if op["ax"] == ax and abs(op["face"] - face) < 0.03
+               and u0 - 0.01 <= op["a"] and op["b"] <= u1 + 0.01]
+        holes = [(op["a"], op["b"], const(op["sill"]), const(op["head"]), False) for op in ops]
+        for x0, ya, yb, zw, woff in GABLE_WIN:
+            if abs(x0 - face) < 0.03:
+                holes.append((ya, yb, const(zw), (lambda u, w=woff: roof_top(u) - w), False))
+                for ua, ub in ((ya - 0.09, ya), (yb, yb + 0.09)):
+                    column(c, o, M, P, ua, ub, const(zw - 0.09),
+                           lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T)
+                lbox(c, o, M, P, ya - 0.09, yb + 0.09, face - T - 0.02, face - T, zw - 0.09, zw)
+                column(c, o, M, P, ya, yb, lambda u, w=woff: roof_top(u) - w,
+                       lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T)
+        boards(c, o, M, P, u0, u1, const(zb), top, face - T, face, bw, holes, cuts=[RIDGE_Y])
+        for op in ops:
+            if op["kind"] == "I":                 # the back door has its own heavy frame
+                continue
+            a, b, s, h = op["a"], op["b"], op["sill"], op["head"]
+            tr = (face - T - 0.02, face - T)
+            lbox(c, o, M, P, a - 0.09, a, *tr, max(s - 0.09, zb), h + 0.09)
+            lbox(c, o, M, P, b, b + 0.09, *tr, max(s - 0.09, zb), h + 0.09)
+            lbox(c, o, M, P, a, b, *tr, h, h + 0.09)
+            if s > zb + 0.1:
+                lbox(c, o, M, P, a - 0.09, b + 0.09, face - T - 0.05, face - T, s - 0.06, s)
+            if op["kind"] == "W":
+                n = max(2, int((b - a) / 0.2))
+                for k in range(1, n + 1):
+                    u = a + (b - a) * k / (n + 1)
+                    lbox(c, o, "Eisen", P, u - 0.007, u + 0.007, face + 0.02, face + 0.034, s, h)
+    # south-facing return above the shed (closes the gap between shed roof and roof)
+    P = frame("x")
+    boards(c, o, M, P, -T, 2.358, const(SHED_TOP), const(top(5.12)), 5.12 - T, 5.12, bw)
 
 
 # ---------------------------------------------------------------- slabs / floors
@@ -267,6 +758,7 @@ def gable(x0, x1, y0, y1, windows=(), woff=0.7):
     edges, cur = [], y0
     for ya, yb, zw in cuts:
         edges.append((cur, ya, None)); edges.append((ya, yb, zw)); cur = yb
+        GABLE_WIN.append((x0, ya, yb, zw, woff))
     edges.append((cur, y1, None))
     top_w = lambda y: roof_top(y) - woff
     xm = (x0 + x1) / 2
@@ -280,12 +772,12 @@ def gable(x0, x1, y0, y1, windows=(), woff=0.7):
             prism_x(c, "Giebel", "Putz", x0, x1, roof_profile(ya, yb, top_w, roof_under))
             prism_x(c, "Giebel_Fenster", "Glas", xm - 0.005, xm + 0.005,
                     roof_profile(ya, yb, lambda y: zw, top_w))
-            prism_x(c, "Giebel_Fenster", "Rahmen", xm - 0.04, xm + 0.04,
+            prism_x(c, "Giebel_Fenster", "Laerche", xm - 0.04, xm + 0.04,
                     roof_profile(ya, yb, lambda y: zw, lambda y: zw + 0.06))
-            prism_x(c, "Giebel_Fenster", "Rahmen", xm - 0.04, xm + 0.04,
+            prism_x(c, "Giebel_Fenster", "Laerche", xm - 0.04, xm + 0.04,
                     roof_profile(ya, yb, lambda y: top_w(y) - 0.06, top_w))
             for yy in (ya, yb - 0.06):
-                prism_x(c, "Giebel_Fenster", "Rahmen", xm - 0.04, xm + 0.04,
+                prism_x(c, "Giebel_Fenster", "Laerche", xm - 0.04, xm + 0.04,
                         roof_profile(yy, yy + 0.06, lambda y: zw, top_w))
 
 
@@ -296,19 +788,218 @@ def build_roof():
     gable(14.575, W_OUT, 0, D_OUT, [(4.26, 6.21, 5.0), (6.90, 8.88, 5.0)], woff=0.78)   # Osten
     gable(0, 0.31, 5.145, D_OUT, [(5.69, 7.66, 5.0), (7.85, 9.83, 5.0)], woff=0.60)     # Westen
     gable(2.358, 2.772, 0, 5.475)                                                     # Westen, Rücksprung
+    build_eaves()
+
+
+def build_eaves():
+    """Visible roof structure after terrasse_and_outside_lamps / outdoor_lamp: spruce soffit
+    boards under the whole roof, rafter tails in the eave overhangs, purlin heads in the
+    gable overhangs."""
+    c, xa, xb = "Dach", -GABLE_OH, W_OUT + GABLE_OH
+    ru = lambda y: roof_under(y)
+    ys = [-EAVE_OH + 0.14 * k for k in range(int((D_OUT + 2 * EAVE_OH) / 0.14) + 1)] + [D_OUT + EAVE_OH]
+    ys = sorted(set(ys + [RIDGE_Y]))
+    for ya, yb in zip(ys[:-1], ys[1:]):
+        prism_x(c, "Dach_Untersicht", "FichteX", xa, xb,
+                [(ya, ru(ya)), (yb, ru(yb)), (yb, ru(yb) - SOFFIT), (ya, ru(ya) - SOFFIT)])
+    n = round((xb - xa - 0.2) / 0.9)
+    for k in range(n + 1):
+        x = xa + 0.1 + (xb - xa - 0.2) * k / n
+        for y0, y1 in ((-EAVE_OH, 0.0), (D_OUT, D_OUT + EAVE_OH)):
+            prism_x(c, "Dach_Sparren", "FichteY", x - 0.06, x + 0.06,
+                    [(y0, ru(y0) - SOFFIT), (y1, ru(y1) - SOFFIT),
+                     (y1, ru(y1) - SOFFIT - 0.16), (y0, ru(y0) - SOFFIT - 0.16)])
+    for y in [RIDGE_Y + s * d for d in (2.1, 4.2, 6.3) for s in (-1, 1)] + [RIDGE_Y]:
+        prof = [(y - 0.08, ru(y - 0.08) - SOFFIT), (y + 0.08, ru(y + 0.08) - SOFFIT),
+                (y + 0.08, ru(y) - SOFFIT - 0.22), (y - 0.08, ru(y) - SOFFIT - 0.22)]
+        prism_x(c, "Dach_Sparren", "FichteX", xa, 0.0 if y >= 5.12 else 2.358, prof)
+        prism_x(c, "Dach_Sparren", "FichteX", W_OUT, xb, prof)
 
 
 # ---------------------------------------------------------------- balconies, terrace, surroundings
-def balcony(name, x0, x1, y0, y1, ztop, sides, ph=0.86):
-    c = "Balkone"
+def baluster_cut(s):
+    """Half width (m) of the baluster-shaped cut-out at relative height s (0 = top, 1 = bottom),
+    after balcony_structure.png: point, small knob, neck, main bulb, neck, drop, lower knob, point."""
+    prof = [(0, 0), (0.05, 0.008), (0.11, 0.017), (0.17, 0.007), (0.30, 0.021), (0.42, 0.007),
+            (0.55, 0.014), (0.70, 0.011), (0.83, 0.019), (0.93, 0.006), (1, 0)]
+    for (s0, w0), (s1, w1) in zip(prof[:-1], prof[1:]):
+        if s <= s1:
+            t = (s - s0) / (s1 - s0)
+            return w0 + (w1 - w0) * (0.5 - 0.5 * math.cos(math.pi * t))
+    return 0.0
+
+
+def balcony(name, x0, x1, y0, y1, ztop, sides, ph=0.95):
+    """After balcony_structure.png: larch boards with a baluster-shaped cut-out at every joint,
+    horizontal rail boards at top and bottom, flat handrail, heavy edge beam over the slab
+    with the joist heads showing underneath, spruce underside."""
+    c, M = "Balkone", "Laerche"
     box(c, name, "Putz", x0, x1, y0, y1, ztop - 0.25, ztop)
-    t, zb, zt = 0.05, ztop - 0.10, ztop + ph
-    # boards stand slightly proud of the slab edge (1 cm N/S, 2 cm E/W) so no two faces are
-    # coplanar – coplanar faces z-fight (brown/white flicker in the film)
-    if "N" in sides: box(c, name, "Holz", x0, x1, y1 - t + 0.01, y1 + 0.01, zb, zt)
-    if "S" in sides: box(c, name, "Holz", x0, x1, y0 - 0.01, y0 + t - 0.01, zb, zt)
-    if "E" in sides: box(c, name, "Holz", x1 - t + 0.02, x1 + 0.02, y0, y1, zb, zt)
-    if "W" in sides: box(c, name, "Holz", x0 - 0.02, x0 + t - 0.02, y0, y1, zb, zt)
+    edge = {"N": ("x", x0, x1, lambda u, d, z: (u, y1 + d, z)),
+            "S": ("x", x0, x1, lambda u, d, z: (u, y0 - d, z)),
+            "E": ("y", y0, y1, lambda u, d, z: (x1 + d, u, z)),
+            "W": ("y", y0, y1, lambda u, d, z: (x0 - d, u, z))}
+    corner = {"N": "WE", "S": "WE", "E": "SN", "W": "SN"}   # side met at u0 / at u1
+    raised = ztop > 0.1
+    zr0 = ztop - (0.02 if raised else 0.0)                   # boards stand on the edge beam
+    zr1 = ztop + ph - 0.045                                  # handrail on top
+    rb = 0.10                                                # height of the rail boards
+    for s in sides:
+        ax, u0, u1, P = edge[s]
+        lo, hi = corner[s]
+        e0, e1 = (0.07 if lo in sides else 0), (0.07 if hi in sides else 0)
+        u0e, u1e = u0 - e0, u1 + e1
+        if raised:
+            lbox(c, name, M, P, u0e, u1e, 0.0, 0.07, ztop - 0.27, zr0)          # edge beam
+        bw = 0.12
+        nb = max(1, round((u1e - u0e) / bw))
+        bw = (u1e - u0e) / nb
+        ct, cb = zr1 - rb - 0.06, zr0 + rb + 0.06                           # cut-out top / bottom
+        ss = [i / 24 for i in range(25)]
+        for j in range(nb):
+            ua, ub = u0e + j * bw, u0e + (j + 1) * bw
+            right = [(ub, zr0)]
+            if j < nb - 1:
+                right += [(ub - baluster_cut(q), ct - (ct - cb) * q) for q in reversed(ss)]
+            right += [(ub, zr1)]
+            left = [(ua, zr1)]
+            if j > 0:
+                left += [(ua + baluster_cut(q), ct - (ct - cb) * q) for q in ss]
+            left += [(ua, zr0)]
+            prism(c, name, M, P, right + left, 0.0, 0.028)
+        lbox(c, name, M, P, u0e, u1e, 0.028, 0.05, zr0, zr0 + rb)                 # bottom rail
+        lbox(c, name, M, P, u0e, u1e, 0.028, 0.05, zr1 - rb, zr1)                 # top rail
+        lbox(c, name, M, P, u0e - 0.03, u1e + 0.03, -0.05, 0.08, zr1, zr1 + 0.045)  # handrail
+    if raised:
+        box(c, name, "FichteX", x0, x1, y0, y1, ztop - 0.27, ztop - 0.25)
+        zj = (ztop - 0.41, ztop - 0.27)
+        if "E" in sides and "W" not in sides:            # east balcony: joists run east-west
+            n = int((y1 - y0) / 1.1)
+            for k in range(n + 1):
+                y = y0 + 0.1 + (y1 - y0 - 0.2) * k / n
+                box(c, name, "FichteX", x0, x1 + 0.12, y - 0.06, y + 0.06, *zj)
+        else:                                             # north / south: joists run north-south
+            n = int((x1 - x0) / 1.1)
+            ya, yb = (y0, y1 + 0.12) if "N" in sides else (y0 - 0.12, y1)
+            for k in range(n + 1):
+                x = x0 + 0.1 + (x1 - x0 - 0.2) * k / n
+                box(c, name, "FichteY", x - 0.06, x + 0.06, ya, yb, *zj)
+
+
+def lamp(x, y, z, nx, ny):
+    """Gooseneck wall lamp after outdoor_lamp.jpeg: black arm, flat enamel shade (white
+    inside), clear bulb with a warm filament."""
+    c, o = "Umgebung", "Aussenleuchten"
+    sx, sy = -ny, nx
+    W = lambda n, s, h: (x + nx * n + sx * s, y + ny * n + sy * s, z + h)
+    ring = lambda n, h, r, k=16: [W(n + r * math.cos(2 * math.pi * i / k), r * math.sin(2 * math.pi * i / k), h)
+                                  for i in range(k)]
+
+    def loft(rings, mat, cap=True):
+        v = [p for r in rings for p in r]
+        k = len(rings[0])
+        f = [(i * k + j, i * k + (j + 1) % k, (i + 1) * k + (j + 1) % k, (i + 1) * k + j)
+             for i in range(len(rings) - 1) for j in range(k)]
+        if cap:
+            f += [list(range(k))[::-1], list(range((len(rings) - 1) * k, len(rings) * k))]
+        add(c, o, mat, v, f)
+
+    # rosette: disc on the wall (axis = wall normal)
+    disc = lambda n: [W(n, 0.05 * math.cos(2 * math.pi * i / 16), 0.05 * math.sin(2 * math.pi * i / 16))
+                      for i in range(16)]
+    loft([disc(0.0), disc(0.03)], "Eisen")
+    # arm: horizontal, quarter bend up, straight up, half bend over, down into the shade
+    path = [(0.03, 0.0), (0.10, 0.0)]
+    path += [(0.10 + 0.12 * math.sin(math.pi / 2 * i / 8), 0.12 - 0.12 * math.cos(math.pi / 2 * i / 8))
+             for i in range(1, 9)]
+    path += [(0.22, 0.20)]
+    path += [(0.30 - 0.08 * math.cos(math.pi * i / 12), 0.20 + 0.08 * math.sin(math.pi * i / 12))
+             for i in range(1, 13)]
+    path += [(0.38, 0.06)]
+    rings = []
+    for i, (n, h) in enumerate(path):
+        pa, pb = path[max(i - 1, 0)], path[min(i + 1, len(path) - 1)]
+        tn, th = pb[0] - pa[0], pb[1] - pa[1]
+        ln = math.hypot(tn, th)
+        nn, nh = -th / ln, tn / ln                      # normal in the (n, h) plane
+        r = 0.012
+        rings.append([W(n + r * math.cos(2 * math.pi * j / 10) * nn, r * math.sin(2 * math.pi * j / 10),
+                        h + r * math.cos(2 * math.pi * j / 10) * nh) for j in range(10)])
+    loft(rings, "Eisen")
+    loft([ring(0.38, 0.06, 0.05), ring(0.38, 0.02, 0.06)], "Eisen")
+    loft([ring(0.38, 0.02, 0.06, 32), ring(0.38, -0.03, 0.18, 32)], "Eisen", cap=False)
+    loft([ring(0.38, 0.016, 0.055, 32), ring(0.38, -0.034, 0.175, 32)], "Emaille", cap=False)
+    bulb = [ring(0.38, -0.02 - 0.075 * (1 - math.cos(math.pi * i / 8)), 0.05 * math.sin(math.pi * i / 8) + 0.001, 12)
+            for i in range(9)]
+    loft(bulb, "Glas")
+    loft([ring(0.38, -0.06, 0.006, 6), ring(0.38, -0.11, 0.006, 6)], "Gluehfaden")
+
+
+def build_terrace():
+    """After terrasse_and_outside_lamps.jpeg: granite slabs of mixed size in rows along the
+    wall, a pebble strip against the wall, gravel beds for the bushes (garden.py plants them)."""
+    c = "Umgebung"
+    tw, strip = 4.0, 0.25
+    bed_e = (W_OUT, W_OUT + strip + 0.6, 7.9, 12.8)          # east, north of the entrance
+    bed_w = (-0.70, -0.025, 8.7, 12.8)                       # west, north of the back door
+    door = (6.3, 7.7)                                        # threshold in front of the entrance
+    box(c, "Terrasse", "Fuge", 0, W_OUT + tw, -tw, 0, -0.10, -0.025)
+    box(c, "Terrasse", "Fuge", W_OUT, W_OUT + tw, 0, D_OUT, -0.10, -0.025)
+    rows = [0.6, 0.45, 0.6, 0.5, 0.6, 0.45, 0.55, 0.6]
+
+    def slabs(axis, r0, r1, l0, l1):
+        """Rows across r (r0 -> r1), slabs of random length along l. axis "x": l = x, r = y."""
+        r, i = r0, 0
+        step = 1 if r1 > r0 else -1
+        while (r1 - r) * step > 0.05:
+            d = min(rows[i % len(rows)], abs(r1 - r))
+            ra, rb = sorted((r, r + step * d))
+            l = l0
+            while l1 - l > 0.05:
+                ln = random.uniform(0.55, 1.05)
+                if l1 - (l + ln) < 0.3:
+                    ln = l1 - l
+                la, lb, l, g = l, l + ln, l + ln, 0.006
+                if axis == "x":
+                    box(c, "Terrasse", "Granit", la + g, lb - g, ra + g, rb - g, -0.05, -0.01)
+                else:
+                    box(c, "Terrasse", "Granit", ra + g, rb - g, la + g, lb - g, -0.05, -0.01)
+            r += step * d
+            i += 1
+
+    slabs("x", -strip, -tw, 0, W_OUT + tw)
+    slabs("x", 0, -strip, W_OUT + strip, W_OUT + tw)                  # SE corner, strip row
+    slabs("y", W_OUT + strip, bed_e[1], 0, bed_e[2])                  # first row stops at the bed
+    slabs("y", bed_e[1], W_OUT + tw, 0, D_OUT)
+    box(c, "Terrasse", "Granit", W_OUT, W_OUT + strip, door[0], door[1], -0.05, -0.01)
+    # pebble strip (gravel bed + pebbles)
+    strips = [(0, W_OUT + strip, -strip, 0), (W_OUT, W_OUT + strip, 0, door[0]),
+              (W_OUT, W_OUT + strip, door[1], bed_e[2])]
+    for x0, x1, y0, y1 in strips:
+        box(c, "Kiesstreifen", "Kies", x0, x1, y0, y1, -0.10, -0.035)
+        n = int((x1 - x0) * (y1 - y0) * 260)
+        for _ in range(n):
+            pebble(random.uniform(x0 + 0.02, x1 - 0.02), random.uniform(y0 + 0.02, y1 - 0.02))
+    for name, (x0, x1, y0, y1) in (("Beet_Ost", bed_e), ("Beet_West", bed_w)):
+        box(c, name, "Kies", x0, x1, y0, y1, -0.10, -0.03)
+
+
+def pebble(x, y):
+    r = random.uniform(0.018, 0.035)
+    sx, sy, sz = r * random.uniform(1.0, 1.5), r * random.uniform(0.8, 1.1), r * random.uniform(0.45, 0.65)
+    a = random.uniform(0, math.pi)
+    ca, sa = math.cos(a), math.sin(a)
+    v = []
+    for i in range(5):                                        # 5 latitude rings x 8
+        th = math.pi * (i + 0.5) / 5
+        for j in range(8):
+            ph = 2 * math.pi * j / 8
+            px, py, pz = sx * math.sin(th) * math.cos(ph), sy * math.sin(th) * math.sin(ph), sz * math.cos(th)
+            v.append((x + px * ca - py * sa, y + px * sa + py * ca, -0.035 + pz * 0.8))
+    f = [(i * 8 + j, i * 8 + (j + 1) % 8, (i + 1) * 8 + (j + 1) % 8, (i + 1) * 8 + j)
+         for i in range(4) for j in range(8)]
+    f += [list(range(8))[::-1], list(range(32, 40))]
+    add("Umgebung", "Kiesel", "Kiesel", v, f)
 
 
 def build_outside():
@@ -316,14 +1007,18 @@ def build_outside():
     balcony("Balkon_OG_Ost", W_OUT, 16.085, 0.95, 11.75, Z_OG, "NES")
     balcony("Balkon_OG_Sued", 9.00, 12.93, -1.10, 0, Z_OG, "SEW")
     balcony("Balkon_EG_Nord", 0.17, 5.86, D_OUT, 14.08, 0.0, "NEW", ph=0.90)
+    build_terrace()
+    for x in (5.55, 8.85, 14.3):                             # south terrace wall
+        lamp(x, 0.0, 1.95, 0, -1)
+    for y in (0.7, 5.7, 9.3):                                # east terrace wall
+        lamp(W_OUT, y, 1.95, 1, 0)
+    for y in (7.05, 8.73):                                   # either side of the back door (west)
+        lamp(-0.025, y, 1.95, -1, 0)
     c = "Umgebung"
-    # L-shaped terrace, 4 m wide, along the full south and east sides
-    tw = 4.0
-    box(c, "Terrasse", "Stein", 0, W_OUT + tw, -tw, 0, -0.10, -0.01)
-    box(c, "Terrasse", "Stein", W_OUT, W_OUT + tw, 0, D_OUT, -0.10, -0.01)
     box(c, "Schuppen", "Kies", 0.10, 2.358, 0.20, 5.145, -0.05, -0.01)
     build_shed()
     box(c, "Gelaende", "Wiese", -20, 35, -25, 35, -0.30, -0.05)
+    SMOOTH.update({"Kiesel", "Aussenleuchten"})
 
 
 def build_shed():
@@ -428,15 +1123,20 @@ def flush_geometry():
     import bmesh
     for (c, name), g in GEO.items():
         me = bpy.data.meshes.new(name)
-        me.from_pydata(g["v"], [], g["f"])
+        piv = PIVOT.get(name, (0, 0, 0))
+        me.from_pydata([(x - piv[0], y - piv[1], z - piv[2]) for x, y, z in g["v"]], [], g["f"])
         mats = sorted(set(g["m"]))
         for m in mats:
             me.materials.append(MAT[m])
         me.polygons.foreach_set("material_index", [mats.index(m) for m in g["m"]])
+        me.attributes.new("rnd", "FLOAT", "FACE").data.foreach_set("value", g["r"])
         bm = bmesh.new(); bm.from_mesh(me)
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         bm.to_mesh(me); bm.free()
+        if name in SMOOTH:
+            me.shade_smooth()
         ob = bpy.data.objects.new(name, me)
+        ob.location = piv
         coll(c).objects.link(ob)
     GEO.clear()
 
@@ -480,9 +1180,12 @@ def setup_scene():
 
 
 def main():
+    random.seed(22)
+    OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); SMOOTH.clear(); LEAVES.clear()
     make_materials()
     reset_collections()
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside()
+    build_cladding()
     flush_geometry()
     build_references()
     setup_scene()
