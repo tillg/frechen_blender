@@ -37,7 +37,7 @@ There is no test suite. Verify changes by rendering stills from a temporary came
 - **Materials.** `MAT_DEF` defines `FL_*` materials: `rgba` for plain colours, `wood` / `speck` for procedural textures in object space, `bump` for plaster. `paint.py` overwrites the base colour of plain materials only: `FL_Putz`, `FL_Rahmen` (white shutter cross boards), `FL_Laden` and `FL_Kachel` (both RAL 5014). Textured materials ignore it.
 - **`rnd` face attribute.** Each `add()` call gets a random value that the shaders use for per-board/per-slab variation. Parts that overlap in the same plane (frame corners, rails vs. stiles) must share one `rnd` value, otherwise they visibly z-fight. `wall()` and the cladding trims already do this.
 - **`PIVOT`** puts an object's origin at a hinge. Only `EG_Haustuer` uses it; `film.py` swings it open by rotating it 90° about z.
-- Coordinates are in metres: origin at the outer SW corner, +X east, +Y north. Constants such as `Z_OG`, `STAIR_HOLE`, `FOOT`, `CORRIDOR_EG/OG` and the stair constants `ST_*` are shared between builders.
+- Coordinates are in metres: origin at the outer SW corner, +X east, +Y north. Constants such as `Z_OG`, `STAIR_HOLE`, `FOOT`, `CORRIDOR_EG` and the stair constants `ST_*` are shared between builders.
 
 ## Other scripts
 
