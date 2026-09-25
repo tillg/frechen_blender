@@ -1,6 +1,7 @@
 """Walkthrough camera: orbit around the house, enter via the east entrance (Windfang),
 Stube -> Küche/Essen -> NW room (end of the corridor, right) -> Musikzimmer -> Arbeitszimmer
--> Windfang -> stairs -> OG Flur -> Schlafen (SE) -> Schlafen/Yoga (NW).
+-> Windfang -> stairs -> OG Flur -> Schlafen (SE, peek into its Bad) -> peek into the NW Bad
+-> Schlafen/Yoga (NW).
 
 Creates camera "FL_Kamera_Rundgang" (baked per-frame keys) and point lights in the
 collection "Innenlicht". Neither touches the "Haus" collection. Re-running replaces both.
@@ -40,9 +41,12 @@ ROUTE = [
     ("stair", (11.19, 8.0, EYE), (7.62, 8.0, Z_OG + EYE), STAIR_SPEED),
     ("path", [(7.62, 8.0), (7.0, 8.0), (7.0, 7.1), (11.1, 7.1), (11.1, 6.2), (12.0, 3.8)],
      Z_OG + EYE, WALK),
-    ("look", [(10.27, 0.0), (15.0, 4.6), (9.0, 3.0)], 2.2),
-    ("path", [(12.0, 3.8), (11.1, 6.2), (11.1, 7.1), (3.66, 7.1), (3.66, 8.7), (4.0, 10.6)],
-     Z_OG + EYE, WALK),
+    ("look", [(10.27, 0.0), (15.0, 4.6)], 2.2),
+    ("path", [(12.0, 3.8), (9.6, 2.2)], Z_OG + EYE, WALK),              # to the en-suite Bad door
+    ("look", [(6.0, 1.8)], 2.2),                                        # peek into the Bad
+    ("path", [(9.6, 2.2), (10.9, 3.4), (11.1, 6.2), (11.1, 7.1), (3.3, 7.3), (3.3, 8.07)], Z_OG + EYE, WALK),
+    ("look", [(1.0, 7.3), (1.0, 8.3)], 2.2),                            # peek into the NW Bad
+    ("path", [(3.3, 8.07), (3.66, 8.3), (3.66, 8.7), (4.0, 10.6)], Z_OG + EYE, WALK),
     ("look", [(4.33, 13.0), (0.0, 9.5), (7.0, 13.0)], 2.2),
     ("hold", 1.5),
 ]
@@ -160,7 +164,7 @@ def build_lights():
         bpy.context.scene.collection.children.link(c)
     for i, (x, y, z) in enumerate(ROOM_LIGHTS):
         ld = bpy.data.lights.new(f"Innenlicht_{i:02d}", "POINT")
-        ld.energy, ld.color, ld.shadow_soft_size = 250, (1.0, 0.9, 0.78), 0.3
+        ld.energy, ld.color, ld.shadow_soft_size = 120, (1.0, 0.9, 0.78), 0.3   # 250 W washed out
         ld.use_shadow = False       # fill light only; 23 shadow casters overflowed the shadow pool -> flicker
         ob = bpy.data.objects.new(ld.name, ld)
         ob.location = (x, y, z + 2.1)
@@ -216,6 +220,7 @@ def main():
     n = build_camera()
     sc = bpy.context.scene
     sc.render.engine = "BLENDER_EEVEE"
+    sc.view_settings.view_transform, sc.view_settings.look = "AgX", "AgX - Punchy"   # richer colours
     sc.eevee.taa_render_samples = 16
     sc.eevee.shadow_pool_size = "1024"
     sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 1280, 720, 100
