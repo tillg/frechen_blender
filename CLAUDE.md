@@ -60,13 +60,13 @@ There is no test suite. Verify changes by rendering stills from a temporary came
 User-wide Claude config (`~/.claude/…`) is switched off for this project, so all instructions, agents, MCP servers and settings live here:
 
 - `CLAUDE.md` (this file): project facts plus the working rules below. The user's `~/.claude/CLAUDE.md` and `RTK.md` are excluded via `claudeMdExcludes`.
-- `.claude/settings.json`: model/effort, permissions, and the switch-offs: all hooks (`disableAllHooks`, also hides the status line), claude.ai connectors, all user and claude.ai-synced plugins, personal skills (`skillOverrides`).
+- `.claude/settings.json`: model/effort, permissions, and the switch-offs: claude.ai connectors, all user and claude.ai-synced plugins, personal skills (`skillOverrides`).
 - `.claude/agents/`: `explorer`, `researcher`, `worker`.
 - `.claude/skills/spec/`: the `spec` plugin (copied from agents1, auto-loaded): `/spec:*` skills and the `/spec-status` pane.
 - `.mcp.json`: `blender` and `playwright` (same names as the user-scope servers, so the project definitions win).
 - `.claude/settings.local.json` (not committed): `syncClaudeAiSkills: false`, which project settings cannot set.
 
-A project file cannot remove user-scope permission allow-lists, `autoMode`, or UI settings. For a fully clean session, start with `claude --setting-sources project,local`.
+A project file cannot remove user-scope hooks and status line (`disableAllHooks` would also disable the spec pane), permission allow-lists, `autoMode`, or UI settings. For a fully clean session, start with `claude --setting-sources project,local`.
 
 ## Working rules
 
