@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus",
+  "effortLevel": "high",
+  "advisorModel": "fable",
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "mcp__blender__*",
+      "mcp__playwright__*"
+    ]
+  },
+
+  "disableAllHooks": true,
+  "disableClaudeAiConnectors": true,
+  "claudeMdExcludes": [
+    "/Users/tgartner/.claude/CLAUDE.md",
+    "/Users/tgartner/.claude/RTK.md"
+  ],
+  "skillOverrides": {
+    "agent-browser": "off",
+    "commit": "off",
+    "dogfood": "off",
+    "electron": "off",
+    "find-skills": "off",
+    "supacode-cli": "off"
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": false,
+    "jdtls-lsp@claude-plugins-official": false,
+    "claude-security@claude-plugins-official": false,
+    "a12-feedback-capture@a12-plugin-marketplace": false,
+    "a12-knowledge-support@a12-plugin-marketplace": false,
+    "a12-modeling-support-2026-06@a12-plugin-marketplace": false,
+    "a12-utilities@a12-plugin-marketplace": false,
+    "a12-project-setup@a12-plugin-marketplace": false,
+    "a12-solution-architect@a12-plugin-marketplace": false,
+    "a12-test-data@a12-plugin-marketplace": false,
+    "a12-atlassian-support@a12-plugin-marketplace-mgm-internal": false,
+    "a12-knowledge-support-internal@a12-plugin-marketplace-mgm-internal": false,
+    "a12-sources@a12-plugin-marketplace-mgm-internal": false,
+    "sales@synced": false,
+    "pdf-viewer@synced": false,
+    "design@synced": false,
+    "engineering@synced": false,
+    "legal@synced": false,
+    "product-management@synced": false,
+    "productivity@synced": false,
+    "marketing@synced": false,
+    "enterprise-search@synced": false
+  }
+}

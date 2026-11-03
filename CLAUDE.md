@@ -54,3 +54,54 @@ There is no test suite. Verify changes by rendering stills from a temporary came
   - Stair: 15 risers at 18.0/25.5 need 3.57 m of run, more than the plan draws ("Treppe wird verschoben"). The OG stairwell opening confirms the full length.
   - To map world coordinates to plan pixels, use the page transform in `build_references()` (1:100, 28.3465 pt/m).
 - **Render look.** EEVEE with the AgX view transform washes out strong emission and bright saturated colours. Keep emission strengths low (the stove fire uses 1.2).
+
+## Claude config: everything comes from this repo
+
+User-wide Claude config (`~/.claude/…`) is switched off for this project, so all instructions, agents, MCP servers and settings live here:
+
+- `CLAUDE.md` (this file): project facts plus the working rules below. The user's `~/.claude/CLAUDE.md` and `RTK.md` are excluded via `claudeMdExcludes`.
+- `.claude/settings.json`: model/effort, permissions, and the switch-offs: all hooks (`disableAllHooks`, also hides the status line), claude.ai connectors, all user and claude.ai-synced plugins, personal skills (`skillOverrides`).
+- `.claude/agents/`: `explorer`, `researcher`, `worker`.
+- `.claude/skills/spec/`: the `spec` plugin (copied from agents1, auto-loaded): `/spec:*` skills and the `/spec-status` pane.
+- `.mcp.json`: `blender` and `playwright` (same names as the user-scope servers, so the project definitions win).
+- `.claude/settings.local.json` (not committed): `syncClaudeAiSkills: false`, which project settings cannot set.
+
+A project file cannot remove user-scope permission allow-lists, `autoMode`, or UI settings. For a fully clean session, start with `claude --setting-sources project,local`.
+
+## Working rules
+
+- **Subagents first** for search-heavy, parallelizable or multi-file work.
+- **Never mock** anything without explicit permission. **Never make tests pass by changing/removing them** without explicit permission.
+- **Never create or switch branches** without explicit permission. Git worktrees go in `.worktrees/`.
+- **Verify before claiming done** (here: render stills, see "Running"). "Looks right" is not done.
+- **Be extremely concise when reporting.** Sacrifice grammar for concision.
+- **Consult the advisor** before a large plan, when an error repeats, and before calling a long task done.
+- **Think before coding.** State assumptions as you go; name competing interpretations when they change the outcome. Stop and ask only at a truly ambiguous, costly-to-reverse fork; otherwise proceed and surface tradeoffs in the response.
+- **Simplicity first.** Minimum code that solves the problem; no speculative features, abstractions or configurability.
+- **Surgical changes.** Touch only what the request requires, match the file's style. Remove what your change orphaned; mention (don't delete) pre-existing dead code. Keep `README.md` in sync on user-visible changes.
+- **Goal-driven.** State multi-step work as `step → verify` pairs and loop until each verify passes.
+- **Web apps (three.js viewer):** test with the Playwright MCP before calling it done: start the dev server in the background, `open` it, verify it responds. Never report a visual change as working without having seen it in a screenshot: zoom on the changed spot, check edges/last row/outer column too, use `scale:"css"` (1×) for fine lines, and say what exactly was checked. Reproduce a user-reported glitch before fixing it. Give the user an `http://localhost` URL (fresh port/query) to reload, not `file://`. Artifacts go to `tmp/`.
+- **Long-running processes (>~30 s, e.g. the film render):** tee to `tmp/<name>-$(date +%Y%m%d-%H%M%S).log`, `open` the log, run in the background, check at least every 10 min; no progress for ~10 min → treat as stuck.
+- **ETAs** are absolute, Europe/Berlin, `YYYY-MM-DD HH:MM`.
+- **Diagrams:** compact ASCII in chat; important ones as Mermaid in `docs/diagrams/<name>.mmd` (plus `.svg` when a visual diagram is asked for).
+
+## Spec-driven workflow
+
+Every non-trivial change goes through the `spec` plugin (`.claude/skills/spec/`):
+
+```
+propose → [grill | iterate] → apply → adversarial-code-review → archive
+small change:  tweak
+```
+
+- Start reading at `specs/README.md`; `specs/system/` is the truth about the model today,
+  `specs/architecture/index.md` lists the binding ADRs (cite them by full `ADR-NNN-HHHH` id).
+- `/spec:overview` shows where every open change stands; the `/spec-status` pane shows it live.
+- The plugin was written for an A12 project: ignore its A12/gradle parts (`reference/a12.md`,
+  "A12 impact" sections, `gradle` verify steps). Here "verify" means rendering stills (see "Running").
+- Choices made while nobody was there to ask go into `DECISIONS.md`
+  (`.claude/skills/spec/reference/decisions.md`).
+
+Working principles of the workflow:
+
+@.claude/skills/spec/reference/principles.md

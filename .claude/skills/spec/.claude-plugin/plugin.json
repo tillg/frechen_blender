@@ -1,0 +1,8 @@
+{
+  "name": "spec",
+  "version": "0.1.0",
+  "description": "Spec-driven workflow for agents12 (A12): propose, iterate, grill, apply test-first, tweak, adversarial review, archive, overview — plus a status pane",
+  "author": { "name": "agents12 team" },
+  "license": "EUPL-1.2",
+  "types": "./types/index.d.ts"
+}
