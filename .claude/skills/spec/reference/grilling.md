@@ -36,8 +36,8 @@ user for it. Don't block on it: only the questions downstream of a running looku
 The session is done when the frontier is empty: every branch visited, nothing silently assumed.
 Don't act on it until the user confirms the shared understanding.
 
-Start the first round from what the artifacts leave open, hedge on, or contradict; add the A12
-seeds from `a12.md` where the change touches models, engines, authorization or data.
+Start the first round from what the artifacts leave open, hedge on, or contradict; add the
+grill seeds from `project.md` where the change touches the build, the film or the viewer.
 
 ## Keeping the model sharp (during the interview)
 

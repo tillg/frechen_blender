@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Change, Git, Stack, Step, Workflow } from '../types'
+import type { Change, Git, Step, Workflow } from '../types'
 
 // Skeleton after w12-free's tools/claude-mods/w12-mission-control; the state
 // model is this project's spec workflow (specs/changes/<name>/ frontmatter).
@@ -10,9 +10,7 @@ const DIR = 'specs/changes'
 const REFRESH_MS = 60_000
 const TWEAK = 'tweak: side lane for small changes (no change dir)'
 const NONE = 'No active change — /spec:propose to start'
-// The Bitbucket pre-receive hook's branch rule (CLAUDE.md, Git).
-const BRANCH_OK = /^(main|development|(feature|bugfix|hotfix)\/.+|release\/\d+\.\d+)$/
-const EMPTY: Workflow = { others: [], stacks: [], unreadable: false, updatedAt: 0 }
+const EMPTY: Workflow = { others: [], unreadable: false, updatedAt: 0 }
 // Change the tag when a field of the workflow changes.
 const workflowRef = atom({ plugin: 'spec', key: 'workflow' } as const, EMPTY, { shape: 'workflow-3' })
 
@@ -123,66 +121,18 @@ async function otherChanges($: EngineInterface, ours: string): Promise<string[]>
   return [...new Set(asked.filter((_, i) => found[i] && !found[i].endsWith(' missing')).map(r => r.dir))].sort()
 }
 
-// Dev stacks (specs/system/dev-stacks.md): ports 84<n><role>. A stack is found by its listening ports; its
-// checkout by the working dir of its client or server process, its branch by tmp/stack/branch there.
-const STACK_PORT = /:84(\d)(\d)$/
-
-async function readStacks($: EngineInterface): Promise<Stack[]> {
-  const run = async (argv: string[]) => {
-    const r = await $.process.run(argv)
-    return r.exitCode === 0 ? r.stdout : ''
-  }
-  const byNo = new Map<number, { roles: Set<number>; pids: Set<string> }>()
-  let pid = ''
-  for (const l of (await run(['lsof', '-nP', '-iTCP', '-sTCP:LISTEN', '-Fpn'])).split('\n')) {
-    if (l.startsWith('p')) pid = l.slice(1)
-    const m = l.startsWith('n') ? l.match(STACK_PORT) : null
-    if (!m) continue
-    const [n, role] = [Number(m[1]), Number(m[2])]
-    const s = byNo.get(n) ?? { roles: new Set(), pids: new Set() }
-    s.roles.add(role)
-    if (role === 1 || role === 2) s.pids.add(pid)
-    byNo.set(n, s)
-  }
-  const ours = Number((await $.fs.read('.env').catch(() => '')).match(/^STACK_NO=(\d)$/m)?.[1] ?? NaN)
-  if (!isNaN(ours) && !byNo.has(ours)) byNo.set(ours, { roles: new Set(), pids: new Set() })
-
-  const pids = [...byNo.values()].flatMap(s => [...s.pids])
-  const cwdOf = new Map<string, string>()
-  if (pids.length) {
-    let p = ''
-    for (const l of (await run(['lsof', '-a', '-d', 'cwd', '-p', pids.join(','), '-Fpn'])).split('\n')) {
-      if (l.startsWith('p')) p = l.slice(1)
-      else if (l.startsWith('n')) cwdOf.set(p, l.slice(1))
-    }
-  }
-  const branchOf = async (cwd: string) => {
-    const root = (await run(['git', '-C', cwd, 'rev-parse', '--show-toplevel'])).trim()
-    if (!root) return undefined
-    const started = (await $.fs.read(`${root}/tmp/stack/branch`).catch(() => '')).trim()
-    return started || (await run(['git', '-C', root, 'branch', '--show-current'])).trim() || undefined
-  }
-  const stacks: Stack[] = []
-  for (const [n, s] of [...byNo].sort(([a], [b]) => a - b)) {
-    const cwd = [...s.pids].map(p => cwdOf.get(p)).find(Boolean)
-    stacks.push({ n, roles: [...s.roles].sort(), branch: cwd ? await branchOf(cwd) : undefined, ours: n === ours })
-  }
-  return stacks
-}
-
 async function collect($: EngineInterface): Promise<Workflow> {
   const updatedAt = Date.now()
   const g = await readGit($).catch(() => undefined)
   const name = g?.branch.split('/').pop() ?? ''
   const others = await otherChanges($, name).catch(() => [])
-  const stacks = await readStacks($).catch(() => [])
   try {
     const dirs = (await $.fs.exists(DIR)) ? await $.fs.list(DIR) : []
     const match = dirs.find(d => d.kind === 'dir' && sameName(d.name, name))
     const ours = match ? await readChange($, match.name) : undefined
-    return { ours, others, git: g, stacks, unreadable: false, updatedAt }
+    return { ours, others, git: g, unreadable: false, updatedAt }
   } catch {
-    return { others, git: g, stacks, unreadable: true, updatedAt }
+    return { others, git: g, unreadable: true, updatedAt }
   }
 }
 
@@ -233,28 +183,17 @@ function gitLines(g: Git): string[] {
     `  ${g.branch}  ·  ${sync}`,
     ...(g.mainRef ? [`  vs ${g.mainRef}:  ${g.mainAhead} ahead, ${g.mainBehind} behind`] : []),
     `  ${tree.length ? tree.join(' · ') : 'clean'}`,
-    ...(BRANCH_OK.test(g.branch) ? [] : ['  ⚠ Bitbucket rejects this branch name: feature/…, bugfix/…, hotfix/…']),
   ]
 }
 
-// running: client, server and Keycloak listen; partial: some port listens; down: none.
-const stackStatus = (s: Stack) =>
-  [1, 2, 9].every(r => s.roles.includes(r)) ? 'running' : s.roles.length ? 'partial' : 'down'
-const appUrl = (s: Stack) => (s.roles.includes(1) ? `http://localhost:84${s.n}1` : undefined)
-const stackText = (s: Stack) =>
-  `  ${s.n}  ${stackStatus(s).padEnd(7)}  ${s.branch ?? '?'}${s.ours ? '  (this checkout)' : ''}`
-
-// The picture as titled sections: our change, the other changes, git, stacks.
-function sections(w: Workflow): { title: string; rows: { kind: string; text: string; href?: string }[] }[] {
+// The picture as titled sections: our change, the other changes, git.
+function sections(w: Workflow): { title: string; rows: { kind: string; text: string }[] }[] {
   const ours = w.ours
     ? { title: `${w.ours.name}  ·  ${w.ours.status}`, rows: rowsOf(w.ours) }
     : { title: w.git?.branch ? NONE.replace('change', `change on ${w.git.branch}`) : NONE, rows: [] }
   const others = { title: 'Other changes', rows: w.others.map(n => ({ kind: 'todo', text: `  ${n}` })) }
   const git = w.git ? [{ title: 'Git', rows: gitLines(w.git).map(text => ({ kind: 'todo', text })) }] : []
-  const stacks = (w.stacks ?? []).length
-    ? [{ title: 'Stacks', rows: w.stacks.map(s => ({ kind: 'stack', text: stackText(s), href: appUrl(s) })) }]
-    : []
-  return [ours, ...(w.others.length ? [others] : []), ...git, ...stacks]
+  return [ours, ...(w.others.length ? [others] : []), ...git]
 }
 
 /** The command's text answer: the same picture as the pane. */
@@ -263,7 +202,7 @@ function summaryText(w: Workflow): string {
   return sections(w)
     .flatMap((s, i) => [
       s.title,
-      ...s.rows.map(r => (r.href ? `${r.text}  ${r.href}` : r.text)),
+      ...s.rows.map(r => r.text),
       ...(i === 0 ? [TWEAK] : []),
       '',
     ])
@@ -327,7 +266,7 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Box, Text, Link } = $.ui.resolve(e)
+    const { Box, Text } = $.ui.resolve(e)
     const w = await read($, workflowRef)
     const cols = Math.max(10, e.props.bodyColumns)
     const room = Math.max(2, (e.viewport?.rows ?? 24) - 4)
@@ -345,14 +284,7 @@ export const register: Register = on => {
           return (
             <Box flexDirection="column" marginBottom={1}>
               <Text bold>{fit(s.title)}</Text>
-              {rows.slice(0, cut).map(r =>
-                r.href ? (
-                  <Box flexDirection="row">
-                    <Text>{fit(r.text)}</Text>
-                    <Text>{'  '}</Text>
-                    <Link href={r.href} label="app" />
-                  </Box>
-                ) : (
+              {rows.slice(0, cut).map(r => (
                 <Text
                   bold={r.kind === 'current'}
                   color={r.kind === 'current' ? 'success' : undefined}
@@ -360,8 +292,7 @@ export const register: Register = on => {
                 >
                   {fit(r.text)}
                 </Text>
-                ),
-              )}
+              ))}
               {cut < rows.length && <Text dimColor>{fit(`  +${rows.length - cut} more`)}</Text>}
               {i === 0 && <Text dimColor>{fit(TWEAK)}</Text>}
             </Box>

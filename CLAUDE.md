@@ -97,8 +97,8 @@ small change:  tweak
 - Start reading at `specs/README.md`; `specs/system/` is the truth about the model today,
   `specs/architecture/index.md` lists the binding ADRs (cite them by full `ADR-NNN-HHHH` id).
 - `/spec:overview` shows where every open change stands; the `/spec-status` pane shows it live.
-- The plugin was written for an A12 project: ignore its A12/gradle parts (`reference/a12.md`,
-  "A12 impact" sections, `gradle` verify steps). Here "verify" means rendering stills (see "Running").
+- Project commands and step kinds (`[python]`, `[blender]`, `[web]`):
+  `.claude/skills/spec/reference/project.md`.
 - Choices made while nobody was there to ask go into `DECISIONS.md`
   (`.claude/skills/spec/reference/decisions.md`).
 

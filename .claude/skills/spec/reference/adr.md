@@ -8,7 +8,7 @@ spec layout; skills that write ADRs read this file first.
 ```
 specs/architecture/
   index.md                       generated — scripts/gen-adr-index.sh, never edited by hand
-  adr-001-kqzt-keycloak-as-idp.md  live: status proposed | accepted
+  adr-001-kqzt-shared-python-core.md  live: status proposed | accepted
   archive/                       status superseded | rejected — history, not read by default
 ```
 
@@ -23,7 +23,7 @@ hash, so two branches that pick the same number coexist after a merge without re
 ---
 type: ADR
 id: ADR-001-KQZT
-title: Keycloak as identity provider
+title: One Python core for Blender and the web viewer
 description: One sentence stating the decision — feeds the generated index.
 status: proposed
 date: 2026-10-28
@@ -60,10 +60,10 @@ All three must hold — otherwise it is a row in the change's `## Key decisions`
 2. **Surprising without context** — a future reader would ask "why on earth?".
 3. **A real trade-off** — there were genuine alternatives, picked for specific reasons.
 
-Qualifies: architectural shape, integration patterns, technology with lock-in (IdP, database,
-message bus), boundary and ownership decisions, deliberate deviations from the obvious A12 path
-(e.g. a rule in a listener instead of the model, a custom component instead of an engine), constraints
-invisible in the code. Doesn't: a single model's field layout, an endpoint's DTO, a naming choice —
+Qualifies: architectural shape, integration patterns, technology with lock-in (renderer, file
+format, framework), boundary and ownership decisions, deliberate deviations from the obvious path
+(e.g. geometry built by hand instead of with `bpy.ops`), constraints
+invisible in the code. Doesn't: a single builder's dimensions, a material's colour, a naming choice —
 those are Key-decisions rows or just the spec.
 
 Before proposing an ADR, read `specs/architecture/index.md`: a change that contradicts a live ADR is

@@ -1,5 +1,5 @@
 ---
-description: Implement a change's plan test-first, step by step — red → green → refactor → verify → tick — with the A12 helpers per step kind
+description: Implement a change's plan test-first, step by step — red → green → refactor → verify → tick — with the checks per step kind
 disable-model-invocation: true
 argument-hint: "[change-name]"
 ---
@@ -8,7 +8,7 @@ Implement the plan of a change, test-first: for every step the test is written a
 before the code, and the step is ticked only when its `Verify:` and the full suite pass.
 
 **Read first**: `.claude/skills/spec/reference/plan.md` (the cycle and the step kinds),
-`principles.md` (surgical changes), `a12.md` (commands and helpers), `frontmatter.md`.
+`principles.md` (surgical changes), `project.md` (commands), `frontmatter.md`.
 
 **Input**: optionally a change name. Otherwise infer from the conversation; auto-select if exactly
 one change in `specs/changes/` is `proposed`/`applying`; else **AskUserQuestion**. Unattended →
@@ -25,8 +25,8 @@ pick and log (`decisions.md`). Announce "Using change: <name>" and how to overri
    and stop. Steps lacking `[kind]`, `Test first:` or `Verify:` → derive them from the step and
    the architecture, write them into `plan.md` first, and say so.
 
-3. **Baseline**: run the suites the plan's kinds need (`a12.md`: `gradle test`,
-   `cd client && npm run compile`, model validation) once before the first step, so a red baseline
+3. **Baseline**: run the suites the plan's kinds need (`project.md`: `python3 -m pytest -q`,
+   a still render, `cd web && npm test`) once before the first step, so a red baseline
    isn't mistaken for your breakage. Red baseline → show it and ask (**AskUserQuestion**):
    "Continue — done means no *new* failures" / "Stop". No harness for a kind the plan needs → the
    first step must set it up; add it to `plan.md` if missing.
@@ -45,14 +45,12 @@ pick and log (`decisions.md`). Announce "Using change: <name>" and how to overri
      If the step undoes a `reverted` decision in `DECISIONS.md`, append `Undone in <commit or
      "working tree">.` to it.
 
-   **Per kind** (`a12.md`):
-   - `[model]` — use `model-a12-entities` when available (else edit JSON by hand after an existing
-     model); Verify with `validate-a12-models` when available (else `gradle :import:build`); run
-     `repair-a12-models` on errors; expect the modelling-feedback prompt after validation.
-     Hot-deploy with `deploy-a12-models` when a running server should pick it up.
-   - `[server]` — JUnit under `server/app/src/test/java`; `gradle test`.
-   - `[client]` — Vitest under `client/src/tests` (once the harness exists); `npm run compile`.
-   - `[e2e]` — Playwright; needs the running stack (`README.md` Quickstart).
+   **Per kind** (`project.md`):
+   - `[python]` — pytest under `tests/`; `python3 -m pytest -q`.
+   - `[blender]` — run the scripts via the Blender MCP server in the order of `CLAUDE.md` ›
+     Running; render a still from a temporary camera to `tmp/details/` and read it (then remove the
+     camera and restore `scene.camera`); film route changes also need the camera clearance check.
+   - `[web]` — `cd web && npm test && npx playwright test`; read the screenshots at 1×.
    - `[docs]`/`[config]` — the mechanical check named in `Verify:`.
 
    When every step is `[x]` and the full suite is green, set `status: applied` on every file.
@@ -71,10 +69,10 @@ pick and log (`decisions.md`). Announce "Using change: <name>" and how to overri
 ```
 ## Implementing: <name>
 
-Step 3/7 [server]: <step>
-✗ Red: PersonValidationTest › rejectsMissingLastName fails — no validator (as planned)
+Step 3/7 [python]: <step>
+✗ Red: test_core › gable windows are recorded fails — list stays empty (as planned)
 ✓ Green: passes
-✓ Verify: gradle test — green
+✓ Verify: python3 -m pytest -q — green
 ✓ Step complete
 ```
 

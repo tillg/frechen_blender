@@ -6,7 +6,7 @@ argument-hint: "[change-name]"
 
 Archive a completed change: update the truth pages and ADRs, commit the work, then clean up.
 
-**Read first**: `.claude/skills/spec/reference/frontmatter.md`, `adr.md`, `decisions.md`, `a12.md`.
+**Read first**: `.claude/skills/spec/reference/frontmatter.md`, `adr.md`, `decisions.md`, `project.md`.
 
 **Input**: optionally a change name. Otherwise list `specs/changes/` and **AskUserQuestion** — never
 auto-select here.
@@ -19,7 +19,7 @@ auto-select here.
    b. `plan.md`: unticked steps? → warn with the count, ask to continue.
    c. `review.md` present? Missing → recommend `/spec:adversarial-code-review` first; continue only
       on explicit confirmation. CRITICAL/HIGH findings in it not marked fixed or accepted → same.
-   d. **Run the tests**: the full suites for the plan's kinds (`a12.md`) and every `Verify:` in
+   d. **Run the tests**: the full suites for the plan's kinds (`project.md`) and every `Verify:` in
       `plan.md`; model validation if models changed. Show the result. Red → recommend fixing via
       `/spec:apply`; continue only on an explicit "archive anyway".
    e. **Decisions gate** (blocks): if `DECISIONS.md` exists, run the review flow of `decisions.md`
@@ -29,8 +29,7 @@ auto-select here.
 
 2. **Update the system description.** Read the change's artifacts and every `specs/system/*.md`;
    update **every** page whose truth changed — `domain.md` (concepts, vocabulary), `architecture.md`
-   (components, interactions, Key decisions rows), `functional.md` (features, journeys, roles),
-   `models.md` (model inventory: every model file added or changed). Present tense, in place,
+   (components, interactions, Key decisions rows), `functional.md` (features, scripts, film). Present tense, in place,
    replace rather than append, no history, no change name in the prose. Mermaid diagrams updated.
    Never copy `feature`, `status`, `order` into system files; `edited` = today on each touched file.
    The goal: afterwards `specs/system/` fully reflects the system; nothing stays only in the change.

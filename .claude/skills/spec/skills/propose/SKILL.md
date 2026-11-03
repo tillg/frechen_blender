@@ -1,5 +1,5 @@
 ---
-description: Propose a new change — create specs/changes/<name>/ with proposal, domain, architecture (A12 impact, key decisions) and a test-first plan
+description: Propose a new change — create specs/changes/<name>/ with proposal, domain, architecture (impact, key decisions) and a test-first plan
 disable-model-invocation: true
 argument-hint: "[change-name or description]"
 ---
@@ -8,7 +8,7 @@ Propose a new change: create `specs/changes/<name>/` and its four artifacts in o
 ready to implement, the user runs `/spec:apply`.
 
 **Read first** (all under `.claude/skills/spec/reference/`): `frontmatter.md`, `plan.md`,
-`a12.md`, `adr.md`, `principles.md`.
+`project.md`, `adr.md`, `principles.md`.
 
 **Input**: the argument is a kebab-case change name, or a description of what to build. Nothing
 given → **AskUserQuestion** (open-ended): "What change do you want to work on?" Derive a kebab-case
@@ -27,12 +27,9 @@ name from the description. Do not proceed without understanding what the user wa
    follow `../archive/SKILL.md` and come back) / "Stop here" / "Continue anyway". Unattended:
    continue and log it (`decisions.md`).
 
-3. **Ground it.** Read `specs/system/domain.md`, `architecture.md`, `functional.md`, `models.md`
-   and `specs/architecture/index.md` (live ADRs bind the proposal). Read the code and models the
-   change touches. For a change that is not obviously trivial in A12 terms (new models, engines,
-   authorization, client/server split), invoke `a12-solution-architect:research-a12-solution` if
-   available — else search the A12 docs (release 2026.06) — and use its recommendation in
-   `architecture.md`. Say which you used.
+3. **Ground it.** Read `specs/system/domain.md`, `architecture.md`, `functional.md`
+   and `specs/architecture/index.md` (live ADRs bind the proposal). Read the code, plans and
+   reference photos in `input/` the change touches.
 
 4. **Create the directory** `specs/changes/<name>/`. If it exists, ask: continue it or pick a new
    name.
@@ -43,15 +40,15 @@ name from the description. Do not proceed without understanding what the user wa
    - `proposal.md` — what, why, scope and non-goals, expected outcome, open questions.
    - `domain.md` — the delta to the system domain: new or changed concepts, vocabulary. Mermaid
      `erDiagram` where entities change.
-   - `architecture.md` — read proposal first. Approach, a Mermaid diagram, the **A12 impact**
-     section filled per `a12.md`, **Key decisions** (decision · alternatives · why), integration
+   - `architecture.md` — read proposal first. Approach, a Mermaid diagram, the **Impact**
+     section filled per `project.md`, **Key decisions** (decision · alternatives · why), integration
      points and the live ADRs it obeys. A decision meeting the three ADR criteria (`adr.md`) gets
      a `proposed` ADR now: `bash .claude/skills/spec/scripts/new-adr.sh <slug> "<title>"`, fill it,
      `bash .claude/skills/spec/scripts/gen-adr-index.sh`, link its id in the table. Most changes
      need no ADR — don't invent one.
    - `plan.md` — read proposal and architecture first. Ordered checkbox steps in the format of
      `plan.md` (reference): every step has a `[kind]`, a `Test first:` and a `Verify:` with the
-     real commands from `a12.md`. Each step is one red → green cycle; `[model]` steps precede
+     real commands from `project.md`. Each step is one red → green cycle; `[python]` core steps precede
      their consumers. If the change needs a test harness the project lacks, the first step sets it
      up. No step for `specs/system/` — that is `/spec:archive`'s job; the plan ends with the note
      "System docs are updated at `/spec:archive`."

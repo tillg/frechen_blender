@@ -17,9 +17,9 @@ flowchart LR
     %% components and data flow this change adds or alters
 ```
 
-## A12 impact
+## Impact
 
-<Per line what the change touches, `none` where nothing — see reference/a12.md.>
+<Per line what the change touches, `none` where nothing — see reference/project.md.>
 
 - **Models:** …
 - **Client:** …

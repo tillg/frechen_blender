@@ -11,7 +11,7 @@ Show the workflow overview and assess the current status.
 
 1. **Open changes**: `bash .claude/skills/spec/scripts/spec-status.sh`. None → "No open changes.
    Run `/spec:propose` to start one, or `/spec:tweak` for a small change." Also, if the project
-   still lacks a client unit or e2e harness (`reference/a12.md`), suggest a first change that sets
+   still lacks a test harness (`reference/project.md`), suggest a first change that sets
    one up.
 
    Otherwise a table, one row per change:
@@ -38,7 +38,7 @@ Show the workflow overview and assess the current status.
    ```
 
    the next action; and an honest **maturity** rating — Ready / Almost there / Needs work — with 1–3
-   sentences: thorough or thin artifacts, clear scope, key decisions and A12 impact covered, plan
+   sentences: thorough or thin artifacts, clear scope, key decisions and impact covered, plan
    concrete and test-first (every step with `[kind]`, `Test first:`, `Verify:`; without them at best
    "Almost there"), open questions or placeholders.
 
@@ -61,7 +61,7 @@ Show the workflow overview and assess the current status.
    ---
    # Spec workflow
 
-   A lightweight workflow for thinking a change through before implementing it, adapted to A12.
+   A lightweight workflow for thinking a change through before implementing it.
 
    ```
    propose → [grill | iterate] → apply → adversarial-code-review → archive
@@ -72,10 +72,10 @@ Show the workflow overview and assess the current status.
    |---|---|
    | `/spec:overview` | Status, phase, maturity, this reference, `specs/workflow.md` |
    | `/spec-status` | The status pane (terminal sidebar; a mod, hence no `spec:` prefix) |
-   | `/spec:propose` | Create a change: proposal, domain, architecture (A12 impact, key decisions, ADRs), test-first plan |
+   | `/spec:propose` | Create a change: proposal, domain, architecture (impact, key decisions, ADRs), test-first plan |
    | `/spec:grill` | Design-tree interview; answers folded into the artifacts |
    | `/spec:iterate` | Fold your markup (`->`, `[ACCEPTED]`, `[REJECTED]`, comments) into clean artifacts |
-   | `/spec:apply` | Implement the plan test-first: red → green → verify → tick; A12 helpers per step kind |
+   | `/spec:apply` | Implement the plan test-first: red → green → verify → tick; checks per step kind |
    | `/spec:tweak` | Small change without a change directory: inline plan, test-first, one commit |
    | `/spec:adversarial-code-review` | Defects · Standards · Spec in parallel; writes `review.md` |
    | `/spec:archive` | Tests, decision review, `specs/system/` + ADRs updated, commit, delete the change |

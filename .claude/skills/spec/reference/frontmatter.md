@@ -66,7 +66,7 @@ fix the outliers. The status must also match the plan's checkboxes: `proposed` h
 
 ```yaml
 ---
-title: "Domain: agents12"
+title: "Domain: Frechenlehen house model"
 created: 2026-04-15
 edited: 2026-10-01
 ---

@@ -7,7 +7,7 @@ edited: YYYY-MM-DD
 ---
 # Bug: <short title>
 
-**Where:** <client / port, screen, user>
+**Where:** <script / builder, still or film frame, viewer stage>
 
 ## Steps
 

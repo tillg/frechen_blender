@@ -1,5 +1,5 @@
 ---
-description: Use when reviewing implemented code for bugs, regressions, edge cases, plan drift and drive-bys. Reviews the diff since a fixed point along three axes — Defects, Standards (A12 conventions, surgical-change rule, smell baseline) and Spec — in parallel sub-agents, findings first, and writes review.md into the change. Use after /spec:apply and before /spec:archive, or for "review since X".
+description: Use when reviewing implemented code for bugs, regressions, edge cases, plan drift and drive-bys. Reviews the diff since a fixed point along three axes — Defects, Standards (project conventions, surgical-change rule, smell baseline) and Spec — in parallel sub-agents, findings first, and writes review.md into the change. Use after /spec:apply and before /spec:archive, or for "review since X".
 argument-hint: "[fixed-point] [change-name]"
 ---
 
@@ -9,11 +9,11 @@ Review code with a hostile mindset: assume something is wrong and try to find it
 in its own sub-agent so they don't pollute each other's context:
 
 - **Defects** — bugs, regressions, edge cases, state, security.
-- **Standards** — this repo's documented conventions (A12 coding practices, `principles.md`), the
+- **Standards** — this repo's documented conventions (`CLAUDE.md`, `principles.md`), the
   surgical-change rule, and a code-smell baseline.
 - **Spec** — does the diff faithfully implement the change, test-first, and nothing more?
 
-**Read first**: `.claude/skills/spec/reference/principles.md`, `plan.md`, `a12.md`,
+**Read first**: `.claude/skills/spec/reference/principles.md`, `plan.md`, `project.md`,
 `frontmatter.md`.
 
 ## 1. Pin the scope
@@ -30,14 +30,12 @@ Confirm the ref resolves and the diff is non-empty before spawning anything.
 
 **Spec**: the change named, else the single `applying`/`applied` change in `specs/changes/`
 (`bash .claude/skills/spec/scripts/spec-status.sh`), else ask. Its `proposal.md`, `domain.md`,
-`architecture.md` (A12 impact, key decisions, ADRs), `plan.md` with `Test first:`/`Verify:`, and
+`architecture.md` (impact, key decisions, ADRs), `plan.md` with `Test first:`/`Verify:`, and
 its entries in `DECISIONS.md`. No spec → skip the Spec axis and say "no spec available".
 
 **Standards**: `CLAUDE.md`, `.claude/skills/spec/reference/principles.md`, the live ADRs in
 `specs/architecture/index.md`, the vocabulary in `specs/system/domain.md` and the change's
-`domain.md` (names in code use those terms), ESLint/Prettier/Checkstyle configs. For A12 conventions
-invoke `a12-project-setup:coding-practices` when available (its per-domain references: frontend,
-backend, testing, authorization, localization) — else the A12 docs. Plus the **smell baseline**
+`domain.md` (names in code use those terms), the pitfalls in `CLAUDE.md`. Plus the **smell baseline**
 (Fowler), always labelled judgement calls: Mysterious Name, Duplicated Code, Feature Envy, Data
 Clumps, Primitive Obsession, Repeated Switches, Shotgun Surgery, Divergent Change, Speculative
 Generality, Message Chains, Middle Man, Refused Bequest. A documented repo standard overrides the
@@ -53,9 +51,10 @@ Checklist: behavioural regressions (changed semantics behind existing APIs or UI
 updated after a model/DTO change); edge cases (empty/null, deleted related documents, duplicate
 submissions, stale data, partial updates); state and consistency (invalid transitions, duplicated
 constants, schema or model assumptions not reflected in code, config/docs not updated — don't flag
-`specs/system/`, archive updates it); **A12**: a rule enforced only client-side that the server
-should enforce, authorization gaps (`roles.yaml`, ABAC), a changed Document Model without migration
-of stored documents, a model that fails validation; tests that can't fail (assert nothing, mock the
+`specs/system/`, archive updates it); **this project**: coplanar faces that z-fight, overlapping
+parts without a shared `rnd` value, exterior openings missing from `OPENINGS`/`GABLE_WIN`, a door
+leaf clashing with walls, the film camera passing through geometry, a builder that breaks
+idempotent re-runs; tests that can't fail (assert nothing, mock the
 thing under test), suite not green. Add `Security Concerns` if relevant."
 
 **Standards**: the standards sources, the smell baseline pasted in full, and: "Report per file/hunk

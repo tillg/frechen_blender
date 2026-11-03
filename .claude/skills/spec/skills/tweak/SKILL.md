@@ -10,7 +10,7 @@ red → green → verify cycle as `/spec:apply`, `specs/system/` updated in plac
 
 A tweak lives in one session. If it turns out bigger, it stops and hands over to `/spec:propose`.
 
-**Read first**: `.claude/skills/spec/reference/plan.md`, `principles.md`, `a12.md`,
+**Read first**: `.claude/skills/spec/reference/plan.md`, `principles.md`, `project.md`,
 `frontmatter.md`.
 
 **Input**: a description of the change, or a bug file `specs/bugs/<slug>.md`. Nothing given →
@@ -48,12 +48,12 @@ A judgement call, not a line count.
    `Test first:`, `Verify:`. More than about 3 steps → escalate. Run the relevant suite once as the
    **baseline**; red → show it and ask: "Continue — done means no *new* failures" / "Stop".
 
-5. **Run each step test-first**: red → green → refactor → verify, showing each result; the A12
+5. **Run each step test-first**: red → green → refactor → verify, showing each result; the
    per-kind rules of `/spec:apply` step 4 apply. After each step re-check the limits; outgrown →
    finish the current step green, then escalate.
 
 6. **Update the system description in place**: every `specs/system/*.md` whose truth the tweak
-   changes (a rule in `functional.md`, a model in `models.md`, …); `edited` = today on each. Nothing
+   changes (a feature in `functional.md`, a component in `architecture.md`, …); `edited` = today on each. Nothing
    to update → say so.
 
 7. **Commit**: draft a message that says what the tweak did; show it with the files to stage (code,
