@@ -3,10 +3,11 @@
 Lives in its own collection "Windrose" so build_house.py never touches it.
 Run inside Blender: exec(open(".../code/windrose.py").read())  – re-running replaces only the rose.
 """
-import bpy, math
+import bpy, importlib, math, sys
 
-CENTER = (-3.5, -5.0, 0.02)   # south-west of the house, visible from the default camera
-R = 3.0                       # length of the main points
+sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+import house_core; importlib.reload(house_core)        # pick up core edits in a long session
+from house_core import WINDROSE_CENTER as CENTER, WINDROSE_R as R   # SW of the house; main point length
 
 
 def mat(name, rgba):

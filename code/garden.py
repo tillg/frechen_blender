@@ -1,21 +1,17 @@
 """Plants: tall meadow grass around the house (grass_in_front_of_house.png) and green, leafy
 shrubs in the two soil beds along the walls (placement after bushes_around_the_house.png).
 
-Lives in its own collection "Garten"; run after build_house.py (it reads the beds, terrace,
-shed etc. from the scene to know where no grass grows). Re-running replaces the collection.
+Lives in its own collection "Garten"; re-running replaces the collection. Where grass grows,
+the clump shape and the shrub placements come from the garden layout in house_core.py.
 The meadow is a Geometry Nodes scatter of grass-clump instances; the viewport shows 10 %.
 Run inside Blender: exec(open(".../code/garden.py").read())
 """
-import bpy, bmesh, math, random
+import bpy, bmesh, importlib, math, random, sys
 from mathutils import Vector, noise
 
-GROUND = (-20, 35, -25, 35, -0.05)          # Gelaende from build_house.py: x0, x1, y0, y1, top
-CELL = 0.25                                 # emitter grid
-DENSITY = 90                                # grass clumps per m² close to the house
-NEAR, FAR, FAR_DENS = 14.0, 28.0, 0.15      # density falls off from NEAR to FAR (relative)
-HOUSE_C = (7.44, 6.44)
-NO_GRASS = ["EG_Waende", "Terrasse", "Kiesstreifen", "Beet_Ost", "Beet_West", "Schuppen_Holz",
-            "Balkon_EG_Nord", "Windrose", "WR_N", "WR_O", "WR_S", "WR_W"]
+sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+import house_core; importlib.reload(house_core)        # pick up core edits in a long session
+from house_core import CELL, DENSITY, density
 
 
 def collection():
@@ -77,25 +73,11 @@ def leaf_shader(nt):
 
 
 # ---------------------------------------------------------------- meadow
-def grass_clump(c, mat):
-    """One clump: 6 curved, tapering blades 0.3-0.6 m. Vertex attribute h = 0 root .. 1 tip."""
-    v, f, hs = [], [], []
-    for _ in range(6):
-        a = random.uniform(0, 2 * math.pi)
-        ca, sa = math.cos(a), math.sin(a)
-        ox, oy = random.uniform(-0.04, 0.04), random.uniform(-0.04, 0.04)
-        H, w, bend = random.uniform(0.3, 0.6), random.uniform(0.004, 0.007), random.uniform(0.05, 0.2)
-        n = len(v)
-        for i in range(4):
-            t = i / 3
-            d, z, hw = bend * t * t, H * t * (1 - 0.15 * t * t), w * (1 - t) + 0.0005
-            px, py = ox + ca * d, oy + sa * d
-            v += [(px - sa * hw, py + ca * hw, z), (px + sa * hw, py - ca * hw, z)]
-            hs += [t, t]
-        f += [(n + 2 * i, n + 2 * i + 1, n + 2 * i + 3, n + 2 * i + 2) for i in range(3)]
+def grass_clump(c, mat, cl):
+    """One clump from the layout: 6 curved, tapering blades. Vertex attribute h = 0 root .. 1 tip."""
     me = bpy.data.meshes.new("GA_Grasbuschel")
-    me.from_pydata(v, [], f)
-    me.attributes.new("h", "FLOAT", "POINT").data.foreach_set("value", hs)
+    me.from_pydata(cl["v"], [], cl["f"])
+    me.attributes.new("h", "FLOAT", "POINT").data.foreach_set("value", cl["h"])
     me.materials.append(mat)
     ob = bpy.data.objects.new("GA_Grasbuschel", me)
     c.objects.link(ob)
@@ -103,24 +85,11 @@ def grass_clump(c, mat):
     return ob
 
 
-def exclusion_rects():
-    bpy.context.view_layer.update()           # bounds of just-(re)built objects
-    rects = []
-    for name in NO_GRASS:
-        ob = bpy.data.objects.get(name)
-        if not ob:
-            continue
-        pts = [ob.matrix_world @ Vector(b) for b in ob.bound_box]
-        rects.append((min(p.x for p in pts) - 0.05, max(p.x for p in pts) + 0.05,
-                      min(p.y for p in pts) - 0.05, max(p.y for p in pts) + 0.05))
-    return rects
-
-
-def emitter(c):
-    """Grid of CELL quads on the ground, minus cells touching house / terrace / beds / ...;
+def emitter(c, layout):
+    """Grid of CELL quads on the ground, minus cells touching house / terrace / beds / windrose;
     vertex attribute dens = relative grass density (1 near the house, FAR_DENS far away)."""
-    x0, x1, y0, y1, z = GROUND
-    rects = exclusion_rects()
+    x0, x1, y0, y1, z = layout.ground
+    rects = layout.no_grass + layout.windrose
     nx, ny = int((x1 - x0) / CELL), int((y1 - y0) / CELL)
     keep = [[not any(a < x0 + (i + 1) * CELL and x0 + i * CELL < b and cc < y0 + (j + 1) * CELL
                      and y0 + j * CELL < d for a, b, cc, d in rects)
@@ -132,9 +101,7 @@ def emitter(c):
             x, y = x0 + i * CELL, y0 + j * CELL
             vid[(i, j)] = len(v)
             v.append((x, y, z))
-            r = math.dist((x, y), HOUSE_C)
-            t = min(max((r - NEAR) / (FAR - NEAR), 0), 1)
-            dens.append(1 - (1 - FAR_DENS) * t)
+            dens.append(density(x, y))
         return vid[(i, j)]
 
     for i in range(nx):
@@ -224,32 +191,18 @@ def bush(c, mat, x, y, r, h):
     c.objects.link(ob)
 
 
-def plant_bed(c, mat, name):
-    ob = bpy.data.objects.get(name)
-    pts = [ob.matrix_world @ Vector(b) for b in ob.bound_box]
-    x0, x1 = min(p.x for p in pts), max(p.x for p in pts)
-    y0, y1 = min(p.y for p in pts), max(p.y for p in pts)
-    rmax = (x1 - x0) / 2 - 0.02
-    y, k = y0 + 0.32, 0
-    while y < y1 - 0.25:
-        if k % 4 != 3:                        # groups of three with a gap, like the photo
-            r = random.uniform(0.85, 1.0) * rmax
-            bush(c, mat, (x0 + x1) / 2 + random.uniform(-0.03, 0.03), y, r, random.uniform(0.42, 0.52))
-        y += random.uniform(0.58, 0.66)
-        k += 1
-
-
 def main():
-    random.seed(5)
+    layout = house_core.build().garden
     c = collection()
     grass = material("GA_Gras", grass_shader)
-    clump = grass_clump(c, grass)
-    em = emitter(c)
+    clump = grass_clump(c, grass, layout.clump)
+    em = emitter(c, layout)
     mod = em.modifiers.new("Wiese", "NODES")
     mod.node_group = scatter_nodes(clump)
     leaves = material("GA_Blaetter", leaf_shader)
-    for bed in ("Beet_Ost", "Beet_West"):
-        plant_bed(c, leaves, bed)
+    random.seed(7)                            # leaves: own stream, apart from the layout's
+    for x, y, r, h in layout.shrubs:          # groups of three with a gap, like the photo
+        bush(c, leaves, x, y, r, h)
     return len(em.data.polygons)
 
 

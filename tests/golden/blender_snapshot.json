@@ -1,0 +1,1565 @@
+{
+ "Aussenleuchten": {
+  "bbox": [
+   -0.585,
+   -0.56,
+   1.78,
+   15.445,
+   9.48,
+   2.242
+  ],
+  "faces": 3504,
+  "materials": [
+   "FL_Eisen",
+   "FL_Emaille",
+   "FL_Glas",
+   "FL_Gluehfaden"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "04c57a1545c25c26",
+  "verts": 4416
+ },
+ "Balkon_EG_Nord": {
+  "bbox": [
+   0.07,
+   12.857,
+   -0.25,
+   5.96,
+   14.18,
+   0.9
+  ],
+  "faces": 3886,
+  "materials": [
+   "FL_Laerche",
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "05e04afbe6ff4943",
+  "verts": 7448
+ },
+ "Balkon_OG_Nord": {
+  "bbox": [
+   0.07,
+   12.857,
+   2.29,
+   14.55,
+   14.29,
+   3.65
+  ],
+  "faces": 7964,
+  "materials": [
+   "FL_FichteX",
+   "FL_FichteY",
+   "FL_Laerche",
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "8f46eb05d5819eef",
+  "verts": 15252
+ },
+ "Balkon_OG_Ost": {
+  "bbox": [
+   14.855,
+   0.85,
+   2.29,
+   16.205,
+   11.85,
+   3.65
+  ],
+  "faces": 6322,
+  "materials": [
+   "FL_FichteX",
+   "FL_Laerche",
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "f55bae47d8ab0578",
+  "verts": 12096
+ },
+ "Balkon_OG_Sued": {
+  "bbox": [
+   8.9,
+   -1.22,
+   2.29,
+   13.03,
+   0.03,
+   3.65
+  ],
+  "faces": 2982,
+  "materials": [
+   "FL_FichteX",
+   "FL_FichteY",
+   "FL_Laerche",
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "bf586c32004f0c57",
+  "verts": 5676
+ },
+ "Beet_Ost": {
+  "bbox": [
+   14.885,
+   7.9,
+   -0.1,
+   15.735,
+   12.8,
+   -0.02
+  ],
+  "faces": 6,
+  "materials": [
+   "FL_Erde"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "aae44404a353f461",
+  "verts": 8
+ },
+ "Beet_West": {
+  "bbox": [
+   -0.7,
+   8.7,
+   -0.1,
+   -0.025,
+   12.8,
+   -0.02
+  ],
+  "faces": 6,
+  "materials": [
+   "FL_Erde"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "6ebc6ef8a908960a",
+  "verts": 8
+ },
+ "Dach": {
+  "bbox": [
+   -1.49,
+   -1.34,
+   4.7407,
+   16.375,
+   14.227,
+   7.67
+  ],
+  "faces": 12,
+  "materials": [
+   "FL_Dach"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "2133ffa6e2ddfb99",
+  "verts": 16
+ },
+ "Dach_Sparren": {
+  "bbox": [
+   -1.49,
+   -1.34,
+   4.5607,
+   16.375,
+   14.227,
+   7.52092
+  ],
+  "faces": 336,
+  "materials": [
+   "FL_FichteX",
+   "FL_FichteY"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "eab8784199fc5dfb",
+  "verts": 448
+ },
+ "Dach_Untersicht": {
+  "bbox": [
+   -1.49,
+   -1.34,
+   4.7207,
+   16.375,
+   14.227,
+   7.57
+  ],
+  "faces": 678,
+  "materials": [
+   "FL_FichteX"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "fa53c31c02ee5901",
+  "verts": 904
+ },
+ "Decke_OG": {
+  "bbox": [
+   0.0,
+   0.0,
+   4.9,
+   14.885,
+   12.887,
+   5.1
+  ],
+  "faces": 12,
+  "materials": [
+   "FL_Decke"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "86d500c689939983",
+  "verts": 16
+ },
+ "EG_Boden": {
+  "bbox": [
+   0.2,
+   0.2,
+   0.0,
+   14.685,
+   12.687,
+   0.01
+  ],
+  "faces": 12,
+  "materials": [
+   "FL_Fuge"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "baac08460d133049",
+  "verts": 16
+ },
+ "EG_Bodenbelag": {
+  "bbox": [
+   0.0015,
+   0.0015,
+   0.002,
+   14.8835,
+   12.8855,
+   0.018
+  ],
+  "faces": 3834,
+  "materials": [
+   "FL_Eiche",
+   "FL_Kalkstein"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "08c99fb1f29a49d0",
+  "verts": 5112
+ },
+ "EG_Bodenplatte": {
+  "bbox": [
+   0.0,
+   0.0,
+   -0.3,
+   14.885,
+   12.887,
+   0.0
+  ],
+  "faces": 12,
+  "materials": [
+   "FL_Decke"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "b8d35c3bc98174cf",
+  "verts": 16
+ },
+ "EG_Fenster_Tueren": {
+  "bbox": [
+   -0.05,
+   0.1625,
+   0.0,
+   14.78,
+   12.72,
+   2.3
+  ],
+  "faces": 1636,
+  "materials": [
+   "FL_Glas",
+   "FL_Holz",
+   "FL_Laerche",
+   "FL_Tuer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "928298fe396d87da",
+  "verts": 2140
+ },
+ "EG_Gelaender": {
+  "bbox": [
+   7.6006,
+   7.555,
+   0.0,
+   11.35,
+   7.615,
+   3.62
+  ],
+  "faces": 2568,
+  "materials": [
+   "FL_Kiefer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "e57266e9d7432382",
+  "verts": 2736
+ },
+ "EG_Haustuer": {
+  "bbox": [
+   13.825,
+   6.448,
+   0.01,
+   14.726,
+   6.608,
+   2.12533
+  ],
+  "faces": 324,
+  "materials": [
+   "FL_Eisen",
+   "FL_Glas",
+   "FL_Metall",
+   "FL_Tuer"
+  ],
+  "origin": [
+   14.73,
+   6.528,
+   0.0
+  ],
+  "rnd": "6b75fe03b122bd3d",
+  "verts": 432
+ },
+ "EG_Hintertuer": {
+  "bbox": [
+   -0.022,
+   7.502,
+   0.01,
+   0.054,
+   8.283,
+   2.206
+  ],
+  "faces": 512,
+  "materials": [
+   "FL_Eisen",
+   "FL_Gitter",
+   "FL_Holz",
+   "FL_Metall",
+   "FL_Milchglas"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "77598378600d406d",
+  "verts": 620
+ },
+ "EG_Innentueren": {
+  "bbox": [
+   0.676,
+   3.561,
+   0.0,
+   14.645,
+   9.97,
+   2.17
+  ],
+  "faces": 1326,
+  "materials": [
+   "FL_Eisen",
+   "FL_Innentuer",
+   "FL_Milchglas"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "b2239edac30a5f7d",
+  "verts": 1768
+ },
+ "EG_Kachelofen": {
+  "bbox": [
+   9.06,
+   3.0,
+   0.012,
+   11.007,
+   5.849,
+   2.16
+  ],
+  "faces": 924,
+  "materials": [
+   "FL_Eiche",
+   "FL_Eisen",
+   "FL_Feuer",
+   "FL_Kachel",
+   "FL_Putz",
+   "FL_Schiefer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "9e937f9679c8601e",
+  "verts": 1260
+ },
+ "EG_Laeden": {
+  "bbox": [
+   0.6595,
+   -0.03,
+   0.0,
+   14.915,
+   12.917,
+   2.0
+  ],
+  "faces": 96,
+  "materials": [
+   "FL_Laden"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "088c54e1b73ff0d7",
+  "verts": 128
+ },
+ "EG_Raumnamen": {
+  "bbox": [
+   3.3276,
+   2.6436,
+   0.0145,
+   13.721,
+   10.9564,
+   0.0161
+  ],
+  "faces": 8598,
+  "materials": [
+   "FL_Schrift"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "none",
+  "verts": 11576
+ },
+ "EG_Sanitaer": {
+  "bbox": [
+   0.298,
+   5.475,
+   0.015,
+   1.65,
+   12.485,
+   2.05
+  ],
+  "faces": 272,
+  "materials": [
+   "FL_Glas",
+   "FL_Keramik",
+   "FL_Metall",
+   "FL_Spiegel"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "e4727b18eedbc795",
+  "verts": 444
+ },
+ "EG_Stuehle": {
+  "bbox": [
+   3.84,
+   0.76,
+   0.0,
+   8.27,
+   2.33,
+   0.92
+  ],
+  "faces": 756,
+  "materials": [
+   "FL_FichteX",
+   "FL_FichteY",
+   "FL_FichteZ"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "93cf3410343d6250",
+  "verts": 1008
+ },
+ "EG_Tisch": {
+  "bbox": [
+   4.262,
+   1.18,
+   0.012,
+   7.848,
+   1.91,
+   0.76
+  ],
+  "faces": 156,
+  "materials": [
+   "FL_FichteX",
+   "FL_FichteY",
+   "FL_FichteZ"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "7b2ca3939cd83857",
+  "verts": 208
+ },
+ "EG_Treppe": {
+  "bbox": [
+   7.62,
+   7.56,
+   0.0,
+   11.23,
+   8.57,
+   2.8
+  ],
+  "faces": 188,
+  "materials": [
+   "FL_Kiefer",
+   "FL_Stufe"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "b792dadd044450ca",
+  "verts": 248
+ },
+ "EG_Waende": {
+  "bbox": [
+   0.0,
+   0.0,
+   0.0,
+   14.925,
+   12.887,
+   2.4
+  ],
+  "faces": 880,
+  "materials": [
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "b66097c09a713bcc",
+  "verts": 1060
+ },
+ "GA_Grasbuschel": {
+  "bbox": [
+   -0.11593,
+   -0.10816,
+   0.0,
+   0.1806,
+   0.09095,
+   0.50018
+  ],
+  "faces": 18,
+  "materials": [
+   "GA_Gras"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "none",
+  "verts": 48
+ },
+ "GA_Strauch": {
+  "bbox": [
+   14.90978,
+   7.79435,
+   -0.04856,
+   15.74306,
+   8.64427,
+   0.46423
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   15.32932,
+   8.22,
+   -0.03
+  ],
+  "rnd": "d6cef180c79f94e8",
+  "verts": 5762
+ },
+ "GA_Strauch.001": {
+  "bbox": [
+   14.93096,
+   8.46924,
+   -0.05033,
+   15.70226,
+   9.1913,
+   0.45258
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   15.31977,
+   8.82093,
+   -0.03
+  ],
+  "rnd": "cdd79e4591a2906f",
+  "verts": 5762
+ },
+ "GA_Strauch.002": {
+  "bbox": [
+   14.9135,
+   9.08327,
+   -0.04861,
+   15.72239,
+   9.87361,
+   0.44909
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   15.32621,
+   9.46171,
+   -0.03
+  ],
+  "rnd": "680c2e2018b6f86a",
+  "verts": 5762
+ },
+ "GA_Strauch.003": {
+  "bbox": [
+   14.91998,
+   10.34739,
+   -0.04849,
+   15.72528,
+   11.13756,
+   0.46814
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   15.3123,
+   10.74425,
+   -0.03
+  ],
+  "rnd": "635d1a2c8b354aea",
+  "verts": 5762
+ },
+ "GA_Strauch.004": {
+  "bbox": [
+   14.90585,
+   10.92072,
+   -0.04958,
+   15.72601,
+   11.74399,
+   0.43561
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   15.32831,
+   11.33969,
+   -0.03
+  ],
+  "rnd": "7e20ceb92dbda883",
+  "verts": 5762
+ },
+ "GA_Strauch.005": {
+  "bbox": [
+   14.90432,
+   11.57485,
+   -0.05049,
+   15.74283,
+   12.39749,
+   0.48655
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   15.33066,
+   11.98396,
+   -0.03
+  ],
+  "rnd": "dd6e5b99f3806654",
+  "verts": 5762
+ },
+ "GA_Strauch.006": {
+  "bbox": [
+   -0.66399,
+   8.68522,
+   -0.04777,
+   -0.00391,
+   9.34312,
+   0.43925
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   -0.34421,
+   9.02,
+   -0.03
+  ],
+  "rnd": "268ae13d2caef667",
+  "verts": 5762
+ },
+ "GA_Strauch.007": {
+  "bbox": [
+   -0.66101,
+   9.30485,
+   -0.05083,
+   -0.04832,
+   9.92389,
+   0.43055
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   -0.3544,
+   9.6075,
+   -0.03
+  ],
+  "rnd": "cd98feac4399acec",
+  "verts": 5762
+ },
+ "GA_Strauch.008": {
+  "bbox": [
+   -0.72016,
+   9.94463,
+   -0.04793,
+   -0.05567,
+   10.59712,
+   0.45694
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   -0.38045,
+   10.26361,
+   -0.03
+  ],
+  "rnd": "0478d89dd6115807",
+  "verts": 5762
+ },
+ "GA_Strauch.009": {
+  "bbox": [
+   -0.70957,
+   11.19639,
+   -0.04873,
+   -0.01087,
+   11.87212,
+   0.48234
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   -0.36162,
+   11.52706,
+   -0.03
+  ],
+  "rnd": "3ebc732a9671227f",
+  "verts": 5762
+ },
+ "GA_Strauch.010": {
+  "bbox": [
+   -0.66437,
+   11.83641,
+   -0.05031,
+   0.01371,
+   12.50978,
+   0.43138
+  ],
+  "faces": 1720,
+  "materials": [
+   "GA_Blaetter"
+  ],
+  "origin": [
+   -0.33392,
+   12.16289,
+   -0.03
+  ],
+  "rnd": "17ae49371feabf3c",
+  "verts": 5762
+ },
+ "GA_Wiese": {
+  "bbox": [
+   -20.0,
+   -25.0,
+   -0.05,
+   35.0,
+   35.0,
+   -0.05
+  ],
+  "faces": 46483,
+  "materials": [],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "none",
+  "verts": 47157
+ },
+ "Gelaende": {
+  "bbox": [
+   -20.0,
+   -25.0,
+   -0.3,
+   35.0,
+   35.0,
+   -0.05
+  ],
+  "faces": 6,
+  "materials": [
+   "FL_Wiese"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "e975748a3363358c",
+  "verts": 8
+ },
+ "Giebel": {
+  "bbox": [
+   0.0,
+   0.0,
+   4.9,
+   14.885,
+   12.887,
+   7.57
+  ],
+  "faces": 96,
+  "materials": [
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "319ca02b08dff0c1",
+  "verts": 132
+ },
+ "Giebel_Fenster": {
+  "bbox": [
+   0.115,
+   4.26,
+   5.0,
+   14.77,
+   9.83,
+   7.07
+  ],
+  "faces": 126,
+  "materials": [
+   "FL_Glas",
+   "FL_Laerche"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "52c04d29c74a6144",
+  "verts": 172
+ },
+ "Kiesel": {
+  "bbox": [
+   0.035,
+   -0.26822,
+   -0.05222,
+   15.15655,
+   7.92197,
+   -0.01778
+  ],
+  "faces": 47770,
+  "materials": [
+   "FL_Kiesel"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "825b0556018ef69f",
+  "verts": 56200
+ },
+ "Kiesstreifen": {
+  "bbox": [
+   0.0,
+   -0.25,
+   -0.1,
+   15.135,
+   7.9,
+   -0.035
+  ],
+  "faces": 18,
+  "materials": [
+   "FL_Kies"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "38855e227d5cd21b",
+  "verts": 24
+ },
+ "Laeden_Querbretter": {
+  "bbox": [
+   0.6595,
+   -0.042,
+   0.31,
+   14.927,
+   12.929,
+   1.8754
+  ],
+  "faces": 384,
+  "materials": [
+   "FL_Rahmen"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "29e100d00d51114a",
+  "verts": 512
+ },
+ "OG_Boden": {
+  "bbox": [
+   0.2,
+   0.2,
+   2.7,
+   14.685,
+   12.687,
+   2.71
+  ],
+  "faces": 30,
+  "materials": [
+   "FL_Fuge"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "02f3b3c2b1aa749c",
+  "verts": 40
+ },
+ "OG_Bodenbelag": {
+  "bbox": [
+   0.0015,
+   0.0015,
+   2.702,
+   14.8835,
+   12.8855,
+   2.714
+  ],
+  "faces": 3444,
+  "materials": [
+   "FL_Eiche"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "8d8e33a7df380983",
+  "verts": 4592
+ },
+ "OG_Decke_EG": {
+  "bbox": [
+   0.0,
+   0.0,
+   2.4,
+   14.885,
+   12.887,
+   2.7
+  ],
+  "faces": 30,
+  "materials": [
+   "FL_Decke"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "7c5911774728d977",
+  "verts": 40
+ },
+ "OG_Fenster_Tueren": {
+  "bbox": [
+   0.11,
+   0.16,
+   2.7,
+   14.77,
+   12.726,
+   4.78
+  ],
+  "faces": 1836,
+  "materials": [
+   "FL_Glas",
+   "FL_Laerche"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "34fb2ea0093a94c3",
+  "verts": 2448
+ },
+ "OG_Gelaender": {
+  "bbox": [
+   7.6,
+   7.498,
+   2.38,
+   11.302,
+   8.4694,
+   3.63
+  ],
+  "faces": 3454,
+  "materials": [
+   "FL_Kiefer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "af7c3b457859eb72",
+  "verts": 3672
+ },
+ "OG_Innentueren": {
+  "bbox": [
+   0.48,
+   0.776,
+   2.7,
+   13.25,
+   8.917,
+   4.77
+  ],
+  "faces": 1218,
+  "materials": [
+   "FL_Innentuer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "feb4e5d5071718ee",
+  "verts": 1624
+ },
+ "OG_Laeden": {
+  "bbox": [
+   2.34,
+   -0.03,
+   2.7,
+   14.915,
+   12.917,
+   4.7
+  ],
+  "faces": 156,
+  "materials": [
+   "FL_Laden"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "01b9b17e84e24f92",
+  "verts": 208
+ },
+ "OG_Laeden_Querbretter": {
+  "bbox": [
+   2.328,
+   -0.042,
+   2.992,
+   14.927,
+   12.929,
+   4.57
+  ],
+  "faces": 624,
+  "materials": [
+   "FL_Rahmen"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "ba71289cc5b34580",
+  "verts": 832
+ },
+ "OG_Raumnamen": {
+  "bbox": [
+   2.798,
+   3.0436,
+   2.7145,
+   12.542,
+   10.7528,
+   2.7161
+  ],
+  "faces": 11967,
+  "materials": [
+   "FL_Schrift"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "none",
+  "verts": 16132
+ },
+ "OG_Sanitaer": {
+  "bbox": [
+   0.31,
+   0.4,
+   2.715,
+   10.0,
+   8.57,
+   4.75
+  ],
+  "faces": 372,
+  "materials": [
+   "FL_Glas",
+   "FL_Keramik",
+   "FL_Metall",
+   "FL_Spiegel"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "a00f0912f325c5bf",
+  "verts": 600
+ },
+ "OG_Waende": {
+  "bbox": [
+   0.0,
+   0.0,
+   2.7,
+   14.885,
+   12.887,
+   5.22779
+  ],
+  "faces": 516,
+  "materials": [
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "cc0679d60e69f7a7",
+  "verts": 688
+ },
+ "Ref_Grundriss_EG": {
+  "bbox": [
+   -6.00674,
+   -3.08363,
+   0.02,
+   23.69428,
+   17.91791,
+   0.02
+  ],
+  "faces": 1,
+  "materials": [
+   "Ref_Grundriss_EG"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "none",
+  "verts": 4
+ },
+ "Ref_Grundriss_OG": {
+  "bbox": [
+   -5.81174,
+   -2.51363,
+   2.72,
+   23.88928,
+   18.48791,
+   2.72
+  ],
+  "faces": 1,
+  "materials": [
+   "Ref_Grundriss_OG"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "none",
+  "verts": 4
+ },
+ "Schuppen": {
+  "bbox": [
+   0.1,
+   0.2,
+   -0.05,
+   2.358,
+   5.145,
+   -0.01
+  ],
+  "faces": 6,
+  "materials": [
+   "FL_Kies"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "e24168bd22f04b6e",
+  "verts": 8
+ },
+ "Schuppen_Holz": {
+  "bbox": [
+   -0.25,
+   -0.25,
+   0.0,
+   2.358,
+   5.145,
+   2.53
+  ],
+  "faces": 288,
+  "materials": [
+   "FL_Dach",
+   "FL_Holz",
+   "FL_Tuer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "e0c5aacfa15fc2b4",
+  "verts": 384
+ },
+ "Terrasse": {
+  "bbox": [
+   0.0,
+   -4.0,
+   -0.1,
+   18.885,
+   12.887,
+   -0.01
+  ],
+  "faces": 1692,
+  "materials": [
+   "FL_Fuge",
+   "FL_Granit"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "1ef685d8d34b8be3",
+  "verts": 2256
+ },
+ "Verschalung_West": {
+  "bbox": [
+   -0.075,
+   0.0,
+   0.25,
+   2.392,
+   12.887,
+   7.55
+  ],
+  "faces": 1452,
+  "materials": [
+   "FL_Eisen",
+   "FL_Laerche"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "d45af4af04c4a935",
+  "verts": 1936
+ },
+ "WR_N": {
+  "bbox": [
+   -3.8798,
+   -1.46,
+   0.0,
+   -3.1214,
+   -0.6416,
+   0.04
+  ]
+ },
+ "WR_O": {
+  "bbox": [
+   -0.0398,
+   -5.3708,
+   0.0,
+   0.8398,
+   -4.5308,
+   0.04
+  ]
+ },
+ "WR_S": {
+  "bbox": [
+   -3.7268,
+   -9.2708,
+   0.0,
+   -3.2636,
+   -8.4308,
+   0.04
+  ]
+ },
+ "WR_W": {
+  "bbox": [
+   -8.0252,
+   -5.3672,
+   0.0,
+   -6.776,
+   -4.5416,
+   0.04
+  ]
+ },
+ "Windrose": {
+  "bbox": [
+   -6.5,
+   -8.0,
+   0.02,
+   -0.5,
+   -2.0,
+   0.03
+  ]
+ },
+ "_paint": {
+  "FL_Kachel": [
+   0.12477,
+   0.20508,
+   0.30499,
+   1.0
+  ],
+  "FL_Laden": [
+   0.12477,
+   0.20508,
+   0.30499,
+   1.0
+  ],
+  "FL_Putz": [
+   0.87962,
+   0.8388,
+   0.75294,
+   1.0
+  ],
+  "FL_Rahmen": [
+   0.87962,
+   0.8388,
+   0.75294,
+   1.0
+  ]
+ },
+ "_room_lights": [
+  [
+   1.3,
+   7.5,
+   2.1
+  ],
+  [
+   1.3,
+   11.3,
+   2.1
+  ],
+  [
+   1.4,
+   7.4,
+   4.8
+  ],
+  [
+   3.0,
+   10.7,
+   4.8
+  ],
+  [
+   4.0,
+   3.0,
+   4.8
+  ],
+  [
+   4.0,
+   4.3,
+   2.1
+  ],
+  [
+   4.3,
+   10.7,
+   2.1
+  ],
+  [
+   5.0,
+   7.4,
+   2.1
+  ],
+  [
+   5.0,
+   7.4,
+   4.8
+  ],
+  [
+   5.5,
+   1.8,
+   2.1
+  ],
+  [
+   7.0,
+   1.5,
+   4.8
+  ],
+  [
+   7.0,
+   4.3,
+   4.8
+  ],
+  [
+   7.0,
+   4.5,
+   2.1
+  ],
+  [
+   7.6,
+   10.7,
+   2.1
+  ],
+  [
+   7.6,
+   10.7,
+   4.8
+  ],
+  [
+   10.0,
+   7.0,
+   2.1
+  ],
+  [
+   10.0,
+   7.0,
+   4.8
+  ],
+  [
+   10.2,
+   10.7,
+   2.1
+  ],
+  [
+   11.7,
+   3.2,
+   2.1
+  ],
+  [
+   11.8,
+   10.7,
+   4.8
+  ],
+  [
+   12.0,
+   3.0,
+   4.8
+  ],
+  [
+   13.0,
+   10.7,
+   2.1
+  ],
+  [
+   13.5,
+   7.5,
+   2.1
+  ]
+ ],
+ "_shrubs": 11
+}

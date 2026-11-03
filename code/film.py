@@ -7,7 +7,11 @@ Creates camera "FL_Kamera_Rundgang" (baked per-frame keys) and point lights in t
 collection "Innenlicht". Neither touches the "Haus" collection. Re-running replaces both.
 Run inside Blender: exec(open(".../code/film.py").read())
 """
-import bpy, math
+import bpy, importlib, math, sys
+
+sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+import house_core; importlib.reload(house_core)        # pick up core edits in a long session
+from house_core import ROOM_LIGHTS
 
 FPS = 25
 EYE = 1.65                  # eye height above floor
@@ -145,13 +149,7 @@ def smooth(vals, w):
 
 
 # ---------------------------------------------------------------- interior lights
-ROOM_LIGHTS = [  # (x, y, floor z)
-    (13.5, 7.5, 0), (5.0, 7.4, 0), (10.0, 7.0, 0), (11.7, 3.2, 0), (7.0, 4.5, 0), (5.5, 1.8, 0),
-    (13.0, 10.7, 0), (10.2, 10.7, 0), (4.3, 10.7, 0), (7.6, 10.7, 0), (1.3, 11.3, 0),
-    (1.3, 7.5, 0), (4.0, 4.3, 0),
-    (5.0, 7.4, Z_OG), (10.0, 7.0, Z_OG), (12.0, 3.0, Z_OG), (4.0, 3.0, Z_OG), (7.0, 4.3, Z_OG),
-    (7.0, 1.5, Z_OG), (3.0, 10.7, Z_OG), (7.6, 10.7, Z_OG), (11.8, 10.7, Z_OG), (1.4, 7.4, Z_OG),
-]
+# positions: ROOM_LIGHTS in house_core.py
 
 
 def build_lights():

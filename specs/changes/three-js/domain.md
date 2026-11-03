@@ -1,7 +1,7 @@
 ---
 feature: three-js
 title: "Domain: Frechenlehen in three.js — architect's model in the browser"
-status: proposed
+status: applied
 order: 2
 created: 2026-10-08
 edited: 2026-11-03
@@ -27,7 +27,7 @@ New and changed concepts. Everything in `specs/system/domain.md` still holds.
 | **Clay** | The single off-white material of the Massenmodell stage. |
 | **Ink** | The dark edge-line colour of the Skizze stage. |
 | **Paper** | The background and surface colour of the Skizze stage. Surfaces drawn in paper hide the lines behind them (**hidden-line**). |
-| **Cross boards** (Querbretter) | The two white boards across every shutter, today added by `paint.py`, from now on part of the Blueprint (`Laeden_Querbretter`). |
+| **Cross boards** (Querbretter) | The two white boards across every shutter, today added by `paint.py`, from now on part of the Blueprint, per storey (`Laeden_Querbretter`, `OG_Laeden_Querbretter`). |
 | **Garden layout** | The shared description of the garden: ground area, no-grass areas, grass density, clump shape and shrub placements. Each backend plants from it in its own way. |
 | **No-grass area** | A rectangle where no grass grows: around house walls, terrace, gravel strip, beds, shed and the EG balcony (`no_grass`). The **windrose area** (star square plus four letter squares, `windrose`) is kept apart: Blender keeps grass off it, but the viewer, which draws no rose, ignores it. |
 | **Clump** (Grasbüschel) | One grass instance: 6 curved, tapering blades, 0.3–0.6 m tall. |
@@ -85,7 +85,9 @@ stateDiagram-v2
     random stream;
   - the meadow emitter cells around the windrose letters, whose areas are approximated;
   - `Schuppen_Holz`, which loses its duplicate `FL_Holz` slot because the battens are built as
-    `Holz`. This can't be seen.
+    `Holz`. This can't be seen;
+  - the cross boards, split by storey into `Laeden_Querbretter` (EG) and
+    `OG_Laeden_Querbretter` (OG), so a cutaway can hide the OG ones. This can't be seen either.
 - **No model edits on `main`** while `three-js` is open.
 - **The garden is alike, not identical.** Both outputs plant from the same Garden layout.
   Grass blades and leaves land in different spots, and the browser uses 25 % of the grass

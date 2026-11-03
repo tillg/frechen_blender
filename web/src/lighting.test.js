@@ -1,0 +1,30 @@
+// @vitest-environment happy-dom
+import { test, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import * as THREE from 'three/webgpu';
+import { createLighting } from './lighting.js';
+
+const buf = readFileSync('public/frechenlehen.glb');
+const extras = JSON.parse(buf.subarray(20, 20 + buf.readUInt32LE(12)).toString()).scenes[0].extras;
+
+test('one room light per ROOM_LIGHTS entry at floor + 2.0 m, converted to y-up', () => {
+  const scene = new THREE.Scene();
+  const L = createLighting(scene, extras, new THREE.Vector3());
+  expect(L.roomLights.length).toBe(extras.room_lights.length);
+  L.roomLights.forEach((l, i) => {
+    const [x, y, z] = extras.room_lights[i];
+    expect(l.isPointLight).toBe(true);
+    expect(l.position.toArray()).toEqual([x, z + 2.0, -y]);
+  });
+});
+
+test('dusk turns the room lights on and the sun down', () => {
+  const L = createLighting(new THREE.Scene(), extras, new THREE.Vector3());
+  L.setDusk(0);
+  const sunDay = L.sun.intensity;
+  expect(L.roomLights.every((l) => l.intensity === 0)).toBe(true);
+  L.setDusk(1);
+  expect(L.sun.intensity).toBeLessThan(sunDay);
+  expect(L.sun.position.y).toBeLessThan(L.sun.position.length() * Math.sin((20 * Math.PI) / 180));  // low sun
+  expect(L.roomLights.every((l) => l.intensity > 0)).toBe(true);
+});

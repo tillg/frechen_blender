@@ -1,7 +1,7 @@
 ---
 feature: three-js
 title: "Proposal: Frechenlehen in three.js — architect's model in the browser"
-status: proposed
+status: applied
 order: 1
 created: 2026-10-08
 edited: 2026-11-03

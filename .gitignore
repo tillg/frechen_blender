@@ -2,3 +2,9 @@ tmp/
 *.blend1
 .DS_Store
 .pilcrow
+__pycache__/
+node_modules/
+web/dist/
+web/public/frechenlehen.glb
+web/test-results/
+web/playwright-report/

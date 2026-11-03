@@ -1,7 +1,7 @@
 ---
 feature: three-js
 title: "Plan: Frechenlehen in three.js — architect's model in the browser"
-status: proposed
+status: applied
 order: 4
 created: 2026-10-08
 edited: 2026-11-03
@@ -15,6 +15,10 @@ from the repo root. Web tests run from `web/`. `PY` below means `python3 -m pyte
 
 Two tracks can run side by side: the Python core and exporter (steps 1–7) and the web
 scaffold (steps 8, 10). They meet at step 9.
+
+Step numbers (`Depends on:`, the diagram) refer to the original 17 steps. Two steps were added
+while applying and are unnumbered: "Mark `SMOOTH` objects in the GLB" (after 7) and
+"Rebuild and save `frechenlehen.blend`" (before the docs step, 17).
 
 ```mermaid
 flowchart LR
@@ -36,7 +40,7 @@ flowchart LR
 
 ## Python: parity guard and shared core
 
-- [ ] [blender] Capture a parity snapshot of today's Blender build and a test that compares against it
+- [x] [blender] Capture a parity snapshot of today's Blender build and a test that compares against it
   - Depends on: none
   - Test first: `tests/test_blender_parity.py` › "rebuild matches golden snapshot".
     - It runs `BL -b --factory-startup --python tests/blender/snapshot.py -- <tmp>.json`.
@@ -51,7 +55,7 @@ flowchart LR
       `f23ddf2`. Then check that the test passes, and that it fails after a deliberate 1 cm
       change to one wall (revert the change afterwards).
   - Verify: `PY tests/test_blender_parity.py` → 1 passed
-- [ ] [python] Move constants, `MAT_DEF`, the registries, primitives, builders and `ROOM_NAMES` into
+- [x] [python] Move constants, `MAT_DEF`, the registries, primitives, builders and `ROOM_NAMES` into
   `code/house_core.py` with `build() -> Blueprint`. Make `build_house.py` the Blender backend
   that imports it, using `sys.path` and `importlib.reload`.
   - Depends on: 1
@@ -64,7 +68,7 @@ flowchart LR
       up to `len(f)`.
   - Verify: `PY tests/` → all green, **including** the parity test (Blender output
     unchanged)
-- [ ] [python] Move the RAL paint colours (`PAINT`) and `ROOM_LIGHTS` into the core. `paint.py` and
+- [x] [python] Move the RAL paint colours (`PAINT`) and `ROOM_LIGHTS` into the core. `paint.py` and
   `film.py` import them. The shed battens in `build_shed` use `Holz`, and `paint.py` drops
   its `FL_Laden → FL_Holz` swap on `Schuppen_Holz`.
   - Depends on: 2
@@ -81,7 +85,7 @@ flowchart LR
       golden, so the move itself is checked. `Schuppen_Holz` keeps the same unique material
       set (`FL_Holz`, …) after the change.
   - Verify: `PY tests/` → all green, including parity
-- [ ] [python] Compute the shutter cross boards in the core (`build_cross_boards()` from the shutter
+- [x] [python] Compute the shutter cross boards in the core (`build_cross_boards()` from the shutter
   Parts, the same boxes on both faces, object `("EG", "Laeden_Querbretter")`, material
   `Rahmen`). `paint.py` keeps only the colours.
   - Depends on: 3
@@ -94,7 +98,7 @@ flowchart LR
   - Verify: `PY tests/` → all green. Parity is identical for `Laeden_Querbretter` (vertex
     and face counts, bounding box, material), with the `rnd` checksum skipped for this
     object only.
-- [ ] [blender] Move the garden layout into the core:
+- [x] [blender] Move the garden layout into the core:
   - the windrose's `CENTER`/`R`;
   - the `no_grass` rectangles from `GEO`;
   - the separate `windrose` rectangles: the star `CENTER ± R`, plus a ±0.6 m square around
@@ -135,7 +139,7 @@ flowchart LR
 
 ## Python: glTF backend
 
-- [ ] [python] `code/mesh_ops.py`: ear-clipping triangulation of planar n-gons, plus per-part outward
+- [x] [python] `code/mesh_ops.py`: ear-clipping triangulation of planar n-gons, plus per-part outward
   orientation by consistent winding and signed volume; open Parts are reported as open
   - Depends on: none
   - Test first: `tests/test_mesh_ops.py`:
@@ -151,7 +155,7 @@ flowchart LR
       and flagged open, and it isn't flipped.
     - All fail today: there is no module.
   - Verify: `PY tests/test_mesh_ops.py` → all green
-- [ ] [python] `code/export_gltf.py`: Blueprint → `.glb`
+- [x] [python] `code/export_gltf.py`: Blueprint → `.glb`
   - It writes:
     - one node per object with pivot translation and `extras.collection`
     - one primitive per material with `POSITION`/`NORMAL`/`_RND`
@@ -179,9 +183,16 @@ flowchart LR
   - Verify: `PY tests/` → all green, and
     `python3 code/export_gltf.py tmp/frechenlehen.glb` writes the file. Report its size.
 
+- [x] [python] Mark `SMOOTH` objects in the GLB (`extras.smooth: true` on their nodes), so the
+  viewer can skip their ink lines without repeating object names
+  - Depends on: 7
+  - Test first: `tests/test_gltf.py` › "smooth objects are marked": `Kiesel` and `Aussenleuchten`
+    carry `extras.smooth`, `EG_Waende` doesn't. Fails today: no node has `smooth`.
+  - Verify: `PY tests/` → all green
+
 ## Web: scaffold and model
 
-- [ ] [web] Scaffold `web/`:
+- [x] [web] Scaffold `web/`:
   - Vite vanilla + `three` + Vitest + `@playwright/test`. Pin the exact versions from
     `npm view three version` etc. at setup time.
   - `.gitignore`: `node_modules/`, `web/dist/`, `web/public/frechenlehen.glb`,
@@ -192,7 +203,7 @@ flowchart LR
     Fails today: there is no app. `web/src/sanity.test.js` › trivial Vitest check, to prove
     the harness runs.
   - Verify: `cd web && npm test && npx playwright test` → all green
-- [ ] [web] Load the GLB with GLTFLoader, render it with WebGPURenderer and OrbitControls in clay
+- [x] [web] Load the GLB with GLTFLoader, render it with WebGPURenderer and OrbitControls in clay
   (Massenmodell) with sun shadows, and frame the camera from the south-east. Add
   `npm run blueprint` (runs `python3 ../code/export_gltf.py public/frechenlehen.glb`) as
   `predev`/`prebuild`/`pretest`.
@@ -207,7 +218,7 @@ flowchart LR
   - Verify: `cd web && npm test && npx playwright test` → all green. Read the screenshot
     `tmp/web/massing.png` at 1× and check that the whole house is visible: roof, all four
     sides and the ground.
-- [ ] [web] `stages.js`: `weights(p)` and `stageAt(p)` for the four stages
+- [x] [web] `stages.js`: `weights(p)` and `stageAt(p)` for the four stages
   - Depends on: 8
   - Test first: `web/src/stages.test.js`:
     - › weights sum to 1 for p in 0…3 (step 0.01)
@@ -220,7 +231,7 @@ flowchart LR
 
 ## Web: the four stages
 
-- [ ] [web] Skizze, hidden-line:
+- [x] [web] Skizze, hidden-line:
   - ink `EdgesGeometry` lines, merged per collection, with no lines for `SMOOTH` objects
     (`Kiesel`, `Aussenleuchten`);
   - surfaces drawn in paper colour, writing depth, with a polygon offset;
@@ -240,7 +251,7 @@ flowchart LR
       not just the centre);
     - no furniture or stair lines show through the walls;
     - the gravel strip is a clean outline.
-- [ ] [web] Detailmodell: TSL materials from the material extras (plain / wood / speck / bump /
+- [x] [web] Detailmodell: TSL materials from the material extras (plain / wood / speck / bump /
   alpha / emit, with `rnd` variation as in Blender) mixed with clay through `uDetail`
   - Depends on: 9, 10
   - Test first:
@@ -256,7 +267,7 @@ flowchart LR
   - Verify: `cd web && npm test && npx playwright test` → green. Read
     `tmp/web/detail.png` and a 1× close-up of the west side, and compare them with
     `docs/images/ansicht_nordwest.png` (same palette, recognisably the same house).
-- [ ] [web] Garden in the viewer: grass `InstancedMesh` at 25 % density within ~30 m, no grass in
+- [x] [web] Garden in the viewer: grass `InstancedMesh` at 25 % density within ~30 m, no grass in
   the `no_grass` rectangles (the `windrose` rectangles are ignored), shrubs per stage (ink
   circle / clay blob / leaf cloud)
   - Depends on: 11, 12
@@ -275,7 +286,7 @@ flowchart LR
   - Verify: `cd web && npm test && npx playwright test` → green. Read `tmp/web/detail.png`
     and check that grass reaches the far edges of the frame around the house and stays out
     of the terrace and gravel strip.
-- [ ] [web] Gebaut: dusk sky, low sun, warm `PointLight`s at `ROOM_LIGHTS`, all scaled by `uDusk`;
+- [x] [web] Gebaut: dusk sky, low sun, warm `PointLight`s at `ROOM_LIGHTS`, all scaled by `uDusk`;
   the sun toggle forces day or dusk
   - Depends on: 12
   - Test first:
@@ -287,7 +298,7 @@ flowchart LR
 
 ## Web: UI and hosting
 
-- [ ] [web] Timeline bar (play/pause, scrubber 0–3, four stage names), title, cutaway buttons
+- [x] [web] Timeline bar (play/pause, scrubber 0–3, four stage names), title, cutaway buttons
   (Ganzes Haus / Ohne Dach / Nur EG), sun toggle, `body.dataset.stage` / `dataset.cutaway`.
   All labels are German.
   - Depends on: 11, 14
@@ -302,25 +313,41 @@ flowchart LR
   - Verify: `npx playwright test` → green. Read `tmp/web/ui.png` at 1× and check that the
     bottom bar, the title and the top-right buttons don't overlap at 1280×720 and 1920×1080
     (desktop only for now).
-- [ ] [web] GitHub Pages (indexable, no `noindex`):
+- [x] [web] GitHub Pages (indexable, no `noindex`):
   - `.github/workflows/pages.yml`: on push to `main` and on `workflow_dispatch`, it sets
     up Python and Node, runs `npm ci` and `npm run build` in `web/`, uploads with
     `upload-pages-artifact` and deploys with `deploy-pages`.
   - `base: '/frechen_blender/'` for production builds, with the `.glb` loaded via
     `import.meta.env.BASE_URL`.
   - Depends on: 15
-  - Test first: `web/e2e/preview.spec.js` (Playwright project `preview`, served by
+  - Test first: `web/e2e-preview/preview.spec.js` (Playwright project `preview`, served by
     `vite preview` from the production build) › "page loads under /frechen_blender/ with
-    the blueprint": no 404s and `objectCount` > 0. Fails today: the build uses base `/`, so
-    the GLB request 404s under the sub-path.
-  - Verify: `cd web && npm run build && npx playwright test --project=preview` → green, and
-    `npx --yes @action-validator/cli ../.github/workflows/pages.yml` → exit 0. The first
+    the blueprint": no request outside the sub-path, no 404s, the GLB loads once, no test
+    hook in production, the Skizze is drawn (ink pixels). (`objectCount` needs the test hook,
+    which production doesn't have.) Fails today: the build uses base `/`, so the bundle and
+    the GLB are requested outside the sub-path.
+  - Verify: `cd web && npx playwright test --project=preview` → green (its web server builds
+    first), and `actionlint ../.github/workflows/pages.yml` → exit 0 (installed locally; the
+    `npx` validator download was not allowed). The first
     real deploy and the one-time Pages setting (`build_type=workflow`) happen with the merge
     into `main`, after `/spec:archive`.
 
+## Blender file
+
+- [x] [blender] Rebuild and save `frechenlehen.blend` with the new scripts (headless: open the
+  file, exec `build_house`, `paint`, `windrose`, `garden`, `film`, save). The committed file is
+  generated output and is otherwise stale (old shrubs, emitter cells, shed slot, boards without
+  `rnd`). The film needs no re-render.
+  - Depends on: 5, 7
+  - Test first: `tests/test_blender_parity.py` › "saved .blend matches golden": the snapshot
+    taken from the saved file (`BL -b frechenlehen.blend --python tests/blender/snapshot.py --
+    --saved …`) equals the golden. Fails today: the saved file still has the old shrubs.
+  - Verify: `PY tests/` → all green, and a README-camera still from the saved file in
+    `tmp/details/blend_saved.png`, read.
+
 ## Docs
 
-- [ ] [docs] README (German):
+- [x] [docs] README (German):
   - new `house_core.py` / `mesh_ops.py` / `export_gltf.py` rows in the script table
   - a "Web-Ansicht (three.js)" section with `cd web && npm install && npm run dev` and the
     Pages link
