@@ -183,7 +183,7 @@ flowchart LR
   blades and leaves land in different spots, and the browser uses 25 % of the grass density.
 - **Skizze is hidden-line.** Only the visible edges are drawn. `SMOOTH` objects (pebbles,
   outside lamps) get no lines.
-- **The cutaway never hides the ground.** "Ohne Dach" hides `Dach` (with `Verschalung_West`).
+- **The cutaway never hides the ground.** "Ohne Dach" hides `Dach` (with `Verschalung_West` and the annex roof `Dach_Anbau`).
   "Nur EG" also hides `OG` and the OG balconies (`Balkon_OG_*`).
 - **Coordinates:** metres. The origin is the outer SW corner, +X east, +Y north, Z up. The
   `.glb` stores `(x, z, -y)`.
