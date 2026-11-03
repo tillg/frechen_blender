@@ -3,7 +3,7 @@ type: ADR
 id: ADR-002-MLQS
 title: Own stdlib glTF writer with procedural material parameters in extras
 description: The viewer's .glb is written by our own standard-library Python (triangulation, outward orientation, _RND attribute, MAT_DEF in material extras), generated at build time and never committed.
-status: proposed
+status: accepted
 date: 2026-11-03
 supersedes: []
 superseded_by: []

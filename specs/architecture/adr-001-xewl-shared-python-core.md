@@ -3,7 +3,7 @@ type: ADR
 id: ADR-001-XEWL
 title: One pure-Python core with a Blender and a glTF backend
 description: The house is described once in code/house_core.py (no bpy); build_house.py (Blender) and export_gltf.py (glTF for the web viewer) are backends that only turn its Blueprint into output.
-status: proposed
+status: accepted
 date: 2026-11-03
 supersedes: []
 superseded_by: []
