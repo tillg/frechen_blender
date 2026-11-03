@@ -4,7 +4,7 @@ title: "Proposal: Frechenlehen in three.js — architect's model in the browser"
 status: proposed
 order: 1
 created: 2026-10-08
-edited: 2026-10-08
+edited: 2026-11-03
 ---
 
 # Proposal: Frechenlehen in three.js — architect's model in the browser
@@ -18,13 +18,14 @@ the style of the
 
 | # | Stage (UI label) | What you see |
 |---|---|---|
-| 1 | **Skizze** | Ink edge lines of every part on a paper-coloured ground. |
+| 1 | **Skizze** | Ink lines of the visible edges (hidden-line) on a paper-coloured ground. |
 | 2 | **Massenmodell** | The whole house as a white clay model with soft sun shadows. |
 | 3 | **Detailmodell** | Real materials: plaster, larch, oak, limestone, RAL-blue shutters, glass. Daylight. |
 | 4 | **Gebaut** | Dusk: low sun, blue sky and warm light in the rooms that shows through the windows. |
 
 You orbit with the mouse. A timeline bar at the bottom has play/pause, a scrubber and the
-four stage names. Buttons hide the roof or the whole OG so you can look inside.
+four stage names. Buttons hide the roof or the whole OG so you can look inside. The west larch
+cladding belongs to the roof collection and goes with it.
 
 The house geometry is **not** modelled twice. The geometry code in `build_house.py` is
 already pure Python up to `flush_geometry()`. We move it into a **shared core** with **two
@@ -75,16 +76,21 @@ flowchart LR
    Playwright for the page itself (screenshots of every stage go to `tmp/`).
 7. **Docs:** README and CLAUDE.md describe the new layout and how to run each part.
 8. **Shutter cross boards** (white boards on the blue shutters) are computed in the core,
-   so both backends show them.
+   so both backends show them. The shed battens are built as wood in the core instead of
+   being swapped in `paint.py`.
 9. **Garden:** meadow grass and the shrubs in the beds, in the viewer as well as in Blender.
-   The core holds the garden layout and each side plants from it, the browser at 25 % grass
-   density. The Blender shrubs move by a few cm once, on purpose (own random stream for
-   their placement). The windrose's position and size move into the core so grass keeps
-   off it.
+   - The core holds the garden layout, and each side plants from it. The browser uses 25 %
+     grass density.
+   - The Blender shrubs move by a few cm once, on purpose: their placement gets its own
+     random stream.
+   - The windrose's position and size move into the core, so Blender keeps grass off the star
+     and its letters (letter areas approximated).
+   - The viewer draws no windrose, so grass grows there.
 10. **GitHub Pages:** a workflow builds the `.glb` and the Vite app and publishes the page
-    on every push to `main`, so family and friends get a link. The page goes live when
-    `three-js` is merged, after review and archive. The UI is German; desktop browsers are
-    the target.
+    on every push to `main`, so family and friends get a link.
+    - The page goes live when `three-js` is merged, after review and archive.
+    - It may be indexed by search engines.
+    - The UI is German; desktop browsers are the target.
 
 **Out (non-goals of this change):**
 
@@ -95,8 +101,10 @@ flowchart LR
 - A construction build-up animation (parts appearing in building order). Stages crossfade.
 - Matching the Blender renders pixel for pixel. The look is tuned in later iterations.
 - Sketch-style trees, pool and staging props from the demo. Frechenlehen has none of them.
-- Any change to the Blender output beyond the small shrub shift. The house, the film route
-  and the README images stay the same.
+- Any change to the Blender output beyond the small shrub shift and a few meadow cells
+  around the windrose letters. The house, the film route and the README images stay the
+  same.
+- Horizontal section cuts for the cutaway. That is a candidate for a later look iteration.
 
 ## Expected outcome
 
@@ -111,7 +119,9 @@ flowchart LR
 ## Work happens on branch `three-js`
 
 As asked, the whole change lives on its own git branch `three-js` (created from `main` at
-`f23ddf2`). `main` keeps the working Blender-only state until the change is reviewed.
+`f23ddf2`). `main` keeps the working Blender-only state until the change is reviewed. There
+are **no model edits on `main`** until `three-js` is merged, so the move into the core can't
+conflict with them. `code/` is unchanged between `f23ddf2` and the current HEAD.
 
 ## Original request
 
