@@ -3,7 +3,7 @@ type: ADR
 id: ADR-003-SKGB
 title: WebGPURenderer with TSL node materials for the viewer
 description: The viewer renders with three.js WebGPURenderer and builds its procedural materials and stage blending as TSL node graphs, relying on the automatic WebGL2 fallback.
-status: proposed
+status: accepted
 date: 2026-11-03
 supersedes: []
 superseded_by: []
