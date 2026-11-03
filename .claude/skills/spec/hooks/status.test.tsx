@@ -21,7 +21,7 @@ const dir = (name: string) => ({ name, kind: 'dir' as const, size: 0, mtimeMs: 0
 // The engine hands fs hooks absolute paths, so match on the project-relative tail.
 const fakeFs = (on: any, files: Record<string, string> | null) => {
   const tail = (p: string) => (p.includes('specs/') ? p.slice(p.indexOf('specs/')) : p)
-  // Files outside specs/ (.env, other checkouts' tmp/stack/branch) by their path's end.
+  // Files outside specs/ by their path's end.
   const outside = (p: string) => Object.entries(files ?? {}).find(([k]) => !k.startsWith('specs/') && (p === k || p.endsWith(`/${k}`)))?.[1]
   on('fs.exists', (_: any, e: any) => ({ value: files !== null && tail(e.path) === 'specs/changes' }))
   on('fs.list', (_: any, e: any) => {
@@ -37,30 +37,17 @@ const fakeFs = (on: any, files: Record<string, string> | null) => {
 
 // Fake git: `status` is `git status --porcelain=v2 --branch`'s output, `refs` the branches with the change
 // dirs each holds, `vsMain` what `git rev-list --left-right --count origin/main...HEAD` prints.
-// `lsof` answers the listener and cwd questions; `roots` maps a cwd to its checkout, `branches` a checkout to its branch.
 type Git = {
   status: string
   refs?: Record<string, string[]>
   vsMain?: string
-  lsof?: { listen: string; cwd: string }
-  roots?: Record<string, string>
-  branches?: Record<string, string>
 }
 const fakeGit = (on: any, git: Git) => {
   const ran = (stdout: string, exitCode = 0) => ({
     value: { exitCode, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
   })
   on('process.run', (_: any, e: any) => {
-    const [cmd, sub] = e.argv
-    if (cmd === 'lsof') {
-      if (!git.lsof) return ran('', 1)
-      return ran(e.argv.includes('cwd') ? git.lsof.cwd : git.lsof.listen)
-    }
-    if (sub === '-C') {
-      const [, , dir, what] = e.argv
-      if (what === 'rev-parse') return git.roots?.[dir] ? ran(git.roots[dir] + '\n') : ran('', 128)
-      return ran((git.branches?.[dir] ?? '') + '\n')
-    }
+    const [, sub] = e.argv
     if (sub === 'status') return ran(git.status)
     if (sub === 'rev-list') return git.vsMain === undefined ? ran('', 128) : ran(git.vsMain)
     if (sub === 'for-each-ref') return ran(Object.keys(git.refs ?? {}).join('\n') + '\n')
@@ -219,7 +206,7 @@ test('git summary: upstream, main, working tree', async ($, on) => {
   await ui.unmount()
 })
 
-test('git summary: unpushed branch, clean tree, branch name Bitbucket rejects', async ($, on) => {
+test('git summary: unpushed branch, clean tree, no branch-name warning', async ($, on) => {
   fakeFs(on, null)
   fakeGit(on, { status: status('fix-just'), vsMain: '0\t0\n' })
   await start($, on)
@@ -228,35 +215,6 @@ test('git summary: unpushed branch, clean tree, branch name Bitbucket rejects', 
   const all = (await texts(ui)).join('\n')
   expect(all).toMatch(/fix-just\s+·\s+not pushed/)
   expect(all).toMatch(/clean/)
-  expect(all).toMatch(/Bitbucket rejects/)
-  await ui.unmount()
-})
-
-test('stacks: number, branch it was started on, status, link to the app', async ($, on) => {
-  fakeFs(on, {
-    [`${A}/plan.md`]: `status: applying\n${PLAN}`,
-    '.env': 'STACK_NO=5\n',
-    'w/a/tmp/stack/branch': 'feature/use_setup\n',
-  })
-  fakeGit(on, {
-    status: status('feature/add-auth'),
-    lsof: {
-      listen:
-        'p100\nf540\nn127.0.0.1:8402\np101\nf16\nn*:8401\np102\nf12\nn*:8409\nf13\nn*:8439\np103\nf9\nn*:8432\np104\nf3\nn*:5432\n',
-      cwd: 'p100\nfcwd\nn/w/a/server/app\np101\nfcwd\nn/w/a/client\np103\nfcwd\nn/w/b/server/app\n',
-    },
-    roots: { '/w/a/server/app': '/w/a', '/w/a/client': '/w/a', '/w/b/server/app': '/w/b' },
-    branches: { '/w/b': 'feature/other' },
-  })
-  await start($, on)
-
-  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
-  const all = await texts(ui)
-  expect(all.some(t => /^Stacks$/.test(t))).toBe(true)
-  expect(all.filter(t => /^\s*0\s+running\s+feature\/use_setup/.test(t))).toHaveLength(1)
-  expect(all.filter(t => /^\s*3\s+partial\s+feature\/other/.test(t))).toHaveLength(1)
-  expect(all.filter(t => /^\s*5\s+down\s+.*this checkout/.test(t))).toHaveLength(1)
-  const links = ((await ui.findAll({ type: 'Link' })) as any[]).map(l => l.props.href)
-  expect(links).toEqual(['http://localhost:8401'])
+  expect(all).not.toMatch(/rejects this branch name/)
   await ui.unmount()
 })

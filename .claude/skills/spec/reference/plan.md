@@ -8,9 +8,9 @@ the code that makes it pass.** A step is done when its verify command passes, no
 ## Step format
 
 ```markdown
-- [ ] [server] Reject a Person without a last name
-  - Test first: `server/app/src/test/java/.../PersonValidationTest.java` › `rejectsMissingLastName` — fails today: no validator
-  - Verify: `gradle test` → green
+- [ ] [python] Record every gable window in `GABLE_WIN`
+  - Test first: `tests/test_core.py` › "gable windows are recorded" — fails today: list stays empty
+  - Verify: `python3 -m pytest -q` → green
 ```
 
 Every checkbox step carries both sub-bullets. They are plain bullets, not checkboxes, so progress
@@ -22,18 +22,17 @@ Every checkbox step carries both sub-bullets. They are plain bullets, not checkb
 | `Test first:` | The test to write before any code: file › case, what it asserts, why it fails today. |
 | `Verify:` | A command that exits 0 only when the step is done, and what passing looks like. Usually the targeted test plus the full suite. |
 
-## Step kinds (A12)
+## Step kinds
 
-The kind tells `/spec:apply` which harness and which helpers apply. Commands and skills per kind:
-`a12.md` in this directory.
+The kind tells `/spec:apply` which harness applies. Commands per kind: `project.md` in this
+directory.
 
 | Kind | What it changes | Test first | Verify |
 |---|---|---|---|
-| `[model]` | A12 model files under `import/models/` (DM, FM, OM, RM, CDM, QM, AM, …) | `none — models have no unit harness`; the behaviour is asserted by the `[server]`/`[client]`/`[e2e]` step that uses the model, or by seed data that must import | model validation green (`validate-a12-models` skill if available, else `gradle :import:build`), plus the dependent step's test |
-| `[server]` | Java under `server/app` (listeners, services, authorization) | JUnit test in `server/app/src/test/java` | `gradle test` |
-| `[client]` | TypeScript under `client/src` (modules, sagas, components) | Vitest test once the harness exists; until then `none — no client unit harness, see harness step` | `npm run compile` in `client/` (+ `npx vitest run` when present) |
-| `[e2e]` | User journeys through the running app | Playwright spec in `e2e/tests/base/` | `cd e2e && npm run e2e:test` |
-| `[docs]` / `[config]` | No runtime surface (README, properties, roles.yaml, …) | `none — <why>` | the strongest mechanical check: build, lint, a `grep` that must match |
+| `[python]` | Pure-Python code under `code/` that runs without bpy (shared core, exporters) | pytest test in `tests/` | `python3 -m pytest -q` |
+| `[blender]` | bpy build scripts (`build_house.py`, `paint.py`, `garden.py`, `film.py`, …) | a check run in Blender via the MCP server (object/vertex counts, clash or clearance check), else `none — visual only` | rebuild in order, then render a still to `tmp/details/` and read it; film route: camera clearance check |
+| `[web]` | three.js viewer under `web/` | Vitest/Node unit test or Playwright spec | `cd web && npm test && npx playwright test`, screenshots read at 1× |
+| `[docs]` / `[config]` | No runtime surface (README, settings, …) | `none — <why>` | the strongest mechanical check: a `grep` that must match, a JSON parse |
 
 By kind of change:
 
@@ -42,11 +41,10 @@ By kind of change:
 - **Refactor** — `Test first: existing <tests> pass before and after`; if the area has no coverage,
   the step before adds it.
 - **No test harness yet** — the first step sets one up and its verify runs one trivial test. This
-  project has JUnit on the server, Playwright e2e in `e2e/`, and no client unit harness yet
-  (`a12.md`).
+  project has no test suite yet: Blender changes are verified by rendered stills (`project.md`).
 
-Order steps so each test can be written against what earlier steps built; a `[model]` step comes
-before the steps that use the model. The plan ends with a plain note (not a checkbox): "System docs
+Order steps so each test can be written against what earlier steps built; a `[python]` core step comes
+before the `[blender]`/`[web]` steps that use it. The plan ends with a plain note (not a checkbox): "System docs
 are updated at `/spec:archive`."
 
 ## The cycle `/spec:apply` runs per step
