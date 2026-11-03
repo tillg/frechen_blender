@@ -12,7 +12,6 @@
     ]
   },
 
-  "disableAllHooks": true,
   "disableClaudeAiConnectors": true,
   "claudeMdExcludes": [
     "/Users/tgartner/.claude/CLAUDE.md",

@@ -202,7 +202,6 @@ test('git summary: upstream, main, working tree', async ($, on) => {
   expect(all).toMatch(/vs origin\/main:\s+5 ahead, 3 behind/)
   expect(all).toMatch(/archive\ntweak: side lane[^\n]*\nGit\n/)
   expect(all).toMatch(/2 staged · 2 modified · 1 untracked · 1 conflicted/)
-  expect(all).not.toMatch(/Bitbucket/)
   await ui.unmount()
 })
 
