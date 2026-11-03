@@ -575,6 +575,7 @@ def build_eg():
     chair("EG", 4.05, 1.545, 1, 0)
     chair("EG", 8.06, 1.545, -1, 0)
     kitchen()
+    box(c, "EG_Waende", "Putz", 2.04, 2.358, 12.12, 12.471, z0, z1)   # shaft in the Bad Großeltern (plan 2026-10)
 
 
 # ---------------------------------------------------------------- Ofenbett
@@ -1337,8 +1338,8 @@ def build_outside():
 def build_annex():
     """Elektroraum (north) and Heizung (south) in the SW corner, after the plan of 2026-10-19
     (replaces the shed): timber-framed walls (plan: wood hatching, 0.20 m) clad with vertical
-    larch boards, flat roof with overhang (OG plan, top from the elevations), plank door in
-    the west wall, panel door from the Elektroraum to the Heizung."""
+    larch boards, flat roof with overhang (OG plan, top from the elevations; object Dach_Anbau),
+    plank door in the west wall, panel door from the Elektroraum to the Heizung."""
     c, o, M, T, t = "EG", "EG_Anbau", "Laerche", 0.025, 0.20
     x0, x1, y0, y1 = ANNEX
     zr, ym = ANNEX_TOP - 0.15, 2.59                         # roof underside, partition (south face)
@@ -1371,7 +1372,9 @@ def build_annex():
     lbox(c, o, "Eisen", PY, door[0] + 0.08, door[0] + 0.12, x0 + 0.005, x0 + 0.02, 1.0, 1.15)
     # flat roof with overhang; it stops at the house wall, west of the house it overlaps it
     xr, yr0, yr1 = x0 - 0.30, y0 - 0.32, y1 + 0.27
-    xy_prism(c, o, "Dach", [(xr, yr0), (x1, yr0), (x1, y1), (-T, y1), (-T, yr1), (xr, yr1)], zr, ANNEX_TOP)
+    # (own object in the Dach collection, so "Ohne Dach" / "Nur EG" open the annex too)
+    xy_prism("Dach", "Dach_Anbau", "Dach", [(xr, yr0), (x1, yr0), (x1, y1), (-T, y1), (-T, yr1), (xr, yr1)],
+             zr, ANNEX_TOP)
 
 
 # ---------------------------------------------------------------- room names on the floor
@@ -1429,7 +1432,7 @@ CELL = 0.25                                 # emitter grid
 DENSITY = 90                                # grass clumps per m² close to the house
 NEAR, FAR, FAR_DENS = 14.0, 28.0, 0.15      # density falls off from NEAR to FAR (relative)
 HOUSE_C = (7.44, 6.44)
-NO_GRASS = ["EG_Waende", "Terrasse", "Kiesstreifen", "Beet_Ost", "Beet_West", "EG_Anbau",
+NO_GRASS = ["EG_Waende", "Terrasse", "Kiesstreifen", "Beet_Ost", "Beet_West", "Dach_Anbau",
             "Balkon_EG_Nord"]
 BEDS = ("Beet_Ost", "Beet_West")
 WINDROSE_CENTER = (-3.5, -5.0, 0.02)        # compass rose south-west of the house (windrose.py)

@@ -30,6 +30,7 @@ are not changes between the two plan versions. Only the differences below are.
 | E3 | **Büro and Musikraum become one room** | Partition with a double door between them (x ≈ 11.2) | Partition gone | wall removed |
 | E4 | **WC Großeltern: new access** | Door from the Großeltern bedroom (east wall, y 9.02–9.90). Toilet on the south wall at x 1.46, basin on the north wall | Bedroom door closed. Sliding door from the Bad Großeltern in the dividing wall (x 0.56–1.25). Toilet at x ≈ 1.17, basin on the east wall (y ≈ 9.12) | implemented. The leaf is shown slid open to the east, because the plan's arrow points west and there is no room for it there. |
 | E5 | **Dining room: south window becomes a French door** | Elevation: window x 6.62–7.92, sill 1.03 m | South elevation: French door with shutters, floor to 2.0 m (same opening) | FD with shutters |
+| E6 | **Shaft in the Bad Großeltern** | Nothing in the EG. Both versions already draw a pipe at this spot in the OG (Yoga room) | Square 0.30 × 0.32 m in the NE corner of the Bad, x 2.04–2.34, y 12.12–12.44: probably a vertical installation shaft that now runs down into the EG | plastered box from floor to ceiling, x 2.04–2.36, y 12.12–12.47 |
 
 ### OG (upper floor)
 
@@ -52,6 +53,8 @@ are not changes between the two plan versions. Only the differences below are.
   south elevation apart from E5.
 - The EG dimension chain along the south side (31 / 2.05 / 41.5 / 2.47 / 25 / 3.07 / 50 / 5.30 /
   53.5) matches the model.
+- Back door (west wall of the small Flur): the new plan has it at y 7.41–8.38, in line with the inner
+  door; the old plan had it about 0.6 m further south. The model has had the new position from the start.
 - OG Bad/HWR partition: the new dimensions (3.25 / 15 / 2.25) are within 3 cm of the model, so it
   was left as it is.
 

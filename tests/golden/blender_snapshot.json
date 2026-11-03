@@ -179,6 +179,27 @@
   "rnd": "058552b0311d7fb7",
   "verts": 16
  },
+ "Dach_Anbau": {
+  "bbox": [
+   -1.94,
+   -0.07,
+   2.27,
+   2.358,
+   5.415,
+   2.42
+  ],
+  "faces": 8,
+  "materials": [
+   "FL_Dach"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "3dd7d94a9546f06c",
+  "verts": 12
+ },
  "Dach_Sparren": {
   "bbox": [
    -1.49,
@@ -245,16 +266,15 @@
  },
  "EG_Anbau": {
   "bbox": [
-   -1.94,
-   -0.07,
+   -1.685,
+   0.221,
    -0.3,
    2.358,
-   5.415,
-   2.42
+   5.174,
+   2.27
   ],
-  "faces": 530,
+  "faces": 522,
   "materials": [
-   "FL_Dach",
    "FL_Decke",
    "FL_Eisen",
    "FL_Laerche",
@@ -266,8 +286,8 @@
    0.0,
    0.0
   ],
-  "rnd": "fe95a3ffa8eed2ea",
-  "verts": 708
+  "rnd": "4d724e3a2d1ba70a",
+  "verts": 696
  },
  "EG_Boden": {
   "bbox": [
@@ -287,7 +307,7 @@
    0.0,
    0.0
   ],
-  "rnd": "7b5a300265cea81d",
+  "rnd": "c5d48562a1363625",
   "verts": 16
  },
  "EG_Bodenbelag": {
@@ -309,7 +329,7 @@
    0.0,
    0.0
   ],
-  "rnd": "62886e3240f510a7",
+  "rnd": "84434ccf3cea1193",
   "verts": 5072
  },
  "EG_Bodenplatte": {
@@ -330,7 +350,7 @@
    0.0,
    0.0
   ],
-  "rnd": "6cf4a542b9e25ff2",
+  "rnd": "0997f2d2e122c6de",
   "verts": 16
  },
  "EG_Fenster_Tueren": {
@@ -648,7 +668,7 @@
    12.887,
    2.4
   ],
-  "faces": 874,
+  "faces": 880,
   "materials": [
    "FL_Putz"
   ],
@@ -657,8 +677,8 @@
    0.0,
    0.0
   ],
-  "rnd": "76bb44cac4964e2f",
-  "verts": 1052
+  "rnd": "6cb244559b49f9ad",
+  "verts": 1060
  },
  "GA_Grasbuschel": {
   "bbox": [
@@ -1076,7 +1096,7 @@
    0.0,
    0.0
   ],
-  "rnd": "a31dcab76744d512",
+  "rnd": "5e0103972a510448",
   "verts": 40
  },
  "OG_Bodenbelag": {
@@ -1118,7 +1138,7 @@
    0.0,
    0.0
   ],
-  "rnd": "7463e34717feaaf3",
+  "rnd": "977c1c5e52967199",
   "verts": 40
  },
  "OG_Fenster_Tueren": {
@@ -1140,7 +1160,7 @@
    0.0,
    0.0
   ],
-  "rnd": "cbc1942e8d63a4b4",
+  "rnd": "7ececb03746d970b",
   "verts": 2208
  },
  "OG_Gelaender": {
@@ -1182,7 +1202,7 @@
    0.0,
    0.0
   ],
-  "rnd": "83dc0a243d33c693",
+  "rnd": "829e4a738f83b142",
   "verts": 1624
  },
  "OG_Laeden": {
@@ -1203,7 +1223,7 @@
    0.0,
    0.0
   ],
-  "rnd": "bf8977f7fb47e894",
+  "rnd": "e35be1c7b59bcb77",
   "verts": 208
  },
  "OG_Laeden_Querbretter": {
@@ -1224,7 +1244,7 @@
    0.0,
    0.0
   ],
-  "rnd": "e0bfa28bcc4a4ccf",
+  "rnd": "5ff2b03abac57332",
   "verts": 832
  },
  "OG_Raumnamen": {
@@ -1290,7 +1310,7 @@
    0.0,
    0.0
   ],
-  "rnd": "495f0025e90c2ed3",
+  "rnd": "13edb41315d85f3a",
   "verts": 688
  },
  "Ref_Grundriss_EG": {
