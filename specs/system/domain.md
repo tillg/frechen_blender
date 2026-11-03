@@ -31,7 +31,7 @@ the team uses them:
 | **Cross boards** (Querbretter) | The two white boards across every shutter, per storey (`Laeden_Querbretter`, `OG_Laeden_Querbretter`). |
 | **Lärche / Lärchenschalung** | Larch wood / the larch board cladding of the west side, the east gable and the annex. |
 | **Windfang** | Entrance lobby behind the east front door, with a glazed double door. |
-| **Stube** | Living room with the **Kachelofen** (tiled stove) and **Ofenbank** (stove bench). |
+| **Stube** | Living room with the **Ofenbett**: a plastered stove with a bed above it and an **Ofenbank** (stove bench). The plans still label it "Kachelofen". |
 | **Opening** | A hole in a wall: `W` window, `FD` french door, `WF` tall window with a fixed light below, `GD` glazed larch door, `D` solid door, `I` bare opening filled by a dedicated builder. |
 | **Leaf** | An interior door leaf, normally opened flat against the wall. |
 | **Component** | A named building part (e.g. entrance door). The name of a reference photo in `input/` is the component it shows. |
@@ -191,6 +191,6 @@ flowchart LR
   hatching marks a closed-up door.
 - **Faces that overlap in one plane** must share one `rnd` value or be offset by
   millimetres, or they z-fight.
-- **Colours:** facade and windows RAL 9010, shutters and stove tiles RAL 5014. Doors stay
+- **Colours:** facade and windows RAL 9010, shutters RAL 5014. Doors stay
   natural wood.
 - **The film camera** stays ≥ 0.25 m from all geometry and never passes through a wall.

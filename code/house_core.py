@@ -54,14 +54,14 @@ MAT_DEF = {
     "Glas":       dict(rgba=(0.70, 0.85, 0.95, 0.25), alpha=0.25, rough=0.1),
     "Milchglas":  dict(rgba=(0.90, 0.90, 0.88, 0.85), alpha=0.85, rough=0.4),
     "Wiese":      dict(speck=((0.05, 0.12, 0.025), (0.12, 0.20, 0.04), 3)),
-    "Kachel":     dict(rgba=(0.35, 0.47, 0.42, 1), rough=0.35),               # glazed; colour: paint.py
-    "Schiefer":   dict(speck=((0.06, 0.065, 0.07), (0.20, 0.21, 0.22), 12), hue=0.03),
     "Feuer":      dict(rgba=(1.0, 0.22, 0.02, 1), emit=1.2),
     "Kies":       dict(speck=((0.30, 0.28, 0.25), (0.62, 0.60, 0.56), 150), bump=(150, 0.5)),
     "Erde":       dict(speck=((0.025, 0.014, 0.008), (0.07, 0.04, 0.022), 60), bump=(60, 0.6)),
     "Granit":     dict(speck=((0.30, 0.29, 0.26), (0.62, 0.58, 0.50), 220), hue=0.06),
     "Fuge":       dict(rgba=(0.16, 0.16, 0.15, 1)),
     "Kiesel":     dict(rgba=(0.52, 0.50, 0.46, 1), rough=0.5),
+    "Ofenglas":   dict(rgba=(0.10, 0.08, 0.06, 0.15), alpha=0.15, rough=0.05),  # stove door
+    "Leinen":     dict(rgba=(0.78, 0.74, 0.66, 1), rough=0.9),               # mattress
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
     "Spiegel":    dict(rgba=(0.92, 0.92, 0.92, 1), metal=1.0, rough=0.02),
@@ -72,9 +72,9 @@ MAT_DEF = {
     "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),
 }
 # RAL colours (sRGB 0-255) that override the base colour of plain materials (paint.py, viewer):
-# facade and windows RAL 9010 Reinweiß, shutters and stove tiles RAL 5014 Taubenblau
+# facade and windows RAL 9010 Reinweiß, shutters RAL 5014 Taubenblau
 RAL_9010, RAL_5014 = (241, 236, 225), (99, 125, 150)
-PAINT = {"Putz": RAL_9010, "Rahmen": RAL_9010, "Laden": RAL_5014, "Kachel": RAL_5014}
+PAINT = {"Putz": RAL_9010, "Rahmen": RAL_9010, "Laden": RAL_5014}
 
 GEO = {}      # (collection, object) -> {"v": [...], "f": [...], "m": [...], "r": [...]}
 SMOOTH = set()  # objects shaded smooth
@@ -312,11 +312,12 @@ def glazed_door(B, fo, a, b, sill, head, tm):
             B(M, ga, gb, tm - 0.025, tm + 0.025, zr - 0.017, zr + 0.017, fo)
 
 
-def interior(coll, x0, x1, y0, y1, doors=(), z0=0.0, z1=Z_EG_TOP, head=DOOR_H):
+def interior(coll, x0, x1, y0, y1, doors=(), z0=0.0, z1=Z_EG_TOP, head=DOOR_H, ops=()):
     """doors: (a, b) = open passage, or (a, b, swing, hinge[, flat]) = opening with an opened
     door leaf; swing +1/-1 = room side along the thin axis, hinge "a"/"b" = which jamb carries
-    the leaf, flat=False: leaf at 90 deg instead of against the wall (see panel_door)."""
-    wall(coll, x0, x1, y0, y1, z0, z1, [(d[0], d[1], z0, z0 + head, "I") for d in doors])
+    the leaf, flat=False: leaf at 90 deg instead of against the wall (see panel_door).
+    ops: further wall() openings, e.g. the fire window."""
+    wall(coll, x0, x1, y0, y1, z0, z1, [(d[0], d[1], z0, z0 + head, "I") for d in doors] + list(ops))
     ax = "x" if (x1 - x0) >= (y1 - y0) else "y"
     t0, t1 = (y0, y1) if ax == "x" else (x0, x1)
     for d in doors:
@@ -552,7 +553,8 @@ def build_eg():
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
     # Großeltern: the Bad is open to the bedroom (unhatched in the plan), the WC is reached from the Bad
     interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (10.33, 12.33)])
-    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, -1, "a")])   # Küche door
+    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")],    # Küche door (opens to the Flur)
+             ops=[(*FIRE, "I")])                                          # fire window of the Ofenbett
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
@@ -563,7 +565,7 @@ def build_eg():
     sliding_door(c, 0.56, 1.25, 10.25)
     interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
-    kachelofen()
+    ofenbett()
     build_stairs()
     for x0, x1 in ((4.26, 6.05), (6.05, 7.85)):             # dining table (plan: two joined tables)
         table("EG", x0 + 0.002, x1 - 0.002, 1.18, 1.91)
@@ -572,78 +574,70 @@ def build_eg():
         chair("EG", x, 0.97, 0, 1)
     chair("EG", 4.05, 1.545, 1, 0)
     chair("EG", 8.06, 1.545, -1, 0)
+    kitchen()
 
 
-# ---------------------------------------------------------------- Kachelofen
-def tiles_on(o, P, u0, u1, z0, z1, face, out, tw=0.20, th=0.24):
-    """Panel tiles (with a raised field) on a face at t = face, facing direction out (+1/-1)."""
-    nu, nz = max(1, round((u1 - u0) / tw)), max(1, round((z1 - z0) / th))
-    for i in range(nu):
-        for j in range(nz):
-            ua, ub = u0 + (u1 - u0) * i / nu + 0.002, u0 + (u1 - u0) * (i + 1) / nu - 0.002
-            za, zb = z0 + (z1 - z0) * j / nz + 0.002, z0 + (z1 - z0) * (j + 1) / nz - 0.002
-            r = random.random()
-            lbox("EG", o, "Kachel", P, ua, ub, face, face + out * 0.015, za, zb, r)
-            lbox("EG", o, "Kachel", P, ua + 0.03, ub - 0.03, face + out * 0.015, face + out * 0.022,
-                 za + 0.03, zb - 0.03, r)
+# ---------------------------------------------------------------- Ofenbett
+FIRE = (9.32, 9.80, 0.30, 0.86)        # fire door / fire window: x range, sill, head
 
 
-def cornice(o, x0, x1, y0, y1, z, sides):
-    """Stepped tile ledge round a block (sides that face the room: S, E)."""
-    for dz, pr in ((0.0, 0.03), (0.04, 0.06)):
-        box("EG", o, "Kachel", x0, x1 + (pr if "E" in sides else 0), y0 - (pr if "S" in sides else 0), y1,
-            z + dz, z + dz + 0.04)
+def fire_window(o, tb, tf, s):
+    """Fire behind glass: iron frame from the firebox back tb to 3 cm proud of the face tf,
+    black back, two logs, three flame tongues, stove glass; s = +1/-1 = viewer side along y."""
+    PX, (fa, fb, za, zc), r = frame("x"), FIRE, random.random()
+    for ua, ub, wa, wb in ((fa, fa + 0.04, za, zc), (fb - 0.04, fb, za, zc),
+                           (fa, fb, za, za + 0.04), (fa, fb, zc - 0.04, zc)):
+        lbox("EG", o, "Eisen", PX, ua, ub, tb, tf + s * 0.03, wa, wb, r)
+    ia, ib, iz0, iz1 = fa + 0.04, fb - 0.04, za + 0.04, zc - 0.04               # glass opening
+    lbox("EG", o, "Eisen", PX, ia, ib, tb, tb + s * 0.004, iz0, iz1)              # black firebox back
+    for k in range(2):                                                         # two logs
+        lbox("EG", o, "Holz", PX, ia + 0.03 + 0.02 * k, ib - 0.05 + 0.02 * k, tb + s * (0.010 + 0.004 * k),
+             tb + s * (0.004 + 0.004 * k), iz0 + 0.01 + 0.05 * k, iz0 + 0.06 + 0.05 * k)
+    for cu, w, h in ((0.11, 0.10, 0.24), (0.20, 0.13, 0.33), (0.29, 0.09, 0.21)):  # flame tongues
+        n = 8
+        pts = [(ia + cu + w / 2 * math.cos(math.pi * i / n), iz0 + 0.07) for i in range(n, -1, -1)]
+        sweep("EG", o, "Feuer", PX, [((u, iz0 + 0.07), (ia + cu + (u - ia - cu) * 0.15,
+              iz0 + 0.07 + h * math.sin(math.acos(max(-1.0, min(1.0, (u - ia - cu) / (w / 2))))) ** 0.6))
+              for u, _ in pts], tb + s * 0.008, tb + s * 0.006)
+    lbox("EG", o, "Ofenglas", PX, ia, ib, tb + s * 0.022, tb + s * 0.018, iz0, iz1)
 
 
-def kachelofen():
-    """Tiled stove in the Stube after ofen_stuben.jpg, tiles in the shutter blue (RAL 5014, set
-    in paint.py): white plaster body with firebox, tiled corner column and upper tier, tile
-    ledges, wooden stove bench with an arched opening and round tiles, slate hearth.
-    Body = plan footprint; the bench runs south along the west wall (east would block the
-    Stube door)."""
-    o, x0, x1, y0, y1 = "EG_Kachelofen", 9.06, 10.56, 4.34, 5.849
+def ofenbett():
+    """Ofenbett in the Stube after ofenbett-1200x800.jpg: white plastered stove body along the
+    west wall with a rounded top edge and an arched recess at the floor, fire visible through a
+    glass door in the free south end, a spruce bench along the east face and a bed on a corner
+    post above the stove (rail at stove-top height, guard boards, mattress)."""
+    o, x0, x1, y0, y1 = "EG_Ofenbett", 9.06, 10.06, 3.85, 5.849
     PX, PY = frame("x"), frame("y")
-    box("EG", o, "Putz", x0, x1, y0, y1, 0.02, 1.22)                          # body
-    fx0, fx1 = 9.35, 9.90                                                      # firebox (south)
-    for ua, ub, za, zb in ((fx0 - 0.05, fx0, 0.30, 1.05), (fx1, fx1 + 0.05, 0.30, 1.05),
-                           (fx0, fx1, 0.30, 0.36), (fx0, fx1, 0.99, 1.05)):          # black frame
-        lbox("EG", o, "Eisen", PX, ua, ub, y0 - 0.03, y0, za, zb)
-    lbox("EG", o, "Feuer", PX, fx0, fx1, y0 - 0.005, y0 - 0.0, 0.36, 0.99)
-    lbox("EG", o, "Eisen", PX, fx1 - 0.06, fx1 - 0.04, y0 - 0.06, y0 - 0.025, 0.55, 0.85)   # handle
-    tx0, ty1 = 10.16, 4.74                                                     # tiled corner column
-    box("EG", o, "Putz", tx0, x1, y0, ty1, 0.02, 1.22)
-    tiles_on(o, PX, tx0, x1, 0.04, 1.20, y0, -1)
-    tiles_on(o, PY, y0, ty1, 0.04, 1.20, x1, 1)
-    cornice(o, x0, x1, y0, y1, 1.22, "SE")
-    uy0 = 4.90                                                                 # upper tier (back half)
-    box("EG", o, "Putz", x0, x1, uy0, y1, 1.30, 1.80)
-    tiles_on(o, PX, x0 + 0.02, x1, 1.32, 1.78, uy0, -1, th=0.23)
-    tiles_on(o, PY, uy0, y1, 1.32, 1.78, x1, 1, th=0.23)
-    cornice(o, x0, x1, uy0, y1, 1.80, "SE")
-    box("EG", o, "Putz", x0, 10.20, 5.25, y1, 1.88, 2.08)                     # top step
-    cornice(o, x0, 10.20, 5.25, y1, 2.08, "SE")
-    # stove bench along the west wall, warm back wall with round tiles
-    bx0, bx1, by0 = 9.06, 9.66, 3.0
-    arc = [(3.35 + 0.30 * (1 - math.cos(math.pi * i / 16)), 0.30 * math.sin(math.pi * i / 16) + 0.05)
-           for i in range(17)]                                                 # opening under the bench
-    box("EG", o, "Putz", bx0, bx1, by0, 3.35, 0.02, 0.42)
-    box("EG", o, "Putz", bx0, bx1, 3.95, y0, 0.02, 0.42)
-    sweep("EG", o, "Putz", PY, [((u, z), (u, 0.42)) for u, z in arc], bx0, bx1)
-    box("EG", o, "Putz", bx0, bx1, 3.35, 3.95, 0.02, 0.05)
-    box("EG", o, "Eiche", bx0, bx1 + 0.04, by0, y0, 0.42, 0.47)                 # seat
-    box("EG", o, "Putz", bx0, 9.26, by0, y0, 0.47, 1.22)                        # back
-    cornice(o, bx0, 9.26, by0, y0, 1.22, "E")
-    k = 16
-    for yc in (3.35, 3.8, 4.2):
-        for r, t in ((0.09, 0.02), (0.06, 0.035)):                             # round bowl tiles
-            v = [(9.26 + dt, yc + r * math.cos(2 * math.pi * i / k), 0.85 + r * math.sin(2 * math.pi * i / k))
-                 for dt in (0.0, t) for i in range(k)]
-            f = [list(range(k))[::-1], list(range(k, 2 * k))]
-            f += [(i, (i + 1) % k, k + (i + 1) % k, k + i) for i in range(k)]
-            add("EG", o, "Kachel", v, f)
-    # slate hearth in front of body and bench
-    for xa, xb, ya, yb in ((bx1 + 0.04, x1 + 0.45, 3.5, y0), (x1, x1 + 0.45, y0, y1)):
-        tiles("EG", o, "Schiefer", xa, xb, ya, yb, 0.012, 0.022, [0.45, 0.4], (0.4, 0.7), 0.006)
+    zb, ztop, R = 0.42, 1.10, 0.30                                             # bench / top / rounding
+    # lower body with the arched recess (east face, under the bench)
+    box("EG", o, "Putz", x0, x1 - 0.25, y0, y1, 0.02, zb)
+    ra, rb = 4.35, 5.35
+    arc = [(ra + (rb - ra) / 2 * (1 - math.cos(math.pi * i / 16)), 0.30 * math.sin(math.pi * i / 16) + 0.02)
+           for i in range(17)]
+    box("EG", o, "Putz", x1 - 0.25, x1, y0, ra, 0.02, zb)
+    box("EG", o, "Putz", x1 - 0.25, x1, rb, y1, 0.02, zb)
+    sweep("EG", o, "Putz", PY, [((u, z), (u, zb)) for u, z in arc], x1 - 0.25, x1)
+    # upper body: cross-section with the rounded east top edge, extruded along the wall
+    sec = [x0] + [x1 - R + R * math.sin(math.pi / 2 * i / 8) for i in range(9)]
+    zt = lambda x: ztop - R + math.sqrt(max(0.0, R * R - (x - (x1 - R)) ** 2)) if x > x1 - R else ztop
+    sweep("EG", o, "Putz", PX, [((x, zb), (x, zt(x))) for x in sec], y0, y1)
+    # fire door in the south end (with handle), fire window towards the Flur in the north wall
+    fire_window(o, y0, y0, -1)
+    lbox("EG", o, "Eisen", PX, FIRE[1] - 0.10, FIRE[1] - 0.08, y0 - 0.06, y0 - 0.03, 0.50, 0.66)
+    fire_window(o, 6.25, 6.349, 1)
+    # bench along the east face on board legs
+    box("EG", o, "FichteY", x1, x1 + 0.42, y0, y1, zb, zb + 0.045)
+    for yl in (y0 + 0.12, (ra + rb) / 2, y1 - 0.12):
+        box("EG", o, "FichteZ", x1 + 0.08, x1 + 0.36, yl - 0.02, yl + 0.02, 0.012, zb)
+    # bed above the stove: corner post, rail, platform, guard boards, mattress
+    zp = 1.55
+    box("EG", o, "FichteZ", x1 + 0.04, x1 + 0.12, y0 - 0.08, y0, 0.012, Z_EG_TOP)       # corner post
+    box("EG", o, "FichteY", x1 + 0.04, x1 + 0.07, y0, y1, 1.12, 1.20)                    # rail
+    box("EG", o, "FichteX", x0, x1 + 0.04, y0, y1, zp, zp + 0.04)                        # platform
+    box("EG", o, "FichteY", x1, x1 + 0.04, y0, y1, zp + 0.04, zp + 0.26)                 # guard east
+    box("EG", o, "FichteX", x0, x1 + 0.04, y0 - 0.04, y0, zp - 0.02, zp + 0.36)          # guard south
+    box("EG", o, "Leinen", x0 + 0.03, x1 - 0.02, y0 + 0.03, y1 - 0.03, zp + 0.04, zp + 0.16)
 
 
 # ---------------------------------------------------------------- sanitary (positions from the plans)
@@ -791,6 +785,41 @@ def chair(coll, cx, cy, fx, fy):
         part("FichteY", u, u + l, 0.01 + l, W - l, 0.13, 0.16)                 # side stretchers
     for z in (0.62, 0.80):                                                     # back slats
         part("FichteX", -h + l, h - l, W - 0.03, W - 0.01, z, z + 0.08)
+
+
+def kitchen():
+    """Küche after the EG plan: sink run on the north wall, run on the east wall and a peninsula
+    with the cooktop towards the dining table. Spruce carcasses and doors on a dark plinth, granite
+    worktop (one L across run and peninsula), steel sink and tap, black cooktop."""
+    o, zp, zc, zt = "EG_Kueche", 0.10, 0.86, 0.90                 # plinth / carcass / worktop top
+    xw, yn, xe = 5.492, 5.847, 8.555                              # wall faces (2 mm clear)
+    # carcasses (x0, x1, y0, y1, plinth inset W/E/S/N)
+    for x0, x1, y0, y1, pl in ((xw, 6.70, 5.269, yn, (0, 0.06, 0.04, 0)),          # north run
+                               (6.57, xe, 3.05, 3.64, (0.06, 0, 0.06, 0.06)),      # peninsula
+                               (7.977, xe, 3.64, 5.45, (0.06, 0, 0, 0.06))):       # east run
+        box("EG", o, "FichteZ", x0, x1, y0, y1, zp, zc)
+        box("EG", o, "Fuge", x0 + pl[0], x1 - pl[1], y0 + pl[2], y1 - pl[3], 0.005, zp)
+    fronts = [("x", 5.249, +1, (xw, 6.10, 6.70)),          # (frame axis, room face, side, door cuts)
+              ("x", 3.66, -1, (6.57, 7.165, 7.957)),
+              ("y", 7.957, +1, (3.663, 4.25, 4.86, 5.45))]
+    for ax, f, s, cuts in fronts:
+        P = frame(ax)
+        for a, b in zip(cuts[:-1], cuts[1:]):
+            r = random.random()
+            lbox("EG", o, "FichteZ", P, a + 0.003, b - 0.003, f, f + s * 0.02, zp + 0.005, zc - 0.005, r)
+            m = (a + b) / 2
+            lbox("EG", o, "Metall", P, m - 0.07, m + 0.07, f - s * 0.025, f, zc - 0.07, zc - 0.055)
+    xy_prism("EG", o, "Granit", [(xw, 5.229), (6.72, 5.229), (6.72, yn), (xw, yn)], zc, zt)
+    xy_prism("EG", o, "Granit", [(6.55, 3.03), (xe, 3.03), (xe, 5.47), (7.937, 5.47),
+                                 (7.937, 3.68), (6.55, 3.68)], zc, zt)
+    box("EG", o, "Metall", 5.58, 6.04, 5.30, 5.76, zt, zt + 0.003)                 # sink
+    box("EG", o, "Eisen", 5.61, 6.01, 5.33, 5.70, zt + 0.003, zt + 0.004)
+    box("EG", o, "Metall", 5.80, 5.83, 5.77, 5.80, zt, zt + 0.26)                  # tap
+    box("EG", o, "Metall", 5.805, 5.825, 5.60, 5.77, zt + 0.235, zt + 0.255)
+    box("EG", o, "Eisen", 7.18, 7.95, 3.12, 3.58, zt, zt + 0.005)                  # cooktop
+    for cx, cy, rr in ((7.36, 3.24, 0.08), (7.36, 3.46, 0.06), (7.76, 3.24, 0.06), (7.76, 3.46, 0.09)):
+        xy_prism("EG", o, "Metall", [(cx + rr * math.cos(math.pi * i / 8), cy + rr * math.sin(math.pi * i / 8))
+                                     for i in range(16)], zt + 0.005, zt + 0.006)
 
 
 # ---------------------------------------------------------------- stairs

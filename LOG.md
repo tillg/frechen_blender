@@ -61,6 +61,14 @@ are not changes between the two plan versions. Only the differences below are.
   Furniture is not modelled, apart from the dining table.
 - A thin line inside the WC Großeltern (x ≈ 1.75), whose meaning is unclear.
 
+### Changes on request (not from the plans)
+
+| # | Change | Model |
+|---|---|---|
+| U1 | **Kitchen.** Drawn the same in the old and new plans, but not modelled until now | Sink run on the north wall, a run on the east wall and a peninsula with the cooktop (spruce fronts, granite worktop). The Küche door now opens into the Flur, as drawn (before: into the kitchen, where it would hit the sink run). |
+| U2 | **Ofenbett instead of the Kachelofen**, after `ofenbett-1200x800.jpg` | Plastered stove (1.0 × 2.0 m) along the Stube west wall with a rounded top edge and an arched recess at the floor. The fire is visible behind a glass door in the south end, and from the Flur through a fire window in the wall against which the stove's north end stands. Bench along the east face, and a bed on a corner post above the stove. The plans still say "Kachelofen" (footprint 1.5 × 1.5 m). The longer shape follows the photo. |
+| U3 | **Bibliothek walls** | Already done: the Büro/Musikraum wall is E3. The X-marked wall at the offener Kamin is demolition in both plan versions and was already open, apart from its two stubs. |
+
 ### Other
 
 - The reference plan images (`Referenz` collection) now show the new plans:

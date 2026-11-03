@@ -31,7 +31,9 @@ edited: 2026-11-03
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor, oak planks elsewhere
-  - Kachelofen with bench and fire
+  - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above;
+    a fire window in the Flur wall shows the fire from the corridor too
+  - kitchen: sink run, east run, peninsula with cooktop
   - big dining table with 14 chairs
   - bathrooms and WCs: shower, basin, wall-hung WC
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
