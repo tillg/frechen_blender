@@ -55,7 +55,7 @@ snap.update({ob.name: bbox_entry(ob) for ob in bpy.data.collections["Windrose"].
 snap["_shrubs"] = sum(ob.name.startswith("GA_Strauch") for ob in bpy.data.collections["Garten"].objects)
 snap["_paint"] = {n: [r5(c) for c in bpy.data.materials[n].node_tree.nodes["Principled BSDF"]
                       .inputs["Base Color"].default_value]
-                  for n in ("FL_Putz", "FL_Rahmen", "FL_Laden", "FL_Kachel")}
+                  for n in ("FL_Putz", "FL_Rahmen", "FL_Laden")}
 snap["_room_lights"] = sorted([r5(c) for c in ob.location]
                               for ob in bpy.data.collections["Innenlicht"].objects)
 Path(OUT).write_text(json.dumps(snap, indent=1, sort_keys=True))

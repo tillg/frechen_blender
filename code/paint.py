@@ -3,7 +3,7 @@ Only edits materials (the white shutter cross boards are part of the house core)
 Run inside Blender: exec(open(".../code/paint.py").read())  – re-running is safe.
 
   Fassade      RAL 9010 Reinweiß     Fenster  RAL 9010 Reinweiß
-  Fensterläden RAL 5014 Taubenblau (weiße Querbretter), Ofenkacheln ebenso
+  Fensterläden RAL 5014 Taubenblau (weiße Querbretter)
   Türen bleiben Naturholz (Materialien aus build_house.py)
 """
 import bpy, importlib, sys

@@ -23,7 +23,7 @@ CODE = Path(__file__).resolve().parent.parent / "code"
 
 def test_paint_and_room_lights_live_in_the_core():
     ral9010, ral5014 = (241, 236, 225), (99, 125, 150)
-    assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014, "Kachel": ral5014}
+    assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014}
     assert len(house_core.ROOM_LIGHTS) == 23
     assert BP.paint == house_core.PAINT and BP.room_lights == house_core.ROOM_LIGHTS
     assert "RAL =" not in (CODE / "paint.py").read_text()
