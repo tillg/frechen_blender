@@ -103,6 +103,32 @@ test('garden per stage: circles, clay blobs, then grass and leaves', async ({ pa
   await shot(page, 'detail.png');
 });
 
+// leaf-green pixels (green clearly above red and blue) within r CSS px of a model point
+async function greenAround(page, img, [x, y, z], r) {
+  const s = await page.evaluate((p) => window.__fl.project(...p), [x, y, z]);
+  let n = 0;
+  for (let dy = -r; dy <= r; dy++)
+    for (let dx = -r; dx <= r; dx++) {
+      const i = 4 * (Math.round(s.y + dy) * img.width + Math.round(s.x + dx));
+      const [R, G, B] = img.data.slice(i, i + 3);
+      if (G > R + 8 && G > B + 8) n++;
+    }
+  return n;
+}
+
+test('shrub leaves stay in the beds mid-transition', async ({ page }) => {
+  await open(page);
+  await at(page, 1.5);                                       // uDetail 0.5: leaves half grown
+  await page.evaluate(() => { window.__fl.setSurfaces(false); window.__fl.lookFrom(7.6, 6.0, 45); });
+  await page.waitForTimeout(500);
+  const img = await shot(page, 'leaves_mid.png');
+  let inside = 0;                                            // no grass, blobs or leaves in the footprint
+  for (let x = 1.5; x < 14; x += 1.5) for (let y = 1.5; y < 12; y += 1.5) inside += await greenAround(page, img, [x, y, 0.3], 12);
+  expect(inside).toBe(0);
+  expect(await greenAround(page, img, [15.32, 9.5, 0.3], 25)).toBeGreaterThan(20);   // east bed
+  expect(await greenAround(page, img, [-0.36, 10.7, 0.3], 25)).toBeGreaterThan(20);  // west bed
+});
+
 test('Gebaut is darker outside, with warm windows', async ({ page }) => {
   await open(page);
   const sky = (img) => {                                   // mean luma of the top 15 % (sky)

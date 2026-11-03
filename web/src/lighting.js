@@ -1,5 +1,5 @@
 // Day and dusk: sun from Blender's angle (setup_scene), hemisphere light, sky background, and
-// at dusk a low warm sun, deep-blue sky and warm point lights at ROOM_LIGHTS (floor + 2.0 m).
+// at dusk a low warm sun, deep-blue sky and warm point lights at ROOM_LIGHTS (floor + ROOM_LIGHT_H).
 import * as THREE from 'three/webgpu';
 import { color, mix, uniform } from 'three/tsl';
 import { PAPER } from './materials.js';
@@ -23,7 +23,7 @@ export function createLighting(scene, extras, target, uDetail = uniform(1)) {
   const hemi = new THREE.HemisphereLight(0xffffff, 0xb8b0a0, 1.4);
   const roomLights = extras.room_lights.map(([x, y, z]) => {
     const l = new THREE.PointLight(0xffb070, 0, 8, 2);
-    l.position.copy(yup(x, y, z + 2.0));
+    l.position.copy(yup(x, y, z + extras.ROOM_LIGHT_H));
     return l;
   });
   scene.add(sun, sun.target, hemi, ...roomLights);

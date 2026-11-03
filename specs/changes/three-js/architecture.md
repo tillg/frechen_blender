@@ -95,6 +95,8 @@ flowchart TB
 | The page **opens at Skizze** (p = 0, no autoplay); **Play takes 4 s per stage** (12 s for p 0→3); the sun toggle is off below p 1.5 and any timeline move resets it | Autoplay on load; another pace | Left open by the grill; decided while applying. Starting from the first line is the point of "Vom Strich zum Haus". The pace is a tuning value. |
 | e2e runs headless Chromium with **`--use-angle=metal`** (real GPU, WebGL2 fallback, serial workers); the WebGPU path was checked once by hand in headed Chrome | SwiftShader (default); headed Chrome in the suite | SwiftShader took 1.6 s per frame with the grass and timed tests out; headless Chromium has no WebGPU. |
 | **Open Parts** (the two lamp cones, `loft(cap=False)`) are exported **double-sided** and skip the signed-volume flip | Guess an orientation | An open surface has no well-defined outward side. |
+| **Room-light height** `ROOM_LIGHT_H = 2.1` is a core fact in `scene.extras`; `film.py` and `lighting.js` read it (review fix) | Keep 2.1 in `film.py` and 2.0 in the viewer | ADR-001-XEWL; 2.1 keeps the Blender output and golden unchanged |
+| Shrub leaves grow about a **per-instance centre** (`InstancedBufferAttribute`), not via `positionLocal.mul` (review fix) | Rebuild instance matrices per frame | In r187 `positionLocal` is already instance-transformed when `positionNode` runs, and `instancedBufferAttribute(typedArray, 'vec3')` drops the instanced flag, so a real `InstancedBufferAttribute` is required |
 
 ## Python side
 

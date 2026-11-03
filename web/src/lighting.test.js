@@ -7,14 +7,15 @@ import { createLighting } from './lighting.js';
 const buf = readFileSync('public/frechenlehen.glb');
 const extras = JSON.parse(buf.subarray(20, 20 + buf.readUInt32LE(12)).toString()).scenes[0].extras;
 
-test('one room light per ROOM_LIGHTS entry at floor + 2.0 m, converted to y-up', () => {
+test('one room light per ROOM_LIGHTS entry at floor + ROOM_LIGHT_H, converted to y-up', () => {
   const scene = new THREE.Scene();
+  expect(extras.ROOM_LIGHT_H).toBe(2.1);                           // NaN would compare equal below
   const L = createLighting(scene, extras, new THREE.Vector3());
   expect(L.roomLights.length).toBe(extras.room_lights.length);
   L.roomLights.forEach((l, i) => {
     const [x, y, z] = extras.room_lights[i];
     expect(l.isPointLight).toBe(true);
-    expect(l.position.toArray()).toEqual([x, z + 2.0, -y]);
+    expect(l.position.toArray()).toEqual([x, z + extras.ROOM_LIGHT_H, -y]);
   });
 });
 

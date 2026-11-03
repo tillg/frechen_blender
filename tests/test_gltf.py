@@ -55,6 +55,15 @@ def test_valid_glb(glb):
     assert glb["size"] == 12 + 8 + glb["jlen"] + 8 + glb["blen"]
 
 
+def test_vec3_min_max_equal_the_stored_data(glb):
+    """Khronos validator: min/max must equal the float32 values (ACCESSOR_MIN/MAX_MISMATCH)."""
+    for i, acc in enumerate(glb["gltf"]["accessors"]):
+        if acc["type"] == "VEC3":
+            vals = read(glb, i)
+            assert acc["min"] == [min(v[k] for v in vals) for k in range(3)], i
+            assert acc["max"] == [max(v[k] for v in vals) for k in range(3)], i
+
+
 def test_one_node_per_geo_object(glb):
     got = {(n["extras"]["collection"], n["name"]) for n in house_nodes(glb)}
     assert got == set(BP.geo) and ("EG", "Laeden_Querbretter") in got
@@ -112,6 +121,7 @@ def test_garden_extras(glb):
     assert len(ex["garden"]["shrubs"]) == len(lay.shrubs)
     assert ex["garden"]["DENSITY"] == house_core.DENSITY and ex["garden"]["FAR_DENS"] == house_core.FAR_DENS
     assert len(ex["room_lights"]) == 23 and ex["Z_OG"] == house_core.Z_OG
+    assert ex["ROOM_LIGHT_H"] == house_core.ROOM_LIGHT_H
     clump = glb["gltf"]["meshes"][node(glb, "GA_Grasbuschel")["mesh"]]["primitives"][0]
     f32 = lambda x: struct.unpack("<f", struct.pack("<f", x))[0]
     assert sorted(read(glb, clump["attributes"]["_H"])) == sorted(map(f32, lay.clump["h"]))

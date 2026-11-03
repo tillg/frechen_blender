@@ -30,6 +30,13 @@ def test_paint_and_room_lights_live_in_the_core():
     assert "ROOM_LIGHTS =" not in (CODE / "film.py").read_text()
 
 
+def test_room_light_height_and_film_constants_come_from_the_core():
+    """ADR-001-XEWL: film.py and the viewer read these facts, they don't repeat them."""
+    assert house_core.ROOM_LIGHT_H == 2.1
+    film = (CODE / "film.py").read_text()
+    assert "z + 2." not in film and "Z_OG =" not in film and "HOUSE_C =" not in film
+
+
 def test_shed_battens_are_wood():
     assert "Laden" not in BP.geo[("Umgebung", "Schuppen_Holz")]["m"]
     assert "Schuppen_Holz" not in (CODE / "paint.py").read_text()

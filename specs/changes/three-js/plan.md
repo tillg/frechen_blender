@@ -368,4 +368,40 @@ flowchart LR
     && npx playwright test)` → exit 0. Then start `npm run dev`, open it in the browser and
     check that it responds.
 
+## Review fixes (`review.md`, 2026-11-03)
+
+- [x] [web] Shrub leaves shrink about their own centre during Massenmodell→Detailmodell, not
+  about the world origin (in r187 `positionLocal` is already instance-transformed when
+  `positionNode` runs). Per-instance attribute with the leaf centre;
+  `positionNode = centre + (positionLocal − centre) · uDetail`.
+  - Test first: `web/e2e/stages.spec.js` › "shrub leaves stay in the beds mid-transition": at
+    p = 1.5 with the surfaces hidden, seen from above, no leaf-green pixels around (7.65, 5.0)
+    inside the house footprint (no grass, blobs or leaves belong there), and some around the
+    east-bed shrubs. Fails today: the east-bed leaves land at half their coordinates, x ≈ 7.7,
+    y ≈ 4–6.
+  - Verify: `cd web && npm test && npx playwright test` → green; `tmp/web/leaves_mid.png` read.
+- [x] [python] Room-light height is a core fact: `ROOM_LIGHT_H = 2.1` in `house_core.py`, in
+  `scene.extras`. `film.py` and `lighting.js` read it. 2.1 is what `film.py` and the golden
+  use, so the Blender output stays unchanged. The viewer moves its lights up by 0.1 m.
+  `film.py` also imports `Z_OG` and `HOUSE_C` from the core instead of keeping its own copies.
+  - Test first: `tests/test_core.py` › the core carries `ROOM_LIGHT_H`, and `film.py` defines
+    neither `Z_OG =` nor `HOUSE_C =` nor `z + 2.`. `tests/test_gltf.py` › `ROOM_LIGHT_H` is in
+    the extras. `web/src/lighting.test.js` › lights at floor + `extras.ROOM_LIGHT_H`. All fail
+    today.
+  - Verify: `python3 -m pytest -q` (parity unchanged) and `cd web && npm test` → green.
+- [x] [python] glTF accessor `min`/`max` equal the stored float32 values (Khronos
+  `ACCESSOR_MIN_MISMATCH`).
+  - Test first: `tests/test_gltf.py` › "every VEC3 accessor's min/max equal its data". Fails
+    today: 108/190 accessors carry float64 bounds.
+  - Verify: `python3 -m pytest -q` → green.
+- [x] [python] Parity test: drop the stale `SKIP_RND` (the golden now has the core's rnd for
+  `Laeden_Querbretter`).
+  - Test first: none — removing an exemption makes the existing parity test stricter.
+  - Verify: `python3 -m pytest -q tests/test_blender_parity.py` → green.
+- [x] [config] Pages workflow: `build` gets `contents: read` only. `pages: write` and
+  `id-token: write` move to the `deploy` job, so `npm ci` install scripts never hold them.
+  - Test first: none — CI config, no local runtime.
+  - Verify: `actionlint .github/workflows/pages.yml` exits 0, and `grep -c "pages: write"` = 1,
+    inside `deploy`.
+
 System docs are updated at `/spec:archive`.
