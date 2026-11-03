@@ -1,0 +1,25 @@
+{
+  "name": "frechenlehen-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "blueprint": "python3 ../code/export_gltf.py public/frechenlehen.glb",
+    "predev": "npm run blueprint",
+    "dev": "vite",
+    "prebuild": "npm run blueprint",
+    "build": "vite build",
+    "preview": "vite preview",
+    "pretest": "npm run blueprint",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "happy-dom": "21.0.4",
+    "vite": "8.3.5",
+    "vitest": "5.1.0"
+  }
+}

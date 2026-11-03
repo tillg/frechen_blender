@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Blender 5.2 model of the house "Frechenlehen", generated entirely by Python scripts in `code/` from the architect's plans (`input/*.pdf`, rendered to `input/grundriss_eg/og.png`) and detail photos in `input/` (file name = component, e.g. `entrance_door_from_outside.png`). The README (German) is the user-facing doc; keep its component list and script table in sync when adding user-visible features.
 
+The house is described once, in `code/house_core.py` (pure Python, no `bpy`/`mathutils`). `house_core.build()` returns a **Blueprint** (`geo`, `parts`, `smooth`, `pivot`, `mat_def`, `paint`, `room_lights`, `garden`); two backends turn it into output: `build_house.py` (Blender scene) and `export_gltf.py` (`.glb` for the three.js viewer in `web/`). Make every model change in the core; neither backend nor the viewer repeats its facts (ADR-001-XEWL).
+
 ## Running
 
 The scripts run *inside* Blender, normally via the Blender MCP server (`mcp__blender__execute_blender_code`):
@@ -16,7 +18,7 @@ for s in ("build_house", "paint", "windrose", "garden", "film"):
 bpy.ops.wm.save_mainfile()
 ```
 
-Always rebuild in this order: `paint`, `garden` and `film` all depend on objects that `build_house` recreates. Every script is idempotent (re-running replaces its own collection/objects). No hand edits live in the `.blend`; the scripts are the source of truth.
+Always rebuild in this order: `paint`, `garden` and `film` all depend on objects that `build_house` recreates. Every script is idempotent (re-running replaces its own collection/objects). No hand edits live in the `.blend`; the scripts are the source of truth. Every Blender script imports the core with `sys.path` + `importlib.reload(house_core)`; without the reload a long-running Blender session would silently keep the old core. Without the MCP, the same rebuild runs headless: `Blender -b frechenlehen.blend --python <script that execs the five and saves>`.
 
 Film render (headless, ~1 s/frame, 3480 frames at 1280×720, 25 fps, EEVEE; output settings are set by `film.py` and stored in the file):
 
@@ -26,22 +28,28 @@ Film render (headless, ~1 s/frame, 3480 frames at 1280×720, 25 fps, EEVEE; outp
 
 Frames go to `tmp/film/frame_####.png`; the result is `frechenlehen_rundgang.mp4` (ffmpeg is installed). A headless render reads the file as saved when it starts, so save first and restart it after model changes.
 
-There is no test suite. Verify changes by rendering stills from a temporary camera to `tmp/details/` and looking at them (then remove the temp camera and restore `scene.camera`).
+Tests:
 
-## Architecture of `build_house.py`
+- `python3 -m pytest -q` (repo root): core, `mesh_ops`, glTF export, and the **parity test**, which builds headless in Blender and compares a per-object fingerprint with `tests/golden/blender_snapshot.json`; it also checks that the saved `frechenlehen.blend` is the current build. A deliberate change to the Blender output: regenerate with `UPDATE_GOLDEN=1 python3 -m pytest -q tests/test_blender_parity.py`, diff the golden, then rebuild and save the `.blend`.
+- `cd web && npm test && npx playwright test`: Vitest units and Playwright e2e (projects `dev` and `preview`, the latter on the production build under `/frechen_blender/`). Headless Chromium runs on the real GPU (`--use-angle=metal`); WebGPU is off there, so the viewer runs on its WebGL2 fallback. Screenshots go to `tmp/web/`.
+- Visual checks are still needed: render stills from a temporary camera to `tmp/details/` and look at them (then remove the temp camera and restore `scene.camera`).
 
-- **Geometry accumulator.** Nothing is created with `bpy.ops`. Builders call `add()` / `box()` / `lbox()` / `sweep()` / `column()` / `prism()` / `boards()`, which append vertices/faces to `GEO[(collection, object)]`; `flush_geometry()` turns each entry into one mesh object inside collection `FL_<collection>` under root collection `Haus`. Normals are recalculated at flush, so face winding does not matter.
+## Architecture of `house_core.py` (and the Blender backend)
+
+- **Geometry accumulator.** Nothing is created with `bpy.ops`. Builders call `add()` / `box()` / `lbox()` / `sweep()` / `column()` / `prism()` / `boards()`, which append vertices/faces to `GEO[(collection, object)]`; each `add()` call is one **Part** (a closed solid, recorded in `PARTS`). In Blender, `flush_geometry(bp)` turns each entry into one mesh object inside collection `FL_<collection>` under root collection `Haus` and recalculates normals, so face winding does not matter; the glTF backend does the same with `mesh_ops` (ear clipping, per-Part orientation).
 - **Local wall frames.** `frame(ax)` returns `P(u, t, z)`: `u` runs along a wall, `t` across it. Wall/door/cladding code is written once in `u/t` and works for both wall orientations.
 - **`wall()`** builds an axis-aligned wall with openings `(a, b, sill, head, kind[, shutters])`. The kinds are `W` window, `FD` french door, `GD` glazed larch door (also the big west windows), `D` solid door, and `I` bare opening, filled afterwards by a dedicated builder (`entrance_door`, `back_door`, `stube_niche`, `panel_door`). Exterior openings are recorded in `OPENINGS` (and gable windows in `GABLE_WIN`) so `build_cladding()` can cut the west larch cladding around them. Call cladding after all walls.
 - **Interior doors.** Door entries in `interior()` are `(a, b)` for an open passage, or `(a, b, swing, hinge[, flat, style])`. Leaves are opened flat against the room wall by default (so the film camera passes freely); use `flat=False` (90°) where a room corner is too close. `hinge="ab"` makes a double door and `style="glazed"` the Windfang door. Every leaf is recorded in `LEAVES` for clash checks against the walls.
-- **Materials.** `MAT_DEF` defines `FL_*` materials: `rgba` for plain colours, `wood` / `speck` for procedural textures in object space, `bump` for plaster. `paint.py` overwrites the base colour of plain materials only: `FL_Putz`, `FL_Rahmen` (white shutter cross boards), `FL_Laden` and `FL_Kachel` (both RAL 5014). Textured materials ignore it.
+- **Materials.** `MAT_DEF` defines `FL_*` materials: `rgba` for plain colours, `wood` / `speck` for procedural textures in object space, `bump` for plaster. `PAINT` (in the core) overrides the base colour of plain materials only: `FL_Putz`, `FL_Rahmen` (white shutter cross boards), `FL_Laden` and `FL_Kachel` (both RAL 5014); `paint.py` applies it in Blender, the viewer reads it from the material extras. Textured materials ignore it. The shutter cross boards are built in the core (`build_cross_boards()`, per storey).
 - **`rnd` face attribute.** Each `add()` call gets a random value that the shaders use for per-board/per-slab variation. Parts that overlap in the same plane (frame corners, rails vs. stiles) must share one `rnd` value, otherwise they visibly z-fight. `wall()` and the cladding trims already do this.
 - **`PIVOT`** puts an object's origin at a hinge. Only `EG_Haustuer` uses it; `film.py` swings it open by rotating it 90° about z.
 - Coordinates are in metres: origin at the outer SW corner, +X east, +Y north. Constants such as `Z_OG`, `STAIR_HOLE`, `FOOT`, `CORRIDOR_EG` and the stair constants `ST_*` are shared between builders.
 
 ## Other scripts
 
-- `garden.py` (collection `Garten`): the meadow is a Geometry Nodes scatter of grass-clump instances on an emitter grid, with 10 % density in the viewport. Areas without grass come from the scene bounding boxes of the objects listed in `NO_GRASS`, so `view_layer.update()` must run first. It also plants the shrubs into the `Beet_*` objects.
+- `garden.py` (collection `Garten`): the meadow is a Geometry Nodes scatter of grass-clump instances on an emitter grid, with 10 % density in the viewport. Where grass grows, the clump shape and the shrub placements come from the **garden layout** in the core (`garden_layout()`: `NO_GRASS` bounding boxes computed from `GEO`, the windrose area from `WINDROSE_CENTER`/`WINDROSE_R`, density, clump, shrubs). It plants the leafy shrubs into the `Beet_*` beds.
+- `export_gltf.py`: Blueprint → `.glb` (standard library only). One node per GEO object (`extras.collection`, `extras.smooth`), one primitive per material with `POSITION`/`NORMAL`/`_RND`, `MAT_DEF` + paint in material extras, room lights and the garden layout in `scene.extras`, positions as `(x, z, -y)`. `web/public/frechenlehen.glb` is generated (`npm run blueprint`, run before `dev`/`build`/`test`) and git-ignored.
+- `web/` (Vite, three.js `WebGPURenderer` + TSL, ADR-003-SKGB): `blueprint.js` (load), `stages.js` (timeline weights), `materials.js` (TSL from the extras), `ink.js` (Skizze lines), `lighting.js` (day/dusk, room lights), `garden.js`, `ui.js`, `main.js`. A dev-only test hook is `window.__fl`. GitHub Pages deploys `web/dist` from `main` (`.github/workflows/pages.yml`).
 - `film.py`: `ROUTE` is a list of `orbit` / `path` / `look` / `stair` / `hold` segments, baked to per-frame keys on `FL_Kamera_Rundgang`, plus fill lights in collection `Innenlicht`. After changing the route or furniture, check that the camera clears all geometry: sample every frame and use a BVH `find_nearest` distance (≥ 0.25 m) plus a `ray_cast` between consecutive frames.
 - `windrose.py`: its own collection, independent of the rebuild.
 

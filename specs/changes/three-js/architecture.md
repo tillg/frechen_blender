@@ -1,7 +1,7 @@
 ---
 feature: three-js
 title: "Architecture: Frechenlehen in three.js — architect's model in the browser"
-status: proposed
+status: applied
 order: 3
 created: 2026-10-08
 edited: 2026-11-03
@@ -82,7 +82,7 @@ flowchart TB
 | Garden: the core holds the **garden layout** (no-grass rectangles, density field, clump recipe, shrub placements); each backend scatters and grows plants itself | Core computes every instance and shrub mesh; web-only garden with copied parameters | Shared layout without forcing Geometry Nodes or `mathutils.noise` into pure Python. Blades and leaves differ in detail between Blender and browser, by design. |
 | Browser grass at **25 %** of Blender's render density, only within ~30 m of the house | Full density; viewport density (10 %) | ~4 M triangles at full density is too heavy; 25 % still reads as a meadow. Tuned with the look later. |
 | Pages deploys on push to **`main`** (plus manual dispatch); `three-js` is merged after `/spec:adversarial-code-review` and `/spec:archive` | Also deploy from the `three-js` branch | Keeps the Pages environment rule at its default. The branch is previewed locally with `npm run build && npm run preview`. |
-| **Shutter cross boards** are computed in the core from the shutter Parts (same boxes, on both faces) | Keep them in `paint.py`, where they are found from Blender mesh islands | Both backends show them. The parity snapshot proves the Blender boards stay identical. Boards on the outer face only are a later tweak. |
+| **Shutter cross boards** are computed in the core from the shutter Parts (same boxes, on both faces), **per storey**: `("EG", "Laeden_Querbretter")` and `("OG", "OG_Laeden_Querbretter")` | Keep them in `paint.py`, where they are found from Blender mesh islands; one EG object for all boards | Both backends show them. Per storey because otherwise the OG boards float above the house in "Nur EG" (found while applying). The parity snapshot proves the boards split exactly (512 + 832 = 1344 vertices); in Blender this is invisible. Boards on the outer face only are a later tweak. |
 | Windrose **position and size** (`CENTER`, `R`) move into the core. Its no-grass area (`garden.windrose`, kept apart from `no_grass`) is 5 rectangles: the star square `CENTER ± R` plus one square of half-size `WR_LABEL_HALF` = 0.6 m around each letter at distance `R + 0.9` | One square `CENTER ± (R + 1.5)`; `garden.py` keeps reading the `WR_*` bounding boxes (two sources) | The letters' real extent needs Blender font metrics, so the core can't reproduce it exactly. This is close: the Blender meadow changes only in a few cells around the letters. |
 | The viewer **ignores the windrose rectangles**, so grass grows where the rose would be | A bare patch without a rose | The windrose is a viewer non-goal, and a bare patch would look like a bug. |
 | Shrub placements use their **own random stream**, separate from the leaves; the Blender garden changes once, on purpose | Core replays Blender's exact draw sequence | Replaying the leaf draws would be brittle. Shrubs move by a few cm; the look stays the same, checked with a before/after render. |
@@ -92,6 +92,8 @@ flowchart TB
 | **Skizze is hidden-line**: surfaces are drawn in paper colour and write depth; the ink lines get a polygon offset; Massenmodell crossfades paper → clay | X-ray: transparent surfaces, all lines visible | Otherwise the chairs, balusters, door leaves and bathrooms would show through the walls as noise. |
 | **No ink lines for `SMOOTH` objects** (`Kiesel`, `Aussenleuchten`); the `Kiesstreifen` box outline stands in for the gravel | Lines for every object | About 1,600 pebbles (≈ 120k triangles) would turn into ink noise at 30°. |
 | The **cutaway hides whole collections**; `Verschalung_West` is in `Dach`, so the west cladding goes with the roof | Exempt the cladding (floating gable boards); horizontal section planes with caps | Simplest. The cutaway is for looking inside. Section cuts are a candidate for a later look iteration. |
+| The page **opens at Skizze** (p = 0, no autoplay); **Play takes 4 s per stage** (12 s for p 0→3); the sun toggle is off below p 1.5 and any timeline move resets it | Autoplay on load; another pace | Left open by the grill; decided while applying. Starting from the first line is the point of "Vom Strich zum Haus". The pace is a tuning value. |
+| e2e runs headless Chromium with **`--use-angle=metal`** (real GPU, WebGL2 fallback, serial workers); the WebGPU path was checked once by hand in headed Chrome | SwiftShader (default); headed Chrome in the suite | SwiftShader took 1.6 s per frame with the grass and timed tests out; headless Chromium has no WebGPU. |
 | **Open Parts** (the two lamp cones, `loft(cap=False)`) are exported **double-sided** and skip the signed-volume flip | Guess an orientation | An open surface has no well-defined outward side. |
 
 ## Python side
@@ -114,8 +116,8 @@ New in the core:
 - `WINDROSE_CENTER`, `WINDROSE_R`, moved from `windrose.py`.
 - `build_cross_boards()`, moved from `paint.py`. It reads the shutter Parts of
   `EG_Laeden`/`OG_Laeden` from `GEO` (one Part = one shutter box, the same island Blender
-  finds today) and adds the same boxes as before to `("EG", "Laeden_Querbretter")`, material
-  `Rahmen`.
+  finds today) and adds the same boxes as before, per storey, to `("EG", "Laeden_Querbretter")`
+  and `("OG", "OG_Laeden_Querbretter")`, material `Rahmen`.
 - `garden_layout(bp)`, moved from `garden.py`, pure Python (see below).
 - `build()`, which does what `main()` does without Blender:
   1. clear the registries
@@ -210,6 +212,9 @@ It uses only the standard library (`struct`, `json`) and runs with the system `p
 
 - **One node per GEO object.** The node name is the object name, `translation` is the
   pivot, and `extras.collection` holds the collection name (`EG`, `OG`, `Dach`, …).
+  `extras.smooth: true` marks the `SMOOTH` objects (no ink lines in Skizze). An object with
+  several materials loads in three.js as a `Group` with one `Mesh` per primitive, so the viewer
+  counts, hides and names objects at node level (`userData.collection`).
 - **One primitive per material within an object.** Attributes: `POSITION`, `NORMAL`, and
   `_RND` (float, the part's `rnd` copied to its vertices).
   - GLTFLoader turns custom attributes into lower-case geometry attributes, so `_RND`
@@ -295,7 +300,7 @@ sequenceDiagram
   - **emit:** emissive.
   The final colour is `mix(clay, detail, uDetail)`, so one material per mesh covers both
   the Massenmodell and Detailmodell stages.
-- **Skizze (hidden-line).**
+- **Skizze (hidden-line)**, lines in `ink.js`.
   - Each mesh except the `SMOOTH` objects (`Kiesel`, `Aussenleuchten`) gets an `EdgesGeometry`
     (threshold 30°). They are merged into one `LineSegments` per collection and drawn in ink
     on a paper background.
@@ -332,8 +337,9 @@ sequenceDiagram
     - in Massenmodell, a smooth clay ellipsoid;
     - in Skizze, an ink circle of radius `r`.
   - A fixed seed keeps the scatter the same on every load.
-- **Test hook.** `window.__fl = {objectCount, grassCount, setProgress(p), setCutaway(c),
-  setSurfaces(on), visible(name)}` is exposed only in dev and test builds
+- **Test hook.** `window.__fl = {ready, objectCount, lineSources, progress, linesVisible,
+  garden, setProgress(p), setCutaway(c), visible(name), setSurfaces(on), lookFrom(x, y, z),
+  project(x, y, z)}` (model z-up coordinates; `garden` holds `grassCount` and visibilities) is exposed only in dev and test builds
   (`import.meta.env.MODE !== 'production'`).
 
 ### Hosting: GitHub Pages
