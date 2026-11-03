@@ -17,7 +17,8 @@ EAVE_OH, GABLE_OH = 1.34, 1.49          # overhang at eaves (N/S) and gables (E/
 Z_EG_TOP, Z_OG, Z_OG_TOP, Z_ATTIC = 2.40, 2.70, 4.90, 5.10
 DOOR_H = 2.0                            # interior door height
 SOFFIT = 0.02                           # board layer under the roof
-SHED_TOP = 2.53                         # shed roof top where it meets the house
+ANNEX = (-1.64, 2.358, 0.25, 5.145)     # Elektroraum/Heizung annex, outside x0, x1, y0, y1 (plan)
+ANNEX_TOP = 2.42                        # its flat roof top (elevations)
 
 
 def roof_top(y):
@@ -32,7 +33,7 @@ def roof_under(y):
 # rgba: plain colour. wood: (dark, light, grain axis) – procedural grain in object space.
 # speck: (c1, c2, scale) – speckled stone. bump: (scale, strength). "rnd" face attribute
 # (one random value per part) varies brightness so boards and slabs read as single pieces.
-WOOD_OLD = ((0.045, 0.032, 0.024), (0.17, 0.12, 0.085))       # weathered balcony / shed
+WOOD_OLD = ((0.045, 0.032, 0.024), (0.17, 0.12, 0.085))       # weathered wood (back door)
 MAT_DEF = {
     "Putz":       dict(rgba=(0.93, 0.92, 0.88, 1), bump=(45, 0.6)),
     "Decke":      dict(rgba=(0.80, 0.80, 0.78, 1)),
@@ -209,8 +210,9 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     """Straight wall (axis-aligned box) with openings.
 
     ops: (a, b, sill, head, kind[, shutters]) along the wall's long axis.
-    kind: W window, FD french door, GD glazed terrace door (larch, 4x2 panes per leaf),
-          D solid door, I opening without fill (filled by a dedicated door builder).
+    kind: W window, FD french door, WF tall window (fixed light below a transom at half height,
+          one sash above), GD glazed terrace door (larch, 4x2 panes per leaf), D solid door,
+          I opening without fill (filled by a dedicated door builder).
     out: +1 / -1 = side of the thin axis that faces outside (for shutters).
     Windows / french doors after window_from_outside.jpeg: larch frame, one or two sashes,
     each divided by glazing bars (windows 2 panes high, french doors 3).
@@ -255,10 +257,15 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
             B("Tuer", a + fw, b - fw, tm - 0.025, tm + 0.025, sill, head - fw, fo)
         else:
             B(F, a, b, tm - fd, tm + fd, sill, sill + fw, fo)
-            n = 2 if b - a > 0.75 else 1
-            rows = 3 if head - sill > 1.6 else 2
-            sw, sf, gb = (b - a - 2 * fw) / n, 0.05, 0.03
             za, zb = sill + fw, head - fw
+            if kind == "WF":
+                zt = (sill + head) / 2
+                B(F, a, b, tm - fd, tm + fd, zt - fw / 2, zt + fw / 2, fo)          # transom
+                B("Glas", a + fw, b - fw, tm - 0.004, tm + 0.004, za, zt - fw / 2, fo)
+                za = zt + fw / 2
+            n = 2 if b - a > 0.75 and kind != "WF" else 1
+            rows = 3 if zb - za > 1.48 else 2
+            sw, sf, gb = (b - a - 2 * fw) / n, 0.05, 0.03
             for k in range(n):                                   # sashes
                 sa, sb = a + fw + k * sw, a + fw + (k + 1) * sw
                 B(F, sa, sa + sf, tm - 0.03, tm + 0.03, za, zb, fo)
@@ -361,6 +368,21 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style=
 
         LEAVES.append((coll, [P(*L(0, -LT / 2), zl), P(*L(LW, LT / 2), zl + LH)]))
         (glazed_leaf if style == "glazed" else six_panel_leaf)(part, LW, LH)
+
+
+def sliding_door(coll, a, b, face, z0=0.0, head=DOOR_H):
+    """Sliding door (WC Großeltern, plan 2026-10-19) in an x wall: a six-panel leaf on the +y face
+    `face`, hung from a steel rail and slid open past jamb b (the plan's arrow points west, but
+    there the wall is too short for the leaf)."""
+    P, o, LT = frame("x"), coll + "_Innentueren", 0.04
+    LW, LH, u0, tc = b - a + 0.04, head - z0 - 0.01, b - 0.02, face + 0.012 + LT / 2
+
+    def part(w0, w1, d0, d1, za, zb, r=0.9, m="Innentuer"):
+        lbox(coll, o, m, P, u0 + w0, u0 + w1, tc + d0, tc + d1, z0 + 0.005 + za, z0 + 0.005 + zb, r)
+
+    six_panel_leaf(part, LW, LH)
+    lbox(coll, o, "Metall", P, a - 0.05, u0 + LW + 0.05, face, face + 0.035, head + 0.005, head + 0.045)
+    LEAVES.append((coll, [P(u0, tc - LT / 2, z0), P(u0 + LW, tc + LT / 2, head)]))
 
 
 def six_panel_leaf(part, LW, LH):
@@ -509,7 +531,7 @@ def build_eg():
         (6.953, 7.852, 1.0, 2.0, "W", 1), (10.020, 10.919, 0, 2.0, "FD", 1),
         (12.867, 13.766, 0, 2.0, "FD", 1)], out=+1)
     wall(c, 2.358, W_OUT, 0, 0.415, z0, z1, [
-        (3.831, 4.730, 1.03, 2.0, "W", 1), (6.618, 7.917, 1.03, 2.0, "W", 1),
+        (3.831, 4.730, 1.03, 2.0, "W", 1), (6.618, 7.917, 0, 2.0, "FD", 1),
         (9.785, 13.741, 0, 2.2, "GD")], out=-1)
     wall(c, 14.575, W_OUT, 6.349, 12.473, z0, z1, [
         (6.458, 7.507, 0, 2.2, "I"), (8.007, 8.476, 1.2, 2.1, "W"),
@@ -518,7 +540,7 @@ def build_eg():
     wall(c, 0, 0.31, 5.145, 12.473, z0, z1, [
         (5.724, 6.324, 1.57, 2.17, "W"), (7.408, 8.377, 0, 2.3, "I"),
         (9.12, 9.69, 1.57, 2.17, "W")], out=-1)      # WC Großeltern ("Fenster wird verschoben")
-    wall(c, 0.31, 2.358, 5.145, 5.475, z0, z1)              # WC south (towards Schuppen)
+    wall(c, 0.31, 2.358, 5.145, 5.475, z0, z1)              # WC south (towards the annex)
     wall(c, 2.358, 2.772, 0.415, 5.849, z0, z1)             # west wall Speis/Essen
     entrance_door(); back_door()
     # interior walls; doors: (a, b, swing, hinge) get an opened leaf, (a, b) stay open passages
@@ -528,9 +550,8 @@ def build_eg():
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
-    # Großeltern: WC door from the bedroom; the Bad is open to the bedroom (unhatched in the plan)
-    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (9.02, 9.90, 1, "b", False),
-                                              (10.33, 12.33)])
+    # Großeltern: the Bad is open to the bedroom (unhatched in the plan), the WC is reached from the Bad
+    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (10.33, 12.33)])
     interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, -1, "a")])   # Küche door
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
@@ -538,8 +559,8 @@ def build_eg():
     interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580, -1, "b")])
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
-    interior(c, 0.31, 2.358, 10.10, 10.25)                  # new: WC (south) / Bad (north) Großeltern
-    interior(c, 11.13, 11.28, 8.876, 12.473, [(9.6, 11.9)])  # new: Musikraum / Büro
+    interior(c, 0.31, 2.358, 10.10, 10.25, [(0.56, 1.25)])  # WC (south) / Bad (north) Großeltern
+    sliding_door(c, 0.56, 1.25, 10.25)
     interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
     kachelofen()
@@ -696,9 +717,9 @@ def build_sanitary():
     shower("EG", 0.31, 1.10, 11.66, 12.473, [(1.10, 11.66, 1.10, 12.473), (0.31, 11.66, 0.70, 11.66)],
            (0.70, 12.473, 0, -1))
     basin("EG", 0.31, 11.0, 1, 0)
-    # EG WC Großeltern (S): toilet on the south wall, hand basin on the north wall
-    toilet("EG", 1.455, 8.656, 0, 1)
-    basin("EG", 1.45, 10.10, 0, -1, w=0.40, d=0.28)
+    # EG WC Großeltern (S): toilet on the south wall, hand basin on the east wall
+    toilet("EG", 1.17, 8.656, 0, 1)
+    basin("EG", 2.358, 9.12, -1, 0, w=0.40, d=0.28)
     # EG WC by the back hall
     toilet("EG", 1.325, 5.475, 0, 1)
     # OG Bad NW: basin on the north wall, shower in the south alcove
@@ -712,7 +733,7 @@ def build_sanitary():
     basin("OG", 6.11, 0.40, 0, 1, w=0.62, d=0.48, z=zo)
     # OG WC 2,30: toilet on the south wall, hand basin on the east wall
     toilet("OG", 9.26, 3.98, 0, 1, z=zo)
-    basin("OG", 10.0, 5.2, -1, 0, w=0.40, d=0.28, z=zo)
+    basin("OG", 9.92, 5.2, -1, 0, w=0.40, d=0.28, z=zo)
 
 
 # ---------------------------------------------------------------- furniture
@@ -852,8 +873,8 @@ def build_og():
     wall(c, 0, W_OUT, 12.485, D_OUT, z0, z1,
          [fd(3.88, 4.78), fd(6.97, 7.87), fd(10.03, 10.95), fd(12.91, 13.80)], out=+1)
     wall(c, 0, 0.31, 5.12, 12.485, z0, z1, [
-        (11.26, 12.23, z0, 4.66, "GD"), (8.96, 9.95, z0, 4.66, "GD"),     # like the Stube doors
-        (6.77, 7.76, z0, 4.66, "GD"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)
+        (11.26, 12.23, z0, 4.66, "WF"), (8.96, 9.95, z0, 4.66, "WF"),     # fixed light below
+        (6.77, 7.76, z0, 4.66, "WF"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)
     wall(c, 0.31, 2.71, 5.12, 5.46, z0, z1)
     wall(c, 2.37, 2.71, 0, 5.12, z0, z1, [(2.03, 2.92, 3.70, 4.70, "W", 1)], out=-1)
     wall(c, 2.71, W_OUT, 0, 0.40, z0, z1,
@@ -879,57 +900,67 @@ def build_og():
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
     interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
     interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58, -1, "a")], z0, z1, H)    # Bad door opens inwards (plan)
-    interior(c, 10.0, 10.15, 3.84, 6.06, (), z0, z1)                 # WC 2,30 (new)
-    interior(c, 8.72, 10.0, 3.84, 3.98, (), z0, z1)
+    interior(c, 9.92, 10.07, 3.84, 6.06, (), z0, z1)                 # WC 2,30: 1.20 wide (plan)
+    interior(c, 8.72, 9.92, 3.84, 3.98, (), z0, z1)
 
 
 # ---------------------------------------------------------------- west cladding
 def build_cladding():
     """The west side takes the weather, so the whole west face (EG, OG, gable and the part
-    above the shed) is clad with vertical larch boards, after
-    outside_wall_structure_back_of_the_house.png. Openings get board trims; the small windows
-    get vertical iron bars."""
-    c, o, M, bw, T = "Dach", "Verschalung_West", "Laerche", 0.17, 0.025
+    above the annex) is clad with vertical larch boards, after
+    outside_wall_structure_back_of_the_house.png; the east gable is boarded too (elevations
+    2026-10-19). Openings get board trims; the small windows get vertical iron bars; the
+    boards run on over the gable windows as spaced slats."""
+    c, M, bw, T = "Dach", "Laerche", 0.17, 0.025
     top = lambda y: roof_under(y) - SOFFIT
-    # (frame, face coordinate, u range, bottom, openings on that face)
+    # (object, frame, face coordinate, outward direction, u range, bottom)
     faces = [
-        ("y", 0.0, 5.145, D_OUT, 0.25),        # main west face
-        ("y", 2.358, 0.0, 5.12, SHED_TOP),     # above the shed
+        ("Verschalung_West", "y", 0.0, -1, 5.145, D_OUT, 0.25),        # main west face
+        ("Verschalung_West", "y", 2.358, -1, 0.0, 5.12, ANNEX_TOP),    # above the annex
+        ("Verschalung_Ost", "y", W_OUT, 1, 0.0, D_OUT, Z_OG_TOP),      # east gable
     ]
-    for ax, face, u0, u1, zb in faces:
+    for o, ax, face, sd, u0, u1, zb in faces:
         P = frame(ax)
+        tt = lambda d0, d1: sorted((face + sd * d0, face + sd * d1))   # t range, d = depth outwards
         ops = [op for op in OPENINGS if op["ax"] == ax and abs(op["face"] - face) < 0.03
-               and u0 - 0.01 <= op["a"] and op["b"] <= u1 + 0.01]
+               and u0 - 0.01 <= op["a"] and op["b"] <= u1 + 0.01 and op["head"] > zb]
         holes = [(op["a"], op["b"], const(op["sill"]), const(op["head"]), False) for op in ops]
-        for x0, ya, yb, zw, woff in GABLE_WIN:
-            if abs(x0 - face) < 0.03:
+        for gx, ya, yb, zw, woff in GABLE_WIN:
+            if abs(gx - face) < 0.03:
                 holes.append((ya, yb, const(zw), (lambda u, w=woff: roof_top(u) - w), False))
                 r = random.random()
                 for ua, ub in ((ya - 0.09, ya), (yb, yb + 0.09)):
                     column(c, o, M, P, ua, ub, const(zw - 0.09),
-                           lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T, r)
-                lbox(c, o, M, P, ya - 0.09, yb + 0.09, face - T - 0.02, face - T, zw - 0.09, zw, r)
+                           lambda u, w=woff: roof_top(u) - w + 0.09, *tt(T, T + 0.02), r)
+                lbox(c, o, M, P, ya - 0.09, yb + 0.09, *tt(T, T + 0.02), zw - 0.09, zw, r)
                 column(c, o, M, P, ya, yb, lambda u, w=woff: roof_top(u) - w,
-                       lambda u, w=woff: roof_top(u) - w + 0.09, face - T - 0.02, face - T, r)
-        boards(c, o, M, P, u0, u1, const(zb), top, face - T, face, bw, holes, cuts=[RIDGE_Y])
+                       lambda u, w=woff: roof_top(u) - w + 0.09, *tt(T, T + 0.02), r)
+                n = round((yb - ya) / bw)                  # the boards run on over the glass as
+                for k in range(n):                         # slats with 6 cm gaps (elevations)
+                    ua, ub = ya + (yb - ya) * k / n + 0.03, ya + (yb - ya) * (k + 1) / n - 0.03
+                    us, r = [ua] + ([RIDGE_Y] if ua < RIDGE_Y < ub else []) + [ub], random.random()
+                    for p, q in zip(us[:-1], us[1:]):          # split at the ridge kink
+                        column(c, o, M, P, p, q, const(zw), lambda u, w=woff: roof_top(u) - w,
+                               *tt(0, T), r)
+        boards(c, o, M, P, u0, u1, const(zb), top, *tt(0, T), bw, holes, cuts=[RIDGE_Y])
         for op in ops:
             if op["kind"] == "I":                 # the back door has its own heavy frame
                 continue
             a, b, s, h = op["a"], op["b"], op["sill"], op["head"]
-            tr, r = (face - T - 0.02, face - T), random.random()      # one rnd per trim (see wall)
+            tr, r = tt(T, T + 0.02), random.random()                  # one rnd per trim (see wall)
             lbox(c, o, M, P, a - 0.09, a, *tr, max(s - 0.09, zb), h + 0.09, r)
             lbox(c, o, M, P, b, b + 0.09, *tr, max(s - 0.09, zb), h + 0.09, r)
             lbox(c, o, M, P, a, b, *tr, h, h + 0.09, r)
             if s > zb + 0.1:
-                lbox(c, o, M, P, a - 0.09, b + 0.09, face - T - 0.05, face - T, s - 0.06, s, r)
+                lbox(c, o, M, P, a - 0.09, b + 0.09, *tt(T, T + 0.05), s - 0.06, s, r)
             if op["kind"] == "W":
                 n = max(2, int((b - a) / 0.2))
                 for k in range(1, n + 1):
                     u = a + (b - a) * k / (n + 1)
-                    lbox(c, o, "Eisen", P, u - 0.007, u + 0.007, face + 0.02, face + 0.034, s, h)
-    # south-facing return above the shed (closes the gap between shed roof and roof)
+                    lbox(c, o, "Eisen", P, u - 0.007, u + 0.007, *tt(-0.02, -0.034), s, h)
+    # south-facing return above the annex (closes the gap between annex roof and roof)
     P = frame("x")
-    boards(c, o, M, P, -T, 2.358, const(SHED_TOP), const(top(5.12)), 5.12 - T, 5.12, bw)
+    boards(c, "Verschalung_West", M, P, -T, 2.358, const(ANNEX_TOP), const(top(5.12)), 5.12 - T, 5.12, bw)
 
 
 # ---------------------------------------------------------------- slabs / floors
@@ -1010,7 +1041,7 @@ def gable(x0, x1, y0, y1, windows=(), woff=0.7):
     edges, cur = [], y0
     for ya, yb, zw in cuts:
         edges.append((cur, ya, None)); edges.append((ya, yb, zw)); cur = yb
-        GABLE_WIN.append((x0, ya, yb, zw, woff))
+        GABLE_WIN.append((x0 if x0 < W_OUT / 2 else x1, ya, yb, zw, woff))    # outer face
     edges.append((cur, y1, None))
     top_w = lambda y: roof_top(y) - woff
     xm = (x0 + x1) / 2
@@ -1190,13 +1221,14 @@ def lamp(x, y, z, nx, ny):
 
 def build_terrace():
     """After terrasse_and_outside_lamps.jpeg: granite slabs of mixed size in rows along the
-    wall, a pebble strip against the wall, soil beds for the bushes (garden.py plants them)."""
+    wall, a pebble strip against the wall, soil beds for the bushes (garden.py plants them).
+    South part as drawn in the plan (from the annex, 3.0 m deep), running on into the east paving."""
     c = "Umgebung"
-    tw, strip = 4.0, 0.25
+    tw, td, tx, strip = 4.0, 3.0, ANNEX[1], 0.25            # east width, south depth, west end
     bed_e = (W_OUT, W_OUT + strip + 0.6, 7.9, 12.8)          # east, north of the entrance
     bed_w = (-0.70, -0.025, 8.7, 12.8)                       # west, north of the back door
     door = (6.3, 7.7)                                        # threshold in front of the entrance
-    box(c, "Terrasse", "Fuge", 0, W_OUT + tw, -tw, 0, -0.10, -0.025)
+    box(c, "Terrasse", "Fuge", tx, W_OUT + tw, -td, 0, -0.10, -0.025)
     box(c, "Terrasse", "Fuge", W_OUT, W_OUT + tw, 0, D_OUT, -0.10, -0.025)
     rows = [0.6, 0.45, 0.6, 0.5, 0.6, 0.45, 0.55, 0.6]
 
@@ -1220,13 +1252,13 @@ def build_terrace():
             r += step * d
             i += 1
 
-    slabs("x", -strip, -tw, 0, W_OUT + tw)
+    slabs("x", -strip, -td, tx, W_OUT + tw)
     slabs("x", 0, -strip, W_OUT + strip, W_OUT + tw)                  # SE corner, strip row
     slabs("y", W_OUT + strip, bed_e[1], 0, bed_e[2])                  # first row stops at the bed
     slabs("y", bed_e[1], W_OUT + tw, 0, D_OUT)
     box(c, "Terrasse", "Granit", W_OUT, W_OUT + strip, door[0], door[1], -0.05, -0.01)
     # pebble strip (gravel bed + pebbles)
-    strips = [(0, W_OUT + strip, -strip, 0), (W_OUT, W_OUT + strip, 0, door[0]),
+    strips = [(tx, W_OUT + strip, -strip, 0), (W_OUT, W_OUT + strip, 0, door[0]),
               (W_OUT, W_OUT + strip, door[1], bed_e[2])]
     for x0, x1, y0, y1 in strips:
         box(c, "Kiesstreifen", "Kies", x0, x1, y0, y1, -0.10, -0.035)
@@ -1268,50 +1300,49 @@ def build_outside():
     for y in (7.05, 8.73):                                   # either side of the back door (west)
         lamp(-0.025, y, 1.95, -1, 0)
     c = "Umgebung"
-    box(c, "Schuppen", "Kies", 0.10, 2.358, 0.20, 5.145, -0.05, -0.01)
-    build_shed()
+    build_annex()
     box(c, "Gelaende", "Wiese", -20, 35, -25, 35, -0.30, -0.05)
     SMOOTH.update({"Kiesel", "Aussenleuchten"})
 
 
-def build_shed():
-    """Wooden Schuppen in the SW corner (plan: thin double lines, no masonry). Leans against
-    the house walls at x=2.358 (east) and y=5.145 (north); lean-to roof falling to the west.
-    Height and door position are assumptions – not given in the drawings."""
-    c, o = "Umgebung", "Schuppen_Holz"
-    x0, x1, y0, y1, t = 0.0, 2.358, 0.0, 5.145, 0.10
-    h_w, h_e = 2.20, 2.45                                   # eave (west) / top at house wall
-    h = lambda x: h_w + (h_e - h_w) * (x - x0) / (x1 - x0)
-    door = (1.90, 3.30)                                     # double door in the west wall
-    # south wall; its top steps up with the roof slope
-    box(c, o, "Holz", x0, x1, y0, y0 + t, 0, h_w)
-    n = 12
-    for i in range(n):
-        xa, xb = x0 + (x1 - x0) * i / n, x0 + (x1 - x0) * (i + 1) / n
-        box(c, o, "Holz", xa, xb, y0, y0 + t, h_w, h((xa + xb) / 2))
-    # west wall with double door
-    box(c, o, "Holz", x0, x0 + t, y0 + t, door[0], 0, h_w)
-    box(c, o, "Holz", x0, x0 + t, door[1], y1, 0, h_w)
-    box(c, o, "Holz", x0, x0 + t, door[0], door[1], 2.00, h_w)
-    for a, b in [(door[0], sum(door) / 2), (sum(door) / 2, door[1])]:
-        box(c, o, "Tuer", x0 + 0.02, x0 + 0.06, a + 0.01, b - 0.01, 0.02, 2.00)
-    # vertical battens on the outside for a board look
-    for k in range(1, 26):
-        y = y0 + k * 0.2
-        if not (door[0] - 0.05 < y < door[1] + 0.05) and y < y1:
-            box(c, o, "Holz", x0 - 0.02, x0, y - 0.02, y + 0.02, 0, h_w)
-    for k in range(1, 12):
-        x = x0 + k * 0.2
-        box(c, o, "Holz", x - 0.02, x + 0.02, y0 - 0.02, y0, 0, h(x) - 0.02)
-    # lean-to roof with small overhang to west and south
-    ov = 0.25
-    slope = (h_e - h_w) / (x1 - x0)
-    xa, ya = x0 - ov, y0 - ov
-    za = h_w - slope * ov
-    base = [(xa, ya, za), (x1, ya, h_e), (x1, y1, h_e), (xa, y1, za)]
-    v = base + [(x, y, z + 0.08) for x, y, z in base]
-    add(c, o, "Dach", v, [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6),
-                          (3, 0, 4, 7)])
+def build_annex():
+    """Elektroraum (north) and Heizung (south) in the SW corner, after the plan of 2026-10-19
+    (replaces the shed): timber-framed walls (plan: wood hatching, 0.20 m) clad with vertical
+    larch boards, flat roof with overhang (OG plan, top from the elevations), plank door in
+    the west wall, panel door from the Elektroraum to the Heizung."""
+    c, o, M, T, t = "EG", "EG_Anbau", "Laerche", 0.025, 0.20
+    x0, x1, y0, y1 = ANNEX
+    zr, ym = ANNEX_TOP - 0.15, 2.59                         # roof underside, partition (south face)
+    door, dh, fw = (3.50, 4.30), 2.10, 0.07                 # outside door (west wall)
+    box(c, o, "Decke", x0, x1, y0, y1, -0.30, 0.0)          # floor slab
+    box(c, o, "Putz", x0, x0 + t, y0, door[0], 0, zr)       # west wall with door
+    box(c, o, "Putz", x0, x0 + t, door[1], y1, 0, zr)
+    box(c, o, "Putz", x0, x0 + t, door[0], door[1], dh, zr)
+    box(c, o, "Putz", x0 + t, x1, y0, y0 + t, 0, zr)        # south
+    box(c, o, "Putz", x0 + t, x1, y1 - t, y1, 0, zr)        # north (against the WC wall east of x=0)
+    box(c, o, "Putz", x1 - t, x1, y0 + t, y1 - t, 0, zr)    # east, against the house
+    da, db = -1.14, -0.34                                   # partition with door
+    box(c, o, "Putz", x0 + t, da, ym, ym + t, 0, zr)
+    box(c, o, "Putz", db, x1 - t, ym, ym + t, 0, zr)
+    box(c, o, "Putz", da, db, ym, ym + t, DOOR_H, zr)
+    panel_door(c, "x", da, db, ym, ym + t, 0, DOOR_H, -1, "b")
+    # boards outside: west (round the SW corner), south, the free part of the north face
+    PY, PX = frame("y"), frame("x")
+    boards(c, o, M, PY, y0 - T, y1 + T, const(0.02), const(zr), x0 - T, x0, 0.17,
+           holes=[(door[0] - fw, door[1] + fw, const(0.0), const(dh + fw), False)])
+    boards(c, o, M, PX, x0, x1, const(0.02), const(zr), y0 - T, y0, 0.17)
+    boards(c, o, M, PX, x0, -T, const(0.02), const(zr), y1, y1 + T, 0.17)
+    # plank door: trim in the board layer, leaf in the wall
+    r = random.random()
+    for ua, ub in ((door[0] - fw, door[0]), (door[1], door[1] + fw)):
+        lbox(c, o, M, PY, ua, ub, x0 - T - 0.02, x0, 0.0, dh + fw, r)
+    lbox(c, o, M, PY, door[0], door[1], x0 - T - 0.02, x0, dh, dh + fw, r)
+    boards(c, o, "Tuer", PY, door[0] + 0.004, door[1] - 0.004, const(0.01), const(dh - 0.004),
+           x0 + 0.02, x0 + 0.06, 0.13)
+    lbox(c, o, "Eisen", PY, door[0] + 0.08, door[0] + 0.12, x0 + 0.005, x0 + 0.02, 1.0, 1.15)
+    # flat roof with overhang; it stops at the house wall, west of the house it overlaps it
+    xr, yr0, yr1 = x0 - 0.30, y0 - 0.32, y1 + 0.27
+    xy_prism(c, o, "Dach", [(xr, yr0), (x1, yr0), (x1, y1), (-T, y1), (-T, yr1), (xr, yr1)], zr, ANNEX_TOP)
 
 
 # ---------------------------------------------------------------- room names on the floor
@@ -1369,7 +1400,7 @@ CELL = 0.25                                 # emitter grid
 DENSITY = 90                                # grass clumps per m² close to the house
 NEAR, FAR, FAR_DENS = 14.0, 28.0, 0.15      # density falls off from NEAR to FAR (relative)
 HOUSE_C = (7.44, 6.44)
-NO_GRASS = ["EG_Waende", "Terrasse", "Kiesstreifen", "Beet_Ost", "Beet_West", "Schuppen_Holz",
+NO_GRASS = ["EG_Waende", "Terrasse", "Kiesstreifen", "Beet_Ost", "Beet_West", "EG_Anbau",
             "Balkon_EG_Nord"]
 BEDS = ("Beet_Ost", "Beet_West")
 WINDROSE_CENTER = (-3.5, -5.0, 0.02)        # compass rose south-west of the house (windrose.py)
