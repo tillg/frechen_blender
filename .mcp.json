@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "blender": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://projects.blender.org/lab/blender_mcp.git@v1.0.3#subdirectory=mcp",
+        "blender-mcp"
+      ],
+      "env": {}
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--sandbox", "--outputDir", "tmp/playwright"]
+    }
+  }
+}
