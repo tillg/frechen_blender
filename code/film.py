@@ -11,17 +11,15 @@ import bpy, importlib, math, sys
 
 sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
 import house_core; importlib.reload(house_core)        # pick up core edits in a long session
-from house_core import ROOM_LIGHTS
+from house_core import HOUSE_C, ROOM_LIGHT_H, ROOM_LIGHTS, Z_OG
 
 FPS = 25
 EYE = 1.65                  # eye height above floor
-Z_OG = 2.70
 WALK, STAIR_SPEED = 1.3, 0.8
-HOUSE_C = (7.44, 6.44)
 
 
 # ---------------------------------------------------------------- route
-def orbit(a0, a1, secs, center=(7.44, 6.44), rx=20.0, ry=18.0, z=EYE, look=(7.44, 6.44, 3.0)):
+def orbit(a0, a1, secs, center=HOUSE_C, rx=20.0, ry=18.0, z=EYE, look=(*HOUSE_C, 3.0)):
     return ("orbit", a0, a1, secs, center, rx, ry, z, look)
 
 
@@ -165,7 +163,7 @@ def build_lights():
         ld.energy, ld.color, ld.shadow_soft_size = 120, (1.0, 0.9, 0.78), 0.3   # 250 W washed out
         ld.use_shadow = False       # fill light only; 23 shadow casters overflowed the shadow pool -> flicker
         ob = bpy.data.objects.new(ld.name, ld)
-        ob.location = (x, y, z + 2.1)
+        ob.location = (x, y, z + ROOM_LIGHT_H)
         c.objects.link(ob)
 
 

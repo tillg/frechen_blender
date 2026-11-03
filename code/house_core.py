@@ -1332,6 +1332,7 @@ ROOM_LIGHTS = [  # (x, y, floor z)
     (5.0, 7.4, Z_OG), (10.0, 7.0, Z_OG), (12.0, 3.0, Z_OG), (4.0, 3.0, Z_OG), (7.0, 4.3, Z_OG),
     (7.0, 1.5, Z_OG), (3.0, 10.7, Z_OG), (7.6, 10.7, Z_OG), (11.8, 10.7, Z_OG), (1.4, 7.4, Z_OG),
 ]
+ROOM_LIGHT_H = 2.1          # light height above its floor
 
 
 # ---------------------------------------------------------------- shutter cross boards

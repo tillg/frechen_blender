@@ -2,7 +2,7 @@
 // density within 30 m of the house, and the shrubs per stage (ink circle / clay blob / leaves).
 // The windrose rectangles are ignored: the viewer draws no rose, so grass grows there.
 import * as THREE from 'three/webgpu';
-import { attribute, color, mix, positionLocal, vec3 } from 'three/tsl';
+import { attribute, color, instancedBufferAttribute, mix, positionLocal, vec3 } from 'three/tsl';
 import { CLAY, PAPER } from './materials.js';
 import { INK } from './ink.js';
 
@@ -90,8 +90,11 @@ function leaves(shrubs, uDetail, rand) {
   geo.setAttribute('position', new THREE.Float32BufferAttribute([1, 0, 0, 0, 0.45, 0, -1, 0, 0, 0, -0.45, 0], 3));
   geo.setIndex([0, 1, 2, 0, 2, 3]);
   geo.computeVertexNormals();
+  // grow each leaf about its own centre: positionLocal is already instance-transformed here
+  const centres = new Float32Array(3 * n * shrubs.length);
+  const centre = instancedBufferAttribute(new THREE.InstancedBufferAttribute(centres, 3));   // r187: a bare array reads per vertex
   const m = new THREE.MeshStandardNodeMaterial({ side: THREE.DoubleSide, roughness: 0.55 });
-  m.positionNode = positionLocal.mul(uDetail);
+  m.positionNode = centre.add(positionLocal.sub(centre).mul(uDetail));
   const mesh = new THREE.InstancedMesh(geo, m, n * shrubs.length);
   const gauss = () => Math.sqrt(-2 * Math.log(rand() || 1e-9)) * Math.cos(2 * Math.PI * rand());
   const mat = new THREE.Matrix4(), col = new THREE.Color();
@@ -107,6 +110,7 @@ function leaves(shrubs, uDetail, rand) {
       const sz = 0.028 + rand() * 0.022;
       mat.makeBasis(t1.multiplyScalar(sz), t2.multiplyScalar(sz), out.multiplyScalar(sz)).setPosition(p);
       mesh.setMatrixAt(i, mat);
+      p.toArray(centres, 3 * i);
       mesh.setColorAt(i, col.setRGB(...rampJS(LEAF, rand() ** 0.8 * (0.6 + 0.4 * Math.max(nv.z, 0)))));
     }
   mesh.castShadow = true;

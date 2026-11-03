@@ -19,13 +19,7 @@ def snapshot(tmp_path):
     return json.loads(out.read_text())
 
 
-SKIP_RND = {"Laeden_Querbretter"}     # paint.py built it without rnd; the core gives it the shutter's
-
-
 def diff(old, new):
-    old, new = dict(old), dict(new)
-    for k in SKIP_RND & set(old) & set(new):
-        old[k], new[k] = {**old[k], "rnd": None}, {**new[k], "rnd": None}
     keys = sorted(set(old) | set(new))
     return {k: {"golden": old.get(k), "now": new.get(k)} for k in keys if old.get(k) != new.get(k)}
 

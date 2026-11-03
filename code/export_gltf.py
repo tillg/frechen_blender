@@ -50,9 +50,10 @@ class Writer:
         self.bin += data + b"\0" * (-len(data) % 4)
         acc = {"bufferView": len(self.views) - 1, "componentType": 5125 if kind == "INDEX" else 5126,
                "count": len(values), "type": "SCALAR" if kind != "VEC3" else "VEC3"}
-        if kind == "VEC3":
-            acc["min"] = [min(v[k] for v in values) for k in range(3)]
-            acc["max"] = [max(v[k] for v in values) for k in range(3)]
+        if kind == "VEC3":                       # bounds of the stored float32 values
+            f32 = struct.unpack("<%df" % len(flat), data)
+            acc["min"] = [min(f32[k::3]) for k in range(3)]
+            acc["max"] = [max(f32[k::3]) for k in range(3)]
         self.accessors.append(acc)
         return len(self.accessors) - 1
 
@@ -148,7 +149,7 @@ def export(path):
     lay = bp.garden
     extras = {
         "coordinates": "z-up model metres (x east, y north); glTF positions are (x, z, -y)",
-        "room_lights": jsonable(bp.room_lights),
+        "room_lights": jsonable(bp.room_lights), "ROOM_LIGHT_H": house_core.ROOM_LIGHT_H,
         "Z_OG": house_core.Z_OG, "W_OUT": house_core.W_OUT, "D_OUT": house_core.D_OUT,
         "RIDGE_Z": house_core.RIDGE_Z,
         "garden": {"ground": jsonable(lay.ground), "no_grass": jsonable(lay.no_grass),
