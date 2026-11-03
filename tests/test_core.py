@@ -37,9 +37,9 @@ def test_room_light_height_and_film_constants_come_from_the_core():
     assert "z + 2." not in film and "Z_OG =" not in film and "HOUSE_C =" not in film
 
 
-def test_shed_battens_are_wood():
-    assert "Laden" not in BP.geo[("Umgebung", "Schuppen_Holz")]["m"]
-    assert "Schuppen_Holz" not in (CODE / "paint.py").read_text()
+def test_annex_boards_are_wood():
+    assert "Laden" not in BP.geo[("EG", "EG_Anbau")]["m"]
+    assert "EG_Anbau" not in (CODE / "paint.py").read_text()
 
 
 def part_bbox(g, first, n):

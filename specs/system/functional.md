@@ -19,8 +19,10 @@ edited: 2026-11-03
   - round-arched entrance door, back door with an oval window
   - windows with larch frames and glazing bars
   - blue shutters with white cross boards
-  - larch terrace doors and big west windows
-  - larch cladding of the whole west side, cut around the openings
+  - larch terrace doors; tall OG west windows with a fixed light below
+  - larch cladding of the whole west side and the east gable, cut around the openings; spaced
+    slats over the gable windows
+  - sliding door between Bad and WC Großeltern
   - larch balconies with cut-out balusters
   - outside lamps
 - **Interior:**
@@ -32,8 +34,9 @@ edited: 2026-11-03
   - Kachelofen with bench and fire
   - big dining table with 14 chairs
   - bathrooms and WCs: shower, basin, wall-hung WC
-- **Surroundings:** granite terrace with gravel strip and soil beds, shed with wooden battens,
-  ground.
+- **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
+  door outside, panel door between the rooms.
+- **Surroundings:** granite terrace with gravel strip and soil beds, ground.
 - **Garden layout:** no-grass areas, grass density, clump shape and shrub placements in the
   beds.
 

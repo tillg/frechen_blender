@@ -9,7 +9,7 @@ edited: 2026-11-03
 ## Purpose
 
 A 3D model of the house **Frechenlehen**: an Alpine-style family house with two storeys, a
-pitched roof, larch cladding on the west, balconies and a terrace. The model is built from
+pitched roof, larch cladding on the west and the gables, balconies, a terrace and a small annex. The model is built from
 the architect's plans and from detail photos. It serves the family (the owner, Till) to
 see the house, walk through it on film, explore it in the browser and show it to others.
 The README (German) is the user-facing description.
@@ -24,15 +24,15 @@ the team uses them:
 | **EG** (Erdgeschoss) | Ground floor, z = 0 … 2.40 m. |
 | **OG** (Obergeschoss) | Upper floor, z = 2.70 … 4.90 m (`Z_OG`, `Z_OG_TOP`). |
 | **Dach** | Roof: ridge runs east–west at 7.67 m, ~20° pitch, wide eaves (`EAVE_OH`) and gable overhangs (`GABLE_OH`). |
-| **Grundriss** | Floor plan (`input/grundriss_eg.png`, `grundriss_og.png`), 1:100. |
+| **Grundriss** | Floor plan (`grundriss_eg.png`, `grundriss_og.png` in the folder of the current plans, see `LOG.md`), 1:100. |
 | **Ansicht** | Elevation drawing. |
 | **Putz** | Plaster, the white facade (RAL 9010). |
 | **Laden / Läden** | Window shutters, blue RAL 5014. |
 | **Cross boards** (Querbretter) | The two white boards across every shutter, per storey (`Laeden_Querbretter`, `OG_Laeden_Querbretter`). |
-| **Lärche / Lärchenschalung** | Larch wood / the larch board cladding of the west side. |
+| **Lärche / Lärchenschalung** | Larch wood / the larch board cladding of the west side, the east gable and the annex. |
 | **Windfang** | Entrance lobby behind the east front door, with a glazed double door. |
 | **Stube** | Living room with the **Kachelofen** (tiled stove) and **Ofenbank** (stove bench). |
-| **Opening** | A hole in a wall: `W` window, `FD` french door, `GD` glazed larch door, `D` solid door, `I` bare opening filled by a dedicated builder. |
+| **Opening** | A hole in a wall: `W` window, `FD` french door, `WF` tall window with a fixed light below, `GD` glazed larch door, `D` solid door, `I` bare opening filled by a dedicated builder. |
 | **Leaf** | An interior door leaf, normally opened flat against the wall. |
 | **Component** | A named building part (e.g. entrance door). The name of a reference photo in `input/` is the component it shows. |
 | **Route** | The camera path of the walkthrough film: orbit / path / look / stair / hold segments. |
@@ -49,7 +49,7 @@ the team uses them:
 | **Cutaway** | Viewer setting that hides the roof ("Ohne Dach") or the roof and the OG ("Nur EG"). |
 | **Clay / Ink / Paper** | The off-white Massenmodell material / the dark Skizze line colour / the Skizze background and surface colour. Surfaces drawn in paper hide the lines behind them (**hidden-line**). |
 | **Garden layout** | The shared description of the garden: ground area, no-grass areas, grass density, clump shape and shrub placements. Each backend plants from it in its own way. |
-| **No-grass area** | A rectangle where no grass grows: around house walls, terrace, gravel strip, beds, shed and the EG balcony (`no_grass`). The **windrose area** (`windrose`: star square plus four letter squares) is separate: Blender keeps grass off it, the viewer ignores it. |
+| **No-grass area** | A rectangle where no grass grows: around house walls, terrace, gravel strip, beds, annex and the EG balcony (`no_grass`). The **windrose area** (`windrose`: star square plus four letter squares) is separate: Blender keeps grass off it, the viewer ignores it. |
 | **Clump** (Grasbüschel) | One grass instance: 6 curved, tapering blades, 0.3–0.6 m tall. |
 | **Shrub** (Strauch) | A rounded leafy bush in one of the beds (`Beet_Ost`, `Beet_West`), placed in groups of three with a gap. |
 | **Room light** | A warm point light at one of the 23 `ROOM_LIGHTS` (x, y, floor z), `ROOM_LIGHT_H` above the floor. Film fill lights in Blender, dusk lights in the viewer's Gebaut stage. |
@@ -71,7 +71,7 @@ erDiagram
     COMPONENT }o--|| MATERIAL : uses
     FURNITURE }o--|| MATERIAL : uses
     HOUSE ||--|| SURROUNDINGS : "sits in"
-    SURROUNDINGS ||--o{ GARDEN : "terrace, beds, meadow, shed"
+    SURROUNDINGS ||--o{ GARDEN : "terrace, beds, meadow"
     FILM ||--|{ ROUTE_SEGMENT : follows
 ```
 
@@ -91,7 +91,7 @@ erDiagram
     GLB ||--|| VIEWER : "loaded by"
 ```
 
-- **House:** a main block of 14.885 × 12.887 m with a shed on the side.
+- **House:** a main block of 14.885 × 12.887 m with an annex (Elektroraum, Heizung) in the SW corner.
 - **Storeys:** EG and OG. They are joined by an open stair with 15 risers (18.0/25.5 cm) and
   a stairwell in the OG slab.
 - **Rooms:** EG has Stube, Küche/Essen, Bibliothek, Speis, Oma & Opa and the Windfang. OG has

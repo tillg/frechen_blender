@@ -123,17 +123,23 @@ def build_room_names():
 
 
 # ---------------------------------------------------------------- reference plans (hidden)
-def reference_plane(name, img, center, z):
-    path = os.path.join(PROJECT, "input", img)
+PLANS = os.path.join(PROJECT, "input", "2026-11-03 input")   # current plans (LOG.md)
+PT = 28.3465                                                  # PDF points per metre at 1:100
+
+
+def reference_plane(name, img, top_left, z):
+    path = os.path.join(PLANS, img)
     im = bpy.data.images.load(path, check_existing=True)
-    w, h = 841.92 / 28.3465, 595.32 / 28.3465          # A4 landscape at 1:100 in metres
-    cx, cy = center
+    w, h = 1190.4 / PT, 841.68 / PT                    # A3 landscape at 1:100 in metres
+    cx, cy = top_left[0] + w / 2, top_left[1] - h / 2
     me = bpy.data.meshes.new(name)
     me.from_pydata([(cx - w / 2, cy - h / 2, z), (cx + w / 2, cy - h / 2, z),
                     (cx + w / 2, cy + h / 2, z), (cx - w / 2, cy + h / 2, z)], [], [(0, 1, 2, 3)])
     uv = me.uv_layers.new()
     for i, co in enumerate([(0, 0), (1, 0), (1, 1), (0, 1)]):
         uv.data[i].uv = co
+    if bpy.data.materials.get(name):                   # left over from the last build: keep the name
+        bpy.data.materials.remove(bpy.data.materials[name])
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     nt = m.node_tree
@@ -145,12 +151,12 @@ def reference_plane(name, img, center, z):
 
 
 def build_references():
-    # page top-left in world coords: EG wall vectors put the outer SW corner at pt (170.27, 507.91)
-    tlx, tly = -170.27 / 28.3465, 507.91 / 28.3465
-    w, h = 841.92 / 28.3465, 595.32 / 28.3465
-    reference_plane("Ref_Grundriss_EG", "grundriss_eg.png", (tlx + w / 2, tly - h / 2), 0.02)
+    # page top-left in world coords: the outer SW corner sits at pt (388.67, 578.71) on the EG
+    # sheet and at (383.15, 649.27) on the OG sheet; the OG drawing is offset by 0.195 / 0.57 m
+    # against the EG walls
+    reference_plane("Ref_Grundriss_EG", "grundriss_eg.png", (-388.67 / PT, 578.71 / PT), 0.02)
     reference_plane("Ref_Grundriss_OG", "grundriss_og.png",
-                    (tlx + w / 2 + 0.195, tly - h / 2 + 0.57), Z_OG + 0.02)
+                    (-383.15 / PT + 0.195, 649.27 / PT + 0.57), Z_OG + 0.02)
 
 
 # ---------------------------------------------------------------- scene assembly
