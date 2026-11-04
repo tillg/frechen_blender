@@ -123,6 +123,12 @@ def test_garden_extras(glb):
     assert len(ex["room_lights"]) == 23 and ex["Z_OG"] == house_core.Z_OG
     assert ex["ROOM_LIGHT_H"] == house_core.ROOM_LIGHT_H
     assert ex["outside_lights"] == [list(p) for p in BP.outside_lights] and len(ex["outside_lights"]) == 8
+    assert ex["lamp_lights"] == [list(p) for p in BP.lamp_lights] and len(ex["lamp_lights"]) == 1
+    import fire                                                           # the fire component's layout
+    assert len(ex["fires"]) == len(BP.fires) == 4 and ex["fires"][0]["tongues"] == fire.tongues(BP.fires[0]["w"], BP.fires[0]["h"], seed=0)
+    assert all(set(f) >= {"base", "u", "w", "h", "d", "tongues"} for f in ex["fires"])
+    assert ex["fire"]["profile"] == [list(p) for p in fire.profile()] and ex["fire"]["core"] == list(fire.CORE)
+    assert ex["fire"]["outer"] == house_core.MAT_DEF["Feuer"] | {"rgba": list(house_core.MAT_DEF["Feuer"]["rgba"])}
     clump = glb["gltf"]["meshes"][node(glb, "GA_Grasbuschel")["mesh"]]["primitives"][0]
     f32 = lambda x: struct.unpack("<f", struct.pack("<f", x))[0]
     assert sorted(read(glb, clump["attributes"]["_H"])) == sorted(map(f32, lay.clump["h"]))

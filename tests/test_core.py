@@ -162,17 +162,15 @@ def test_ofen_submodel_after_the_sketches():
     assert span(right, 1) == 0.6 and max(p[0] for p in right) <= 0.7
     assert span(left, 0) == 1.6 and span(left, 1) == 0.6 and max(p[1] for p in left) <= 0.7
     assert len(left) + len(right) == len(bank)
-    leg = [(z, y) for x, y, z in bank if 0.05 - 1e-9 <= x <= 0.085 + 1e-9 and z < 0.40]   # one board leg,
-    h, w = max(z for z, _ in leg), {}                                    # curved like the photo:
-    for z, y in leg:                                                      # wide foot, waist, belly,
-        w.setdefault(round(z, 4), []).append(y)                          # narrow neck, wide shoulder
-    w = sorted((z / h, max(ys) - min(ys)) for z, ys in w.items())
-    assert len(w) >= 20                                                   # smooth, not a zig-zag
-    neck = min(w, key=lambda p: p[1] if 0.5 < p[0] < 0.9 else 9)
-    belly = max(w, key=lambda p: p[1] if 0.3 < p[0] < 0.65 else 0)
-    waist = min(w, key=lambda p: p[1] if 0.1 < p[0] < belly[0] else 9)
-    assert 0.6 < neck[0] < 0.8 and neck[1] < 0.5 * w[-1][1] and neck[1] < 0.5 * w[0][1]
-    assert waist[1] < belly[1] < w[0][1] and belly[0] < neck[0]
+    g, seat = bp.geo[("Ofen", "Ofen_Bank")], ofen.OFEN_ASSUMED["seat"]   # plain legs like
+    parts = []                                                            # bank-schlicht.png: per bench
+    for first, n in bp.parts[("Ofen", "Ofen_Bank")]:                     # four square legs and a
+        ps = [g["v"][i] for f in g["f"][first:first + n] for i in f]     # stretcher across each end
+        parts.append([round(max(p[k] for p in ps) - min(p[k] for p in ps), 3) for k in range(3)] + [min(p[2] for p in ps)])
+    legs = [p for p in parts if p[0] == p[1] == 0.06 and p[3] == 0]
+    rails = [p for p in parts if p[2] == 0.04 and 0.1 < p[3] < 0.25]
+    assert len(legs) == 8 and all(abs(p[2] - (seat - 0.045)) < 1e-6 for p in legs)
+    assert len(rails) == 4 and len(parts) == 2 + 8 + 4
     floor = [(x, y) for x, y, z in v if z == 0]                           # open underneath: only the
     tl = ofen.OFEN_ASSUMED["leg"]                                           # legs stand on the floor
     assert all(x >= 1.2 - tl - 1e-9 or y >= 1.2 - tl - 1e-9 or x + y >= 1.9 - tl * 2 ** 0.5 - 1e-9
@@ -185,10 +183,18 @@ def test_ofen_submodel_after_the_sketches():
     bed = bp.geo[("Ofen", "Ofen_Bett")]["v"]
     assert round(min(z for x, y, z in bed if y < 1.2), 3) == 1.45        # sitting height above the bench
     assert all(x <= 0.7 + 1e-9 for x, y, z in bed if y > 1.2 + 1e-9)
+    g, BL = bp.geo[("Ofen", "Ofen_Bett")], ofen.OFEN_BED_L                # foot end: 3 rungs from the
+    rungs = []                                                            # wall to the post (a ladder)
+    for first, n in bp.parts[("Ofen", "Ofen_Bett")]:
+        ps = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        lo = [min(p[k] for p in ps) for k in range(3)]; hi = [max(p[k] for p in ps) for k in range(3)]
+        if lo[0] < 0.02 and abs(hi[0] - 0.62) < 1e-9 and lo[1] >= BL - 0.08 - 1e-9 and hi[2] < 1.4:
+            rungs.append((lo[2] + hi[2]) / 2)
+    assert len(rungs) == 3 and all(abs(z - ofen.OFEN_BED * k / 4) < 1e-9 for z, k in zip(sorted(rungs), (1, 2, 3)))
     rim = bp.geo[("Ofen", "Ofen_Bettrand")]["v"]                          # rim: free edges only
     top, bottom = max(z for *_, z in rim), min(z for *_, z in rim)
-    assert bottom == 1.49 and abs(top - (1.49 + 0.11 * math.cos(math.radians(25)))) < 1e-9   # 11 cm boards
-    assert max(x for x, y, z in rim if z == top) > 1.2 >= max(x for x, y, z in rim if z == bottom)  # leans out
+    assert bottom == 1.49 and abs(top - (1.49 + 0.05)) < 1e-9             # 5 cm boards, upright
+    assert max(x for x, y, z in rim if z == top) == max(x for x, y, z in rim if z == bottom) <= 1.2  # straight up
     assert len(bp.parts[("Ofen", "Ofen_Bettrand")]) == 3                  # one board per free edge
     assert min(x for x, y, z in rim) > 0.6                                # no board along the walls
     assert min(y for x, y, z in rim) >= 0.1 - 1e-9 and max(y for x, y, z in rim) <= 1.8 + 1e-9  # 10 cm at the ends
@@ -196,9 +202,9 @@ def test_ofen_submodel_after_the_sketches():
     assert bp.dims and all(len(d) == 3 for d in bp.dims)
 
 
-def test_ofen_bed_mattress_and_turned_down_checked_blanket():
-    """On the bed above the Ofen: a very thin cream mattress inside the rim, on it a checked blanket
-    (red Vichy: three tones), its head-end corner turned back so a second layer lies there."""
+def test_ofen_bed_mattress_without_blanket():
+    """On the bed above the Ofen: a very thin cream mattress inside the rim; no blanket (the red
+    checked one was removed on request)."""
     bp = house_core.build_ofen()
     g = bp.geo[("Ofen", "Ofen_Bettzeug")]
     zp = ofen.OFEN_BED + 0.04                                             # platform top
@@ -212,16 +218,8 @@ def test_ofen_bed_mattress_and_turned_down_checked_blanket():
     assert all(x <= 1.2 - 0.025 and y <= ofen.OFEN_BED_L and x >= 0 and y >= 0
                and (x + y <= 1.9 - 0.025 * 2 ** 0.5 if y <= 1.2 else x <= 0.7 - 0.025)
                for x, y, _ in matt)                                       # inside the rim
-    rim = bp.geo[("Ofen", "Ofen_Bettrand")]["v"]
-    blanket = [g["v"][i] for i, ms in mat_of.items() if ms & {"Karo", "KaroHell", "Bettwaesche"}]
-    assert {"Karo", "KaroHell", "Bettwaesche"} <= set(g["m"])             # checked: three tones
-    mt = max(z for *_, z in matt)
-    assert round(min(z for *_, z in blanket), 3) == round(mt, 3)          # on the mattress
-    assert max(z for *_, z in blanket) < max(z for *_, z in rim)          # below the rim top
-    head = min(y for _, y, _ in blanket)
-    layers = lambda y: {round(z, 3) for x, yy, z in blanket if abs(yy - y) < 0.06}
-    assert len(layers(head + 0.1)) > len(layers(1.5))                     # turned down: doubled at the head
-    assert all(x <= 0.7 for x, *_ in blanket)                             # on the lying part along the wall
+    assert set(g["m"]) == {"Creme"}                                       # no blanket
+    assert not {"Karo", "KaroHell"} & set(house_core.MAT_DEF)
 
 
 def test_ofen_built_into_the_stube():
@@ -241,7 +239,9 @@ def test_ofen_built_into_the_stube():
     assert bbox("EG_Ofen_Koerper") == ([9.06, 4.645, 0], [10.26, 5.845, 1.15])
     assert bbox("EG_Ofen_Bett")[1][0] <= 11.004 - 0.04                     # clear of the Stube door
     assert bbox("EG_Ofen_Bank")[0][1] >= 2.938 + 0.1                       # clear of the passage to Essen
-    assert set(BP.geo[("EG", "EG_Ofen_Bank")]["m"]) == {"FichteY", "FichteZ"}  # grain along the seats
+    g = BP.geo[("EG", "EG_Ofen_Bank")]                                   # grain along the seats
+    tops = {m for f, m in zip(g["f"], g["m"]) if all(abs(g["v"][i][2] - 0.45) < 1e-9 for i in f)}
+    assert tops == {"FichteY"}
     assert "FichteX" in BP.geo[("EG", "EG_Ofen_Bett")]["m"]               # bed runs along x now
 
 
@@ -264,7 +264,7 @@ def test_bibliothek_piano_desk_and_werkstattofen():
     hi = [round(max(p[k] for p in ofen["v"]), 3) for k in range(3)]
     assert 9.351 + 0.05 <= lo[0] < 9.6 and lo[1] >= 8.876 + 0.05 and hi[1] < 9.6   # on the Flur wall
     assert 1.0 <= hi[2] <= 1.1 and 0.38 <= hi[0] - lo[0] <= 0.45
-    assert {"Eisen", "Ofenglas", "Feuer"} <= set(ofen["m"])
+    assert {"Eisen", "Ofenglas"} <= set(ofen["m"])          # its fire: FIRES (test_fires_...)
     assert "EG_Werkstattofen" not in BP.furniture                        # built in, like the Ofen
 
 
@@ -288,7 +288,7 @@ def test_schlafen_se_headboard_wall_and_werkstattofen():
     hi = [max(p[k] for p in ofen["v"]) for k in range(3)]
     assert 8.72 + 0.09 < lo[0] < 8.72 + 0.15 and 3.84 - 0.15 < hi[1] < 3.84 - 0.09   # in the corner
     assert 0.55 < hi[0] - lo[0] < 0.65 and 1.0 <= hi[2] - zo <= 1.1                 # turned 45°
-    assert {"Eisen", "Ofenglas", "Feuer"} <= set(ofen["m"]) and "OG_Werkstattofen" not in BP.furniture
+    assert {"Eisen", "Ofenglas"} <= set(ofen["m"])          # its fire: FIRES (test_fires_...) and "OG_Werkstattofen" not in BP.furniture
     eg = BP.geo[("EG", "EG_Werkstattofen")]["v"]                                    # same stove
     assert len(eg) == len(ofen["v"])
 
@@ -339,3 +339,85 @@ def test_west_og_windows_wall_below_up_to_the_ceiling():
     clad = BP.geo[("Dach", "Verschalung_West")]                            # no iron bars (small windows only)
     bars = [clad["v"][i] for f, m in zip(clad["f"], clad["m"]) if m == "Eisen" for i in f]
     assert bars and not any(any(o["a"] < y < o["b"] for o in west) and z > house_core.Z_OG for _, y, z in bars)
+
+
+def test_fires_are_recorded_where_the_stoves_burn():
+    """The flames are no longer static geometry: every stove records its fire (base = centre of
+    the flame bed in the flame plane, u = unit along the width, w, h, d) in FIRES, and the
+    animated fire component (code/fire.py, web/src/fire.js) draws them. Three in the house (Stube
+    Ofen, Bibliothek and Schlafen SE workshop stoves), one in the Ofen sub-model."""
+    assert len(BP.fires) == 4 and len(house_core.build_ofen().fires) == 2   # the Ofen: front + back door
+    house_core.build()                                                    # restore the registries
+    assert not any(m == "Feuer" for g in BP.geo.values() for m in g["m"])
+
+    def inside(f, key, pad=0.02):
+        v = BP.geo[key]["v"]
+        return all(min(p[k] for p in v) - pad <= f["base"][k] <= max(p[k] for p in v) + pad for k in range(3))
+
+    for f in BP.fires:
+        assert abs(math.hypot(*f["u"]) - 1) < 1e-9 and 0 < f["w"] < 0.6 and 0 < f["h"] < 0.5 and 0 < f["d"] < 0.02
+    assert sum(inside(f, ("EG", "EG_Ofen_Feuertuer")) for f in BP.fires) == 1
+    assert sum(inside(f, ("EG", "EG_Ofen_Hintertuer")) for f in BP.fires) == 1
+    assert sum(inside(f, ("EG", "EG_Werkstattofen")) for f in BP.fires) == 1
+    assert sum(inside(f, ("OG", "OG_Werkstattofen")) for f in BP.fires) == 1
+    og = next(f for f in BP.fires if f["base"][2] > house_core.Z_OG)
+    assert abs(og["u"][0] - math.cos(math.radians(-135))) < 1e-9                     # turned with its stove
+
+
+def test_ofen_back_door_to_the_flur():
+    """The Ofen can also be fed from the Flur: a second fire door on its back (the wall side,
+    sub-model x = 0); in the house it sits flush in the Flur face of the Stube/Flur wall
+    (y 6.349), through an opening in that wall, with its own fire behind the glass."""
+    sub = house_core.build_ofen()
+    v = sub.geo[("Ofen", "Ofen_Hintertuer")]["v"]
+    assert -0.03 - 1e-9 <= min(x for x, _, _ in v) and max(x for x, _, _ in v) <= 1e-9          # on the x = 0 face
+    assert 0.4 < min(y for _, y, _ in v) and max(y for _, y, _ in v) < 1.0
+    house_core.build()
+    hv = BP.geo[("EG", "EG_Ofen_Hintertuer")]["v"]
+    assert 6.349 - 0.01 <= min(y for _, y, _ in hv) and max(y for _, y, _ in hv) <= 6.349 + 0.031   # flush in the Flur face
+    xs = [x for x, _, _ in hv]
+    g = BP.geo[("EG", "EG_Waende")]
+    for first, n in BP.parts[("EG", "EG_Waende")]:                      # the wall is open there
+        ps = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        lo = [min(p[k] for p in ps) for k in range(3)]; hi = [max(p[k] for p in ps) for k in range(3)]
+        assert not (lo[0] < (min(xs) + max(xs)) / 2 < hi[0] and lo[1] < 6.1 < hi[1] and lo[2] < 0.68 < hi[2])
+
+
+def test_small_lamp_above_the_ofen_bed():
+    """Like the photo (ofenbett-1200x800.jpg): a small gooseneck lamp on the wall above the bed's
+    head end, the outdoor lamp at reduced scale; not one of the outside lights."""
+    sub = house_core.build_ofen()
+    v = sub.geo[("Ofen", "Ofen_Lampe")]["v"]
+    lo = [min(p[k] for p in v) for k in range(3)]; hi = [max(p[k] for p in v) for k in range(3)]
+    assert lo[1] >= -1e-9 and lo[2] > ofen.OFEN_BED + 0.4 and hi[2] < house_core.Z_EG_TOP     # on the wall, above the bed
+    assert max(h - l for h, l in zip(hi, lo)) < 0.25                                           # small
+    assert "GluehfadenAn" in sub.geo[("Ofen", "Ofen_Lampe")]["m"]                           # switched on
+    house_core.build()
+    assert ("EG", "EG_Ofen_Lampe") in BP.geo and "EG_Ofen_Lampe" in BP.smooth
+    assert len(BP.outside_lights) == 8
+
+
+def test_east_og_balcony_windows_are_french_doors():
+    """The three east OG windows onto the long balcony (Schlafen SE y 1.74, 4.15; Schlafen NE
+    y 9.86) are balcony doors now (on request), floor to 4.60 like the other french doors."""
+    house_core.build()
+    east = {round(o["a"], 2): o for o in house_core.OPENINGS
+            if o["ax"] == "y" and o["face"] == house_core.W_OUT and o["sill"] >= house_core.Z_OG - 1e-9}
+    for a in (1.74, 4.15, 9.86):
+        assert east[a]["kind"] == "FD" and east[a]["sill"] == house_core.Z_OG and east[a]["head"] == 4.60
+
+
+def test_ofen_lamp_is_switched_on():
+    """The small lamp above the Ofen bed is on: its filament glows by day too (not "night") and
+    it records a light (LAMP_LIGHTS) at the filament, for Blender and the viewer."""
+    sub = house_core.build_ofen()
+    assert len(sub.lamp_lights) == 1
+    house_core.build()
+    assert len(BP.lamp_lights) == 1 and len(BP.outside_lights) == 8
+    g = BP.geo[("EG", "EG_Ofen_Lampe")]
+    fil = [g["v"][i] for f, m in zip(g["f"], g["m"]) if m == "GluehfadenAn" for i in f]
+    assert fil and "night" not in house_core.MAT_DEF["GluehfadenAn"]
+    x, y, z = BP.lamp_lights[0]
+    assert min(p[0] for p in fil) - 0.01 <= x <= max(p[0] for p in fil) + 0.01
+    assert min(p[1] for p in fil) - 0.01 <= y <= max(p[1] for p in fil) + 0.01
+    assert min(p[2] for p in fil) - 0.01 <= z <= max(p[2] for p in fil) + 0.01

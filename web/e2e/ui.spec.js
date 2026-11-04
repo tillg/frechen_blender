@@ -110,3 +110,25 @@ test('the built-in Ofen shows in every stage, without dimensions, and "Ofen" ope
   await expect(page.locator('.dim', { hasText: 'Bett 190' })).toBeVisible();
   await expect(page.locator('.dim', { hasText: 'Bank 160' })).toBeVisible();
 });
+
+test('the stoves burn from the Detailmodell on, and the flames move', async ({ page }) => {
+  await open(page);
+  expect(await page.evaluate(() => window.__fl.fire())).toBe(false);          // Skizze: no fire
+  await page.getByRole('button', { name: 'Detailmodell' }).click();
+  const a = await page.evaluate(() => window.__fl.fire());
+  await page.waitForTimeout(300);
+  const b = await page.evaluate(() => window.__fl.fire());
+  expect(a).toBeGreaterThan(0);
+  expect(b).not.toBe(a);
+});
+
+test('URL ?cam=&at=&p= sets the viewpoint (model coords) and the stage', async ({ page }) => {
+  await page.goto('/?cam=11.7,3.13,1.6&at=10.01,4.895,0.9&p=2');
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  expect(await stage(page)).toBe('detail');
+  const c = await page.evaluate(() => window.__fl.project(10.01, 4.895, 0.9));   // the target sits mid-screen
+  const vp = page.viewportSize();
+  expect(Math.abs(c.x - vp.width / 2)).toBeLessThan(2);
+  expect(Math.abs(c.y - vp.height / 2)).toBeLessThan(2);
+  expect(await page.evaluate(() => window.__fl.cameraAt())).toEqual([11.7, 3.13, 1.6]);
+});

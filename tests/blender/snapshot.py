@@ -46,11 +46,14 @@ def bbox_entry(ob):
 
 
 if "--saved" not in sys.argv:          # --saved: fingerprint the opened .blend as it is
-    for script in ("build_house.py", "paint.py", "windrose.py", "garden.py", "film.py"):
+    for script in ("build_house.py", "fire.py", "paint.py", "windrose.py", "garden.py", "film.py"):
         run(script)
 bpy.context.view_layer.update()
 snap = objects(bpy.data.collections["Haus"])
 snap.update(objects(bpy.data.collections["Garten"]))           # emitter cells = GA_Wiese faces
+snap.update(objects(bpy.data.collections["Feuer"]))            # flame tongues (code/fire.py)
+snap["_fire_lights"] = sorted([r5(c) for c in ob.location]
+                              for ob in bpy.data.collections["Feuer"].objects if ob.type == "LIGHT")
 snap.update({ob.name: bbox_entry(ob) for ob in bpy.data.collections["Windrose"].objects})
 snap["_shrubs"] = sum(ob.name.startswith("GA_Strauch") for ob in bpy.data.collections["Garten"].objects)
 snap["_paint"] = {n: [r5(c) for c in bpy.data.materials[n].node_tree.nodes["Principled BSDF"]

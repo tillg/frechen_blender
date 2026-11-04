@@ -6,6 +6,7 @@ import { uniform } from 'three/tsl';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import { loadBlueprint } from './blueprint.js';
+import { createFire } from './fire.js';
 import { INK } from './ink.js';
 import { makeMaterials, updateStage } from './materials.js';
 import './ui.css';
@@ -98,7 +99,8 @@ for (const obj of bp.objects) {
     lines.add(new THREE.LineSegments(geo, lineMat));
   });
 }
-scene.add(bp.root, lines);
+const fire = createFire(bp.extras);                       // the fire behind the glass (code/fire.py)
+scene.add(bp.root, lines, fire.group);
 
 // looks: 'wire' see-through lines on the grid, 'mass' clay with shadows, 'full' real materials
 let look = 'wire';
@@ -109,6 +111,7 @@ function setLook(name) {
   uDetail.value = name === 'full' ? 1 : 0;
   updateStage(mats, { detail: uDetail.value, built: 0 });
   lines.visible = fine.visible = coarse.visible = wire;
+  fire.group.visible = name === 'full';
   floor.visible = !wire;
   for (const w of walls) w.material = wire ? wallLine : wallSolid;
   for (const b of document.querySelectorAll('[data-look]')) b.setAttribute('aria-pressed', String(b.dataset.look === name));
@@ -143,9 +146,11 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   labels.setSize(window.innerWidth, window.innerHeight);
 });
-renderer.setAnimationLoop(() => {
+renderer.setAnimationLoop((now) => {
   controls.update();
+  fire.tick(now / 1000);
   renderer.render(scene, camera);
   labels.render(scene, camera);
 });
-if (import.meta.env.DEV) window.__ofen = { ready: true, view, setLook, look: () => look, edges, dims: bp.extras.dims.length };
+if (import.meta.env.DEV) window.__ofen = { ready: true, view, setLook, look: () => look, edges, dims: bp.extras.dims.length,
+  fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y };   // a flame's height (0: off)

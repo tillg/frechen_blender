@@ -13,15 +13,17 @@ OFEN_H, OFEN_BED = 1.15, 1.45                              # stove height; bed u
                                                            # sit upright on the bench below
 OFEN_DOOR_W, OFEN_DOOR_TOP = 0.65, OFEN_H - 0.10           # fire door: centred, 10 cm below the top
 OFEN_BANK_D, OFEN_BANK_L = 0.60, 1.60                      # bench depth; length of the left bench
+OFEN_BACK = (0.72, 0.48, 0.96)                             # back door (fed from the Flur): centre along
+                                                           # the x = 0 face, width, top (sill as the front)
+OFEN_AT, WALL_FLUR = (9.06, 5.845), 6.349                  # house: the stove's wall corner; Flur face of
+                                                           # the Stube/Flur wall (house_core.build_eg)
 OFEN_BED_L = 1.90                                          # bed length along the wall (sketches: both
                                                            # 2.00; shortened to fit the Stube, see LOG)
 OFEN_ASSUMED = dict(r=0.06, sill=0.40, seat=0.45,          # not given: corner radius (small enough
                     arch=(0.50, 0.30), leg=0.12,           # for the 65 cm door), door sill (above
-                    rim=(0.11, 25),                        # the arch), seat height, floor arches
-                    blanket=dict(head=0.45, turn=0.45,     # width/height, leg thickness, bed rim
-                                 check=0.07))              # board width / outward lean in degrees,
-                                                           # blanket: head end, legs of the turned-
-                                                           # back corner, check size
+                    rim=(0.05, 0))                        # the arch), seat height, floor arches
+                                                           # width/height, leg thickness, bed rim
+                                                           # board width / outward lean in degrees
 
 
 def filleted(pts, r, at, n=8):
@@ -103,36 +105,48 @@ def ofen_neu():
     for k in range(2):                                                             # two logs
         hc.prism("Ofen", o, "Holz", PD, rect(ia + 0.06 + 0.03 * k, ib - 0.08 + 0.03 * k, iz0 + 0.01 + 0.06 * k,
                                           iz0 + 0.07 + 0.06 * k), 0.006 + 0.004 * k, 0.012 + 0.004 * k)
-    for cu, w, h in ((-0.15, 0.14, 0.30), (0.0, 0.18, 0.42), (0.14, 0.12, 0.26)):   # flame tongues
-        n = 8
-        us = [cu + w / 2 * math.cos(math.pi * i / n) for i in range(n, -1, -1)]
-        hc.sweep("Ofen", o, "Feuer", PD, [((u, iz0 + 0.10), (cu + (u - cu) * 0.15, iz0 + 0.10 + h * math.sin(
-              math.acos(max(-1.0, min(1.0, (u - cu) / (w / 2))))) ** 0.6)) for u in us], 0.008, 0.010)
+    hc.FIRES.append(dict(base=PD(0, 0.011, iz0 + 0.07), u=(d, -d), w=ib - ia - 0.04, h=0.45, d=0.008))  # flames: fire.py
     hc.prism("Ofen", o, "Ofenglas", PD, rect(ia, ib, iz0, iz1), 0.018, 0.022)
-    # benches: plank seat with a rounded free corner, cut-out board legs (across the depth)
+    # back door on the wall side (x = 0, t outward = -x): the same iron frame, glass and a fire;
+    # in the house it sits in the Flur face of the wall (ofen_im_haus)
+    PB, (bc, bw, bt), ob = (lambda u, t, z: (-t, u, z)), OFEN_BACK, "Ofen_Hintertuer"
+    rb = random.random()
+    for q in (rect(bc - bw / 2, bc - bw / 2 + 0.04, za, bt), rect(bc + bw / 2 - 0.04, bc + bw / 2, za, bt),
+              rect(bc - bw / 2, bc + bw / 2, za, za + 0.04), rect(bc - bw / 2, bc + bw / 2, bt - 0.04, bt)):
+        hc.prism("Ofen", ob, "Eisen", PB, q, 0.0, 0.03, rb)
+    gb = rect(bc - bw / 2 + 0.04, bc + bw / 2 - 0.04, za + 0.04, bt - 0.04)
+    hc.prism("Ofen", ob, "Eisen", PB, gb, 0.0, 0.004)
+    hc.FIRES.append(dict(base=PB(bc, 0.011, za + 0.06), u=(0.0, 1.0), w=bw - 0.12, h=bt - za - 0.14, d=0.008,
+                         back=True))
+    hc.prism("Ofen", ob, "Ofenglas", PB, gb, 0.018, 0.022)
+    # benches after bank-schlicht.png: plank seat with a rounded free corner, at each leg station
+    # two plain square legs (front, back) joined by a stretcher across the depth
     zs = A["seat"]
-    # leg outline after the photo (input/ofen): wide foot, waist, belly, narrow neck, wide shoulder
-    # under the seat; (height fraction, half-width), cosine-smoothed between the extremes
-    ctl, hl = [(0, 0.22), (0.07, 0.22), (0.24, 0.16), (0.50, 0.20), (0.72, 0.09), (0.90, 0.23), (1, 0.24)], zs - 0.045
-    prof = [(0, 0.22)] + [(hl * (f0 + (f1 - f0) * j / 6), w0 + (w1 - w0) * (1 - math.cos(math.pi * j / 6)) / 2)
-                          for (f0, w0), (f1, w1) in zip(ctl, ctl[1:]) for j in range(1, 7)]
-    leg = lambda yc: [(yc - hw, z) for z, hw in prof] + [(yc + hw, z) for z, hw in prof[::-1]]
+
+    def legs(x, ya, yb):
+        for yl in (ya + 0.05, yb - 0.11):
+            hc.box("Ofen", "Ofen_Bank", "FichteZ", x, x + 0.06, yl, yl + 0.06, 0.0, zs - 0.045)
+        hc.box("Ofen", "Ofen_Bank", "FichteY", x + 0.015, x + 0.045, ya + 0.11, yb - 0.11, 0.15, 0.19)
+
     y0, y1 = 1.205, 1.205 + OFEN_BANK_D                              # right of the door, face y = 1.2
     hc.xy_prism("Ofen", "Ofen_Bank", "FichteX", filleted([(0, y0), (0.7, y0), (0.7, y1), (0, y1)], 0.08, (2,)),
-             zs - 0.045, zs)
+                zs - 0.045, zs)
     for x in (0.05, 0.59):
-        hc.prism("Ofen", "Ofen_Bank", "FichteZ", hc.frame("y"), leg((y0 + y1) / 2), x, x + 0.035)
+        legs(x, y0, y1)
     x0, x1, yl = 1.205, 1.205 + OFEN_BANK_L, 0.005 + OFEN_BANK_D      # left of the stove, wall y = 0
     hc.xy_prism("Ofen", "Ofen_Bank", "FichteX", filleted([(x0, 0.005), (x1, 0.005), (x1, yl), (x0, yl)], 0.08, (2,)),
-             zs - 0.045, zs)
+                zs - 0.045, zs)
     for x in (x0 + 0.85, x1 - 0.12):
-        hc.prism("Ofen", "Ofen_Bank", "FichteZ", hc.frame("y"), leg(yl / 2), x, x + 0.035)
+        legs(x, 0.005, yl)
     # bed: platform after the outline, post at the free corner
     BL = OFEN_BED_L
     bed = [(0, 0), (1.2, 0), (1.2, 0.7), (0.7, 1.2), (0.7, BL), (0, BL)]
     hc.xy_prism("Ofen", "Ofen_Bett", "FichteY", bed, zp, zp + 0.04)
     hc.box("Ofen", "Ofen_Bett", "FichteZ", 0.62, 0.7, BL - 0.08, BL, 0.0, zp)
-    # rim: one board along each free edge, leaning outward, square-cut and kept 10 cm clear of
+    for k in (1, 2, 3):                                              # ladder: rungs from the wall to the post
+        zk = zp * k / 4
+        hc.box("Ofen", "Ofen_Bett", "FichteX", 0.005, 0.62, BL - 0.06, BL - 0.02, zk - 0.02, zk + 0.02)
+    # rim: one board along each free edge, upright (lean 0), square-cut and kept 10 cm clear of
     # the wall, of each other at the corners (5 cm each) and of the foot end
     path, (rw, lean), th = bed[1:5], A["rim"], 0.025
     zb, rise, out = zp + 0.04, rw * math.cos(math.radians(lean)), rw * math.sin(math.radians(lean))
@@ -144,39 +158,16 @@ def ofen_neu():
         s0, s1 = 0.10 if i == 0 else 0.05, L - (0.10 if i == len(path) - 2 else 0.05)
         hc.add("Ofen", "Ofen_Bettrand", "FichteY" if abs(n[0]) > 0.9 else "FichteX", ring(s0) + ring(s1),
             [(0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)])
-    # bedding: a very thin cream mattress, 1 cm clear of the rim boards; on the lying part along
-    # the +y wall a red Vichy-checked blanket (red stripes both ways: dark where they cross), its
-    # corner at the head end (y = 0) and the free side turned back diagonally, the flap lying on
-    # top. Fixed rnd: plain colours ignore it, and drawing none leaves every later part's random
-    # value unchanged
-    gm, mt, B = th + 0.01, zb + 0.04, A["blanket"]
+    # small reading lamp like the photo: the outdoor gooseneck lamp at 40 %, on the head-end wall
+    # (y = 0) above the bed
+    hc.lamp(0.35, 0.0, 2.10, 0, 1, "Ofen", "Ofen_Lampe", 0.40, outside=False)
+    hc.SMOOTH.add("Ofen_Lampe")
+    # bedding: a very thin cream mattress, 1 cm clear of the rim boards. Fixed rnd: a plain colour
+    # ignores it, and drawing none leaves every later part's random value unchanged
+    gm, mt = th + 0.01, zb + 0.04
     hc.xy_prism("Ofen", "Ofen_Bettzeug", "Creme", filleted(
         [(0.005, 0.005), (1.2 - gm, 0.005), (1.2 - gm, 0.7 + gm - gm * s2), (0.7 - gm, 1.2 + gm - gm * s2),
          (0.7 - gm, BL - 0.01), (0.005, BL - 0.01)], 0.03, range(6)), zb, mt, 0.5)
-    bx0, bx1, by0, by1, bt = 0.02, 0.7 - gm - 0.015, B["head"], BL - 0.04, 0.012
-    nx, ny = round((bx1 - bx0) / B["check"]), round((by1 - by0) / B["check"])
-    cx, cy = (bx1 - bx0) / nx, (by1 - by0) / ny
-    c = bx1 - B["turn"] - by0                                        # fold line x - y = c
-
-    def clip(poly, sign):                                            # keep sign * (x - y - c) <= 0
-        out = []
-        for p, q in zip(poly, poly[1:] + poly[:1]):
-            sp, sq = sign * (p[0] - p[1] - c), sign * (q[0] - q[1] - c)
-            if sp <= 0:
-                out.append(p)
-            if sp * sq < 0:
-                out.append((p[0] + (q[0] - p[0]) * sp / (sp - sq), p[1] + (q[1] - p[1]) * sp / (sp - sq)))
-        return out if len(out) > 2 else None
-    for j in range(ny):
-        for i in range(nx):
-            m = ("Bettwaesche", "KaroHell", "Karo")[i % 2 + j % 2]
-            cell = [(bx0 + i * cx, by0 + j * cy), (bx0 + (i + 1) * cx, by0 + j * cy),
-                    (bx0 + (i + 1) * cx, by0 + (j + 1) * cy), (bx0 + i * cx, by0 + (j + 1) * cy)]
-            if (lay := clip(cell, 1)):
-                hc.xy_prism("Ofen", "Ofen_Bettzeug", m, lay, mt, mt + bt, 0.5)
-            if (flap := clip(cell, -1)):                             # mirrored over the fold line
-                hc.xy_prism("Ofen", "Ofen_Bettzeug", m, [(y + c, x - c) for x, y in flap][::-1],
-                            mt + bt, mt + 2 * bt, 0.5)
     f = 0.15                                                        # dimension line offset
     k = 0.7 + 2 * f * d                                              # diagonal: clear of the door's
     return [((0, -f, 0), (1.2, -f, 0), "Ofen 120"),
@@ -185,6 +176,7 @@ def ofen_neu():
             ((0, 1.2 + f, OFEN_H), (0.7, 1.2 + f, OFEN_H), "70"),
             ((1.2 + k - 0.7, k, 0), (k, 1.2 + k - 0.7, 0), "Schräge ≈ 71"),
             (PD(-W, 0.12, zc + 0.04), PD(W, 0.12, zc + 0.04), "Tür 65"),
+            (PB(bc - bw / 2, 0.12, bt + 0.04), PB(bc + bw / 2, 0.12, bt + 0.04), f"Tür hinten {bw * 100:.0f} (Flur)"),
             (PD(W + 0.12, 0.12, za), PD(W + 0.12, 0.12, zc), f"Tür {za * 100:.0f}–{zc * 100:.0f} (Unterkante angenommen)"),
             ((1.2 + f, 0.7 + f, 0), (1.2 + f, 0.7 + f, OFEN_H), f"Höhe {OFEN_H * 100:.0f}"),
             ((1.2 + f, 0.7 + f, OFEN_H), (1.2 + f, 0.7 + f, zp), f"{(zp - OFEN_H) * 100:.0f}"),
@@ -198,7 +190,13 @@ def ofen_neu():
             ((0, BL + f, zp), (0.7, BL + f, zp), "70"),
             ((0.7, BL + f, 0), (0.7, BL + f, zp), f"Bett-Unterkante {zp * 100:.0f}"),
             ((0.7 + f + out, BL - 0.10, zb), (0.7 + f + out, BL - 0.10, zb + rise),
-             f"Rand {rw * 100:.0f}, {lean}° schräg (angenommen)")]
+             f"Rand {rw * 100:.0f}" + (f", {lean}° schräg" if lean else ", senkrecht"))]
+
+
+def back_opening():
+    """The back door's opening in the Stube/Flur wall, in house coordinates (an "I" opening)."""
+    bc, bw, bt = OFEN_BACK
+    return (OFEN_AT[0] + bc - bw / 2, OFEN_AT[0] + bc + bw / 2, OFEN_ASSUMED["sill"], bt, "I")
 
 
 def ofen_im_haus():
@@ -206,13 +204,21 @@ def ofen_im_haus():
     sub-model x (along its y = 0 wall) runs south along the Stube west wall, y north-east along the
     north wall, so the bed runs towards the Stube door and the long bench along the west wall.
     Its objects move to EG as EG_<name>; wood grain X/Y swaps with the axes; dimension lines dropped."""
-    x0, y0, swap = 9.06, 5.845, {"FichteX": "FichteY", "FichteY": "FichteX"}
+    (x0, y0), swap = OFEN_AT, {"FichteX": "FichteY", "FichteY": "FichteX"}
+    n0, nl, sh = len(hc.FIRES), len(hc.LAMP_LIGHTS), WALL_FLUR - y0   # back door: moved out to the Flur face
     ofen_neu()
+    hc.LAMP_LIGHTS[nl:] = [(x0 + y, y0 - x, z) for x, y, z in hc.LAMP_LIGHTS[nl:]]
+    for f in hc.FIRES[n0:]:
+        (x, y, z), (ux, uy) = f["base"], f["u"]
+        f.update(base=(x0 + y, y0 - x + (sh if f.get("back") else 0), z), u=(uy, -ux))
     for key in [k for k in hc.GEO if k[0] == "Ofen"]:
         g = hc.GEO.pop(key)
-        g["v"] = [(x0 + y, y0 - x, z) for x, y, z in g["v"]]
+        dy = sh if key[1] == "Ofen_Hintertuer" else 0
+        g["v"] = [(x0 + y, y0 - x + dy, z) for x, y, z in g["v"]]
         g["m"] = [swap.get(m, m) for m in g["m"]]
         hc.GEO[("EG", "EG_" + key[1])], hc.PARTS[("EG", "EG_" + key[1])] = g, hc.PARTS.pop(key)
+        if key[1] in hc.SMOOTH:
+            hc.SMOOTH.discard(key[1]); hc.SMOOTH.add("EG_" + key[1])
 
 
 def werkstattofen(c, cx, cy, z, turn=0):
@@ -231,10 +237,11 @@ def werkstattofen(c, cx, cy, z, turn=0):
                            (xm - 0.13, xm + 0.13, 0.60, 0.64), (xm - 0.13, xm + 0.13, 0.94, 0.98)):
         hc.box(c, o, "Eisen", xa, xb, y1, y1 + 0.02, z + za, z + zb, r)                  # upper door frame
     hc.box(c, o, "Eisen", xm - 0.09, xm + 0.09, y1, y1 + 0.003, z + 0.64, z + 0.94)             # firebox back
-    hc.box(c, o, "Feuer", xm - 0.06, xm + 0.06, y1 + 0.004, y1 + 0.008, z + 0.66, z + 0.84)     # fire
     hc.box(c, o, "Ofenglas", xm - 0.09, xm + 0.09, y1 + 0.014, y1 + 0.018, z + 0.64, z + 0.94)
     hc.box(c, o, "Eisen", xm - 0.11, xm + 0.11, y1, y1 + 0.015, z + 0.17, z + 0.42)             # ash door
     hc.box(c, o, "Eisen", xm + 0.135, xm + 0.15, y1 + 0.02, y1 + 0.045, z + 0.72, z + 0.84)     # handles
     hc.box(c, o, "Eisen", xm + 0.11, xm + 0.13, y1 + 0.015, y1 + 0.05, z + 0.28, z + 0.30)
     g, ca, sa = hc.GEO[(c, o)], math.cos(math.radians(turn)), math.sin(math.radians(turn))
-    g["v"][n0:] = [(cx + (x - cx) * ca - (y - cy) * sa, cy + (x - cx) * sa + (y - cy) * ca, zz) for x, y, zz in g["v"][n0:]]
+    rot = lambda x, y: (cx + (x - cx) * ca - (y - cy) * sa, cy + (x - cx) * sa + (y - cy) * ca)
+    g["v"][n0:] = [(*rot(x, y), zz) for x, y, zz in g["v"][n0:]]
+    hc.FIRES.append(dict(base=(*rot(xm, y1 + 0.009), z + 0.66), u=(ca, sa), w=0.14, h=0.24, d=0.006))  # fire.py

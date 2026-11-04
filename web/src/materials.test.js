@@ -28,7 +28,7 @@ test('FL_Glas is transparent and stops writing depth from Detailmodell on', () =
 });
 
 test('FL_Feuer is emissive', () => {
-  expect(mats.FL_Feuer.userData.emit).toBe(1.2);
+  expect(mats.FL_Feuer.userData.emit).toBe(2.0);              // flames (code/fire.py): pure emission now
   expect(mats.FL_Feuer.emissiveNode).toBeTruthy();
 });
 
@@ -46,4 +46,9 @@ test('wood and speck materials vary by _rnd, plain ones do not', () => {
 test('the lamp filament glows only at dusk (night), the fire always', () => {
   expect(mats.FL_Gluehfaden.userData.night).toBe(true);
   expect(mats.FL_Feuer.userData.night).toBeFalsy();
+});
+
+test('the switched-on lamp filament glows by day too', () => {
+  expect(mats.FL_GluehfadenAn.userData.night).toBeFalsy();
+  expect(mats.FL_GluehfadenAn.userData.emit).toBeGreaterThan(0);
 });

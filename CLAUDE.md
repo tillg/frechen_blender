@@ -13,12 +13,12 @@ The house is described once, in `code/house_core.py` plus `code/ofen.py` (the st
 The scripts run *inside* Blender, normally via the Blender MCP server (`mcp__blender__execute_blender_code`):
 
 ```python
-for s in ("build_house", "paint", "windrose", "garden", "film"):
+for s in ("build_house", "fire", "paint", "windrose", "garden", "film"):
     exec(open(f"/Users/tgartner/git/frechen_blender/code/{s}.py").read())
 bpy.ops.wm.save_mainfile()
 ```
 
-Always rebuild in this order: `paint`, `garden` and `film` all depend on objects that `build_house` recreates. Every script is idempotent (re-running replaces its own collection/objects). No hand edits live in the `.blend`; the scripts are the source of truth. Every Blender script imports the core with `sys.path` + `importlib.reload(house_core)`; without the reload a long-running Blender session would silently keep the old core. Without the MCP, the same rebuild runs headless: `Blender -b frechenlehen.blend --python <script that execs the five and saves>`.
+Always rebuild in this order: `fire`, `paint`, `garden` and `film` all depend on objects (or materials) that `build_house` recreates. Every script is idempotent (re-running replaces its own collection/objects). No hand edits live in the `.blend`; the scripts are the source of truth. Every Blender script imports the core with `sys.path` + `importlib.reload(house_core)`; without the reload a long-running Blender session would silently keep the old core. Without the MCP, the same rebuild runs headless: `Blender -b frechenlehen.blend --python <script that execs the six and saves>`.
 
 Film render (headless, ~1 s/frame, 4464 frames at 1280×720, 25 fps, EEVEE; output settings are set by `film.py` and stored in the file):
 
@@ -52,6 +52,7 @@ Tests:
 - `export_gltf.py`: Blueprint → `.glb` (standard library only). One node per GEO object (`extras.collection`, `extras.smooth`, `extras.furniture` for the objects of the last viewer stage "Eingerichtet"), one primitive per material with `POSITION`/`NORMAL`/`_RND`, `MAT_DEF` + paint in material extras, room lights and the garden layout in `scene.extras`, positions as `(x, z, -y)`. `web/public/frechenlehen.glb` is generated (`npm run blueprint`, run before `dev`/`build`/`test`) and git-ignored.
 - `web/` (Vite, three.js `WebGPURenderer` + TSL, ADR-003-SKGB): `blueprint.js` (load), `stages.js` (timeline weights), `materials.js` (TSL from the extras), `ink.js` (Skizze lines), `lighting.js` (day/dusk, room lights), `garden.js`, `ui.js`, `tour.js` (Rundgang), `main.js`. A dev-only test hook is `window.__fl`. GitHub Pages deploys `web/dist` from `main` (`.github/workflows/pages.yml`).
 - `tour.py` (pure Python, own file so the route can be edited apart from house and film): `ROUTE` is a list of `orbit` / `path` / `look` / `stair` / `hold` segments; `build_tour()` bakes it to smoothed per-frame camera keys `(x, y, z, yaw, pitch, lens)`. `film.py` keys `FL_Kamera_Rundgang` with them (plus fill lights in collection `Innenlicht`); `export_gltf.py` writes them to `scene.extras.tour`, which the viewer's "Rundgang" (`web/src/tour.js`) plays. `tests/golden/tour.json` pins the keys; after a deliberate route change: `UPDATE_TOUR_GOLDEN=1 python3 -m pytest -q tests/test_tour.py`. The route is closed (it ends at its start pose), so `build_tour()` smooths cyclically and the viewer can loop it; a `path` segment may carry a fixed look-at point `(x, y, z)` as fifth element. After changing the route or furniture, check that the camera clears all geometry: sample every frame and use a BVH `find_nearest` distance (≥ 0.25 m) plus a `ray_cast` between consecutive frames.
+- `fire.py` (collection `Feuer`): the flickering-fire component. `tongues(w, h)` (pure, also used by `export_gltf.py` → `scene.extras.fires` → `web/src/fire.js`) lays out flame tongues on each bed in `house_core.FIRES` (recorded by the stoves); in Blender each tongue flickers via F-curve noise, plus a flickering light per fire.
 - `windrose.py`: its own collection, independent of the rebuild.
 
 ## Pitfalls seen in this project

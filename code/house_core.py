@@ -58,7 +58,8 @@ MAT_DEF = {
     "Glas":       dict(rgba=(0.70, 0.85, 0.95, 0.25), alpha=0.25, rough=0.1),
     "Milchglas":  dict(rgba=(0.90, 0.90, 0.88, 0.85), alpha=0.85, rough=0.4),
     "Wiese":      dict(speck=((0.05, 0.12, 0.025), (0.12, 0.20, 0.04), 3)),
-    "Feuer":      dict(rgba=(1.0, 0.22, 0.02, 1), emit=1.2),
+    "Feuer":      dict(rgba=(1.0, 0.22, 0.02, 1), emit=2.0),               # flames (code/fire.py): outer
+    "FeuerKern":  dict(rgba=(1.0, 0.70, 0.12, 1), emit=2.6),               # inner, brighter core
     "Kies":       dict(speck=((0.30, 0.28, 0.25), (0.62, 0.60, 0.56), 150), bump=(150, 0.5)),
     "Erde":       dict(speck=((0.025, 0.014, 0.008), (0.07, 0.04, 0.022), 60), bump=(60, 0.6)),
     "Granit":     dict(speck=((0.30, 0.29, 0.26), (0.62, 0.58, 0.50), 220), hue=0.06),
@@ -67,8 +68,6 @@ MAT_DEF = {
     "Ofenglas":   dict(rgba=(0.10, 0.08, 0.06, 0.15), alpha=0.15, rough=0.05),  # stove door
     "Leinen":     dict(rgba=(0.78, 0.74, 0.66, 1), rough=0.9),               # mattress
     "Bettwaesche": dict(rgba=(0.92, 0.91, 0.88, 1), rough=0.9),              # duvet, pillows
-    "Karo":       dict(rgba=(0.36, 0.03, 0.03, 1), rough=0.9),              # Ofen blanket: stripes crossing,
-    "KaroHell":   dict(rgba=(0.70, 0.22, 0.18, 1), rough=0.9),              # single red stripe
     "Creme":      dict(rgba=(0.84, 0.72, 0.50, 1), rough=0.9),              # Ofen mattress
     "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
@@ -79,6 +78,7 @@ MAT_DEF = {
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
     "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
     "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0, night=True),   # viewer: lit at dusk only
+    "GluehfadenAn": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),              # switched-on lamp (Ofen bed)
 }
 # RAL colours (sRGB 0-255) that override the base colour of plain materials (paint.py, viewer):
 # facade and windows RAL 9010 Reinweiß, shutters RAL 5014 Taubenblau
@@ -89,6 +89,7 @@ GEO = {}      # (collection, object) -> {"v": [...], "f": [...], "m": [...], "r"
 SMOOTH = set()  # objects shaded smooth
 PIVOT = {}    # object -> origin (for parts that get animated, e.g. the entrance door)
 OPENINGS = []  # exterior wall openings, used by the west cladding
+FIRES = []     # fire beds for the animated fire component (code/fire.py): dict(base, u, w, h, d)
 LEAVES = []    # opened interior door leaves (collection, [corner, corner]) – for clash checks
 GABLE_WIN = []
 PARTS = {}     # (collection, object) -> [(first_face, n_faces), ...]: one closed solid per add()
@@ -557,7 +558,8 @@ def build_eg():
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
     # Großeltern: the Bad is open to the bedroom (unhatched in the plan), the WC is reached from the Bad
     interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (10.33, 12.33)])
-    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")])   # Küche door (opens to the Flur)
+    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")],   # Küche door (opens to the Flur)
+             ops=[ofen.back_opening()])                                   # the Ofen's back door (Flur)
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
@@ -851,8 +853,8 @@ def build_og():
     wall(c, 2.71, W_OUT, 0, 0.40, z0, z1,
          [win(3.85, 4.70), win(6.84, 7.72), fd(9.84, 10.70), win(12.84, 13.70)], out=-1)
     wall(c, 14.575, W_OUT, 6.40, 12.485, z0, z1, [
-        win(9.86, 10.78), (8.17, 8.47, 3.87, 4.30, "W"), (6.50, 7.50, z0, 4.60, "FD", 1)], out=+1)
-    wall(c, 14.35, W_OUT, 0.40, 6.40, z0, z1, [win(1.74, 2.67), win(4.15, 5.04)], out=+1)
+        fd(9.86, 10.78), (8.17, 8.47, 3.87, 4.30, "W"), (6.50, 7.50, z0, 4.60, "FD", 1)], out=+1)   # balcony doors
+    wall(c, 14.35, W_OUT, 0.40, 6.40, z0, z1, [fd(1.74, 2.67), fd(4.15, 5.04)], out=+1)        # (on request)
     # eave band between OG wall top and roof (north / south)
     box(c, "OG_Waende", "Putz", 0, W_OUT, 12.485, D_OUT, z1, roof_under(D_OUT))
     box(c, "OG_Waende", "Putz", 2.37, W_OUT, 0, 0.40, z1, roof_under(0))
@@ -1144,15 +1146,16 @@ def balcony(name, x0, x1, y0, y1, ztop, sides, ph=0.95):
 
 
 OUTSIDE_LIGHTS = []   # (x, y, z) filament centre of every wall lamp: the viewer lights them at dusk
+LAMP_LIGHTS = []      # (x, y, z) filament centre of the switched-on lamps inside (always lit)
 
 
-def lamp(x, y, z, nx, ny):
+def lamp(x, y, z, nx, ny, c="Umgebung", o="Aussenleuchten", scale=1.0, outside=True):
     """Gooseneck wall lamp after outdoor_lamp.jpeg: black arm, flat enamel shade (white
-    inside), clear bulb with a warm filament."""
-    c, o = "Umgebung", "Aussenleuchten"
+    inside), clear bulb with a warm filament. Outside: one of the OUTSIDE_LIGHTS (lit at dusk);
+    inside (outside=False, e.g. small via scale): switched on, one of the LAMP_LIGHTS."""
     sx, sy = -ny, nx
-    W = lambda n, s, h: (x + nx * n + sx * s, y + ny * n + sy * s, z + h)
-    OUTSIDE_LIGHTS.append(W(0.38, 0, -0.085))
+    W = lambda n, s, h: (x + (nx * n + sx * s) * scale, y + (ny * n + sy * s) * scale, z + h * scale)
+    (OUTSIDE_LIGHTS if outside else LAMP_LIGHTS).append(W(0.38, 0, -0.085))
     ring = lambda n, h, r, k=16: [W(n + r * math.cos(2 * math.pi * i / k), r * math.sin(2 * math.pi * i / k), h)
                                   for i in range(k)]
 
@@ -1193,7 +1196,7 @@ def lamp(x, y, z, nx, ny):
     bulb = [ring(0.38, -0.02 - 0.075 * (1 - math.cos(math.pi * i / 8)), 0.05 * math.sin(math.pi * i / 8) + 0.001, 12)
             for i in range(9)]
     loft(bulb, "Glas")
-    loft([ring(0.38, -0.06, 0.006, 6), ring(0.38, -0.11, 0.006, 6)], "Gluehfaden")
+    loft([ring(0.38, -0.06, 0.006, 6), ring(0.38, -0.11, 0.006, 6)], "Gluehfaden" if outside else "GluehfadenAn")
 
 
 def build_terrace():
@@ -1689,13 +1692,16 @@ class Blueprint:
     furniture: set     # objects shown only in the viewer's last stage "Eingerichtet"
     dims: list = ()    # dimension lines [(p0, p1, text)] (Ofen sub-model only)
     outside_lights: list = ()   # OUTSIDE_LIGHTS: the wall lamps' filament centres
+    lamp_lights: list = ()      # LAMP_LIGHTS: switched-on lamps inside
+    fires: list = ()   # FIRES: base (centre of the flame bed, in the flame plane), u (unit along
+                       # the width, normal = (-u_y, u_x) towards the viewer), w, h, d
 
 
 def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); SMOOTH.clear(); LEAVES.clear()
-    OUTSIDE_LIGHTS.clear()
+    OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
@@ -1703,13 +1709,13 @@ def build():
     build_furniture()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
-                     outside_lights=list(OUTSIDE_LIGHTS))
+                     outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES))
 
 
 def build_ofen():
     """The Ofen sub-model alone (web/ofen.html): no house, no garden, plus its dimension lines."""
-    GEO.clear(); PARTS.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear()
     random.seed(22)
     dims = ofen.ofen_neu()
-    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(), {}, MAT_DEF, PAINT,
-                     [], None, set(), dims)
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
+                     [], None, set(), dims, fires=list(FIRES), lamp_lights=list(LAMP_LIGHTS))

@@ -1,12 +1,13 @@
 """Walkthrough film: keys the camera "FL_Kamera_Rundgang" with the route of tour.py (baked
 per-frame keys) and creates point lights in the collection "Innenlicht". Neither touches the
-"Haus" collection. Re-running replaces both.
+"Haus" collection. Re-running replaces both. The switched-on lamps inside (LAMP_LIGHTS, e.g. above
+the Ofen bed) get a small warm light in "Innenlicht" too.
 Run inside Blender: exec(open(".../code/film.py").read())
 """
 import bpy, importlib, math, sys
 
 sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
-import house_core; importlib.reload(house_core)        # pick up core edits in a long session
+import ofen, house_core; importlib.reload(ofen); importlib.reload(house_core)  # pick up core edits
 import tour; importlib.reload(tour)                    # the route (after the core it imports)
 from house_core import ROOM_LIGHT_H, ROOM_LIGHTS
 
@@ -29,6 +30,12 @@ def build_lights():
         ld.use_shadow = False       # fill light only; 23 shadow casters overflowed the shadow pool -> flicker
         ob = bpy.data.objects.new(ld.name, ld)
         ob.location = (x, y, z + ROOM_LIGHT_H)
+        c.objects.link(ob)
+    for i, p in enumerate(house_core.build().lamp_lights):     # switched-on lamps (the Ofen bed's)
+        ld = bpy.data.lights.new(f"Lampe_{i:02d}", "POINT")
+        ld.energy, ld.color, ld.shadow_soft_size, ld.use_shadow = 15, (1.0, 0.75, 0.45), 0.02, False
+        ob = bpy.data.objects.new(ld.name, ld)
+        ob.location = p
         c.objects.link(ob)
 
 

@@ -43,3 +43,15 @@ test('dusk switches the outside lamps on: a warm light at every bulb of OUTSIDE_
   L.setDusk(1);
   expect(L.outsideLights.every((l) => l.intensity > 0)).toBe(true);
 });
+
+test('the switched-on lamp inside (above the Ofen bed) is lit by day and at dusk', () => {
+  const L = createLighting(new THREE.Scene(), extras, new THREE.Vector3());
+  expect(L.lampLights.length).toBe(extras.lamp_lights.length);
+  expect(extras.lamp_lights.length).toBe(1);
+  const [x, y, z] = extras.lamp_lights[0];
+  expect(L.lampLights[0].position.toArray()).toEqual([x, z, -y]);
+  for (const v of [0, 1]) {
+    L.setDusk(v);
+    expect(L.lampLights[0].intensity).toBeGreaterThan(0);
+  }
+});
