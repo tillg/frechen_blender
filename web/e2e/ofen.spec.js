@@ -77,3 +77,16 @@ test('house and Ofen page share the menu style (title panel, toolbar, link, pres
     return e.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
   }))).toBe(true);
 });
+
+test('the fire burns and moves in Gerendert only', async ({ page }) => {
+  await page.goto('/ofen.html');
+  await page.waitForFunction(() => window.__ofen?.ready === true);
+  await page.getByRole('button', { name: 'Masse' }).click();
+  expect(await page.evaluate(() => window.__ofen.fire())).toBe(false);
+  await page.getByRole('button', { name: 'Gerendert' }).click();
+  const a = await page.evaluate(() => window.__ofen.fire());
+  await page.waitForTimeout(300);
+  const b = await page.evaluate(() => window.__ofen.fire());
+  expect(a).toBeGreaterThan(0);
+  expect(b).not.toBe(a);                                                     // it really moves
+});

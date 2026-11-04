@@ -17,7 +17,7 @@ import json, math, struct, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import house_core, mesh_ops, tour  # noqa: E402
+import fire, house_core, mesh_ops, tour  # noqa: E402
 
 
 def yup(p):
@@ -36,6 +36,10 @@ def lin(rgb):
 
 def jsonable(v):
     return [jsonable(x) for x in v] if isinstance(v, (tuple, list)) else v
+
+
+def jsonable_dict(d):
+    return {k: jsonable(v) for k, v in d.items()}
 
 
 class Writer:
@@ -157,6 +161,7 @@ def export(path, bp=None):
         extras.update({
             "room_lights": jsonable(bp.room_lights), "ROOM_LIGHT_H": house_core.ROOM_LIGHT_H,
             "outside_lights": jsonable(bp.outside_lights),
+            "lamp_lights": jsonable(bp.lamp_lights),
             "Z_OG": house_core.Z_OG, "W_OUT": house_core.W_OUT, "D_OUT": house_core.D_OUT,
             "RIDGE_Z": house_core.RIDGE_Z,
             "garden": {"ground": jsonable(lay.ground), "no_grass": jsonable(lay.no_grass),
@@ -168,6 +173,12 @@ def export(path, bp=None):
         })
     if bp.dims:
         extras["dims"] = jsonable(bp.dims)
+    if bp.fires:                                             # the fire component (code/fire.py, fire.js)
+        md = bp.mat_def
+        extras["fires"] = [{**jsonable_dict(f), "tongues": fire.tongues(f["w"], f["h"], seed=i)}
+                           for i, f in enumerate(bp.fires)]
+        extras["fire"] = {"profile": jsonable(fire.profile()), "core": list(fire.CORE),
+                          "outer": jsonable_dict(md["Feuer"]), "inner": jsonable_dict(md["FeuerKern"])}
     gltf = {"asset": {"version": "2.0", "generator": "frechenlehen export_gltf.py"},
             "scene": 0, "scenes": [{"name": "Frechenlehen", "nodes": list(range(len(nodes))), "extras": extras}],
             "nodes": nodes, "meshes": meshes, "materials": mats,

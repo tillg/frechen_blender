@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { uniform } from 'three/tsl';
 import { cutLevel, loadBlueprint } from './blueprint.js';
+import { createFire } from './fire.js';
 import { buildGarden } from './garden.js';
 import { inkLines } from './ink.js';
 import { createLighting } from './lighting.js';
@@ -50,7 +51,8 @@ bp.root.traverse((o) => {
 });
 const ink = inkLines(bp, uInk);
 const garden = buildGarden(bp, { uPaper, uDetail, uInk });
-scene.add(bp.root, ink.group, garden.group);
+const fire = createFire(bp.extras);                       // the stoves' fires (code/fire.py)
+scene.add(bp.root, ink.group, garden.group, fire.group);
 
 let progress = 0, cut = 'all', sun = null;               // sun: null = follow the stage, else forced dusk 0/1
 function setProgress(p) {
@@ -62,6 +64,7 @@ function setProgress(p) {
   uDetail.value = w.detail + w.built;
   updateStage(mats, w);
   garden.update(w);
+  fire.group.visible = w.detail + w.built > 0.5;          // burning from the Detailmodell on
   lights.setDusk(w.built);
   uInk.value = w.sketch + w.massing;
   ink.group.visible = uInk.value > 0.001;
@@ -82,7 +85,12 @@ function setCutaway(c) {
   for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level);
 }
 
-setProgress(0);
+// ?cam=x,y,z&at=x,y,z&p=0…4: start at a viewpoint (model coordinates, z up) and stage
+const query = new URLSearchParams(location.search), xyz = (k) => query.get(k)?.split(',').map(Number);
+if (xyz('cam')) camera.position.copy(yup(xyz('cam')));
+if (xyz('at')) controls.target.copy(yup(xyz('at')));
+controls.update();
+setProgress(Number(query.get('p') ?? 0));
 
 const isDusk = () => lights.uDusk.value >= 0.5;
 const ui = createUI({
@@ -105,6 +113,7 @@ renderer.setAnimationLoop((now) => {
   if (!tour.update(now)) controls.update();
   if (tour.state !== 'off' && !drawDue(now, lastDraw)) return;      // tour: ≤ 30 fps, less GPU load
   lastDraw = now;
+  fire.tick(now / 1000);
   renderer.render(scene, camera);
   draws++;
 });
@@ -124,6 +133,8 @@ if (import.meta.env.MODE !== 'production') {
     get progress() { return progress; },
     get linesVisible() { return ink.group.visible; },
     get garden() { return garden.state; },
+    cameraAt: () => [camera.position.x, -camera.position.z, camera.position.y].map((v) => +v.toFixed(3)),
+    fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y,   // a flame's height (0: off)
     setProgress,
     setCutaway,
     visible: (name) => bp.byName[name].visible,
