@@ -1,6 +1,6 @@
 // Skizze: ink edge lines (EdgesGeometry, 30°), merged into one LineSegments per collection
 // and cutaway level (so "Nur EG" can hide the OG balconies' lines).
-// SMOOTH objects (pebbles, lamps) get none: they would turn into ink noise.
+// SMOOTH objects (pebbles, lamps) get none: they would turn into ink noise; furniture neither.
 import * as THREE from 'three/webgpu';
 import { cutLevel } from './blueprint.js';
 
@@ -10,7 +10,7 @@ export function inkLines(bp, opacityNode) {
   bp.root.updateMatrixWorld(true);
   const perCollection = {}, sources = [];
   for (const obj of bp.objects) {
-    if (obj.userData.smooth || obj.userData.hidden) continue;
+    if (obj.userData.smooth || obj.userData.hidden || obj.userData.furniture) continue;
     sources.push(obj.name);
     obj.traverse((m) => {
       if (!m.isMesh) return;

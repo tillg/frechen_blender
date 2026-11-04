@@ -16,7 +16,7 @@ test('clicking "Detailmodell" selects the detail stage', async ({ page }) => {
   expect(await page.evaluate(() => window.__fl.progress)).toBe(2);
 });
 
-test('dragging the scrubber to its end selects Gebaut', async ({ page }) => {
+test('dragging the scrubber to its end selects Eingerichtet', async ({ page }) => {
   await open(page);
   const s = page.getByRole('slider');
   const box = await s.boundingBox();
@@ -24,19 +24,19 @@ test('dragging the scrubber to its end selects Gebaut', async ({ page }) => {
   await page.mouse.down();
   await page.mouse.move(box.x + box.width + 20, box.y + box.height / 2, { steps: 8 });
   await page.mouse.up();
-  expect(await stage(page)).toBe('built');
+  expect(await stage(page)).toBe('furnished');
 });
 
-test('Play advances p and stops at 3', async ({ page }) => {
+test('Play advances p and stops at 4', async ({ page }) => {
   await open(page);
   await page.getByRole('button', { name: 'Abspielen' }).click();
   await page.waitForTimeout(1500);
   const mid = await page.evaluate(() => window.__fl.progress);
   expect(mid).toBeGreaterThan(0);
-  await page.waitForFunction(() => window.__fl.progress === 3, null, { timeout: 30_000 });
+  await page.waitForFunction(() => window.__fl.progress === 4, null, { timeout: 30_000 });
   await page.waitForTimeout(500);
-  expect(await page.evaluate(() => window.__fl.progress)).toBe(3);
-  expect(await stage(page)).toBe('built');
+  expect(await page.evaluate(() => window.__fl.progress)).toBe(4);
+  expect(await stage(page)).toBe('furnished');
 });
 
 test('"Ohne Dach" hides the roof collection, keeps the ground', async ({ page }) => {
@@ -80,3 +80,17 @@ for (const [w, h] of [[1280, 720], [1920, 1080]])
     for (const bg of bgs) expect(bg).not.toBe('rgba(0, 0, 0, 0)');
     await shot(page, `ui_${w}.png`);
   });
+
+test('furniture shows only in Eingerichtet and follows the cutaway', async ({ page }) => {
+  await open(page);
+  const set = (p, c) => page.evaluate(([p, c]) => { window.__fl.setProgress(p); window.__fl.setCutaway(c); }, [p, c]);
+  await set(3, 'all');
+  for (const n of ['OG_Moebel', 'EG_Tisch']) expect(await vis(page, n)).toBe(false);
+  await set(4, 'all');
+  for (const n of ['OG_Moebel', 'EG_Tisch']) expect(await vis(page, n)).toBe(true);
+  await set(4, 'eg');
+  expect(await vis(page, 'OG_Moebel')).toBe(false);
+  expect(await vis(page, 'EG_Moebel')).toBe(true);
+  await set(4, 'all');
+  expect(await vis(page, 'OG_Moebel')).toBe(true);
+});

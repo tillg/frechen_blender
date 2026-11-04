@@ -101,7 +101,7 @@ flowchart LR
   `random.Random(5)` and the shrubs `random.Random(6)`.
 
 `build()` returns the **Blueprint**: `geo`, `parts`, `smooth`, `pivot`, `mat_def`, `paint`,
-`room_lights`, `garden`.
+`room_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet").
 
 ### `build_house.py` — Blender backend
 
@@ -121,7 +121,8 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
   - **orients** each Part outward: flood-filled consistent winding, flipped if the signed
     volume is negative. Open Parts keep their winding and are marked open.
 - **One node per GEO object.** The name is the object name, `translation` is the pivot.
-  `extras.collection` holds the collection; `extras.smooth` marks `SMOOTH` objects.
+  `extras.collection` holds the collection; `extras.smooth` marks `SMOOTH` objects,
+  `extras.furniture` the `FURNITURE` objects.
 - **One primitive per material**, with `POSITION`, `NORMAL` (flat, or averaged within a
   Part for smooth objects), `_RND` and uint32 indices. Accessor `min`/`max` are the stored
   float32 values.
@@ -160,17 +161,17 @@ sequenceDiagram
     M->>M: ink.js lines, garden.js grass and shrubs
     M->>Li: sun, hemisphere, sky, room lights
     U->>S: progress p (play / click / scrub)
-    S-->>M: weights {sketch, massing, detail, built}
+    S-->>M: weights {sketch, massing, detail, built, furnished}
     M->>M: uPaper, uDetail, uInk, dusk from the weights
 ```
 
-- **`stages.js`.** `weights(p)` gives four weights that sum to 1, with a smoothstep blend
+- **`stages.js`.** `weights(p)` gives five weights that sum to 1, with a smoothstep blend
   between neighbouring stages. `stageAt(p)` gives the nearest stage. No three.js.
 - **`materials.js`.** One `MeshStandardNodeMaterial` per `FL_*` material, built from the
   extras: plain, wood (noise along the grain, ramp, `_rnd` variation), speck, bump, alpha,
   emit. The colour is `mix(paper, clay, …)` → `mix(clay, detail, uDetail)`. In Skizze the
   surfaces are paper and write depth, so the ink lines are hidden-line.
-- **`ink.js`.** `EdgesGeometry` (30°) per mesh except `SMOOTH` objects, merged into one
+- **`ink.js`.** `EdgesGeometry` (30°) per mesh except `SMOOTH` and furniture objects, merged into one
   `LineSegments` per collection.
 - **`lighting.js`.** Day: sun from Blender's angle, hemisphere, sky. Dusk: low warm sun,
   deep-blue sky, warm `PointLight`s at `ROOM_LIGHTS` + `ROOM_LIGHT_H`.
@@ -180,7 +181,11 @@ sequenceDiagram
   - **Shrubs:** an ink circle in Skizze, a clay blob in Massenmodell, a leaf cloud in
     Detailmodell and Gebaut. The leaves grow about a per-instance centre, an
     `InstancedBufferAttribute`.
-- **`ui.js`.** Title, timeline bar (play/pause, scrubber 0–3, stage names), cutaway buttons
+- **Visibility.** `main.js` feeds materials, lights and garden a merged view
+  (`built + furnished`), so Eingerichtet looks like Gebaut. One `applyVisibility()` (on
+  progress and cutaway changes) shows an object iff the cutaway does not hide it and, for
+  `extras.furniture`, the stage is Eingerichtet.
+- **`ui.js`.** Title, timeline bar (play/pause, scrubber 0–4, stage names), cutaway buttons
   and the sun toggle. `body.dataset.stage`/`cutaway` mirror the state.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters), only outside production builds.

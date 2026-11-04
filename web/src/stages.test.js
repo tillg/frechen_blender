@@ -39,3 +39,9 @@ test('stageAt rounds to the nearest stage and clamps', () => {
   expect(stageAt(3.4)).toBe('built');
   expect(stageAt(-1)).toBe('sketch');
 });
+
+test('Eingerichtet is the fifth stage at p = 4', () => {
+  expect(stageAt(4)).toBe('furnished');
+  expect(stageAt(3.4)).toBe('built');
+  expect(weights(4).furnished).toBe(1);
+});

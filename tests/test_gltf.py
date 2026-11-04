@@ -144,3 +144,10 @@ def test_export_creates_missing_directories(tmp_path):
     subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out)], check=True,
                    capture_output=True)
     assert out.read_bytes()[:4] == b"glTF"
+
+
+def test_furniture_objects_are_marked(glb):
+    for name in ("EG_Moebel", "OG_Moebel", "EG_Tisch", "EG_Stuehle"):
+        assert node(glb, name)["extras"].get("furniture"), name
+    assert "furniture" not in node(glb, "EG_Kueche")["extras"]
+    assert node(glb, "OG_Moebel")["extras"]["collection"] == "OG"      # "Nur EG" hides it
