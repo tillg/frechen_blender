@@ -30,3 +30,22 @@ test('page loads under /frechen_blender/ with the blueprint', async ({ page }) =
   for (let i = 0; i < img.data.length; i += 16) if (img.data[i] < 110) ink++;
   expect(ink / (img.data.length / 16)).toBeGreaterThan(0.01);               // the Skizze is drawn
 });
+
+test('Ofen page is part of the build', async ({ page }) => {
+  const failed = [], errors = [];
+  let glb = 0;
+  page.on('response', (r) => {
+    if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);
+    if (r.url().endsWith('/frechen_blender/ofen.glb') && r.ok()) glb++;
+  });
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(BASE);
+  await page.getByRole('link', { name: 'Ofen' }).click();          // the house links to it
+  await page.waitForURL(/\/frechen_blender\/ofen\.html$/);
+  await expect(page.locator('.dim', { hasText: 'Tür 65' })).toBeVisible({ timeout: 30_000 });
+  expect(failed).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(glb).toBe(1);
+  await page.getByRole('link', { name: '← Haus' }).click();         // and back
+  await page.waitForURL(/\/frechen_blender\/$/);
+});

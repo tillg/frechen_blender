@@ -9,6 +9,7 @@ Details (doors, balconies, cladding, terrace, lamps, eaves) follow the photos in
 """
 import math, random
 from dataclasses import dataclass
+import ofen  # the stoves (code/ofen.py); it uses the primitives below via house_core.*
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -51,6 +52,9 @@ MAT_DEF = {
     "FichteX":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "x")),     # spruce soffit
     "FichteY":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "y")),
     "FichteZ":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "z")),
+    "NussX":      dict(wood=((0.035, 0.016, 0.007), (0.13, 0.06, 0.025), "x")),   # dark walnut (bookcase)
+    "NussZ":      dict(wood=((0.035, 0.016, 0.007), (0.13, 0.06, 0.025), "z")),
+    "Buecher":    dict(speck=((0.07, 0.018, 0.010), (0.10, 0.028, 0.016), 300), hue=0.4),   # one dark colour per book
     "Glas":       dict(rgba=(0.70, 0.85, 0.95, 0.25), alpha=0.25, rough=0.1),
     "Milchglas":  dict(rgba=(0.90, 0.90, 0.88, 0.85), alpha=0.85, rough=0.4),
     "Wiese":      dict(speck=((0.05, 0.12, 0.025), (0.12, 0.20, 0.04), 3)),
@@ -63,6 +67,9 @@ MAT_DEF = {
     "Ofenglas":   dict(rgba=(0.10, 0.08, 0.06, 0.15), alpha=0.15, rough=0.05),  # stove door
     "Leinen":     dict(rgba=(0.78, 0.74, 0.66, 1), rough=0.9),               # mattress
     "Bettwaesche": dict(rgba=(0.92, 0.91, 0.88, 1), rough=0.9),              # duvet, pillows
+    "Karo":       dict(rgba=(0.36, 0.03, 0.03, 1), rough=0.9),              # Ofen blanket: stripes crossing,
+    "KaroHell":   dict(rgba=(0.70, 0.22, 0.18, 1), rough=0.9),              # single red stripe
+    "Creme":      dict(rgba=(0.84, 0.72, 0.50, 1), rough=0.9),              # Ofen mattress
     "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
@@ -71,7 +78,7 @@ MAT_DEF = {
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
     "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
-    "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),
+    "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0, night=True),   # viewer: lit at dusk only
 }
 # RAL colours (sRGB 0-255) that override the base colour of plain materials (paint.py, viewer):
 # facade and windows RAL 9010 Reinweiß, shutters RAL 5014 Taubenblau
@@ -212,9 +219,8 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     """Straight wall (axis-aligned box) with openings.
 
     ops: (a, b, sill, head, kind[, shutters]) along the wall's long axis.
-    kind: W window, FD french door, WF tall window (fixed light below a transom at half height,
-          one sash above), GD glazed terrace door (larch, 4x2 panes per leaf), D solid door,
-          I opening without fill (filled by a dedicated door builder).
+    kind: W window, FD french door, GD glazed terrace door (larch, 4x2 panes per leaf), D solid
+          door, I opening without fill (filled by a dedicated door builder).
     out: +1 / -1 = side of the thin axis that faces outside (for shutters).
     Windows / french doors after window_from_outside.jpeg: larch frame, one or two sashes,
     each divided by glazing bars (windows 2 panes high, french doors 3).
@@ -243,7 +249,8 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
                                  kind=kind))
         B(mat, cur, a, t0, t1, z0, z1)
         B(mat, a, b, t0, t1, z0, sill)
-        B(mat, a, b, t0, t1, head, z1)
+        if head < z1:
+            B(mat, a, b, t0, t1, head, z1)
         cur = b
         if kind == "I":
             continue
@@ -260,12 +267,7 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
         else:
             B(F, a, b, tm - fd, tm + fd, sill, sill + fw, fo)
             za, zb = sill + fw, head - fw
-            if kind == "WF":
-                zt = (sill + head) / 2
-                B(F, a, b, tm - fd, tm + fd, zt - fw / 2, zt + fw / 2, fo)          # transom
-                B("Glas", a + fw, b - fw, tm - 0.004, tm + 0.004, za, zt - fw / 2, fo)
-                za = zt + fw / 2
-            n = 2 if b - a > 0.75 and kind != "WF" else 1
+            n = 2 if b - a > 0.75 else 1
             rows = 3 if zb - za > 1.48 else 2
             sw, sf, gb = (b - a - 2 * fw) / n, 0.05, 0.03
             for k in range(n):                                   # sashes
@@ -549,14 +551,13 @@ def build_eg():
     # interior walls; doors: (a, b, swing, hinge) get an opened leaf, (a, b) stay open passages
     interior(c, 6.024, 6.174, 8.876, 12.473)
     interior(c, 2.657, 14.575, 8.576, 8.876,
-             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (13.517, 14.575, 1, "a")])
+             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (13.517, 14.575, 1, "b", False)])   # Büro: hinge as in the plan, leaf along the east wall (bookcase)
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
     # Großeltern: the Bad is open to the bedroom (unhatched in the plan), the WC is reached from the Bad
     interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (10.33, 12.33)])
-    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")],    # Küche door (opens to the Flur)
-             ops=[(*FIRE, "I")])                                          # fire window of the Ofenbett
+    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")])   # Küche door (opens to the Flur)
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
@@ -567,7 +568,8 @@ def build_eg():
     sliding_door(c, 0.56, 1.25, 10.25)
     interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
-    ofenbett()
+    ofen.ofen_im_haus()
+    ofen.werkstattofen("EG", 9.651, 9.176, 0.0)          # Bibliothek: Flur wall, 10 cm east of the wall stub
     build_stairs()
     for x0, x1 in ((4.26, 6.05), (6.05, 7.85)):             # dining table (plan: two joined tables)
         table("EG", x0 + 0.002, x1 - 0.002, 1.18, 1.91)
@@ -578,69 +580,6 @@ def build_eg():
     chair("EG", 8.06, 1.545, -1, 0)
     kitchen()
     box(c, "EG_Waende", "Putz", 2.04, 2.358, 12.12, 12.471, z0, z1)   # shaft in the Bad Großeltern (plan 2026-10)
-
-
-# ---------------------------------------------------------------- Ofenbett
-FIRE = (9.32, 9.80, 0.30, 0.86)        # fire door / fire window: x range, sill, head
-
-
-def fire_window(o, tb, tf, s):
-    """Fire behind glass: iron frame from the firebox back tb to 3 cm proud of the face tf,
-    black back, two logs, three flame tongues, stove glass; s = +1/-1 = viewer side along y."""
-    PX, (fa, fb, za, zc), r = frame("x"), FIRE, random.random()
-    for ua, ub, wa, wb in ((fa, fa + 0.04, za, zc), (fb - 0.04, fb, za, zc),
-                           (fa, fb, za, za + 0.04), (fa, fb, zc - 0.04, zc)):
-        lbox("EG", o, "Eisen", PX, ua, ub, tb, tf + s * 0.03, wa, wb, r)
-    ia, ib, iz0, iz1 = fa + 0.04, fb - 0.04, za + 0.04, zc - 0.04               # glass opening
-    lbox("EG", o, "Eisen", PX, ia, ib, tb, tb + s * 0.004, iz0, iz1)              # black firebox back
-    for k in range(2):                                                         # two logs
-        lbox("EG", o, "Holz", PX, ia + 0.03 + 0.02 * k, ib - 0.05 + 0.02 * k, tb + s * (0.010 + 0.004 * k),
-             tb + s * (0.004 + 0.004 * k), iz0 + 0.01 + 0.05 * k, iz0 + 0.06 + 0.05 * k)
-    for cu, w, h in ((0.11, 0.10, 0.24), (0.20, 0.13, 0.33), (0.29, 0.09, 0.21)):  # flame tongues
-        n = 8
-        pts = [(ia + cu + w / 2 * math.cos(math.pi * i / n), iz0 + 0.07) for i in range(n, -1, -1)]
-        sweep("EG", o, "Feuer", PX, [((u, iz0 + 0.07), (ia + cu + (u - ia - cu) * 0.15,
-              iz0 + 0.07 + h * math.sin(math.acos(max(-1.0, min(1.0, (u - ia - cu) / (w / 2))))) ** 0.6))
-              for u, _ in pts], tb + s * 0.008, tb + s * 0.006)
-    lbox("EG", o, "Ofenglas", PX, ia, ib, tb + s * 0.022, tb + s * 0.018, iz0, iz1)
-
-
-def ofenbett():
-    """Ofenbett in the Stube after ofenbett-1200x800.jpg: white plastered stove body along the
-    west wall with a rounded top edge and an arched recess at the floor, fire visible through a
-    glass door in the free south end, a spruce bench along the east face and a bed on a corner
-    post above the stove (rail at stove-top height, guard boards, mattress)."""
-    o, x0, x1, y0, y1 = "EG_Ofenbett", 9.06, 10.06, 3.85, 5.849
-    PX, PY = frame("x"), frame("y")
-    zb, ztop, R = 0.42, 1.10, 0.30                                             # bench / top / rounding
-    # lower body with the arched recess (east face, under the bench)
-    box("EG", o, "Putz", x0, x1 - 0.25, y0, y1, 0.02, zb)
-    ra, rb = 4.35, 5.35
-    arc = [(ra + (rb - ra) / 2 * (1 - math.cos(math.pi * i / 16)), 0.30 * math.sin(math.pi * i / 16) + 0.02)
-           for i in range(17)]
-    box("EG", o, "Putz", x1 - 0.25, x1, y0, ra, 0.02, zb)
-    box("EG", o, "Putz", x1 - 0.25, x1, rb, y1, 0.02, zb)
-    sweep("EG", o, "Putz", PY, [((u, z), (u, zb)) for u, z in arc], x1 - 0.25, x1)
-    # upper body: cross-section with the rounded east top edge, extruded along the wall
-    sec = [x0] + [x1 - R + R * math.sin(math.pi / 2 * i / 8) for i in range(9)]
-    zt = lambda x: ztop - R + math.sqrt(max(0.0, R * R - (x - (x1 - R)) ** 2)) if x > x1 - R else ztop
-    sweep("EG", o, "Putz", PX, [((x, zb), (x, zt(x))) for x in sec], y0, y1)
-    # fire door in the south end (with handle), fire window towards the Flur in the north wall
-    fire_window(o, y0, y0, -1)
-    lbox("EG", o, "Eisen", PX, FIRE[1] - 0.10, FIRE[1] - 0.08, y0 - 0.06, y0 - 0.03, 0.50, 0.66)
-    fire_window(o, 6.25, 6.349, 1)
-    # bench along the east face on board legs
-    box("EG", o, "FichteY", x1, x1 + 0.42, y0, y1, zb, zb + 0.045)
-    for yl in (y0 + 0.12, (ra + rb) / 2, y1 - 0.12):
-        box("EG", o, "FichteZ", x1 + 0.08, x1 + 0.36, yl - 0.02, yl + 0.02, 0.012, zb)
-    # bed above the stove: corner post, rail, platform, guard boards, mattress
-    zp = 1.55
-    box("EG", o, "FichteZ", x1 + 0.04, x1 + 0.12, y0 - 0.08, y0, 0.012, Z_EG_TOP)       # corner post
-    box("EG", o, "FichteY", x1 + 0.04, x1 + 0.07, y0, y1, 1.12, 1.20)                    # rail
-    box("EG", o, "FichteX", x0, x1 + 0.04, y0, y1, zp, zp + 0.04)                        # platform
-    box("EG", o, "FichteY", x1, x1 + 0.04, y0, y1, zp + 0.04, zp + 0.26)                 # guard east
-    box("EG", o, "FichteX", x0, x1 + 0.04, y0 - 0.04, y0, zp - 0.02, zp + 0.36)          # guard south
-    box("EG", o, "Leinen", x0 + 0.03, x1 - 0.02, y0 + 0.03, y1 - 0.03, zp + 0.04, zp + 0.16)
 
 
 # ---------------------------------------------------------------- sanitary (positions from the plans)
@@ -905,8 +844,8 @@ def build_og():
     wall(c, 0, W_OUT, 12.485, D_OUT, z0, z1,
          [fd(3.88, 4.78), fd(6.97, 7.87), fd(10.03, 10.95), fd(12.91, 13.80)], out=+1)
     wall(c, 0, 0.31, 5.12, 12.485, z0, z1, [
-        (11.26, 12.23, z0, 4.66, "WF"), (8.96, 9.95, z0, 4.66, "WF"),     # fixed light below
-        (6.77, 7.76, z0, 4.66, "WF"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)
+        (11.26, 12.23, z0 + 0.85, z1, "W"), (8.96, 9.95, z0 + 0.85, z1, "W"),   # wall below, up to
+        (6.77, 7.76, z0 + 0.85, z1, "W"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)   # the ceiling (request)
     wall(c, 0.31, 2.71, 5.12, 5.46, z0, z1)
     wall(c, 2.37, 2.71, 0, 5.12, z0, z1, [(2.03, 2.92, 3.70, 4.70, "W", 1)], out=-1)
     wall(c, 2.71, W_OUT, 0, 0.40, z0, z1,
@@ -934,6 +873,8 @@ def build_og():
     interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58, -1, "a")], z0, z1, H)    # Bad door opens inwards (plan)
     interior(c, 9.92, 10.07, 3.84, 6.06, (), z0, z1)                 # WC 2,30: 1.20 wide (plan)
     interior(c, 8.72, 9.92, 3.84, 3.98, (), z0, z1)
+    box(c, "OG_Waende", "Putz", 11.48, 11.63, 0.98, 3.98, z0, z0 + 1.20)   # Schlafen SE: wall behind the bed head
+    ofen.werkstattofen(c, 8.72 + 0.10 + 0.21 * 2 ** 0.5, 3.84 - 0.10 - 0.21 * 2 ** 0.5, z0, -135)   # corner Bad / WC
 
 
 # ---------------------------------------------------------------- west cladding
@@ -985,7 +926,7 @@ def build_cladding():
             lbox(c, o, M, P, a, b, *tr, h, h + 0.09, r)
             if s > zb + 0.1:
                 lbox(c, o, M, P, a - 0.09, b + 0.09, *tt(T, T + 0.05), s - 0.06, s, r)
-            if op["kind"] == "W":
+            if op["kind"] == "W" and h - s < 1.1:            # small windows only
                 n = max(2, int((b - a) / 0.2))
                 for k in range(1, n + 1):
                     u = a + (b - a) * k / (n + 1)
@@ -1202,12 +1143,16 @@ def balcony(name, x0, x1, y0, y1, ztop, sides, ph=0.95):
                 box(c, name, "FichteY", x - 0.06, x + 0.06, ya, yb, *zj)
 
 
+OUTSIDE_LIGHTS = []   # (x, y, z) filament centre of every wall lamp: the viewer lights them at dusk
+
+
 def lamp(x, y, z, nx, ny):
     """Gooseneck wall lamp after outdoor_lamp.jpeg: black arm, flat enamel shade (white
     inside), clear bulb with a warm filament."""
     c, o = "Umgebung", "Aussenleuchten"
     sx, sy = -ny, nx
     W = lambda n, s, h: (x + nx * n + sx * s, y + ny * n + sy * s, z + h)
+    OUTSIDE_LIGHTS.append(W(0.38, 0, -0.085))
     ring = lambda n, h, r, k=16: [W(n + r * math.cos(2 * math.pi * i / k), r * math.sin(2 * math.pi * i / k), h)
                                   for i in range(k)]
 
@@ -1381,7 +1326,7 @@ def build_annex():
 
 # ---------------------------------------------------------------- furniture (plans of 2026-10-19)
 # Loose furniture appears in the viewer's last stage "Eingerichtet" (Blueprint.furniture); the
-# built-ins (kitchen, sanitary, Ofenbett) belong to the house. Positions from the plan, snapped
+# built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
 FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "OG_Moebel"}
 
@@ -1510,8 +1455,10 @@ def machine(c, x0, x1, y0, y1, z):
 
 def grand_piano():
     """Grand piano in the Musikraum after the plan symbol: case outline, lid, three legs,
-    keyboard towards the south, bench in front."""
+    keyboard towards the south, bench in front; turned 30° to the left (counter-clockwise, on
+    request) about the case centre."""
     c, o = "EG", "EG_Moebel"
+    n0 = len(GEO.get((c, o), {"v": []})["v"])
     a, b, cx, yb = 0.585, 0.43, 8.385, 11.75
     pts = [(7.80, 10.48), (9.03, 10.48), (9.03, 11.10), (8.95, 11.22), (8.86, 11.36), (8.88, 11.55), (8.97, 11.72)]
     pts += [(cx + a * math.cos(math.pi * i / 12), yb + b * math.sin(math.pi * i / 12)) for i in range(13)]
@@ -1528,6 +1475,38 @@ def grand_piano():
     for x in (8.32, 8.89):
         for y in (9.87, 10.14):
             box(c, o, "Klavierlack", x, x + 0.04, y, y + 0.04, 0.012, 0.46)
+    g, (px, py), ca, sa = GEO[(c, o)], (8.415, 11.33), math.cos(math.radians(30)), math.sin(math.radians(30))
+    g["v"][n0:] = [(px + (x - px) * ca - (y - py) * sa, py + (x - px) * sa + (y - py) * ca, z) for x, y, z in g["v"][n0:]]
+
+
+def bookcase():
+    """Old-style bookcase in the Bibliothek, floor to ceiling, on the Flur wall opposite the desk:
+    from 1 m east of the workshop stove to the Büro door; dark walnut with plinth, three bays,
+    five shelves and a stepped cornice, filled with books of random size (some gaps)."""
+    c, o, rng = "EG", "EG_Moebel", random.Random(7)
+    x0, x1, y0, y1 = 10.861, 13.42, 8.880, 9.24
+    t, levels = 0.03, [0.12 + 0.36 * k for k in range(6)]                       # shelf undersides
+    box(c, o, "NussZ", x0, x1, y0, y0 + 0.012, 0.012, 2.30)                      # back
+    box(c, o, "NussX", x0 + 0.02, x1 - 0.02, y0 + 0.012, y1 - 0.03, 0.012, 0.12)  # plinth
+    ups = [x0 + (x1 - x0 - t) * k / 3 for k in range(4)]
+    for u in ups:
+        box(c, o, "NussZ", u, u + t, y0 + 0.012, y1, 0.012, 2.30)                # sides and uprights
+    for a, b in zip(ups, ups[1:]):
+        xa, xb = a + t, b
+        for z in levels + [2.27]:
+            box(c, o, "NussX", xa, xb, y0 + 0.012, y1 - 0.005, z, z + t)          # shelves, top board
+        for z, top in zip([z + t for z in levels], levels[1:] + [2.27]):         # books, front-aligned
+            x = xa + 0.01
+            while True:
+                if rng.random() < 0.08:
+                    x += rng.uniform(0.04, 0.10)                                   # a gap
+                w, h, d = rng.uniform(0.02, 0.05), rng.uniform(0.19, min(0.30, top - z - 0.02)), rng.uniform(0.17, 0.25)
+                if x + w > xb - 0.01:
+                    break
+                box(c, o, "Buecher", x, x + w, y1 - 0.03 - d, y1 - 0.03, z + 0.001, z + h)
+                x += w + 0.002
+    box(c, o, "NussX", x0 - 0.02, x1 + 0.02, y0, y1 + 0.02, 2.30, 2.35)           # cornice
+    box(c, o, "NussX", x0 - 0.02, x1 + 0.02, y0, y1 + 0.04, 2.35, 2.396)
 
 
 def build_furniture():
@@ -1537,8 +1516,9 @@ def build_furniture():
     nightstand("EG", 5.62, 6.02, 11.77, 12.25)
     nightstand("EG", 5.62, 6.02, 9.41, 9.87)
     grand_piano()
-    desk("EG", 12.98, 14.573, 11.48, 12.471)
-    chair("EG", 13.85, 11.25, 0, 1)
+    desk("EG", 10.919, 12.867, 11.48, 12.471)               # between the two north french doors
+    bookcase()
+    chair("EG", 11.893, 11.25, 0, 1)
     shelf("EG", 2.774, 3.34, 3.292, 5.847, "y")
     shelf("EG", 3.342, 4.67, 5.22, 5.847, "x")
     shelf("EG", 4.672, 5.238, 4.63, 5.847, "y")
@@ -1558,8 +1538,6 @@ def build_furniture():
     machine("OG", 7.97, 8.588, 3.98, 4.60, zo)
     machine("OG", 7.97, 8.588, 3.36, 3.96, zo)
     cabinet("OG", 7.97, 8.588, 2.792, 3.34, "W", (2.792, 3.34), zo, h=0.90)
-    box("OG", "OG_Moebel", "FichteZ", 10.87, 11.0, 0.98, 3.98, zo + 0.012, zo + 1.20)   # SE: divider
-    cabinet("OG", 11.0, 11.63, 0.98, 2.98, "W", (0.98, 1.98, 2.98), zo, h=0.90)          # headboard unit
     bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)
@@ -1709,16 +1687,29 @@ class Blueprint:
     room_lights: list
     garden: GardenLayout
     furniture: set     # objects shown only in the viewer's last stage "Eingerichtet"
+    dims: list = ()    # dimension lines [(p0, p1, text)] (Ofen sub-model only)
+    outside_lights: list = ()   # OUTSIDE_LIGHTS: the wall lamps' filament centres
 
 
 def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); SMOOTH.clear(); LEAVES.clear()
+    OUTSIDE_LIGHTS.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
     build_cross_boards()
     build_furniture()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
-                     MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE))
+                     MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
+                     outside_lights=list(OUTSIDE_LIGHTS))
+
+
+def build_ofen():
+    """The Ofen sub-model alone (web/ofen.html): no house, no garden, plus its dimension lines."""
+    GEO.clear(); PARTS.clear()
+    random.seed(22)
+    dims = ofen.ofen_neu()
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(), {}, MAT_DEF, PAINT,
+                     [], None, set(), dims)

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "blueprint": "python3 ../code/export_gltf.py public/frechenlehen.glb",
+    "blueprint": "python3 ../code/export_gltf.py public/frechenlehen.glb && python3 ../code/export_gltf.py public/ofen.glb --ofen",
     "predev": "npm run blueprint",
     "dev": "vite",
     "prebuild": "npm run blueprint",

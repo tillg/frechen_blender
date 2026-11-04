@@ -1,5 +1,6 @@
 // Day and dusk: sun from Blender's angle (setup_scene), hemisphere light, sky background, and
-// at dusk a low warm sun, deep-blue sky and warm point lights at ROOM_LIGHTS (floor + ROOM_LIGHT_H).
+// at dusk a low warm sun, deep-blue sky and warm point lights at ROOM_LIGHTS (floor + ROOM_LIGHT_H),
+// and the wall lamps outside switched on: a warm spot pointing down from every OUTSIDE_LIGHTS bulb.
 import * as THREE from 'three/webgpu';
 import { color, mix, uniform } from 'three/tsl';
 import { PAPER } from './materials.js';
@@ -26,7 +27,13 @@ export function createLighting(scene, extras, target, uDetail = uniform(1)) {
     l.position.copy(yup(x, y, z + extras.ROOM_LIGHT_H));
     return l;
   });
-  scene.add(sun, sun.target, hemi, ...roomLights);
+  const outsideLights = extras.outside_lights.map(([x, y, z]) => {
+    const l = new THREE.SpotLight(0xffb070, 0, 9, 1.2, 0.7, 2);     // under the shade: down and out
+    l.position.copy(yup(x, y, z));
+    l.target.position.copy(yup(x, y, z - 1));
+    return l;
+  });
+  scene.add(sun, sun.target, hemi, ...roomLights, ...outsideLights, ...outsideLights.map((l) => l.target));
   scene.backgroundNode = mix(mix(color(PAPER), color(...SKY), uDetail), color(...DUSK_SKY), uDusk);
 
   const warm = new THREE.Color(1.0, 0.62, 0.38), white = new THREE.Color(1, 1, 1);
@@ -37,7 +44,8 @@ export function createLighting(scene, extras, target, uDetail = uniform(1)) {
     sun.color.copy(white).lerp(warm, v);
     hemi.intensity = 1.4 + (0.25 - 1.4) * v;
     for (const l of roomLights) l.intensity = 9 * v;
+    for (const l of outsideLights) l.intensity = 14 * v;
   }
   setDusk(0);
-  return { sun, hemi, roomLights, setDusk, uDusk };
+  return { sun, hemi, roomLights, outsideLights, setDusk, uDusk };
 }

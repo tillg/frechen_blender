@@ -6,5 +6,6 @@ __pycache__/
 node_modules/
 web/dist/
 web/public/frechenlehen.glb
+web/public/ofen.glb
 web/test-results/
 web/playwright-report/
