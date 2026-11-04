@@ -517,6 +517,33 @@
   "rnd": "088c54e1b73ff0d7",
   "verts": 128
  },
+ "EG_Moebel": {
+  "bbox": [
+   2.774,
+   3.292,
+   0.012,
+   14.573,
+   12.471,
+   2.0
+  ],
+  "faces": 398,
+  "materials": [
+   "FL_Bettwaesche",
+   "FL_FichteX",
+   "FL_FichteY",
+   "FL_FichteZ",
+   "FL_Keramik",
+   "FL_Klavierlack",
+   "FL_Leinen"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "6c5e2d254e0ab163",
+  "verts": 552
+ },
  "EG_Ofenbett": {
   "bbox": [
    9.06,
@@ -596,11 +623,11 @@
    3.84,
    0.76,
    0.0,
-   8.27,
-   2.33,
+   14.06,
+   11.46,
    0.92
   ],
-  "faces": 756,
+  "faces": 810,
   "materials": [
    "FL_FichteX",
    "FL_FichteY",
@@ -611,8 +638,8 @@
    0.0,
    0.0
   ],
-  "rnd": "43547701691922ee",
-  "verts": 1008
+  "rnd": "f307bd765c1cf40b",
+  "verts": 1080
  },
  "EG_Tisch": {
   "bbox": [
@@ -1190,7 +1217,7 @@
    0.776,
    2.7,
    13.25,
-   8.917,
+   9.694,
    4.77
   ],
   "faces": 1218,
@@ -1246,6 +1273,34 @@
   ],
   "rnd": "5ff2b03abac57332",
   "verts": 832
+ },
+ "OG_Moebel": {
+  "bbox": [
+   0.85,
+   0.53,
+   2.712,
+   14.573,
+   12.483,
+   4.7
+  ],
+  "faces": 1054,
+  "materials": [
+   "FL_Bettwaesche",
+   "FL_Eisen",
+   "FL_Emaille",
+   "FL_FichteX",
+   "FL_FichteY",
+   "FL_FichteZ",
+   "FL_Leinen",
+   "FL_Metall"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "5801fffc22215533",
+  "verts": 1448
  },
  "OG_Raumnamen": {
   "bbox": [

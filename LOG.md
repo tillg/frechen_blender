@@ -60,9 +60,9 @@ are not changes between the two plan versions. Only the differences below are.
 
 ### Not modelled
 
-- Furniture changes in the plans (beds, wardrobes, Büro desk, OG fixtures shown as symbols).
-  Furniture is not modelled, apart from the dining table.
 - A thin line inside the WC Großeltern (x ≈ 1.75), whose meaning is unclear.
+- Musikraum: a small stair with a down arrow (x 6.25–7.25, y 8.9–11.2, in both plan versions) and
+  the open fireplace (x 8.67–9.05, y 8.87–9.52). Neither is furniture, and their meaning in the plan is unclear.
 
 ### Changes on request (not from the plans)
 
@@ -70,6 +70,8 @@ are not changes between the two plan versions. Only the differences below are.
 |---|---|---|
 | U1 | **Kitchen.** Drawn the same in the old and new plans, but not modelled until now | Sink run on the north wall, a run on the east wall and a peninsula with the cooktop (spruce fronts, granite worktop). The Küche door now opens into the Flur, as drawn (before: into the kitchen, where it would hit the sink run). |
 | U2 | **Ofenbett instead of the Kachelofen**, after `ofenbett-1200x800.jpg` | Plastered stove (1.0 × 2.0 m) along the Stube west wall with a rounded top edge and an arched recess at the floor. The fire is visible behind a glass door in the south end, and from the Flur through a fire window in the wall against which the stove's north end stands. Bench along the east face, and a bed on a corner post above the stove. The plans still say "Kachelofen" (footprint 1.5 × 1.5 m). The longer shape follows the photo. |
+| U4 | **Furniture after the new plans** (viewer: new last stage "Eingerichtet") | EG: double bed with two nightstands (Großeltern), grand piano with bench (Musikraum), desk with chair (Büro), shelving on three walls (Speis); the dining table with 14 chairs also moves into this stage. OG: double bed (Yoga), twin beds with nightstands and a wardrobe (Schlafen NE), double bed, nightstands and wardrobe (Schlafen SW), washer, dryer and a cupboard (HWR), double bed against a headboard unit with a divider, nightstands and a long wardrobe (Schlafen SE). Doors whose opened leaf would hit the furniture now open as the plan draws them: hinge side Yoga, OG SW, OG SE and Speis; 90° instead of flat for Jugend, OG NE, OG SW, OG SE and Speis. The divider in Schlafen SE is 1.20 m high (no height in the plan), so the film camera passes over it. |
+| U5 | **Jugend (OG, north, up the stairs and to the right): two bunk beds instead of the plan's double bed** | Along the west and east walls, starting at the door wall. The door wall only has about 1.2 m on each side of the door, too short for a 2 m bed. Ladders are at the north ends, on the room side. |
 | U3 | **Bibliothek walls** | Already done: the Büro/Musikraum wall is E3. The X-marked wall at the offener Kamin is demolition in both plan versions and was already open, apart from its two stubs. |
 
 ### Other

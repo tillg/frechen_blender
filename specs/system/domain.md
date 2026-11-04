@@ -44,7 +44,7 @@ the team uses them:
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
 | **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
 | **Viewer** | The three.js web page in `web/`. |
-| **Stage** | One of four looks in the viewer: **Skizze** (sketch), **Massenmodell** (massing model), **Detailmodell** (detailed model), **Gebaut** (built reality). |
+| **Stage** | One of five looks in the viewer: **Skizze** (sketch), **Massenmodell** (massing model), **Detailmodell** (detailed model), **Gebaut** (built reality), **Eingerichtet** (furnished: Gebaut plus furniture). |
 | **Timeline** | The bar that moves between stages. Its progress `p` runs from 0 to 3; integer values are the pure stages, values in between blend two neighbours. |
 | **Cutaway** | Viewer setting that hides the roof ("Ohne Dach") or the roof and the OG ("Nur EG"). |
 | **Clay / Ink / Paper** | The off-white Massenmodell material / the dark Skizze line colour / the Skizze background and surface colour. Surfaces drawn in paper hide the lines behind them (**hidden-line**). |
@@ -113,11 +113,13 @@ stateDiagram-v2
     Skizze --> Massenmodell: p 0 → 1
     Massenmodell --> Detailmodell: p 1 → 2
     Detailmodell --> Gebaut: p 2 → 3
-    Gebaut --> Skizze: replay
+    Gebaut --> Eingerichtet: p 3 → 4
+    Eingerichtet --> Skizze: replay
     note right of Skizze: visible ink lines on paper (hidden-line)
     note right of Massenmodell: clay surfaces, soft shadows, lines fade out
     note right of Detailmodell: real materials, daylight
     note right of Gebaut: dusk sky, low sun, warm room lights
+    note right of Eingerichtet: like Gebaut, with furniture
 ```
 
 - **Play** runs `p` from its current value to 3 at 4 s per stage. It stops at 3; Play at 3

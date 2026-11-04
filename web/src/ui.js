@@ -1,8 +1,8 @@
-// German UI: title, timeline bar (play/pause, scrubber 0…3, the four stage names), cutaway
+// German UI: title, timeline bar (play/pause, scrubber 0…4, the five stage names), cutaway
 // buttons and the sun toggle. body.dataset.stage / .cutaway reflect the state (for tests).
 import { STAGES, stageAt } from './stages.js';
 
-const LABELS = { sketch: 'Skizze', massing: 'Massenmodell', detail: 'Detailmodell', built: 'Gebaut' };
+const LABELS = { sketch: 'Skizze', massing: 'Massenmodell', detail: 'Detailmodell', built: 'Gebaut', furnished: 'Eingerichtet' };
 const CUTS = [['all', 'Ganzes Haus'], ['noroof', 'Ohne Dach'], ['eg', 'Nur EG']];
 const SECONDS_PER_STAGE = 4;
 
@@ -49,7 +49,7 @@ export function createUI(api) {
 
   const bar = el('div', { className: 'fl-bar' });
   const play = el('button', { type: 'button', className: 'fl-play' });
-  const scrub = el('input', { type: 'range', min: 0, max: 3, step: 0.001, value: 0 });
+  const scrub = el('input', { type: 'range', min: 0, max: 4, step: 0.001, value: 0 });
   scrub.setAttribute('aria-label', 'Zeitleiste');
   const stageButtons = STAGES.map((s, i) => {
     const b = el('button', { type: 'button' }, LABELS[s]);
@@ -64,14 +64,14 @@ export function createUI(api) {
   function stop() { playing = false; refresh(); }
   function tick(t) {
     if (!playing) return;
-    const p = Math.min(api.getProgress() + (t - last) / 1000 / SECONDS_PER_STAGE, 3);
+    const p = Math.min(api.getProgress() + (t - last) / 1000 / SECONDS_PER_STAGE, 4);
     last = t;
     go(p);
-    if (p >= 3) stop(); else requestAnimationFrame(tick);
+    if (p >= 4) stop(); else requestAnimationFrame(tick);
   }
   play.onclick = () => {
     if (playing) return stop();
-    if (api.getProgress() >= 3) go(0);
+    if (api.getProgress() >= 4) go(0);
     playing = true; last = performance.now();
     refresh();
     requestAnimationFrame(tick);

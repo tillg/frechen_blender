@@ -6,7 +6,7 @@ import { buildGarden } from './garden.js';
 import { inkLines } from './ink.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, updateStage } from './materials.js';
-import { weights } from './stages.js';
+import { weights, stageAt } from './stages.js';
 import { createUI } from './ui.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
@@ -51,11 +51,12 @@ const ink = inkLines(bp, uInk);
 const garden = buildGarden(bp, { uPaper, uDetail, uInk });
 scene.add(bp.root, ink.group, garden.group);
 
-let progress = 0, sun = null;               // sun: null = follow the stage, else forced dusk 0/1
+let progress = 0, cut = 'all', sun = null;               // sun: null = follow the stage, else forced dusk 0/1
 function setProgress(p) {
-  progress = Math.min(Math.max(p, 0), 3);
+  progress = Math.min(Math.max(p, 0), 4);
   sun = null;
-  const w = weights(progress);
+  const w0 = weights(progress);
+  const w = { ...w0, built: w0.built + w0.furnished };   // Eingerichtet looks like Gebaut
   uPaper.value = w.sketch;
   uDetail.value = w.detail + w.built;
   updateStage(mats, w);
@@ -63,15 +64,24 @@ function setProgress(p) {
   lights.setDusk(w.built);
   uInk.value = w.sketch + w.massing;
   ink.group.visible = uInk.value > 0.001;
+  applyVisibility();
 }
-setProgress(0);
-
 // cutaway: hide whole collections ('roof' = Dach incl. west cladding, 'og' = OG + OG balconies)
 const HIDE = { all: [], noroof: ['roof'], eg: ['roof', 'og'] };
+// furniture only in Eingerichtet
+function applyVisibility() {
+  const furnished = stageAt(progress) === 'furnished';
+  for (const o of bp.objects) {
+    if (!o.userData.hidden) o.visible = !HIDE[cut].includes(cutLevel(o)) && (!o.userData.furniture || furnished);
+  }
+}
 function setCutaway(c) {
-  for (const o of bp.objects) if (!o.userData.hidden) o.visible = !HIDE[c].includes(cutLevel(o));
+  cut = c;
+  applyVisibility();
   for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level);
 }
+
+setProgress(0);
 
 const isDusk = () => lights.uDusk.value >= 0.5;
 createUI({

@@ -2,7 +2,7 @@
 
 Standard library only:  python3 code/export_gltf.py web/public/frechenlehen.glb
 - one node per GEO object (name = object name, translation = pivot, extras.collection,
-  extras.smooth for SMOOTH objects)
+  extras.smooth for SMOOTH objects, extras.furniture for the furniture of the last stage)
 - one primitive per material: POSITION, NORMAL, _RND (the Part's rnd), uint32 indices
 - materials FL_<name>: a pbrMetallicRoughness approximation; the full MAT_DEF entry (+ paint)
   in extras, from which the viewer builds its own procedural material
@@ -127,6 +127,8 @@ def export(path):
         node = {"name": name, "mesh": len(meshes) - 1, "extras": {"collection": coll}}
         if name in bp.smooth:
             node["extras"]["smooth"] = True
+        if name in bp.furniture:
+            node["extras"]["furniture"] = True
         if name in bp.pivot:
             node["translation"] = list(yup(piv))
         nodes.append(node)

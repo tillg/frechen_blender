@@ -62,6 +62,8 @@ MAT_DEF = {
     "Kiesel":     dict(rgba=(0.52, 0.50, 0.46, 1), rough=0.5),
     "Ofenglas":   dict(rgba=(0.10, 0.08, 0.06, 0.15), alpha=0.15, rough=0.05),  # stove door
     "Leinen":     dict(rgba=(0.78, 0.74, 0.66, 1), rough=0.9),               # mattress
+    "Bettwaesche": dict(rgba=(0.92, 0.91, 0.88, 1), rough=0.9),              # duvet, pillows
+    "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
     "Spiegel":    dict(rgba=(0.92, 0.92, 0.92, 1), metal=1.0, rough=0.02),
@@ -558,7 +560,7 @@ def build_eg():
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
-    interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580, -1, "b")])
+    interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580, -1, "a", False)])   # Speis door (plan)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     interior(c, 0.31, 2.358, 10.10, 10.25, [(0.56, 1.25)])  # WC (south) / Bad (north) Großeltern
@@ -918,13 +920,13 @@ def build_og():
     # interior
     H = DOOR_H
     interior(c, 0.31, 14.575, 8.57, 8.86,
-             [(3.17, 4.15, 1, "a"), (7.28, 8.17, 1, "a"), (12.30, 13.18, 1, "a")], z0, z1, H)
+             [(3.17, 4.15, 1, "b"), (7.28, 8.17, 1, "a", False), (12.30, 13.18, 1, "a", False)], z0, z1, H)
     interior(c, 6.05, 6.21, 8.86, 12.485, (), z0, z1)
     interior(c, 9.08, 9.25, 8.86, 12.485, (), z0, z1)
     interior(c, 2.57, 2.71, 5.46, 8.57, [(7.66, 8.47, -1, "a")], z0, z1, H)
     interior(c, 2.71, 14.35, 6.06, 6.35,
-             [(4.02, 4.87, -1, "a"), (7.15, 8.17, -1, "a"), (8.76, 9.65, -1, "b", False),
-              (10.66, 11.51, -1, "b")], z0, z1, H)
+             [(4.02, 4.87, -1, "a", False), (7.15, 8.17, -1, "a"), (8.76, 9.65, -1, "b", False),
+              (10.66, 11.51, -1, "a", False)], z0, z1, H)
     interior(c, 0.31, 1.57, 6.44, 6.54, [(0.55, 1.35, -1, "b", False)], z0, z1, H)   # WC 2,26
     interior(c, 1.57, 1.67, 5.46, 6.44, (), z0, z1)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
@@ -1377,6 +1379,193 @@ def build_annex():
              zr, ANNEX_TOP)
 
 
+# ---------------------------------------------------------------- furniture (plans of 2026-10-19)
+# Loose furniture appears in the viewer's last stage "Eingerichtet" (Blueprint.furniture); the
+# built-ins (kitchen, sanitary, Ofenbett) belong to the house. Positions from the plan, snapped
+# to the model's wall faces. Built last, so the random shading of everything else stays as it was.
+FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "OG_Moebel"}
+
+
+def _grain(ax):
+    return "FichteX" if ax == "x" else "FichteY"
+
+
+def bed(c, x0, x1, y0, y1, head, z=0.0, n=1):
+    """Spruce bed on four legs with a headboard on side head ("N"/"S"/"E"/"W"), n mattresses
+    side by side, duvet and pillows."""
+    o, ax = c + "_Moebel", "x" if head in "EW" else "y"
+    P, G = frame(ax), _grain(ax)
+    u0, u1, t0, t1 = (x0, x1, y0, y1) if ax == "x" else (y0, y1, x0, x1)
+    s, uh = (1, u0) if head in "WS" else (-1, u1)               # head end, direction to the foot
+    uf = u1 if s > 0 else u0
+    zf, zm = z + 0.30, z + 0.50                                  # frame top / mattress top
+    for ua in (u0 + 0.02, u1 - 0.08):                            # legs, inset from the frame edges
+        for ta in (t0 + 0.02, t1 - 0.08):
+            lbox(c, o, "FichteZ", P, ua, ua + 0.06, ta, ta + 0.06, z + 0.012, z + 0.12)
+    lbox(c, o, G, P, u0, u1, t0, t1, z + 0.12, zf)
+    lbox(c, o, G, P, uh - s * 0.005, uh + s * 0.04, t0 - 0.01, t1 + 0.01, z + 0.10, z + 0.90)   # headboard
+    ma, mb = uh + s * 0.045, uf - s * 0.03
+    w = (t1 - t0 - 0.06 - 0.01 * (n - 1)) / n
+    for k in range(n):
+        ta = t0 + 0.03 + k * (w + 0.01)
+        lbox(c, o, "Leinen", P, ma, mb, ta, ta + w, zf, zm)
+        pc = ta + w / 2
+        lbox(c, o, "Bettwaesche", P, ma + s * 0.04, ma + s * 0.39, pc - 0.25, pc + 0.25, zm, zm + 0.10)
+    lbox(c, o, "Bettwaesche", P, ma + s * 0.45, mb + s * 0.02, t0 + 0.01, t1 - 0.01, zm, zm + 0.06)   # duvet
+
+
+def nightstand(c, x0, x1, y0, y1, z=0.0):
+    o = c + "_Moebel"
+    box(c, o, "FichteZ", x0 + 0.01, x1 - 0.01, y0 + 0.01, y1 - 0.01, z + 0.012, z + 0.48)
+    box(c, o, "FichteX", x0, x1, y0, y1, z + 0.48, z + 0.50)
+
+
+def cabinet(c, x0, x1, y0, y1, front, cuts, z=0.0, h=2.0):
+    """Wardrobe / cupboard: carcass, doors between the cuts (along the front), handles.
+    front = side the doors face ("N"/"S"/"E"/"W")."""
+    o, ax = c + "_Moebel", "x" if front in "NS" else "y"
+    P = frame(ax)
+    t0, t1 = (y0, y1) if ax == "x" else (x0, x1)
+    f, s = (t0, 1) if front in "SW" else (t1, -1)               # front plane, direction inwards
+    if s > 0:
+        t0 += 0.02
+    else:
+        t1 -= 0.02
+    lbox(c, o, "FichteZ", P, cuts[0], cuts[-1], t0, t1, z + 0.012, z + h)
+    for a, b in zip(cuts[:-1], cuts[1:]):
+        r = random.random()
+        lbox(c, o, "FichteZ", P, a + 0.003, b - 0.003, f, f + s * 0.02, z + 0.06, z + h - 0.01, r)
+        m = b - 0.06 if (cuts.index(a) % 2 == 0) else a + 0.06
+        lbox(c, o, "Metall", P, m - 0.008, m + 0.008, f - s * 0.025, f, z + min(1.0, h / 2), z + min(1.0, h / 2) + 0.20)
+
+
+def bunk_bed(c, x0, x1, y0, y1, ladder, z):
+    """Spruce bunk bed along y, head at the south (wall) end: corner posts, two frames with
+    mattress, duvet and pillow, end boards, guard rails up top, ladder at the north end on the
+    room side ("E"/"W")."""
+    o = c + "_Moebel"
+    zb = z + 0.012
+    for xa in (x0, x1 - 0.07):
+        for ya in (y0, y1 - 0.07):
+            box(c, o, "FichteZ", xa, xa + 0.07, ya, ya + 0.07, zb, z + 1.80)
+    for zf in (z + 0.20, z + 1.15):
+        for xa in (x0 + 0.01, x1 - 0.04):                        # side rails
+            box(c, o, "FichteY", xa, xa + 0.03, y0 + 0.07, y1 - 0.07, zf, zf + 0.14)
+        for ya in (y0 + 0.01, y1 - 0.04):                        # end boards
+            box(c, o, "FichteX", x0 + 0.07, x1 - 0.07, ya, ya + 0.03, zf, zf + 0.45)
+        box(c, o, "FichteX", x0 + 0.04, x1 - 0.04, y0 + 0.04, y1 - 0.04, zf + 0.02, zf + 0.04)   # base
+        zm = zf + 0.18
+        box(c, o, "Leinen", x0 + 0.05, x1 - 0.05, y0 + 0.05, y1 - 0.05, zf + 0.04, zm)
+        cx = (x0 + x1) / 2
+        box(c, o, "Bettwaesche", cx - 0.25, cx + 0.25, y0 + 0.09, y0 + 0.44, zm, zm + 0.10)
+        box(c, o, "Bettwaesche", x0 + 0.06, x1 - 0.06, y0 + 0.50, y1 - 0.04, zm, zm + 0.06)
+    xw, xr = (x0 + 0.01, x1 - 0.04) if ladder == "E" else (x1 - 0.04, x0 + 0.01)   # wall / room side
+    box(c, o, "FichteY", xw, xw + 0.03, y0 + 0.07, y1 - 0.07, z + 1.48, z + 1.58)    # guard rails
+    box(c, o, "FichteY", xr, xr + 0.03, y0 + 0.07, y1 - 0.52, z + 1.48, z + 1.58)
+    xl = x1 if ladder == "E" else x0 - 0.04                      # ladder outside the room-side rail
+    for ya in (y1 - 0.50, y1 - 0.12):
+        box(c, o, "FichteZ", xl, xl + 0.04, ya, ya + 0.05, zb, z + 1.60)
+    for k in range(5):
+        zr = z + 0.40 + 0.26 * k
+        box(c, o, "FichteY", xl + 0.005, xl + 0.035, y1 - 0.45, y1 - 0.12, zr, zr + 0.03)
+
+
+def desk(c, x0, x1, y0, y1, z=0.0):
+    o = c + "_Moebel"
+    box(c, o, "FichteX", x0, x1, y0, y1, z + 0.72, z + 0.75)
+    for xa in (x0 + 0.03, x1 - 0.08):
+        for ya in (y0 + 0.03, y1 - 0.08):
+            box(c, o, "FichteZ", xa, xa + 0.05, ya, ya + 0.05, z + 0.012, z + 0.72)
+
+
+def shelf(c, x0, x1, y0, y1, ax):
+    """Open shelving along axis ax: uprights at the ends and about every 0.9 m, six boards."""
+    o, P, G = c + "_Moebel", frame(ax), _grain(ax)
+    u0, u1, t0, t1 = (x0, x1, y0, y1) if ax == "x" else (y0, y1, x0, x1)
+    n = max(1, round((u1 - u0) / 0.9))
+    for k in range(n + 1):
+        ua = u0 + (u1 - u0 - 0.02) * k / n
+        lbox(c, o, "FichteZ", P, ua, ua + 0.02, t0, t1, 0.012, 2.0)
+    for zb in (0.10, 0.48, 0.86, 1.24, 1.62, 1.98):
+        lbox(c, o, G, P, u0 + 0.002, u1 - 0.002, t0 + 0.005, t1 - 0.005, zb - 0.025, zb)
+
+
+def ngon_x(c, o, m, xa, xb, yc, zc, r, k=20):
+    """Disc of radius r in the y-z plane, from x = xa to xb."""
+    v = [(x, yc + r * math.cos(2 * math.pi * i / k), zc + r * math.sin(2 * math.pi * i / k))
+         for x in (xa, xb) for i in range(k)]
+    f = [list(range(k))[::-1], list(range(k, 2 * k))] + [(i, (i + 1) % k, k + (i + 1) % k, k + i) for i in range(k)]
+    add(c, o, m, v, f)
+
+
+def machine(c, x0, x1, y0, y1, z):
+    """Front loader (washer or dryer) against an east wall, door facing west."""
+    o = c + "_Moebel"
+    box(c, o, "Emaille", x0, x1, y0, y1, z + 0.012, z + 0.85)
+    yc = (y0 + y1) / 2
+    ngon_x(c, o, "Metall", x0 - 0.02, x0, yc, z + 0.45, 0.20)
+    ngon_x(c, o, "Eisen", x0 - 0.025, x0 - 0.02, yc, z + 0.45, 0.15)
+    box(c, o, "Eisen", x0 - 0.005, x0, y0 + 0.05, y1 - 0.05, z + 0.74, z + 0.82)    # control panel
+
+
+def grand_piano():
+    """Grand piano in the Musikraum after the plan symbol: case outline, lid, three legs,
+    keyboard towards the south, bench in front."""
+    c, o = "EG", "EG_Moebel"
+    a, b, cx, yb = 0.585, 0.43, 8.385, 11.75
+    pts = [(7.80, 10.48), (9.03, 10.48), (9.03, 11.10), (8.95, 11.22), (8.86, 11.36), (8.88, 11.55), (8.97, 11.72)]
+    pts += [(cx + a * math.cos(math.pi * i / 12), yb + b * math.sin(math.pi * i / 12)) for i in range(13)]
+    xy_prism(c, o, "Klavierlack", pts, 0.66, 0.96)                               # case
+    xy_prism(c, o, "Klavierlack", pts, 0.975, 0.99)                              # lid, a gap above the case
+    for x, y in ((7.90, 10.58), (8.86, 10.58), (8.40, 11.95)):
+        box(c, o, "Klavierlack", x - 0.04, x + 0.04, y - 0.04, y + 0.04, 0.012, 0.66)
+    box(c, o, "Klavierlack", 7.80, 7.86, 10.30, 10.48, 0.62, 0.82)                # key cheeks
+    box(c, o, "Klavierlack", 8.97, 9.03, 10.30, 10.48, 0.62, 0.82)
+    box(c, o, "Klavierlack", 7.86, 8.97, 10.30, 10.48, 0.62, 0.70)                # key bed
+    box(c, o, "Keramik", 7.865, 8.965, 10.31, 10.48, 0.70, 0.72)                 # white keys
+    box(c, o, "Klavierlack", 7.865, 8.965, 10.42, 10.48, 0.72, 0.73)              # black keys (row)
+    box(c, o, "Klavierlack", 8.30, 8.95, 9.85, 10.20, 0.46, 0.50)                 # bench
+    for x in (8.32, 8.89):
+        for y in (9.87, 10.14):
+            box(c, o, "Klavierlack", x, x + 0.04, y, y + 0.04, 0.012, 0.46)
+
+
+def build_furniture():
+    zo = Z_OG
+    # EG: Großeltern, Musikraum, Büro, Speis (dining table and chairs: build_eg)
+    bed("EG", 3.98, 6.022, 9.89, 11.75, "E", n=2)
+    nightstand("EG", 5.62, 6.02, 11.77, 12.25)
+    nightstand("EG", 5.62, 6.02, 9.41, 9.87)
+    grand_piano()
+    desk("EG", 12.98, 14.573, 11.48, 12.471)
+    chair("EG", 13.85, 11.25, 0, 1)
+    shelf("EG", 2.774, 3.34, 3.292, 5.847, "y")
+    shelf("EG", 3.342, 4.67, 5.22, 5.847, "x")
+    shelf("EG", 4.672, 5.238, 4.63, 5.847, "y")
+    # OG: Yoga, Jugend (two bunk beds instead of the plan's double bed), Schlafen NE, SW, SE, HWR
+    bed("OG", 0.86, 2.45, 8.862, 10.85, "S", zo, n=2)
+    bunk_bed("OG", 6.22, 7.17, 8.90, 10.96, "E", zo)
+    bunk_bed("OG", 8.13, 9.07, 8.90, 10.96, "W", zo)
+    bed("OG", 9.86, 10.78, 8.862, 10.92, "S", zo)
+    bed("OG", 10.80, 11.72, 8.862, 10.92, "S", zo)
+    nightstand("OG", 9.36, 9.84, 8.865, 9.25, zo)
+    nightstand("OG", 11.74, 12.23, 8.865, 9.25, zo)
+    cabinet("OG", 13.95, 14.573, 10.95, 12.483, "W", (10.95, 11.44, 11.96, 12.483), zo)
+    cabinet("OG", 2.712, 3.35, 3.52, 6.058, "E", (3.52, 4.03, 4.54, 5.0, 5.53, 6.058), zo)
+    bed("OG", 3.37, 5.438, 1.01, 2.87, "E", zo, n=2)
+    nightstand("OG", 5.02, 5.438, 2.89, 3.37, zo)
+    nightstand("OG", 5.02, 5.438, 0.53, 0.99, zo)
+    machine("OG", 7.97, 8.588, 3.98, 4.60, zo)
+    machine("OG", 7.97, 8.588, 3.36, 3.96, zo)
+    cabinet("OG", 7.97, 8.588, 2.792, 3.34, "W", (2.792, 3.34), zo, h=0.90)
+    box("OG", "OG_Moebel", "FichteZ", 10.87, 11.0, 0.98, 3.98, zo + 0.012, zo + 1.20)   # SE: divider
+    cabinet("OG", 11.0, 11.63, 0.98, 2.98, "W", (0.98, 1.98, 2.98), zo, h=0.90)          # headboard unit
+    bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
+    nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
+    nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)
+    cabinet("OG", 11.84, 14.348, 5.38, 6.058, "S", (11.84, 12.86, 13.34, 13.85, 14.348), zo)
+
+
 # ---------------------------------------------------------------- room names on the floor
 # (name, floor, x, y, rotation in degrees so it reads correctly from the room's door)
 ROOM_NAMES = [
@@ -1519,6 +1708,7 @@ class Blueprint:
     paint: dict
     room_lights: list
     garden: GardenLayout
+    furniture: set     # objects shown only in the viewer's last stage "Eingerichtet"
 
 
 def build():
@@ -1529,5 +1719,6 @@ def build():
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
     build_cross_boards()
+    build_furniture()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
-                     MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout())
+                     MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE))

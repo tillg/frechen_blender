@@ -61,11 +61,13 @@ edited: 2026-11-03
 - "Frechenlehen — Vom Strich zum Haus", German UI, desktop browsers. It is live at
   `https://tillg.github.io/frechen_blender/` once `main` carries the viewer and the Pages
   source is set to "GitHub Actions".
-- **Four stages** on a timeline (play/pause, scrubber, stage names). It opens at Skizze.
+- **Five stages** on a timeline (play/pause, scrubber, stage names). It opens at Skizze.
   - **Skizze:** hidden-line ink on paper.
   - **Massenmodell:** clay with soft sun shadows.
   - **Detailmodell:** procedural materials after `MAT_DEF`, daylight, grass and leafy shrubs.
   - **Gebaut:** dusk sky, low sun, warm light in the rooms.
+  - **Eingerichtet:** like Gebaut, plus the furniture (nodes with `extras.furniture`), which no
+    other stage shows. The cutaway still applies: "Nur EG" hides the OG furniture.
 - **Orbit** with the mouse (drag, scroll). It starts from the README view in the south-east.
 - **Cutaway:** "Ganzes Haus", "Ohne Dach", "Nur EG".
 - **Sun toggle:** day or dusk, from Detailmodell on.
@@ -98,7 +100,7 @@ sequenceDiagram
     P-->>V: index.html, JS, frechenlehen.glb
     V-->>Visitor: Skizze
     Visitor->>V: Play / scrub / click a stage
-    V-->>Visitor: Massenmodell → Detailmodell → Gebaut
+    V-->>Visitor: Massenmodell → Detailmodell → Gebaut → Eingerichtet
     Visitor->>V: orbit, "Nur EG", sun toggle
 ```
 
@@ -116,7 +118,7 @@ sequenceDiagram
 
 The model has no runtime state. In Blender the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
-the state is the timeline progress `p` (0–3), the cutaway (all / noroof / eg) and a forced
+the state is the timeline progress `p` (0–4), the cutaway (all / noroof / eg) and a forced
 dusk value from the sun toggle (cleared by any timeline move).
 
 ## Permissions and visibility
