@@ -1,14 +1,15 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-03
+edited: 2026-11-04
 ---
 
 # Architecture: Frechenlehen house model
 
 ## Overview
 
-The house is described once, in a **pure-Python core** (`code/house_core.py`, no `bpy`). Two
+The house is described once, in a **pure-Python core** (`code/house_core.py` plus the stoves in
+`code/ofen.py`, no `bpy`). Two
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -27,6 +28,7 @@ flowchart TB
     end
     subgraph py["code/ — Python"]
         CORE["house_core.py<br/>pure Python, no bpy"]
+        OF["ofen.py<br/>stoves, part of the core"]
         MO["mesh_ops.py<br/>triangulate · orient"]
         BH["build_house.py<br/>Blender backend"]
         EX["export_gltf.py<br/>glTF backend"]
@@ -45,6 +47,7 @@ flowchart TB
     end
     PDF -. measured by hand .-> CORE
     PH -. modelled by hand .-> CORE
+    OF <--> CORE
     CORE --> BH & EX
     CORE --> PA & WR & GA & FI
     MO --> EX
@@ -81,6 +84,10 @@ flowchart LR
     GEO & MD & GL --> BP[("build() → Blueprint")]
 ```
 
+- **Stoves.** `code/ofen.py` holds the Ofen sub-model (`ofen_neu()`), its placement in the Stube
+  (`ofen_im_haus()`) and `werkstattofen()`; `house_core` imports it and calls them, `build_ofen()`
+  stays in `house_core`. `ofen.py` uses the primitives and `GEO`/`PARTS` through `house_core` (the two
+  modules import each other). Its materials are entries of `MAT_DEF`.
 - **Geometry accumulator.** Builders append vertices, faces, material names and an `rnd`
   value per face to `GEO[(collection, object)]`. Faces are polygons (quads or n-gons, may be
   concave) with no consistent winding. Each `add()` call is one **Part** (a closed solid,

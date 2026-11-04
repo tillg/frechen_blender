@@ -94,3 +94,19 @@ test('furniture shows only in Eingerichtet and follows the cutaway', async ({ pa
   await set(4, 'all');
   expect(await vis(page, 'OG_Moebel')).toBe(true);
 });
+
+test('the built-in Ofen shows in every stage, without dimensions, and "Ofen" opens its sub-model', async ({ page }) => {
+  await open(page);
+  expect(await page.evaluate(() => window.__fl.lineSources)).toContain('EG_Ofen_Koerper');   // Skizze lines
+  for (const p of [0, 1, 2, 3, 4]) {
+    await page.evaluate((q) => window.__fl.setProgress(q), p);
+    expect(await vis(page, 'EG_Ofen_Koerper')).toBe(true);
+    expect(await vis(page, 'EG_Ofen_Bett')).toBe(true);
+  }
+  expect(await page.locator('.dim').count()).toBe(0);
+  await page.getByRole('link', { name: 'Ofen' }).click();
+  await page.waitForURL(/\/ofen\.html$/);
+  await page.waitForFunction(() => window.__ofen?.ready === true);
+  await expect(page.locator('.dim', { hasText: 'Bett 190' })).toBeVisible();
+  await expect(page.locator('.dim', { hasText: 'Bank 160' })).toBeVisible();
+});

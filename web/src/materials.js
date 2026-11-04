@@ -34,7 +34,7 @@ function detail(d, base) {
   return { col, height: d.wood ? [fac, 0.15] : null, usesRnd: true };
 }
 
-export function makeMaterials(defs, { uPaper, uDetail }) {
+export function makeMaterials(defs, { uPaper, uDetail, uDusk = float(1) }) {   // uDusk: lamps marked night
   const out = {};
   for (const { name, extras: d } of defs) {
     const base = d.paint ? [...d.paint.map(srgbToLinear), (d.rgba || [0, 0, 0, 1])[3]]
@@ -43,7 +43,7 @@ export function makeMaterials(defs, { uPaper, uDetail }) {
     const { col, height, usesRnd } = detail(d, base);
     m.colorNode = mix(color(CLAY), col, uDetail).mul(uPaper.oneMinus());
     let emissive = color(PAPER).mul(uPaper);
-    if (d.emit) emissive = emissive.add(color(...base.slice(0, 3)).mul(d.emit).mul(uDetail));
+    if (d.emit) emissive = emissive.add(color(...base.slice(0, 3)).mul(d.emit).mul(uDetail).mul(d.night ? uDusk : 1));
     m.emissiveNode = emissive;
     m.roughnessNode = mix(float(0.9), float(d.rough ?? 0.8), uDetail);
     m.metalnessNode = float(d.metal ?? 0).mul(uDetail);
@@ -56,7 +56,7 @@ export function makeMaterials(defs, { uPaper, uDetail }) {
     m.polygonOffset = true;                         // the ink lines win the depth test
     m.polygonOffsetFactor = m.polygonOffsetUnits = 1;
     m.name = name;
-    m.userData = { kind: d.kind, base, emit: d.emit, alpha: d.alpha, usesRnd };
+    m.userData = { kind: d.kind, base, emit: d.emit, night: d.night, alpha: d.alpha, usesRnd };
     out[name] = m;
   }
   return out;

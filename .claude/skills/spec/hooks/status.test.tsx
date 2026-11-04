@@ -41,13 +41,20 @@ type Git = {
   status: string
   refs?: Record<string, string[]>
   vsMain?: string
+  /** `git rev-parse --show-toplevel`, `lsof … -Fpn` and `ps -o pid=,args=` output. */
+  root?: string
+  lsof?: string
+  ps?: string
 }
 const fakeGit = (on: any, git: Git) => {
   const ran = (stdout: string, exitCode = 0) => ({
     value: { exitCode, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
   })
   on('process.run', (_: any, e: any) => {
-    const [, sub] = e.argv
+    const [cmd, sub] = e.argv
+    if (cmd === 'lsof') return git.lsof === undefined ? ran('', 1) : ran(git.lsof)
+    if (cmd === 'ps') return ran(git.ps ?? '')
+    if (sub === 'rev-parse') return git.root === undefined ? ran('', 128) : ran(`${git.root}\n`)
     if (sub === 'status') return ran(git.status)
     if (sub === 'rev-list') return git.vsMain === undefined ? ran('', 128) : ran(git.vsMain)
     if (sub === 'for-each-ref') return ran(Object.keys(git.refs ?? {}).join('\n') + '\n')
@@ -215,5 +222,45 @@ test('git summary: unpushed branch, clean tree, no branch-name warning', async (
   expect(all).toMatch(/fix-just\s+·\s+not pushed/)
   expect(all).toMatch(/clean/)
   expect(all).not.toMatch(/rejects this branch name/)
+  await ui.unmount()
+})
+
+test('Serving: the repo\'s running Vite servers, each with a link to the house and the Ofen', async ($, on) => {
+  fakeFs(on, null)
+  fakeGit(on, {
+    status: status('main'),
+    root: '/repo',
+    lsof: 'p1\nf16\nn127.0.0.1:5181\np2\nf15\nn*:4173\np3\nf9\nn[::1]:9999\n',
+    ps:
+      '    1 node /repo/web/node_modules/.bin/vite --port 5181 --strictPort\n' +
+      '    2 node /repo/.worktrees/tour/web/node_modules/.bin/vite preview --port 4173\n' +
+      '    3 node /elsewhere/web/node_modules/.bin/vite\n',
+  })
+  await start($, on)
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  const all = await texts(ui)
+  expect(all).toContain('Serving')
+  expect(all.some(t => /dev\s+:5181/.test(t))).toBe(true)
+  expect(all.some(t => /preview\s+:4173\s+\(tour\)/.test(t))).toBe(true)
+  const links = ((await ui.findAll({ type: 'Link' })) as any[]).map(l => [l.props.label, l.props.href])
+  expect(links).toEqual([
+    ['Haus', 'http://localhost:4173/frechen_blender/'],                         // by port
+    ['Ofen', 'http://localhost:4173/frechen_blender/ofen.html'],
+    ['Haus', 'http://localhost:5181/'],
+    ['Ofen', 'http://localhost:5181/ofen.html'],
+  ])
+  await ui.unmount()
+})
+
+test('Serving: none running says how to start one', async ($, on) => {
+  fakeFs(on, null)
+  fakeGit(on, { status: status('main'), root: '/repo', lsof: '' })
+  await start($, on)
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  const all = await texts(ui)
+  expect(all.some(t => /no server running/.test(t))).toBe(true)
+  expect(await ui.findAll({ type: 'Link' })).toEqual([])
   await ui.unmount()
 })

@@ -24,12 +24,23 @@ export type Git = {
   conflicted: number
 }
 
+/** A Vite server of this repo (or one of its worktrees) listening on localhost. */
+export type Server = {
+  kind: 'dev' | 'preview'
+  port: number
+  /** The worktree's name under .worktrees/, undefined for the main checkout. */
+  worktree?: string
+  /** The house's URL; the Ofen is `${url}ofen.html`. */
+  url: string
+}
+
 export type Workflow = {
   /** The change named like the branch (its last path segment). */
   ours?: Change
   /** Names of the changes on the other branches. */
   others: string[]
   git?: Git
+  servers: Server[]
   unreadable: boolean
   updatedAt: number
 }

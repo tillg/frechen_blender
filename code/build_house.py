@@ -10,7 +10,7 @@ from mathutils import Vector
 
 PROJECT = "/Users/tgartner/git/frechen_blender"
 sys.path.insert(0, PROJECT + "/code")
-import house_core; importlib.reload(house_core)        # pick up core edits in a long session
+import ofen, house_core; importlib.reload(ofen); importlib.reload(house_core)  # pick up core edits in a long session
 from house_core import Z_OG, ROOM_NAMES
 
 

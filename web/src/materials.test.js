@@ -42,3 +42,8 @@ test('wood and speck materials vary by _rnd, plain ones do not', () => {
   expect(mats.FL_Granit.userData.usesRnd).toBe(true);
   expect(mats.FL_Putz.userData.usesRnd).toBe(false);
 });
+
+test('the lamp filament glows only at dusk (night), the fire always', () => {
+  expect(mats.FL_Gluehfaden.userData.night).toBe(true);
+  expect(mats.FL_Feuer.userData.night).toBeFalsy();
+});

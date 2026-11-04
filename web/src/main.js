@@ -7,6 +7,7 @@ import { inkLines } from './ink.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
+import { createTour, drawDue } from './tour.js';
 import { createUI } from './ui.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
@@ -37,7 +38,8 @@ const bp = await loadBlueprint(import.meta.env.BASE_URL + 'frechenlehen.glb');
 const defs = {};
 const isHouse = (o) => o.isMesh && o.material.userData.kind;       // not the grass clump
 bp.root.traverse((o) => isHouse(o) && (defs[o.material.name] = { name: o.material.name, extras: o.material.userData }));
-const mats = makeMaterials(Object.values(defs), { uPaper, uDetail });
+const lights = createLighting(scene, bp.extras, controls.target.clone(), uDetail);   // sun fixed on the house
+const mats = makeMaterials(Object.values(defs), { uPaper, uDetail, uDusk: lights.uDusk });
 const surfaces = [];
 bp.root.traverse((o) => {
   if (!isHouse(o)) return;
@@ -46,7 +48,6 @@ bp.root.traverse((o) => {
   o.receiveShadow = true;
   surfaces.push(o);
 });
-const lights = createLighting(scene, bp.extras, controls.target, uDetail);
 const ink = inkLines(bp, uInk);
 const garden = buildGarden(bp, { uPaper, uDetail, uInk });
 scene.add(bp.root, ink.group, garden.group);
@@ -84,23 +85,34 @@ function setCutaway(c) {
 setProgress(0);
 
 const isDusk = () => lights.uDusk.value >= 0.5;
-createUI({
+const ui = createUI({
   getProgress: () => progress,
   setProgress,
   setCutaway,
   isDusk,
   toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); },
 });
+// Rundgang (the film's camera path): furnished, whole house, entrance door open
+const tour = createTour({
+  camera, controls, tour: bp.extras.tour, door: bp.byName.EG_Haustuer,
+  tools: document.querySelector('.fl-tools'),
+  onStart: () => { setProgress(4); ui.setCut('all'); ui.refresh(); },
+});
 
 await renderer.init();
-renderer.setAnimationLoop(() => {
-  controls.update();
+let draws = 0, lastDraw = -Infinity;
+renderer.setAnimationLoop((now) => {
+  if (!tour.update(now)) controls.update();
+  if (tour.state !== 'off' && !drawDue(now, lastDraw)) return;      // tour: ≤ 30 fps, less GPU load
+  lastDraw = now;
   renderer.render(scene, camera);
+  draws++;
 });
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+  tour.resize();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
@@ -117,6 +129,12 @@ if (import.meta.env.MODE !== 'production') {
     visible: (name) => bp.byName[name].visible,
     setSurfaces: (on) => surfaces.forEach((m) => { m.visible = on; }),
     lookFrom: (...p) => { camera.position.copy(yup(p)); controls.update(); },   // model z-up coords
+    get camera() { const p = camera.position; return [p.x, -p.z, p.y]; },        // model z-up coords
+    get fov() { return camera.fov; },
+    get draws() { return draws; },
+    get view() { return camera.getWorldDirection(new THREE.Vector3()).toArray(); },  // y-up
+    tour,
+    tourKey: (i) => bp.extras.tour.frames[i].slice(0, 3),
     project: (...p) => {                                                        // model -> CSS px
       const v = yup(p).project(camera);
       return { x: ((v.x + 1) / 2) * window.innerWidth, y: ((1 - v.y) / 2) * window.innerHeight };

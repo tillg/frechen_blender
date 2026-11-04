@@ -122,6 +122,7 @@ def test_garden_extras(glb):
     assert ex["garden"]["DENSITY"] == house_core.DENSITY and ex["garden"]["FAR_DENS"] == house_core.FAR_DENS
     assert len(ex["room_lights"]) == 23 and ex["Z_OG"] == house_core.Z_OG
     assert ex["ROOM_LIGHT_H"] == house_core.ROOM_LIGHT_H
+    assert ex["outside_lights"] == [list(p) for p in BP.outside_lights] and len(ex["outside_lights"]) == 8
     clump = glb["gltf"]["meshes"][node(glb, "GA_Grasbuschel")["mesh"]]["primitives"][0]
     f32 = lambda x: struct.unpack("<f", struct.pack("<f", x))[0]
     assert sorted(read(glb, clump["attributes"]["_H"])) == sorted(map(f32, lay.clump["h"]))
@@ -151,3 +152,12 @@ def test_furniture_objects_are_marked(glb):
         assert node(glb, name)["extras"].get("furniture"), name
     assert "furniture" not in node(glb, "EG_Kueche")["extras"]
     assert node(glb, "OG_Moebel")["extras"]["collection"] == "OG"      # "Nur EG" hides it
+
+
+def test_tour_keys_in_scene_extras(glb):
+    import tour
+    t = glb["gltf"]["scenes"][0]["extras"]["tour"]
+    keys = tour.build_tour()
+    assert t["fps"] == tour.FPS and len(t["frames"]) == len(keys)
+    for got, want in zip(t["frames"][::97], keys[::97]):
+        assert len(got) == 6 and all(abs(a - b) < 1e-4 for a, b in zip(got, want))

@@ -1,0 +1,3 @@
+/* Rundgang (tour.js): its bar takes the place of the timeline bar while the tour runs. */
+body:not([data-tour="off"]) .fl-bar:not(.fl-tour), body[data-tour="off"] .fl-tour { display: none; }
+.fl-tour button[aria-pressed="true"] { background: #2b2926; color: #f3efe6; }   /* Endlos on, like the active buttons */

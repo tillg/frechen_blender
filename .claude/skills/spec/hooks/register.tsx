@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Change, Git, Step, Workflow } from '../types'
+import type { Change, Git, Server, Step, Workflow } from '../types'
 
 // Skeleton after w12-free's tools/claude-mods/w12-mission-control; the state
 // model is this project's spec workflow (specs/changes/<name>/ frontmatter).
@@ -10,9 +10,9 @@ const DIR = 'specs/changes'
 const REFRESH_MS = 60_000
 const TWEAK = 'tweak: side lane for small changes (no change dir)'
 const NONE = 'No active change — /spec:propose to start'
-const EMPTY: Workflow = { others: [], unreadable: false, updatedAt: 0 }
+const EMPTY: Workflow = { others: [], servers: [], unreadable: false, updatedAt: 0 }
 // Change the tag when a field of the workflow changes.
-const workflowRef = atom({ plugin: 'spec', key: 'workflow' } as const, EMPTY, { shape: 'workflow-3' })
+const workflowRef = atom({ plugin: 'spec', key: 'workflow' } as const, EMPTY, { shape: 'workflow-4' })
 
 const STEP_OF: Record<string, Step> = {
   exploring: 'propose',
@@ -97,6 +97,34 @@ async function readGit($: EngineInterface): Promise<Git | undefined> {
   return g
 }
 
+// Vite servers of this repo: node processes listening on TCP whose vite binary lies under the
+// repo root (worktrees in .worktrees/ included). Dev serves at /, preview at the Pages base.
+const BASE = '/frechen_blender/'
+async function readServers($: EngineInterface): Promise<Server[]> {
+  const root = (await git($, ['rev-parse', '--show-toplevel']))?.trim()
+  const r = await $.process.run(['lsof', '-nP', '-iTCP', '-sTCP:LISTEN', '-a', '-c', 'node', '-Fpn'])
+  if (!root || r.exitCode !== 0) return []
+  const ports = new Map<string, number[]>()
+  let pid = ''
+  for (const l of r.stdout.split('\n')) {
+    if (l.startsWith('p')) pid = l.slice(1)
+    else if (l.startsWith('n')) ports.set(pid, [...(ports.get(pid) ?? []), Number(l.slice(l.lastIndexOf(':') + 1))])
+  }
+  if (ports.size === 0) return []
+  const ps = await $.process.run(['ps', '-o', 'pid=,args=', '-p', [...ports.keys()].join(',')])
+  const out: Server[] = []
+  for (const l of ps.stdout.split('\n')) {
+    const m = l.trim().match(/^(\d+)\s+(.*)$/)
+    const at = m?.[2].indexOf('/node_modules/.bin/vite') ?? -1
+    if (!m || at < 0 || !m[2].includes(`${root}/`)) continue
+    const kind = /\/vite preview\b/.test(m[2]) ? 'preview' : 'dev'
+    const worktree = m[2].slice(0, at).match(/\/\.worktrees\/([^/]+)\//)?.[1]
+    for (const port of new Set(ports.get(m[1]) ?? []))
+      out.push({ kind, port, worktree, url: `http://localhost:${port}${kind === 'preview' ? BASE : '/'}` })
+  }
+  return out.sort((a, b) => a.port - b.port)
+}
+
 // A branch and its change dir match with `_` and `-` treated alike (feature/use_setup ↔ use-setup).
 const sameName = (a: string, b: string) => a.replace(/_/g, '-') === b.replace(/_/g, '-')
 
@@ -126,13 +154,14 @@ async function collect($: EngineInterface): Promise<Workflow> {
   const g = await readGit($).catch(() => undefined)
   const name = g?.branch.split('/').pop() ?? ''
   const others = await otherChanges($, name).catch(() => [])
+  const servers = await readServers($).catch(() => [])
   try {
     const dirs = (await $.fs.exists(DIR)) ? await $.fs.list(DIR) : []
     const match = dirs.find(d => d.kind === 'dir' && sameName(d.name, name))
     const ours = match ? await readChange($, match.name) : undefined
-    return { ours, others, git: g, unreadable: false, updatedAt }
+    return { ours, others, git: g, servers, unreadable: false, updatedAt }
   } catch {
-    return { others, git: g, unreadable: true, updatedAt }
+    return { others, git: g, servers, unreadable: true, updatedAt }
   }
 }
 
@@ -196,6 +225,9 @@ function sections(w: Workflow): { title: string; rows: { kind: string; text: str
   return [ours, ...(w.others.length ? [others] : []), ...git]
 }
 
+const NO_SERVER = '  no server running — cd web && npm run dev'
+const serverName = (s: Server) => `  ${s.kind.padEnd(7)} :${s.port}${s.worktree ? ` (${s.worktree})` : ''}`
+
 /** The command's text answer: the same picture as the pane. */
 function summaryText(w: Workflow): string {
   if (w.unreadable) return 'spec: specs/ not readable'
@@ -206,6 +238,10 @@ function summaryText(w: Workflow): string {
       ...(i === 0 ? [TWEAK] : []),
       '',
     ])
+    .concat(
+      'Serving',
+      ...(w.servers.length ? w.servers.map(s => `${serverName(s)}  ${s.url}  ${s.url}ofen.html`) : [NO_SERVER]),
+    )
     .join('\n')
     .trimEnd()
 }
@@ -266,7 +302,7 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Box, Text } = $.ui.resolve(e)
+    const { Box, Text, Link } = $.ui.resolve(e)
     const w = await read($, workflowRef)
     const cols = Math.max(10, e.props.bodyColumns)
     const room = Math.max(2, (e.viewport?.rows ?? 24) - 4)
@@ -274,7 +310,7 @@ export const register: Register = on => {
     if (w.unreadable) return <Text dimColor>{fit('specs/ not readable')}</Text>
     // Rows left once every section's title, gap and the tweak line are drawn; the other changes give way.
     const all = sections(w)
-    let left = room - all.length * 2 - 1
+    let left = room - all.length * 2 - 1 - 2 - Math.max(1, w.servers.length)
     return (
       <Box flexDirection="column">
         {all.map((s, i) => {
@@ -298,6 +334,18 @@ export const register: Register = on => {
             </Box>
           )
         })}
+        <Box flexDirection="column">
+          <Text bold>Serving</Text>
+          {w.servers.length === 0 && <Text dimColor>{fit(NO_SERVER)}</Text>}
+          {w.servers.map(s => (
+            <Box flexDirection="row">
+              <Text>{`${serverName(s)}   `}</Text>
+              <Link href={s.url} label="Haus" />
+              <Text>{'  '}</Text>
+              <Link href={`${s.url}ofen.html`} label="Ofen" />
+            </Box>
+          ))}
+        </Box>
       </Box>
     )
   })

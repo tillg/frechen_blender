@@ -1,12 +1,15 @@
 """Frechenlehen – glTF backend: writes the Blueprint of house_core.py as a .glb for the web viewer.
 
 Standard library only:  python3 code/export_gltf.py web/public/frechenlehen.glb
+(`--ofen`: the Ofen sub-model of house_core.build_ofen() instead, with its dimension lines in
+scene.extras.dims)
 - one node per GEO object (name = object name, translation = pivot, extras.collection,
   extras.smooth for SMOOTH objects, extras.furniture for the furniture of the last stage)
 - one primitive per material: POSITION, NORMAL, _RND (the Part's rnd), uint32 indices
 - materials FL_<name>: a pbrMetallicRoughness approximation; the full MAT_DEF entry (+ paint)
   in extras, from which the viewer builds its own procedural material
-- scene.extras: room lights, key constants and the garden layout (in z-up model coordinates)
+- scene.extras: room lights, key constants, the garden layout and the Rundgang camera keys of
+  tour.py (in z-up model coordinates)
 - hidden node GA_Grasbuschel: the grass clump with _H (0 root .. 1 tip)
 Axes: z-up model -> y-up glTF as (x, z, -y), like Blender's exporter.
 """
@@ -14,7 +17,7 @@ import json, math, struct, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import house_core, mesh_ops  # noqa: E402
+import house_core, mesh_ops, tour  # noqa: E402
 
 
 def yup(p):
@@ -108,8 +111,8 @@ def material(name, d, paint):
     return m
 
 
-def export(path):
-    bp = house_core.build()
+def export(path, bp=None):
+    bp = bp or house_core.build()
     w = Writer()
     names = list(bp.mat_def)
     mats = [material(n, bp.mat_def[n], bp.paint) for n in names]
@@ -132,34 +135,39 @@ def export(path):
         if name in bp.pivot:
             node["translation"] = list(yup(piv))
         nodes.append(node)
-    # grass clump (hidden; instanced by the viewer)
-    cl = bp.garden.clump
-    vn = [(0.0, 0.0, 0.0)] * len(cl["v"])
-    idx = []
-    for f in cl["f"]:
-        nv = mesh_ops.newell([cl["v"][i] for i in f])
-        for i in f:
-            vn[i] = tuple(a + b for a, b in zip(vn[i], nv))
-        idx += [f[0], f[1], f[2], f[0], f[2], f[3]]
-    meshes.append({"name": "GA_Grasbuschel", "primitives": [
-        {"attributes": {"POSITION": w.accessor([yup(p) for p in cl["v"]], "VEC3"),
-                        "NORMAL": w.accessor([yup(unit(n)) for n in vn], "VEC3"),
-                        "_H": w.accessor(cl["h"], "SCALAR")},
-         "indices": w.accessor(idx, "INDEX")}]})
-    nodes.append({"name": "GA_Grasbuschel", "mesh": len(meshes) - 1,
-                  "extras": {"collection": "Garten", "hidden": True}})
-    lay = bp.garden
-    extras = {
-        "coordinates": "z-up model metres (x east, y north); glTF positions are (x, z, -y)",
-        "room_lights": jsonable(bp.room_lights), "ROOM_LIGHT_H": house_core.ROOM_LIGHT_H,
-        "Z_OG": house_core.Z_OG, "W_OUT": house_core.W_OUT, "D_OUT": house_core.D_OUT,
-        "RIDGE_Z": house_core.RIDGE_Z,
-        "garden": {"ground": jsonable(lay.ground), "no_grass": jsonable(lay.no_grass),
-                   "windrose": jsonable(lay.windrose), "shrubs": jsonable(lay.shrubs),
-                   "DENSITY": house_core.DENSITY, "NEAR": house_core.NEAR, "FAR": house_core.FAR,
-                   "FAR_DENS": house_core.FAR_DENS, "HOUSE_C": jsonable(house_core.HOUSE_C),
-                   "CELL": house_core.CELL},
-    }
+    extras = {"coordinates": "z-up model metres (x east, y north); glTF positions are (x, z, -y)"}
+    if bp.garden:                                            # the house (not the Ofen sub-model)
+        # grass clump (hidden; instanced by the viewer)
+        cl = bp.garden.clump
+        vn = [(0.0, 0.0, 0.0)] * len(cl["v"])
+        idx = []
+        for f in cl["f"]:
+            nv = mesh_ops.newell([cl["v"][i] for i in f])
+            for i in f:
+                vn[i] = tuple(a + b for a, b in zip(vn[i], nv))
+            idx += [f[0], f[1], f[2], f[0], f[2], f[3]]
+        meshes.append({"name": "GA_Grasbuschel", "primitives": [
+            {"attributes": {"POSITION": w.accessor([yup(p) for p in cl["v"]], "VEC3"),
+                            "NORMAL": w.accessor([yup(unit(n)) for n in vn], "VEC3"),
+                            "_H": w.accessor(cl["h"], "SCALAR")},
+             "indices": w.accessor(idx, "INDEX")}]})
+        nodes.append({"name": "GA_Grasbuschel", "mesh": len(meshes) - 1,
+                      "extras": {"collection": "Garten", "hidden": True}})
+        lay = bp.garden
+        extras.update({
+            "room_lights": jsonable(bp.room_lights), "ROOM_LIGHT_H": house_core.ROOM_LIGHT_H,
+            "outside_lights": jsonable(bp.outside_lights),
+            "Z_OG": house_core.Z_OG, "W_OUT": house_core.W_OUT, "D_OUT": house_core.D_OUT,
+            "RIDGE_Z": house_core.RIDGE_Z,
+            "garden": {"ground": jsonable(lay.ground), "no_grass": jsonable(lay.no_grass),
+                       "windrose": jsonable(lay.windrose), "shrubs": jsonable(lay.shrubs),
+                       "DENSITY": house_core.DENSITY, "NEAR": house_core.NEAR, "FAR": house_core.FAR,
+                       "FAR_DENS": house_core.FAR_DENS, "HOUSE_C": jsonable(house_core.HOUSE_C),
+                       "CELL": house_core.CELL},
+            "tour": {"fps": tour.FPS, "frames": [[round(v, 4) for v in k] for k in tour.build_tour()]},
+        })
+    if bp.dims:
+        extras["dims"] = jsonable(bp.dims)
     gltf = {"asset": {"version": "2.0", "generator": "frechenlehen export_gltf.py"},
             "scene": 0, "scenes": [{"name": "Frechenlehen", "nodes": list(range(len(nodes))), "extras": extras}],
             "nodes": nodes, "meshes": meshes, "materials": mats,
@@ -176,5 +184,5 @@ def export(path):
 
 
 if __name__ == "__main__":
-    size = export(sys.argv[1])
+    size = export(sys.argv[1], house_core.build_ofen() if "--ofen" in sys.argv else None)
     print(f"wrote {sys.argv[1]} ({size / 1e6:.1f} MB)")
