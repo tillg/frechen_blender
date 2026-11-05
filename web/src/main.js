@@ -23,7 +23,8 @@ document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 
 // camera from the south-east, as the README view (setup_scene in build_house.py)
-const camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 0.1, 500);
+const FOV = 28;                                    // default vertical field of view; ?fov= overrides it
+const camera = new THREE.PerspectiveCamera(FOV, window.innerWidth / window.innerHeight, 0.1, 500);
 camera.position.copy(yup([33, -24, 13]));
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.copy(yup([7.4, 6.4, 3.2]));
@@ -96,10 +97,14 @@ let saveTimer = 0;
 function saveView() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    const q = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`;
+    const q = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`
+      + (viewFov !== FOV ? `&fov=${viewFov}` : '');
     if (q !== location.search) history.replaceState(history.state, '', q);
   }, 300);
 }
+const viewFov = Number(query.get('fov') ?? FOV);                   // vertical, degrees
+camera.fov = viewFov;
+camera.updateProjectionMatrix();
 if (xyz('cam')) camera.position.copy(yup(xyz('cam')));
 if (xyz('at')) controls.target.copy(yup(xyz('at')));
 controls.update();
