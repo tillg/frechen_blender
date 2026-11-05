@@ -500,8 +500,9 @@ def test_og_flur_waschbecken_right_of_the_waschkueche_door():
 
 def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
     """Waschküche (OG, x 5.59 .. 8.59, y 2.79 .. 6.06, door in the north wall): a dryer stands on
-    the washing machine (north one at the east wall), and a table runs the full width of the back
-    (south) wall; it replaces the low cupboard that stood in the SE corner."""
+    the washing machine (north one at the east wall), and a table 0.80 m deep runs the full width
+    of the back (south) wall, with two stacks of neatly folded clothes on it; it replaces the low
+    cupboard that stood in the SE corner."""
     zo = house_core.Z_OG
     room = [p for p in part_list(("OG", "OG_Moebel")) if 5.59 <= p[1][0] and p[2][0] <= 8.59 and 2.79 <= p[1][1] and p[2][1] <= 6.06]
     enamel = sorted((p for p in room if p[0] == "Emaille"), key=lambda p: (p[1][1], p[1][2]))
@@ -514,14 +515,27 @@ def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
     _, lo, hi, _ = top[0]
     assert lo[0] - 5.59 < 0.01 and 8.59 - hi[0] < 0.01 and lo[1] - 2.79 < 0.01   # full width, on the back wall
     assert hi[1] < enamel[0][1][1]                                            # clear of the south machine
+    assert hi[1] - lo[1] > 0.78                                               # deep enough to fold on
+    assert enamel[-1][2][1] < 5.5                                             # machines clear of the door
+    cloth = [p for p in room if p[0] in ("Leinen", "Bettwaesche", "Creme", "Jeans", "Wolle")
+             and abs(p[1][2] - hi[2]) < 0.30 and lo[0] <= p[1][0] and p[2][0] <= hi[0] and p[2][1] <= hi[1]]
+    assert cloth and min(p[1][2] for p in cloth) >= hi[2] - 0.001             # on the table top
+    stacks = {}
+    for q in cloth:
+        assert q[2][2] - q[1][2] <= 0.05                                      # folded, flat
+        stacks.setdefault(round((q[1][0] + q[2][0]) / 2, 1), []).append(q)
+    assert len(stacks) == 2 and all(len(v) >= 5 for v in stacks.values())
+    for v in stacks.values():                                                 # neat: piled on each other
+        v.sort(key=lambda q: q[1][2])
+        assert all(abs(b[1][2] - a[2][2]) < 0.002 for a, b in zip(v, v[1:]))
     assert not [p for p in room if p[0] == "FichteZ" and p[2][2] - zo > 0.85
                 and p[1][0] > 7.9 and p[2][1] < 3.4]                          # SE corner cupboard gone
 
 
 def test_waschkueche_open_cupboard_with_laundry_baskets_on_the_west_wall():
     """Waschküche: on the right-hand wall seen from the door (west, x 5.59) an open spruce
-    cupboard, 2.0 m high, between the table on the back wall and the door leaf, with a wicker
-    laundry basket in each of its 3 × 3 compartments."""
+    cupboard, 2.0 m high, between the table on the back wall and the door leaf: two sides,
+    continuous shelves without dividers, three coarsely woven wicker laundry baskets per shelf."""
     zo = house_core.Z_OG
     room = [p for p in part_list(("OG", "OG_Moebel")) if 5.59 <= p[1][0] and p[2][0] <= 8.59 and 2.79 <= p[1][1] and p[2][1] <= 6.06]
     table = [p for p in room if p[0] == "FichteX" and p[2][2] > zo + 0.7][0]
@@ -533,9 +547,18 @@ def test_waschkueche_open_cupboard_with_laundry_baskets_on_the_west_wall():
     leaf = [l for c, l in house_core.LEAVES if c == "OG" and 7.0 < max(l[0][0], l[1][0]) < 7.3
             and 6.0 < min(l[0][1], l[1][1]) < 6.06][0]
     assert table[2][1] < lo[1] and hi[1] < min(leaf[0][1], leaf[1][1])        # clear of table and leaf
+    uprights = [p for p in carcass if p[0] == "FichteZ" and p[2][0] - p[1][0] > 0.3]
+    assert len(uprights) == 2                                                 # the two sides, no dividers
+    boards = [p for p in carcass if p[0] == "FichteY" and p[2][2] - p[1][2] < 0.03]
+    assert len(boards) == 4 and all(b[2][1] - b[1][1] > hi[1] - lo[1] - 0.05 for b in boards)   # continuous
     baskets = [p for p in room if p[0] == "Weide"]
     bottoms = [p for p in baskets if p[2][2] - p[1][2] < 0.02]
     assert len(bottoms) == 9
+    assert len(baskets) > 9 * 100                                             # woven from strands
+    front = [p for p in baskets if 0.02 < p[2][2] - p[1][2] < 0.04 and p[1][2] - bottoms[0][1][2] < 0.2
+             and abs(p[2][0] - bottoms[0][2][0]) < 0.015 and p[2][1] - p[1][1] > p[2][0] - p[1][0]]
+                                                                              # weavers along the fronts
+    assert len({round(p[2][0], 3) for p in front}) == 2                       # strands in and out: a weave
     assert all(lo[k] <= p[1][k] and p[2][k] <= hi[k] for p in baskets for k in range(3))   # inside it
     laundry = [p for p in room if p[0] in ("Leinen", "Bettwaesche", "Creme")]
     assert all(any(b[1][0] < p[1][0] and p[2][0] < b[2][0] and b[1][1] < p[1][1] and p[2][1] < b[2][1]
