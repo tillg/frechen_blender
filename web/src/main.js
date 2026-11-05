@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { uniform } from 'three/tsl';
 import { cutLevel, loadBlueprint } from './blueprint.js';
 import { createFire } from './fire.js';
-import { buildGarden } from './garden.js';
+import { buildGarden, indoors } from './garden.js';
 import { inkLines } from './ink.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, updateStage } from './materials.js';
@@ -14,7 +14,7 @@ import { createUI } from './ui.js';
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 
 const renderer = new THREE.WebGPURenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));   // Retina: 44 % fewer pixels, barely softer
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;      // soft via shadow.radius
@@ -56,6 +56,8 @@ const fire = createFire(bp.extras);                       // the stoves' fires (
 scene.add(bp.root, ink.group, garden.group, fire.group);
 
 let progress = 0, cut = 'all', sun = null;               // sun: null = follow the stage, else forced dusk 0/1
+// drawn on demand: a frame only when something changed (dirty), a fire in view flickers, or the tour runs
+let dirty = true;
 function setProgress(p) {
   progress = Math.min(Math.max(p, 0), 4);
   sun = null;
@@ -70,6 +72,7 @@ function setProgress(p) {
   uInk.value = w.sketch + w.massing;
   ink.group.visible = uInk.value > 0.001;
   applyVisibility();
+  dirty = true;
   saveView();
 }
 // cutaway: hide whole collections ('roof' = Dach incl. west cladding, 'og' = OG + OG balconies)
@@ -85,6 +88,7 @@ function setCutaway(c) {
   cut = c;
   applyVisibility();
   for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level);
+  dirty = true;
   saveView();
 }
 
@@ -108,7 +112,7 @@ camera.updateProjectionMatrix();
 if (xyz('cam')) camera.position.copy(yup(xyz('cam')));
 if (xyz('at')) controls.target.copy(yup(xyz('at')));
 controls.update();
-controls.addEventListener('change', saveView);
+controls.addEventListener('change', () => { dirty = true; saveView(); });
 setProgress(Number(query.get('p') ?? 0));
 
 const isDusk = () => lights.uDusk.value >= 0.5;
@@ -117,7 +121,7 @@ const ui = createUI({
   setProgress,
   setCutaway,
   isDusk,
-  toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); },
+  toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); dirty = true; },
 });
 if (Object.hasOwn(HIDE, query.get('cut') ?? '')) ui.setCut(query.get('cut'));
 // Rundgang (the film's camera path): furnished, whole house, entrance door open
@@ -127,11 +131,27 @@ const tour = createTour({
   onStart: () => { setProgress(4); ui.setCut('all'); ui.refresh(); },
 });
 
+// a fire counts as in view when its box (tongues at full height) meets the camera frustum
+const fireBoxes = fire.group.children.map((g) => new THREE.Box3().setFromObject(g));
+const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
+function fireInView() {
+  if (!fire.group.visible) return false;
+  camera.updateMatrixWorld();
+  frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse), camera.coordinateSystem);
+  return fireBoxes.some((b) => frustum.intersectsBox(b));
+}
+
 await renderer.init();
 let draws = 0, lastDraw = -Infinity;
 renderer.setAnimationLoop((now) => {
+  const touring = tour.state !== 'off';
   if (!tour.update(now)) controls.update();
-  if (tour.state !== 'off' && !drawDue(now, lastDraw)) return;      // tour: ≤ 30 fps, less GPU load
+  const p = camera.position;                                        // the Rundgang keeps the grass (film)
+  if (garden.setIndoors(!touring && indoors(bp.extras, [p.x, -p.z, p.y]))) dirty = true;
+  // tour and fire: ≤ 30 fps, less GPU load; otherwise only after a change
+  if (touring || (!dirty && fireInView())) { if (!drawDue(now, lastDraw)) return; }
+  else if (!dirty) return;
+  dirty = touring;                                                  // the first frame after the tour draws too
   lastDraw = now;
   fire.tick(now / 1000);
   renderer.render(scene, camera);
@@ -143,6 +163,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   tour.resize();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  dirty = true;
 });
 
 if (import.meta.env.MODE !== 'production') {
@@ -158,8 +179,8 @@ if (import.meta.env.MODE !== 'production') {
     setProgress,
     setCutaway,
     visible: (name) => bp.byName[name].visible,
-    setSurfaces: (on) => surfaces.forEach((m) => { m.visible = on; }),
-    lookFrom: (...p) => { camera.position.copy(yup(p)); controls.update(); },   // model z-up coords
+    setSurfaces: (on) => { surfaces.forEach((m) => { m.visible = on; }); dirty = true; },
+    lookFrom: (...p) => { camera.position.copy(yup(p)); controls.update(); dirty = true; },   // model z-up coords
     get camera() { const p = camera.position; return [p.x, -p.z, p.y]; },        // model z-up coords
     get fov() { return camera.fov; },
     get draws() { return draws; },
