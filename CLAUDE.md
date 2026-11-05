@@ -20,14 +20,6 @@ bpy.ops.wm.save_mainfile()
 
 Always rebuild in this order: `fire`, `paint`, `garden` and `film` all depend on objects (or materials) that `build_house` recreates. Every script is idempotent (re-running replaces its own collection/objects). No hand edits live in the `.blend`; the scripts are the source of truth. Every Blender script imports the core with `sys.path` + `importlib.reload(house_core)`; without the reload a long-running Blender session would silently keep the old core. Without the MCP, the same rebuild runs headless: `Blender -b frechenlehen.blend --python <script that execs the six and saves>`.
 
-Film render (headless, ~1 s/frame, 1280×720, 25 fps, EEVEE; output settings are set by `film.py` and stored in the file):
-
-```bash
-/Applications/Blender.app/Contents/MacOS/Blender -b frechenlehen.blend -a > tmp/render-$(date +%Y%m%d-%H%M%S).log 2>&1
-```
-
-Frames go to `tmp/film/frame_####.png` (ffmpeg is installed). The viewer's Rundgang is captured the same way to `tmp/film_web/`. Rendered films are named `YYYY-MM-DD_frechen_rundgang_blender.mp4` and `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (render date, repo root; H.264, yuv420p, 25 fps). A headless render reads the file as saved when it starts, so save first and restart it after model changes.
-
 Tests:
 
 - `python3 -m pytest -q` (repo root): core, `mesh_ops`, glTF export, and the **parity test**, which builds headless in Blender and compares a per-object fingerprint with `tests/golden/blender_snapshot.json`; it also checks that the saved `frechenlehen.blend` is the current build. A deliberate change to the Blender output: regenerate with `UPDATE_GOLDEN=1 python3 -m pytest -q tests/test_blender_parity.py`, diff the golden, then rebuild and save the `.blend`.
@@ -59,7 +51,7 @@ Tests:
 
 - **Coplanar faces with the same normal z-fight.** Offset new parts by millimetres (e.g. the stairwell edge boards stand 6 mm proud of the slab edge) rather than aligning them with existing faces.
 - **Reading the plans.**
-  - Pink-hatched wall in `grundriss_eg.png` is wall, not an opening. The original vector extraction only read gray wall fills.
+  - Pink-hatched wall in `grundriss_eg.png` is wall, not an opening. The original vector extraction only read gray wall fills. The pink coloring is only for the Behörde: It shows what are new constructual elemenst.
   - A wall segment with lighter hatching is a closed-up door. Two parallel lines without hatching between hatched wall stubs are an opening (e.g. the Großeltern Bad opens to the bedroom).
   - Stair: 15 risers at 18.0/25.5 need 3.57 m of run, more than the plan draws ("Treppe wird verschoben"). The OG stairwell opening confirms the full length.
   - To map world coordinates to plan pixels, use the page transform in `build_references()` (1:100, 28.3465 pt/m).
@@ -67,29 +59,18 @@ Tests:
 
 ## Claude config: everything comes from this repo
 
-User-wide Claude config (`~/.claude/…`) is switched off for this project, so all instructions, agents, MCP servers and settings live here:
-
-- `CLAUDE.md` (this file): project facts plus the working rules below. The user's `~/.claude/CLAUDE.md` and `RTK.md` are excluded via `claudeMdExcludes`.
-- `.claude/settings.json`: model/effort, permissions, and the switch-offs: claude.ai connectors, all user and claude.ai-synced plugins, personal skills (`skillOverrides`).
-- `.claude/agents/`: `explorer`, `researcher`, `worker`.
-- `.claude/skills/spec/`: the `spec` plugin (copied from agents1, auto-loaded): `/spec:*` skills and the `/spec-status` pane.
-- `.mcp.json`: `blender` and `playwright` (same names as the user-scope servers, so the project definitions win).
-- `.claude/settings.local.json` (not committed): `syncClaudeAiSkills: false`, which project settings cannot set.
+User-wide Claude config (`~/.claude/…`) is switched off for this project (`.claude/settings.json`, `.claude/settings.local.json`), so all instructions, agents, MCP servers and settings live in the repo. The `spec` plugin in `.claude/skills/spec/` is copied from agents1.
 
 A project file cannot remove user-scope hooks and status line (`disableAllHooks` would also disable the spec pane), permission allow-lists, `autoMode`, or UI settings. For a fully clean session, start with `claude --setting-sources project,local`.
 
 ## Working rules
 
-- **Subagents first** for search-heavy, parallelizable or multi-file work.
+- **Subagents first** for search-heavy, parallelizable or multi-file work. Use `explorer` / `researcher` / `worker` (cheaper models), not `general-purpose` (runs on Opus).
 - **Never mock** anything without explicit permission. **Never make tests pass by changing/removing them** without explicit permission.
 - **Never create or switch branches** without explicit permission. Git worktrees go in `.worktrees/`.
 - **Verify before claiming done** (here: render stills, see "Running"). "Looks right" is not done.
 - **Be extremely concise when reporting.** Sacrifice grammar for concision.
 - **Consult the advisor** before a large plan, when an error repeats, and before calling a long task done.
-- **Think before coding.** State assumptions as you go; name competing interpretations when they change the outcome. Stop and ask only at a truly ambiguous, costly-to-reverse fork; otherwise proceed and surface tradeoffs in the response.
-- **Simplicity first.** Minimum code that solves the problem; no speculative features, abstractions or configurability.
-- **Surgical changes.** Touch only what the request requires, match the file's style. Remove what your change orphaned; mention (don't delete) pre-existing dead code. Keep `README.md` in sync on user-visible changes.
-- **Goal-driven.** State multi-step work as `step → verify` pairs and loop until each verify passes.
 - **Web apps (three.js viewer):** test with the Playwright MCP before calling it done: use the dev server, `open` it, verify it responds. Never report a visual change as working without having seen it in a screenshot: zoom on the changed spot, check edges/last row/outer column too, use `scale:"css"` (1×) for fine lines, and say what exactly was checked. Reproduce a user-reported glitch before fixing it. Give the user an `http://localhost` URL (fresh query, never a fresh port) to reload, not `file://`. Artifacts go to `tmp/`.
 - **Exactly one dev server, never more.** It runs on port 5377 (`cd web && npm run dev`, pinned with `--strictPort`) and serves both pages: Haus `http://localhost:5377/`, Ofen `http://localhost:5377/ofen.html`; under `http://localhost:5377/frechen_blender/` it also serves the production build `web/dist/` as GitHub Pages does (`web/serve-build.js`; `npm run build` refreshes it). If something already listens on 5377 (`lsof -iTCP:5377 -sTCP:LISTEN`), reuse it, also when another session started it; start it only if the port is free, and never on another port. A saved `code/*.py` makes the server re-run `npm run blueprint` and reload open pages (`web/blueprint-watch.js`); the view survives the reload because it lives in the URL (`?cam=&at=&p=&cut=`, Ofen `?cam=&at=&look=`). The tests use this server too; no exception, not even for a test run.
 - **Long-running processes (>~30 s, e.g. the film render):** tee to `tmp/<name>-$(date +%Y%m%d-%H%M%S).log`, `open` the log, run in the background, check at least every 10 min; no progress for ~10 min → treat as stuck.
