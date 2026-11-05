@@ -134,6 +134,21 @@ test('URL ?cam=&at=&p= sets the viewpoint (model coords) and the stage', async (
   expect(await page.evaluate(() => window.__fl.cameraAt())).toEqual([11.7, 3.13, 1.6]);
 });
 
+test('URL ?fov= sets the vertical field of view (default 28°), kept in the URL across a reload', async ({ page }) => {
+  await open(page);
+  expect(await page.evaluate(() => window.__fl.fov)).toBe(28);
+  expect(new URL(page.url()).searchParams.has('fov')).toBe(false);
+  await page.goto('/?cam=8.5,5.97,4.3&at=6.19,4.65,3.75&p=4&fov=60');
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  expect(await page.evaluate(() => window.__fl.fov)).toBe(60);
+  await page.evaluate(() => window.__fl.lookFrom(8.4, 5.9, 4.3));         // a view change rewrites the URL
+  await expect.poll(() => new URL(page.url()).searchParams.get('cam')).toBe('8.4,5.9,4.3');
+  expect(new URL(page.url()).searchParams.get('fov')).toBe('60');
+  await page.reload();
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  expect(await page.evaluate(() => window.__fl.fov)).toBe(60);
+});
+
 test('the URL follows the view (camera, target, stage, cutaway); a reload restores it', async ({ page }) => {
   await open(page);
   await page.evaluate(() => window.__fl.lookFrom(-22, 34, 13));
