@@ -1,7 +1,7 @@
 ---
 name: explorer
 description: Read-only codebase search. Use for broad fan-out searches across many files/dirs when only the conclusion is needed.
-model: sonnet
+model: haiku
 effort: medium
 tools: Read, Grep, Glob, Bash
 ---
