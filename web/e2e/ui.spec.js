@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { utimesSync } from 'node:fs';
 import { shot } from './pixels.js';
 
 async function open(page) {
@@ -131,4 +132,41 @@ test('URL ?cam=&at=&p= sets the viewpoint (model coords) and the stage', async (
   expect(Math.abs(c.x - vp.width / 2)).toBeLessThan(2);
   expect(Math.abs(c.y - vp.height / 2)).toBeLessThan(2);
   expect(await page.evaluate(() => window.__fl.cameraAt())).toEqual([11.7, 3.13, 1.6]);
+});
+
+test('the URL follows the view (camera, target, stage, cutaway); a reload restores it', async ({ page }) => {
+  await open(page);
+  await page.evaluate(() => window.__fl.lookFrom(-22, 34, 13));
+  await page.getByRole('button', { name: 'Eingerichtet' }).click();
+  await page.getByRole('button', { name: 'Ohne Dach' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('cut')).toBe('noroof');
+  const q = new URL(page.url()).searchParams;
+  expect(q.get('cam').split(',').map(Number)).toEqual([-22, 34, 13]);
+  expect(q.get('p')).toBe('4');
+  expect(q.get('at')).toBeTruthy();
+  const before = await page.evaluate(() => window.__fl.cameraAt());
+  await page.reload();
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  const after = await page.evaluate(() => window.__fl.cameraAt());
+  after.forEach((v, i) => expect(Math.abs(v - before[i])).toBeLessThan(0.01));
+  expect(await stage(page)).toBe('furnished');
+  expect(await page.evaluate(() => document.body.dataset.cutaway)).toBe('noroof');
+  expect(await vis(page, 'Dach')).toBe(false);
+});
+
+test('saving a core file (code/*.py) re-exports the blueprint and reloads the page at the same view', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto('/?cam=-22,34,13&at=7.4,6.4,3.2&p=4&cut=noroof');
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  await page.evaluate(() => { window.__beforeSave = true; });
+  const reloaded = page.waitForEvent('load', { timeout: 60_000 });
+  const now = new Date();
+  utimesSync(new URL('../../code/tour.py', import.meta.url), now, now);   // "saved", content unchanged
+  await reloaded;
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  expect(await page.evaluate(() => window.__beforeSave)).toBeUndefined();
+  const cam = await page.evaluate(() => window.__fl.cameraAt());
+  [-22, 34, 13].forEach((v, i) => expect(Math.abs(cam[i] - v)).toBeLessThan(0.01));
+  expect(await stage(page)).toBe('furnished');
+  expect(await page.evaluate(() => document.body.dataset.cutaway)).toBe('noroof');
 });

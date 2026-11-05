@@ -69,6 +69,7 @@ function setProgress(p) {
   uInk.value = w.sketch + w.massing;
   ink.group.visible = uInk.value > 0.001;
   applyVisibility();
+  saveView();
 }
 // cutaway: hide whole collections ('roof' = Dach incl. west cladding, 'og' = OG + OG balconies)
 const HIDE = { all: [], noroof: ['roof'], eg: ['roof', 'og'] };
@@ -83,13 +84,26 @@ function setCutaway(c) {
   cut = c;
   applyVisibility();
   for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level);
+  saveView();
 }
 
-// ?cam=x,y,z&at=x,y,z&p=0…4: start at a viewpoint (model coordinates, z up) and stage
+// ?cam=x,y,z&at=x,y,z&p=0…4&cut=all|noroof|eg: start at a viewpoint (model coordinates, z up),
+// stage and cutaway. The URL follows the view, so a reload (e.g. after a core change) or a shared
+// link opens the same view.
 const query = new URLSearchParams(location.search), xyz = (k) => query.get(k)?.split(',').map(Number);
+const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
+let saveTimer = 0;
+function saveView() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const q = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`;
+    if (q !== location.search) history.replaceState(history.state, '', q);
+  }, 300);
+}
 if (xyz('cam')) camera.position.copy(yup(xyz('cam')));
 if (xyz('at')) controls.target.copy(yup(xyz('at')));
 controls.update();
+controls.addEventListener('change', saveView);
 setProgress(Number(query.get('p') ?? 0));
 
 const isDusk = () => lights.uDusk.value >= 0.5;
@@ -100,6 +114,7 @@ const ui = createUI({
   isDusk,
   toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); },
 });
+if (Object.hasOwn(HIDE, query.get('cut') ?? '')) ui.setCut(query.get('cut'));
 // Rundgang (the film's camera path): furnished, whole house, entrance door open
 const tour = createTour({
   camera, controls, tour: bp.extras.tour, door: bp.byName.EG_Haustuer,

@@ -13,7 +13,7 @@ scene.extras.dims)
 - hidden node GA_Grasbuschel: the grass clump with _H (0 root .. 1 tip)
 Axes: z-up model -> y-up glTF as (x, z, -y), like Blender's exporter.
 """
-import json, math, struct, sys
+import json, math, os, struct, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -187,10 +187,12 @@ def export(path, bp=None):
     js += b" " * (-len(js) % 4)
     total = 12 + 8 + len(js) + 8 + len(w.bin)
     Path(path).parent.mkdir(parents=True, exist_ok=True)      # fresh clone: no web/public/ yet
-    with open(path, "wb") as fh:
+    tmp = f"{path}.{os.getpid()}.tmp"                          # atomic: a reader (the dev server) never
+    with open(tmp, "wb") as fh:                               # sees a half-written file
         fh.write(struct.pack("<4sII", b"glTF", 2, total))
         fh.write(struct.pack("<I4s", len(js), b"JSON")); fh.write(js)
         fh.write(struct.pack("<I4s", len(w.bin), b"BIN\0")); fh.write(w.bin)
+    os.replace(tmp, path)
     return total
 
 

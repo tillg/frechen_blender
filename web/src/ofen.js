@@ -115,6 +115,7 @@ function setLook(name) {
   floor.visible = !wire;
   for (const w of walls) w.material = wire ? wallLine : wallSolid;
   for (const b of document.querySelectorAll('[data-look]')) b.setAttribute('aria-pressed', String(b.dataset.look === name));
+  saveView();
 }
 
 // dimension lines from the core, with end ticks and a label at the middle
@@ -136,8 +137,24 @@ const dimGeo = new THREE.BufferGeometry();
 dimGeo.setAttribute('position', new THREE.Float32BufferAttribute(dimPos, 3));
 scene.add(new THREE.LineSegments(dimGeo, dimMat));
 
+// ?cam=x,y,z&at=x,y,z&look=wire|mass|full: the URL follows the view, so a reload (e.g. after a
+// core change) or a shared link opens the same view
+const query = new URLSearchParams(location.search), xyz = (k) => query.get(k)?.split(',').map(Number);
+const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
+let saveTimer = 0;
+function saveView() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const q = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&look=${look}`;
+    if (q !== location.search) history.replaceState(history.state, '', q);
+  }, 300);
+}
 view('iso');
-setLook('wire');
+setLook(['wire', 'mass', 'full'].includes(query.get('look')) ? query.get('look') : 'wire');
+if (xyz('cam')) camera.position.copy(yup(xyz('cam')));
+if (xyz('at')) controls.target.copy(yup(xyz('at')));
+controls.update();
+controls.addEventListener('change', saveView);
 for (const b of document.querySelectorAll('[data-view]')) b.onclick = () => view(b.dataset.view);
 for (const b of document.querySelectorAll('[data-look]')) b.onclick = () => setLook(b.dataset.look);
 window.addEventListener('resize', () => {
@@ -153,4 +170,5 @@ renderer.setAnimationLoop((now) => {
   labels.render(scene, camera);
 });
 if (import.meta.env.DEV) window.__ofen = { ready: true, view, setLook, look: () => look, edges, dims: bp.extras.dims.length,
+  get camera() { const p = camera.position; return [p.x, -p.z, p.y]; },        // model z-up coords
   fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y };   // a flame's height (0: off)
