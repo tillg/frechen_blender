@@ -548,7 +548,7 @@
    0.0,
    0.0
   ],
-  "rnd": "3cf0b2b098066a4e",
+  "rnd": "7ef96d3fae5a8d56",
   "verts": 4376
  },
  "EG_Ofen_Bank": {
@@ -2260,7 +2260,7 @@
    12.483,
    4.7
   ],
-  "faces": 1770,
+  "faces": 45708,
   "materials": [
    "FL_Bettwaesche",
    "FL_Creme",
@@ -2269,17 +2269,19 @@
    "FL_FichteX",
    "FL_FichteY",
    "FL_FichteZ",
+   "FL_Jeans",
    "FL_Leinen",
    "FL_Metall",
-   "FL_Weide"
+   "FL_Weide",
+   "FL_Wolle"
   ],
   "origin": [
    0.0,
    0.0,
    0.0
   ],
-  "rnd": "edc067d3fa80c3be",
-  "verts": 2424
+  "rnd": "df90ec8e77149fdf",
+  "verts": 59328
  },
  "OG_Raumnamen": {
   "bbox": [

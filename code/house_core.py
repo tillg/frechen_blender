@@ -82,7 +82,9 @@ MAT_DEF = {
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
     "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
-    "Weide":      dict(speck=((0.18, 0.10, 0.035), (0.62, 0.44, 0.20), 70)),     # wicker laundry baskets
+    "Weide":      dict(speck=((0.30, 0.19, 0.08), (0.62, 0.45, 0.22), 150)),     # wicker laundry baskets
+    "Jeans":      dict(rgba=(0.12, 0.18, 0.30, 1), rough=0.9),               # folded clothes
+    "Wolle":      dict(rgba=(0.45, 0.14, 0.10, 1), rough=0.95),
     "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0, night=True),   # viewer: lit at dusk only
     "GluehfadenAn": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),              # switched-on lamp (Ofen bed)
 }
@@ -713,7 +715,7 @@ def post(coll, obj, mat, p0, p1, w, rnd=None):
     add(coll, obj, mat, v, f, rnd)
 
 
-def turned(coll, obj, mat, p0, p1, prof, k=16):
+def turned(coll, obj, mat, p0, p1, prof, k=16, rnd=None):
     """Round solid along the axis p0 -> p1: prof = [(radius, t), ...] with t from 0 (p0) to 1 (p1)."""
     ax = [b - a for a, b in zip(p0, p1)]
     n = math.sqrt(sum(c * c for c in ax))
@@ -728,7 +730,7 @@ def turned(coll, obj, mat, p0, p1, prof, k=16):
     nr = len(prof)
     f = [list(range(k))[::-1], list(range((nr - 1) * k, nr * k))]
     f += [(j * k + i, j * k + (i + 1) % k, (j + 1) * k + (i + 1) % k, (j + 1) * k + i) for j in range(nr - 1) for i in range(k)]
-    add(coll, obj, mat, v, f)
+    add(coll, obj, mat, v, f, rnd)
 
 
 def table(coll, x0, x1, y0, y1, h=0.76):
@@ -1508,36 +1510,74 @@ def machine(c, x0, x1, y0, y1, z):
     box(c, o, "Eisen", x0 - 0.005, x0, y0 + 0.05, y1 - 0.05, z + 0.74, z + 0.82)    # control panel
 
 
+def wicker_basket(c, o, x0, x1, y0, y1, z, h=0.35):
+    """Coarsely woven wicker basket on the outline x0..x1, y0..y1: bottom, a core wall, vertical
+    stakes about 9 cm apart, round weavers swelling in the middle, each centred on a stake and in
+    front of it or behind it in a checker (the stake shows where the weaver passes behind), a
+    round rim."""
+    wt, pitch = 0.012, 0.028
+    box(c, o, "Weide", x0, x1, y0, y1, z, z + wt)                              # bottom
+    r = random.random()
+    for xa in (x0 + 0.022, x1 - 0.030):                                        # core
+        box(c, o, "Weide", xa, xa + 0.008, y0 + 0.022, y1 - 0.022, z + wt, z + h, r)
+    for ya in (y0 + 0.022, y1 - 0.030):
+        box(c, o, "Weide", x0 + 0.030, x1 - 0.030, ya, ya + 0.008, z + wt, z + h, r)
+    rows = round((h - wt) / pitch)
+    pz = (h - wt) / rows
+    prof = [(0.008, 0), (0.0135, 0.5), (0.008, 1)]
+    walls = (("x", x0, -1, (y0, y1)), ("x", x1, 1, (y0, y1)), ("y", y0, -1, (x0, x1)), ("y", y1, 1, (x0, x1)))
+    P = lambda ax, t, u, zz: (t, u, zz) if ax == "x" else (u, t, zz)
+    for ax, edge, s, (u0, u1) in walls:
+        n = max(1, round((u1 - u0) / 0.09))
+        L = (u1 - u0) / n
+        for i in range(1, n):                                                  # stakes (corners: none)
+            t = edge - s * 0.010
+            turned(c, o, "Weide", P(ax, t, u0 + i * L, z + wt), P(ax, t, u0 + i * L, z + h), [(0.007, 0), (0.007, 1)], 6, r)
+    for j in range(rows):
+        zc, rr = z + wt + (j + 0.5) * pz, random.random()                      # one weaver per row
+        for ax, edge, s, (u0, u1) in walls:
+            n = max(1, round((u1 - u0) / 0.09))
+            L = (u1 - u0) / n
+            for i in range(n + 1):                                             # centred on stake i
+                ua, ub = max(u0 + 0.012, u0 + (i - 0.5) * L), min(u1 - 0.012, u0 + (i + 0.5) * L)
+                t = edge - s * (0.002 if (i + j) % 2 == 0 else 0.020)          # in front / behind
+                turned(c, o, "Weide", P(ax, t, ua, zc), P(ax, t, ub, zc), prof, 6, rr)
+    zr, rim = z + h + 0.013, [(0.015, 0), (0.015, 1)]                          # rim
+    for pa, pb in (((x0 + 0.006, y0, zr), (x0 + 0.006, y1, zr)), ((x1 - 0.006, y0, zr), (x1 - 0.006, y1, zr)),
+                   ((x0, y0 + 0.006, zr), (x1, y0 + 0.006, zr)), ((x0, y1 - 0.006, zr), (x1, y1 - 0.006, zr))):
+        turned(c, o, "Weide", pa, pb, rim, 8, r)
+
+
 def basket_cupboard(c, x0, x1, y0, y1, z):
-    """Open spruce cupboard against a west wall, facing east: back panel, four uprights, three
-    bays of three compartments, each with a wicker laundry basket holding a heap of laundry."""
+    """Open spruce cupboard against a west wall, facing east: back panel, two sides, continuous
+    shelves, on each shelf three wicker laundry baskets holding a heap of laundry."""
     o, h, xb = c + "_Moebel", 2.0, x0 + 0.025                          # back panel 1 cm off the wall
     box(c, o, "FichteZ", x0 + 0.01, xb, y0, y1, z + 0.012, z + h)
-    ys = [y0 + (y1 - y0 - 0.02) * k / 3 for k in range(4)]
-    for ya in ys:
+    for ya in (y0, y1 - 0.02):                                         # sides
         box(c, o, "FichteZ", xb, x1, ya, ya + 0.02, z + 0.012, z + h - 0.02)
     box(c, o, "FichteY", xb, x1, y0, y1, z + h - 0.02, z + h)            # top
-    for k, (ya, yb) in enumerate(zip(ys[:-1], ys[1:])):
-        ya += 0.02
-        for j, zs in enumerate((0.10, 0.72, 1.34)):                    # board tops
-            box(c, o, "FichteY", xb, x1 - 0.005, ya, yb, z + zs - 0.02, z + zs)
-            r, zb = random.random(), z + zs + 0.001                    # one rnd per basket (it meets)
-            bx0, bx1, by0, by1, wt = xb + 0.05, x1 - 0.04, ya + 0.06, yb - 0.06, 0.012
-            box(c, o, "Weide", bx0, bx1, by0, by1, zb, zb + wt, r)
-            for xa in (bx0, bx1 - wt):
-                box(c, o, "Weide", xa, xa + wt, by0, by1, zb + wt, zb + 0.35, r)
-            for ya2 in (by0, by1 - wt):
-                box(c, o, "Weide", bx0 + wt, bx1 - wt, ya2, ya2 + wt, zb + wt, zb + 0.35, r)
-            e, ri = 0.008, wt + 0.006                                  # rim: proud of the walls
-            for xa in (bx0 - e, bx1 - ri):
-                box(c, o, "Weide", xa, xa + ri + e, by0 - e, by1 + e, zb + 0.35, zb + 0.38, r)
-            for ya2 in (by0 - e, by1 - ri):
-                box(c, o, "Weide", bx0 + ri, bx1 - ri, ya2, ya2 + ri + e, zb + 0.35, zb + 0.38, r)
-            cl = ("Leinen", "Bettwaesche", "Creme")
+    n, bw = 3, 0.66                                                    # baskets per shelf, their width
+    gap = (y1 - y0 - 0.04 - n * bw) / (n + 1)
+    cl = ("Leinen", "Bettwaesche", "Creme")
+    for j, zs in enumerate((0.10, 0.72, 1.34)):                        # board tops
+        box(c, o, "FichteY", xb, x1 - 0.005, y0 + 0.02, y1 - 0.02, z + zs - 0.02, z + zs)
+        for k in range(n):
+            bx0, bx1, by0, zb = xb + 0.05, x1 - 0.04, y0 + 0.02 + gap + k * (bw + gap), z + zs + 0.001
+            by1 = by0 + bw
+            wicker_basket(c, o, bx0, bx1, by0, by1, zb)
             zl = zb + 0.24 + 0.06 * ((k + 2 * j) % 3)                  # laundry heap, some above the rim
-            box(c, o, cl[(k + j) % 3], bx0 + 0.03, bx1 - 0.03, by0 + 0.03, by1 - 0.03, zb + wt, zl)
+            box(c, o, cl[(k + j) % 3], bx0 + 0.035, bx1 - 0.035, by0 + 0.035, by1 - 0.035, zb + 0.012, zl)
             box(c, o, cl[(k + j + 1) % 3], bx0 + 0.07, bx1 - 0.10, by0 + 0.08 + 0.05 * j, by1 - 0.14 + 0.04 * k,
                 zl, zl + 0.07)
+
+
+def folded_stack(c, x, y, z, mats):
+    """Neatly folded clothes piled on each other, centred on (x, y), from the bottom up."""
+    o = c + "_Moebel"
+    for i, m in enumerate(mats):
+        w, d, t = 0.32 + 0.01 * (i % 3 - 1), 0.26 + 0.008 * ((i + 1) % 3 - 1), 0.035 + 0.005 * (i % 2)
+        box(c, o, m, x - w / 2, x + w / 2, y - d / 2, y + d / 2, z, z + t)
+        z += t
 
 
 def grand_piano():
@@ -1723,11 +1763,13 @@ def build_furniture():
     bed("OG", 3.37, 5.438, 1.01, 2.87, "E", zo, n=2)
     nightstand("OG", 5.02, 5.438, 2.89, 3.37, zo)
     nightstand("OG", 5.02, 5.438, 0.53, 0.99, zo)
-    machine("OG", 7.97, 8.588, 3.98, 4.60, zo)
-    machine("OG", 7.97, 8.588, 3.98, 4.60, zo + 0.838)                   # dryer on the washer
-    machine("OG", 7.97, 8.588, 3.36, 3.96, zo)
-    desk("OG", 5.592, 8.588, 2.792, 3.34, zo)                           # full width of the back wall
-    basket_cupboard("OG", 5.59, 6.19, 3.36, 5.95, zo)                   # right wall from the door
+    machine("OG", 7.97, 8.588, 4.23, 4.85, zo)
+    machine("OG", 7.97, 8.588, 4.23, 4.85, zo + 0.838)                   # dryer on the washer
+    machine("OG", 7.97, 8.588, 3.61, 4.21, zo)
+    desk("OG", 5.592, 8.588, 2.792, 3.592, zo)                          # full width of the back wall
+    folded_stack("OG", 6.45, 3.20, zo + 0.75, ("Jeans", "Jeans", "Wolle", "Bettwaesche", "Creme", "Leinen"))
+    folded_stack("OG", 7.15, 3.20, zo + 0.75, ("Bettwaesche", "Creme", "Bettwaesche", "Leinen", "Bettwaesche"))
+    basket_cupboard("OG", 5.59, 6.19, 3.612, 5.95, zo)                  # right wall from the door
     bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)
