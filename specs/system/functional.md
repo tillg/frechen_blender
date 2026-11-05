@@ -40,6 +40,9 @@ edited: 2026-11-05
     ceiling); spruce wall cabinets over the sink run and over the east run beside the hood
   - big dining table (two joined) after tisch-briol.png: board top, legs splayed on a flat foot
     frame with corner blocks; 14 chairs
+  - all chairs (dining table, Bibliothek desk) are board chairs after stuhl.png: thick plank
+    seat on battens, four splayed stick legs without stretchers, one tall backrest board leaning
+    back with a pointed heart cut out
   - Stube seating corner between the two big windows: round pedestal side table, two small
     bouclé cocktail armchairs either side of it
   - Stube sofa after sofa.tiff: linen three-seater, 3/4 of the way from the corner pier between

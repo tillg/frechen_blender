@@ -664,3 +664,32 @@ def test_kueche_wall_cabinets_over_the_rest_of_the_run():
         doors = [p for p in side if p[0] == "FichteZ" and p[2][1 - ax] - p[1][1 - ax] < 0.03]
         handles = [p for p in side if p[0] == "Metall"]
         assert len(doors) >= 2 and len(handles) == len(doors)
+
+
+def test_chairs_are_board_chairs_after_stuhl_png():
+    """All chairs (14 at the dining table, one at the Bibliothek desk) after input/2026-11-05
+    input/stuhl.png: a thick plank seat on two battens, four splayed tapering stick legs without
+    stretchers, one tall backrest board leaning back with a pointed heart cut out near its top, its
+    tenon wedged under the seat."""
+    parts = list(part_list(("EG", "EG_Stuehle")))
+    seats = [p for p in parts if abs(p[2][2] - 0.46) < 0.005 and p[2][2] - p[1][2] >= 0.04]
+    assert len(seats) == 15
+    centre = lambda p: ((p[1][0] + p[2][0]) / 2, (p[1][1] + p[2][1]) / 2)
+    mean = lambda vs, k: sum(v[k] for v in vs) / len(vs)
+    legs = [p for p in parts if p[1][2] < 0.01]
+    assert len(legs) == 4 * 15
+    for _, _, hi, vs in legs:
+        foot = [v for v in vs if v[2] < 0.01]; head = [v for v in vs if v[2] > hi[2] - 0.001]
+        c = min((centre(s) for s in seats), key=lambda q: math.dist(q, (mean(foot, 0), mean(foot, 1))))
+        assert math.dist(c, (mean(foot, 0), mean(foot, 1))) - math.dist(c, (mean(head, 0), mean(head, 1))) > 0.04   # splayed
+        assert max(v[0] for v in foot) - min(v[0] for v in foot) < max(v[0] for v in head) - min(v[0] for v in head) + 0.02   # tapering
+    assert not [p for p in parts if p[1][2] > 0.02 and p[2][2] < 0.35]                       # no stretchers
+    board = [p for p in parts if p[2][2] > 0.85]
+    assert len(board) == 4 * 15                                                # two sides, above and below the heart
+    assert sum(len(set(p[3])) == 10 for p in board) == 15                      # the piece notched by the heart's point
+    for _, _, hi, vs in board:
+        c = min((centre(s) for s in seats), key=lambda q: math.dist(q, (vs[0][0], vs[0][1])))
+        top = [v for v in vs if v[2] > hi[2] - 0.001]; low = [v for v in vs if v[2] < min(w[2] for w in vs) + 0.001]
+        lean = math.dist(c, (mean(top, 0), mean(top, 1))) - math.dist(c, (mean(low, 0), mean(low, 1)))
+        assert lean > 0.12 * (top[0][2] - low[0][2])                         # leans back
+    assert sum(0.90 <= p[2][2] <= 1.0 for p in board) == 3 * 15                # tall: about 0.95

@@ -765,25 +765,38 @@ def table(coll, x0, x1, y0, y1, h=0.76):
 
 
 def chair(coll, cx, cy, fx, fy):
-    """Simple spruce chair centred at (cx, cy), facing the table in direction (fx, fy):
-    four legs, seat, rear legs running up into the back posts, two back slats, side stretchers."""
+    """Spruce board chair after stuhl.png, centred at (cx, cy), facing the table in direction
+    (fx, fy): plank seat on two battens, four splayed tapering stick legs (no stretchers), one tall
+    backrest board leaning back with a pointed heart cut out, its tenon wedged under the seat."""
     o, W = coll + "_Stuehle", 0.42
+    Q = lambda u, v, z: (cx + fx * (W / 2 - v) - fy * u, cy + fy * (W / 2 - v) + fx * u, z)   # u across, v from the front
+    grain = (lambda m: {"FichteX": "FichteY", "FichteY": "FichteX"}.get(m, m)) if fx else (lambda m: m)
 
-    def part(m, u0, u1, v0, v1, z0, z1):                   # u across, v from front (table) to back
-        (xa, ya), (xb, yb) = [(cx + fx * (W / 2 - v) - fy * u, cy + fy * (W / 2 - v) + fx * u)
-                              for u, v in ((u0, v0), (u1, v1))]
-        if abs(fx) > 0:                                     # grain along the part's long axis
-            m = {"FichteX": "FichteY", "FichteY": "FichteX"}.get(m, m)
-        box(coll, o, m, xa, xb, ya, yb, z0, z1, r)
+    def part(m, u0, u1, v0, v1, z0, z1):
+        (xa, ya, _), (xb, yb, _) = Q(u0, v0, 0), Q(u1, v1, 0)
+        box(coll, o, grain(m), xa, xb, ya, yb, z0, z1, r)
 
-    r, l, h = random.random(), 0.035, W / 2
-    part("FichteX", -h, h, 0, W, 0.43, 0.46)                                   # seat
-    for u in (-h, h - l):
-        part("FichteZ", u, u + l, 0.01, 0.01 + l, 0, 0.43)                     # front legs
-        part("FichteZ", u, u + l, W - l, W, 0, 0.92)                           # rear legs + posts
-        part("FichteY", u, u + l, 0.01 + l, W - l, 0.13, 0.16)                 # side stretchers
-    for z in (0.62, 0.80):                                                     # back slats
-        part("FichteX", -h + l, h - l, W - 0.03, W - 0.01, z, z + 0.08)
+    r, h = random.random(), W / 2                                              # one draw per chair
+    part("FichteX", -h, h, 0, 0.40, 0.41, 0.46)                                # seat plank
+    for s in (-1, 1):
+        part("FichteY", s * 0.10, s * 0.16, 0.03, 0.37, 0.38, 0.41)            # battens
+        for vt, vb in ((0.07, 0.015), (0.33, 0.40)):                           # legs: splayed out, tapering
+            ut, ub = s * 0.13, s * 0.19
+            v = [Q(ub + a * 0.0175, vb + b * 0.0175, 0) for a, b in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+            v += [Q(ut + a * 0.0225, vt + b * 0.0225, 0.40) for a, b in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+            add(coll, o, "FichteZ", v, [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], r)
+    part("FichteZ", -0.06, 0.06, 0.335, 0.375, 0.33, 0.41)                     # backrest tenon + wedge
+    # backrest board: (a across, b up the board) in its plane, leaning back 12°, t through it
+    sn, cs = math.sin(math.radians(12)), math.cos(math.radians(12))
+    PB = lambda a, t, b: Q(a, 0.335 + t + b * sn, 0.46 + b * cs)
+    b0, top, w0, w1 = -0.05, 0.50, 0.15, 0.17                                 # into the seat; height, half widths
+    hy, ha, hc, hw = top - 0.06, top - 0.07, top - 0.19, 0.055                 # heart: top edge, corners, point
+    edge = lambda b: w0 + (w1 - w0) * b / top
+    for pts in ([(-edge(b0), b0), (-hw, b0), (-hw, ha), (-hw * 0.6, hy), (-hw * 0.6, top), (-edge(top), top)],
+                [(hw, b0), (edge(b0), b0), (edge(top), top), (hw * 0.6, top), (hw * 0.6, hy), (hw, ha)],
+                [(-hw * 0.6, hy), (hw * 0.6, hy), (hw * 0.6, top), (-hw * 0.6, top)],
+                [(-hw, b0), (hw, b0), (hw, ha), (0, hc), (-hw, ha)]):
+        prism(coll, o, "FichteZ", PB, pts, 0, 0.035, r)
 
 
 def kitchen():
