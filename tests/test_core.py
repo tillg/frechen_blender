@@ -514,7 +514,32 @@ def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
     _, lo, hi, _ = top[0]
     assert lo[0] - 5.59 < 0.01 and 8.59 - hi[0] < 0.01 and lo[1] - 2.79 < 0.01   # full width, on the back wall
     assert hi[1] < enamel[0][1][1]                                            # clear of the south machine
-    assert not [p for p in room if p[0] == "FichteZ" and p[2][2] - zo > 0.85]  # cupboard gone
+    assert not [p for p in room if p[0] == "FichteZ" and p[2][2] - zo > 0.85
+                and p[1][0] > 7.9 and p[2][1] < 3.4]                          # SE corner cupboard gone
+
+
+def test_waschkueche_open_cupboard_with_laundry_baskets_on_the_west_wall():
+    """Waschküche: on the right-hand wall seen from the door (west, x 5.59) an open spruce
+    cupboard, 2.0 m high, between the table on the back wall and the door leaf, with a wicker
+    laundry basket in each of its 3 × 3 compartments."""
+    zo = house_core.Z_OG
+    room = [p for p in part_list(("OG", "OG_Moebel")) if 5.59 <= p[1][0] and p[2][0] <= 8.59 and 2.79 <= p[1][1] and p[2][1] <= 6.06]
+    table = [p for p in room if p[0] == "FichteX" and p[2][2] > zo + 0.7][0]
+    carcass = [p for p in room if p[0] in ("FichteY", "FichteZ") and p[2][0] < 6.3 and p[1][1] > table[2][1]]
+    assert carcass
+    lo = [min(p[1][k] for p in carcass) for k in range(3)]; hi = [max(p[2][k] for p in carcass) for k in range(3)]
+    assert 5.59 < lo[0] < 5.62 and hi[0] - lo[0] > 0.5                       # against the west wall
+    assert abs(hi[2] - zo - 2.0) < 0.01
+    leaf = [l for c, l in house_core.LEAVES if c == "OG" and 7.0 < max(l[0][0], l[1][0]) < 7.3
+            and 6.0 < min(l[0][1], l[1][1]) < 6.06][0]
+    assert table[2][1] < lo[1] and hi[1] < min(leaf[0][1], leaf[1][1])        # clear of table and leaf
+    baskets = [p for p in room if p[0] == "Weide"]
+    bottoms = [p for p in baskets if p[2][2] - p[1][2] < 0.02]
+    assert len(bottoms) == 9
+    assert all(lo[k] <= p[1][k] and p[2][k] <= hi[k] for p in baskets for k in range(3))   # inside it
+    laundry = [p for p in room if p[0] in ("Leinen", "Bettwaesche", "Creme")]
+    assert all(any(b[1][0] < p[1][0] and p[2][0] < b[2][0] and b[1][1] < p[1][1] and p[2][1] < b[2][1]
+                   and abs(p[1][2] - b[2][2]) < 0.002 for p in laundry) for b in bottoms)   # laundry in each
 
 
 def test_stube_sofa_facing_the_corner_pier():
