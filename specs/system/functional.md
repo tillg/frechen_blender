@@ -91,7 +91,12 @@ edited: 2026-11-05
   "Beenden", which closes the door and restores the previous camera (stage and cutaway stay).
   While paused, the user looks around with the mouse; while it runs, the cutaway buttons are
   disabled and the page draws at most 30 frames per second.
-- Local: `cd web && npm install && npm run dev`. The `.glb` is regenerated from the core first.
+- **The view lives in the URL**, written as it changes: house `?cam=x,y,z&at=x,y,z&p=…&cut=…`
+  (model coordinates), Ofen page `?cam=…&at=…&look=wire|mass|full`. A reload or a shared link
+  opens the same view.
+- Local: `cd web && npm install && npm run dev` (one server, port 5377). The `.glb` is regenerated
+  from the core first, and again whenever a `code/*.py` file is saved; then open pages reload at
+  the same view.
 
 ## User journeys
 

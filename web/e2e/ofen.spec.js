@@ -90,3 +90,20 @@ test('the fire burns and moves in Gerendert only', async ({ page }) => {
   expect(a).toBeGreaterThan(0);
   expect(b).not.toBe(a);                                                     // it really moves
 });
+
+test('the URL follows the Ofen view and look; a reload restores them', async ({ page }) => {
+  await page.goto('/ofen.html');
+  await page.waitForFunction(() => window.__ofen?.ready === true);
+  await page.getByRole('button', { name: 'Auf die Feuertür' }).click();
+  await page.getByRole('button', { name: 'Masse' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('look')).toBe('mass');
+  const q = new URL(page.url()).searchParams;
+  expect(q.get('cam').split(',').map(Number)).toEqual([3.6, 3.6, 1]);
+  expect(q.get('at').split(',').map(Number)).toEqual([0.95, 0.95, 0.6]);
+  await page.reload();
+  await page.waitForFunction(() => window.__ofen?.ready === true);
+  expect(await page.evaluate(() => window.__ofen.look())).toBe('mass');
+  const cam = await page.evaluate(() => window.__ofen.camera);
+  [3.6, 3.6, 1].forEach((v, i) => expect(Math.abs(cam[i] - v)).toBeLessThan(0.01));
+  await expect(page.getByRole('button', { name: 'Masse' })).toHaveAttribute('aria-pressed', 'true');
+});

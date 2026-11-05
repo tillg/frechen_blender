@@ -219,8 +219,17 @@ sequenceDiagram
   Eingerichtet, cutaway Ganzes Haus, `EG_Haustuer` rotated 90°. Beenden: door closed, previous
   camera, target and fov restored. `drawDue` caps drawing at 30 fps while the tour is on; the
   sun stays anchored to a fixed copy of the start target.
+- **View in the URL.** `main.js` and `ofen.js` read `?cam=&at=` (model coordinates) plus
+  `p`/`cut` (house) or `look` (Ofen) on load and write them back with `history.replaceState`,
+  debounced to 300 ms, on every controls change, stage, cutaway or look change.
+- **`blueprint-watch.js`** (Vite plugin, dev server only, off under Vitest): watches `code/*.py`;
+  a save runs `npm run blueprint` (debounced, one export at a time, again if saved meanwhile)
+  and then sends a full reload; a failed export is logged and does not reload. `export_gltf.py`
+  writes the `.glb` atomically (temp file + `os.replace`), so a page never reads a half-written
+  file.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
-  `project`, state getters, `tour`, `tourKey`), only outside production builds.
+  `project`, state getters, `tour`, `tourKey`), only outside production builds; `window.__ofen`
+  on the Ofen page.
 
 ## Key decisions
 
@@ -262,7 +271,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
   `frechenlehen_rundgang.mp4` (~45 MB), `docs/images/*.png`,
   `tests/golden/blender_snapshot.json`.
 - **Generated, git-ignored:** `web/public/frechenlehen.glb` (`npm run blueprint`, run before
-  `dev`, `build` and `test`), `web/dist/`.
+  `dev`, `build` and `test`, and by the dev server after each saved `code/*.py`), `web/dist/`.
 - **Scratch:** `tmp/` (git-ignored): film frames, detail stills, web screenshots, logs.
 
 ## System boundaries and external systems

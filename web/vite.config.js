@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { blueprintWatch } from './blueprint-watch.js';
 
 export default defineConfig(({ command, isPreview }) => ({
   base: command === 'build' || isPreview ? '/frechen_blender/' : '/',   // GitHub Pages sub-path
@@ -8,5 +9,6 @@ export default defineConfig(({ command, isPreview }) => ({
     target: 'es2022',                                        // top-level await in main.js
     rollupOptions: { input: ['index.html', 'ofen.html'] },  // the house and the Ofen sub-model
   },
+  plugins: [blueprintWatch()],                               // code/*.py saved: new .glb, reload
   test: { include: ['src/**/*.test.js'] },
 }));
