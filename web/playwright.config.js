@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-const DEV = 5199, PREVIEW = 4199;
+const APP = 5377;   // the one dev server (CLAUDE.md): / the viewer, /frechen_blender/ the build
 
 export default defineConfig({
   outputDir: 'test-results',
@@ -13,12 +13,11 @@ export default defineConfig({
     launchOptions: { args: ['--use-angle=metal', '--enable-gpu'] },
   },
   projects: [
-    { name: 'dev', testDir: 'e2e', use: { baseURL: `http://localhost:${DEV}/` } },
-    { name: 'preview', testDir: 'e2e-preview', use: { baseURL: `http://localhost:${PREVIEW}/` } },
+    { name: 'dev', testDir: 'e2e', use: { baseURL: `http://localhost:${APP}/` } },
+    { name: 'build', testDir: 'e2e-preview', testMatch: /build\.setup\.js/ },
+    // the production build, under /frechen_blender/ as GitHub Pages serves it
+    { name: 'preview', testDir: 'e2e-preview', testMatch: /\.spec\.js/, dependencies: ['build'], use: { baseURL: `http://localhost:${APP}/` } },
   ],
-  webServer: [
-    { command: `npx vite --port ${DEV} --strictPort`, url: `http://localhost:${DEV}/`, reuseExistingServer: false },
-    // the production build, as GitHub Pages serves it
-    { command: `npm run build && npx vite preview --port ${PREVIEW} --strictPort`, port: PREVIEW, reuseExistingServer: false, timeout: 120_000 },
-  ],
+  // no server of its own: use the one on 5377, start it there only if none is running
+  webServer: { command: 'npm run dev', url: `http://localhost:${APP}/`, reuseExistingServer: true, timeout: 120_000 },
 });
