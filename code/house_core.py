@@ -82,6 +82,7 @@ MAT_DEF = {
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
     "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
+    "Weide":      dict(speck=((0.18, 0.10, 0.035), (0.62, 0.44, 0.20), 70)),     # wicker laundry baskets
     "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0, night=True),   # viewer: lit at dusk only
     "GluehfadenAn": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),              # switched-on lamp (Ofen bed)
 }
@@ -1507,6 +1508,38 @@ def machine(c, x0, x1, y0, y1, z):
     box(c, o, "Eisen", x0 - 0.005, x0, y0 + 0.05, y1 - 0.05, z + 0.74, z + 0.82)    # control panel
 
 
+def basket_cupboard(c, x0, x1, y0, y1, z):
+    """Open spruce cupboard against a west wall, facing east: back panel, four uprights, three
+    bays of three compartments, each with a wicker laundry basket holding a heap of laundry."""
+    o, h, xb = c + "_Moebel", 2.0, x0 + 0.025                          # back panel 1 cm off the wall
+    box(c, o, "FichteZ", x0 + 0.01, xb, y0, y1, z + 0.012, z + h)
+    ys = [y0 + (y1 - y0 - 0.02) * k / 3 for k in range(4)]
+    for ya in ys:
+        box(c, o, "FichteZ", xb, x1, ya, ya + 0.02, z + 0.012, z + h - 0.02)
+    box(c, o, "FichteY", xb, x1, y0, y1, z + h - 0.02, z + h)            # top
+    for k, (ya, yb) in enumerate(zip(ys[:-1], ys[1:])):
+        ya += 0.02
+        for j, zs in enumerate((0.10, 0.72, 1.34)):                    # board tops
+            box(c, o, "FichteY", xb, x1 - 0.005, ya, yb, z + zs - 0.02, z + zs)
+            r, zb = random.random(), z + zs + 0.001                    # one rnd per basket (it meets)
+            bx0, bx1, by0, by1, wt = xb + 0.05, x1 - 0.04, ya + 0.06, yb - 0.06, 0.012
+            box(c, o, "Weide", bx0, bx1, by0, by1, zb, zb + wt, r)
+            for xa in (bx0, bx1 - wt):
+                box(c, o, "Weide", xa, xa + wt, by0, by1, zb + wt, zb + 0.35, r)
+            for ya2 in (by0, by1 - wt):
+                box(c, o, "Weide", bx0 + wt, bx1 - wt, ya2, ya2 + wt, zb + wt, zb + 0.35, r)
+            e, ri = 0.008, wt + 0.006                                  # rim: proud of the walls
+            for xa in (bx0 - e, bx1 - ri):
+                box(c, o, "Weide", xa, xa + ri + e, by0 - e, by1 + e, zb + 0.35, zb + 0.38, r)
+            for ya2 in (by0 - e, by1 - ri):
+                box(c, o, "Weide", bx0 + ri, bx1 - ri, ya2, ya2 + ri + e, zb + 0.35, zb + 0.38, r)
+            cl = ("Leinen", "Bettwaesche", "Creme")
+            zl = zb + 0.24 + 0.06 * ((k + 2 * j) % 3)                  # laundry heap, some above the rim
+            box(c, o, cl[(k + j) % 3], bx0 + 0.03, bx1 - 0.03, by0 + 0.03, by1 - 0.03, zb + wt, zl)
+            box(c, o, cl[(k + j + 1) % 3], bx0 + 0.07, bx1 - 0.10, by0 + 0.08 + 0.05 * j, by1 - 0.14 + 0.04 * k,
+                zl, zl + 0.07)
+
+
 def grand_piano():
     """Grand piano in the Musikraum after the plan symbol: case outline, lid, three legs,
     keyboard towards the south, bench in front; turned 30° to the left (counter-clockwise, on
@@ -1694,6 +1727,7 @@ def build_furniture():
     machine("OG", 7.97, 8.588, 3.98, 4.60, zo + 0.838)                   # dryer on the washer
     machine("OG", 7.97, 8.588, 3.36, 3.96, zo)
     desk("OG", 5.592, 8.588, 2.792, 3.34, zo)                           # full width of the back wall
+    basket_cupboard("OG", 5.59, 6.19, 3.36, 5.95, zo)                   # right wall from the door
     bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)

@@ -44,7 +44,8 @@ edited: 2026-11-05
   - bathrooms and WCs: shower, basin, wall-hung WC
   - OG Flur, right of the Waschküche door: deep ceramic sink on a dark stone panel, one mixer tap
   - Waschküche: two front loaders at the east wall, a dryer stacked on the north one; a table the
-    full width of the back (south) wall
+    full width of the back (south) wall; on the right wall from the door (west) an open spruce
+    cupboard, 2.0 m high, 3 × 3 compartments with a wicker laundry basket in each
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
   door outside, panel door between the rooms.
 - **Surroundings:** granite terrace with gravel strip and soil beds, ground.
