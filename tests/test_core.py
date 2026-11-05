@@ -326,16 +326,16 @@ def test_bibliothek_bookcase_on_the_flur_wall():
 
 def test_west_og_windows_wall_below_up_to_the_ceiling():
     """The three tall west windows in the OG (Yoga, Bad): no fixed glazing below any more but
-    wall (sill 0.85 m above the floor: first 0.95, then 10 cm lower), and up to the ceiling."""
+    wall (sill 0.75 m above the floor: first 0.95, then twice 10 cm lower), and up to the ceiling."""
     house_core.build()                                                     # OPENINGS of the house
     west = [o for o in house_core.OPENINGS if o["ax"] == "y" and o["face"] == 0 and o["sill"] >= house_core.Z_OG - 1e-9
             and o["head"] > 4.0 and o["b"] - o["a"] > 0.9]
     assert sorted(round(o["a"], 2) for o in west) == [6.77, 8.96, 11.26]
-    assert all(round(o["sill"] - house_core.Z_OG, 3) == 0.85 and o["head"] == house_core.Z_OG_TOP and o["kind"] == "W"
+    assert all(round(o["sill"] - house_core.Z_OG, 3) == 0.75 and o["head"] == house_core.Z_OG_TOP and o["kind"] == "W"
                for o in west)
     g = BP.geo[("OG", "OG_Fenster_Tueren")]
     glass = {i for f, m in zip(g["f"], g["m"]) if m == "Glas" for i in f}
-    assert not any(g["v"][i][0] < 0.31 and g["v"][i][2] < house_core.Z_OG + 0.85 for i in glass)
+    assert not any(g["v"][i][0] < 0.31 and g["v"][i][2] < house_core.Z_OG + 0.75 for i in glass)
     clad = BP.geo[("Dach", "Verschalung_West")]                            # no iron bars (small windows only)
     bars = [clad["v"][i] for f, m in zip(clad["f"], clad["m"]) if m == "Eisen" for i in f]
     assert bars and not any(any(o["a"] < y < o["b"] for o in west) and z > house_core.Z_OG for _, y, z in bars)
@@ -421,3 +421,133 @@ def test_ofen_lamp_is_switched_on():
     assert min(p[0] for p in fil) - 0.01 <= x <= max(p[0] for p in fil) + 0.01
     assert min(p[1] for p in fil) - 0.01 <= y <= max(p[1] for p in fil) + 0.01
     assert min(p[2] for p in fil) - 0.01 <= z <= max(p[2] for p in fil) + 0.01
+
+
+def part_list(key):
+    """(material, lo, hi, vertices) per Part of object key."""
+    g = BP.geo[key]
+    for first, n in BP.parts[key]:
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        yield g["m"][first], [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)], vs
+
+
+def test_esstisch_after_tisch_briol():
+    """Dining table (two joined, as in the plan) after input/2026-11-05 input/tisch-briol.png: a top
+    of three boards on an apron set back from its edge, legs splayed out mainly along the length,
+    standing on a flat foot frame that rests on corner blocks; all inside the top's footprint,
+    since the chairs stand right at its edge."""
+    parts = list(part_list(("EG", "EG_Tisch")))
+    assert all(lo[0] >= 4.262 - 1e-9 and hi[0] <= 7.848 + 1e-9 and lo[1] >= 1.18 - 1e-9 and hi[1] <= 1.91 + 1e-9
+               for _, lo, hi, _ in parts)
+    boards = [p for p in parts if abs(p[2][2] - 0.76) < 1e-9]
+    assert len(boards) == 6 and all(0.04 <= hi[2] - lo[2] <= 0.05 for _, lo, hi, _ in boards)
+    blocks = [p for p in parts if abs(p[1][2] - 0.012) < 1e-9]
+    assert len(blocks) == 8 and all(hi[2] < 0.08 for _, _, hi, _ in blocks)
+    rails = [p for p in parts if p[1][2] > 0.05 and p[2][2] < 0.1 and p[2][2] - p[1][2] <= 0.03]
+    assert len(rails) == 8 and all(min(hi[0] - lo[0], hi[1] - lo[1]) >= 0.08 for _, lo, hi, _ in rails)   # flat boards
+    legs = [p for p in parts if p[0] == "FichteZ" and p[2][2] - p[1][2] > 0.5]
+    assert len(legs) == 8
+    for _, lo, hi, vs in legs:
+        cx = 5.155 if hi[0] < 6.05 else 6.95                                       # its table's centre
+        foot = [p for p in vs if p[2] < 0.2]; head = [p for p in vs if p[2] > 0.5]
+        mean = lambda ps, k: sum(p[k] for p in ps) / len(ps)
+        assert abs(mean(foot, 0) - cx) - abs(mean(head, 0) - cx) >= 0.08           # splayed along x
+        assert 0 <= abs(mean(foot, 1) - 1.545) - abs(mean(head, 1) - 1.545) <= 0.05  # a little across
+
+
+def test_stube_sitzecke_in_the_se_corner():
+    """Small seating corner in the Stube, in the corner between the two big windows (south wall
+    face y 0.415, east wall face x 14.351): a round pedestal side table (input/2026-11-05 input/
+    tischchen.jpeg: turned column, three curved feet) and two small cocktail armchairs (sessel-klein.jpg:
+    bouclé upholstery with piping, flared back, splayed wooden legs), one either side of it; loose
+    furniture of the "Eingerichtet" stage."""
+    assert {"Boucle", "Paspel", "TeakX", "TeakZ"} <= set(house_core.MAT_DEF)
+    parts = [p for p in part_list(("EG", "EG_Moebel")) if p[0] in ("Boucle", "Paspel", "TeakX", "TeakZ")]
+    assert parts and "EG_Moebel" in BP.furniture
+    lo = [min(p[1][k] for p in parts) for k in range(3)]; hi = [max(p[2][k] for p in parts) for k in range(3)]
+    assert 12.4 < lo[0] and hi[0] <= 14.351 - 0.01 and lo[1] >= 0.415 + 0.01 and hi[1] < 2.4   # in the corner
+    assert lo[2] >= 0.012 - 1e-9 and hi[2] < 0.9
+    seats = [p for p in parts if p[0] == "Paspel"]                                    # one piping per chair
+    assert len(seats) == 2
+    (ax, ay), (bx, by) = [((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2) for _, lo, hi, _ in seats]
+    assert abs((14.351 - ax) - (by - 0.415)) < 0.02 and abs((ay - 0.415) - (14.351 - bx)) < 0.02   # mirror images
+    top = max((p for p in parts if p[0] == "TeakX"), key=lambda p: p[2][2])
+    tx, ty = (top[1][0] + top[2][0]) / 2, (top[1][1] + top[2][1]) / 2
+    assert abs((14.351 - tx) - (ty - 0.415)) < 0.01 and 0.6 < top[2][2] < 0.75       # on the diagonal
+    assert 0.45 <= top[2][0] - top[1][0] <= 0.6                                        # small round top
+    assert min(math.dist((tx, ty), (x, y)) for x, y in ((ax, ay), (bx, by))) > 0.5     # chairs either side
+
+
+def test_og_flur_waschbecken_right_of_the_waschkueche_door():
+    """OG Flur: a washbasin on the wall right of the Waschküche door (seen from the Flur: west of
+    it, x < 7.15, wall face y 6.35; the plan draws a basin there) after input/2026-11-05 input/
+    waschbecken-briol.jpeg: a deep ceramic sink on a dark stone panel, but one mixer tap."""
+    zo = house_core.Z_OG
+    parts = [p for p in part_list(("OG", "OG_Sanitaer")) if p[1][1] >= 6.35 - 1e-9 and 6.0 < p[1][0] and p[2][0] < 7.15]
+    stone = [p for p in parts if p[0] == "Schiefer"]
+    assert stone and "Schiefer" in house_core.MAT_DEF
+    slo = [min(p[1][k] for p in stone) for k in range(3)]; shi = [max(p[2][k] for p in stone) for k in range(3)]
+    assert shi[1] <= 6.38 and slo[2] <= zo + 0.02 and shi[2] >= zo + 1.5 and shi[0] <= 7.15 - 0.2
+    sink = [p for p in parts if p[0] == "Keramik"]
+    klo = [min(p[1][k] for p in sink) for k in range(3)]; khi = [max(p[2][k] for p in sink) for k in range(3)]
+    assert abs(khi[2] - zo - 0.86) < 0.01 and khi[2] - klo[2] >= 0.25                   # deep trough
+    assert 0.55 <= khi[0] - klo[0] <= 0.65 and khi[1] - 6.35 <= 0.5
+    assert len(sink) >= 5                                                                # hollow, not a block
+    cx = (klo[0] + khi[0]) / 2
+    tap = [p for p in parts if p[0] == "Metall" and p[1][2] > khi[2]]
+    assert tap and all(abs((lo[0] + hi[0]) / 2 - cx) < 0.05 for _, lo, hi, _ in tap)   # one mixer, centred
+
+
+def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
+    """Waschküche (OG, x 5.59 .. 8.59, y 2.79 .. 6.06, door in the north wall): a dryer stands on
+    the washing machine (north one at the east wall), and a table runs the full width of the back
+    (south) wall; it replaces the low cupboard that stood in the SE corner."""
+    zo = house_core.Z_OG
+    room = [p for p in part_list(("OG", "OG_Moebel")) if 5.59 <= p[1][0] and p[2][0] <= 8.59 and 2.79 <= p[1][1] and p[2][1] <= 6.06]
+    enamel = sorted((p for p in room if p[0] == "Emaille"), key=lambda p: (p[1][1], p[1][2]))
+    assert len(enamel) == 3                                                   # washer, washer + dryer
+    washer, dryer = enamel[1:]
+    assert dryer[1][:2] == washer[1][:2] and dryer[2][:2] == washer[2][:2]     # same footprint
+    assert abs(dryer[1][2] - washer[2][2]) < 0.002                            # stands on it
+    top = [p for p in room if p[0] == "FichteX" and p[2][2] > zo + 0.7]
+    assert len(top) == 1
+    _, lo, hi, _ = top[0]
+    assert lo[0] - 5.59 < 0.01 and 8.59 - hi[0] < 0.01 and lo[1] - 2.79 < 0.01   # full width, on the back wall
+    assert hi[1] < enamel[0][1][1]                                            # clear of the south machine
+    assert not [p for p in room if p[0] == "FichteZ" and p[2][2] - zo > 0.85]  # cupboard gone
+
+
+def test_stube_sofa_facing_the_corner_pier():
+    """Stube: a three-seater sofa after input/2026-11-05 input/sofa.tiff (linen, low base, square
+    arms, loose seat and back cushions, two scatter pillows), facing the corner pier between the
+    two big windows (room corner 14.351, 0.415); its centre 3/4 of the way from there to the Ofen
+    block's room corner (10.96, 4.64, bed included)."""
+    s, o = (14.351, 0.415), (10.96, 4.64)
+    c = (s[0] + 0.75 * (o[0] - s[0]), s[1] + 0.75 * (o[1] - s[1]))
+    linen = [p for p in part_list(("EG", "EG_Moebel")) if p[0] == "Leinen" and 9.06 < p[1][0] and p[2][1] < 5.85]
+    vs = [v for p in linen for v in p[3]]
+    assert len(linen) >= 3 + 3 + 3 + 2                              # base + arms/back, 3 + 3 cushions, 2 pillows
+    lo = [min(v[k] for v in vs) for k in range(3)]; hi = [max(v[k] for v in vs) for k in range(3)]
+    cx, cy = sum(v[0] for v in vs) / len(vs), sum(v[1] for v in vs) / len(vs)
+    d = ((s[0] - c[0]) / math.dist(s, c), (s[1] - c[1]) / math.dist(s, c))   # towards the pier
+    u = (-d[1], d[0])
+    along = [(v[0] - c[0]) * u[0] + (v[1] - c[1]) * u[1] for v in vs]
+    across = [(v[0] - c[0]) * d[0] + (v[1] - c[1]) * d[1] for v in vs]
+    assert 2.1 <= max(along) - min(along) <= 2.4                    # three seats
+    assert abs(max(along) + min(along)) < 0.02 and abs(max(across) + min(across)) < 0.02   # centred on c
+    assert 0.85 <= max(across) - min(across) <= 1.05 and 0.7 <= hi[2] <= 0.95
+    for _, _, phi, pv in linen:                                     # back cushions, pillows: away from the pier
+        if phi[2] > 0.8:
+            assert sum((v[0] - c[0]) * d[0] + (v[1] - c[1]) * d[1] for v in pv) < 0
+
+
+def test_back_windfang_door_glazed_like_the_front_one():
+    """The door between the Flur and the back Windfang (wall x 2.358 .. 2.657, opening y 7.408 ..
+    8.506) is glazed like the front Windfang door (door_windfang.jpg): frosted glass above,
+    raised panels below; one leaf, opened 90° into the Windfang."""
+    glass = [p for p in part_list(("EG", "EG_Innentueren")) if p[0] == "Milchglas"]
+    back = [p for p in glass if p[2][0] < 2.358 + 0.01 and 7.3 < p[1][1] and p[2][1] < 8.6]
+    front = [p for p in glass if p[1][0] > 12.0]
+    assert len(back) == 1 and len(front) == 2
+    _, lo, hi, _ = back[0]
+    assert hi[2] - lo[2] > 0.7 and lo[2] > 0.9                       # upper part of the leaf

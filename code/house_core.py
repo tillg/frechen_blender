@@ -54,6 +54,8 @@ MAT_DEF = {
     "FichteZ":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "z")),
     "NussX":      dict(wood=((0.035, 0.016, 0.007), (0.13, 0.06, 0.025), "x")),   # dark walnut (bookcase)
     "NussZ":      dict(wood=((0.035, 0.016, 0.007), (0.13, 0.06, 0.025), "z")),
+    "TeakX":      dict(wood=((0.16, 0.07, 0.025), (0.40, 0.20, 0.08), "x")),     # Stube side table, armchair legs
+    "TeakZ":      dict(wood=((0.16, 0.07, 0.025), (0.40, 0.20, 0.08), "z")),
     "Buecher":    dict(speck=((0.07, 0.018, 0.010), (0.10, 0.028, 0.016), 300), hue=0.4),   # one dark colour per book
     "Glas":       dict(rgba=(0.70, 0.85, 0.95, 0.25), alpha=0.25, rough=0.1),
     "Milchglas":  dict(rgba=(0.90, 0.90, 0.88, 0.85), alpha=0.85, rough=0.4),
@@ -69,6 +71,9 @@ MAT_DEF = {
     "Leinen":     dict(rgba=(0.78, 0.74, 0.66, 1), rough=0.9),               # mattress
     "Bettwaesche": dict(rgba=(0.92, 0.91, 0.88, 1), rough=0.9),              # duvet, pillows
     "Creme":      dict(rgba=(0.84, 0.72, 0.50, 1), rough=0.9),              # Ofen mattress
+    "Boucle":     dict(speck=((0.93, 0.85, 0.70), (0.46, 0.23, 0.07), 55)),    # armchairs: cream with brown flecks
+    "Paspel":     dict(rgba=(0.38, 0.23, 0.11, 1), rough=0.6),               # their piping
+    "Schiefer":   dict(rgba=(0.14, 0.13, 0.12, 1), rough=0.5),               # dark stone behind the Flur sink
     "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
@@ -557,7 +562,7 @@ def build_eg():
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
     # Großeltern: the Bad is open to the bedroom (unhatched in the plan), the WC is reached from the Bad
-    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False), (10.33, 12.33)])
+    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False, "glazed"), (10.33, 12.33)])   # back Windfang
     interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")],   # Küche door (opens to the Flur)
              ops=[ofen.back_opening()])                                   # the Ofen's back door (Flur)
     stube_niche()                                                         # 10.804 .. 12.003
@@ -648,6 +653,28 @@ def shower(coll, x0, x1, y0, y1, glass, head, z=0.0):
                                  for i in range(k)], z + 2.00, z + 2.02)
 
 
+def flur_sink(coll, wx, wy, z):
+    """Deep ceramic sink on a dark stone panel (waschbecken-briol.jpeg) on a wall facing north at
+    (wx, wy), but one wall-mounted single-lever mixer instead of the photo's two taps."""
+    o, M = coll + "_Sanitaer", at_wall(wx, wy, 0, 1)
+    rect = lambda u0, u1, v0, v1: [M(u0, v0), M(u1, v0), M(u1, v1), M(u0, v1)]
+    xy_prism(coll, o, "Schiefer", rect(-0.40, 0.40, 0.0, 0.02), z + 0.50, z + 1.62)        # stone panel,
+    xy_prism(coll, o, "Schiefer", rect(-0.33, 0.33, 0.0, 0.02), z + 0.012, z + 0.50)       # narrower below
+    for u0, u1, v0, v1, z0 in ((-0.30, 0.30, 0.02, 0.47, 0.58), (-0.30, 0.30, 0.44, 0.47, 0.62),   # bottom, front,
+                               (-0.30, 0.30, 0.02, 0.05, 0.62), (-0.30, -0.27, 0.05, 0.44, 0.62),  # back, sides
+                               (0.27, 0.30, 0.05, 0.44, 0.62)):
+        xy_prism(coll, o, "Keramik", rect(u0, u1, v0, v1), z + z0, z + (0.62 if z0 < 0.6 else 0.86))
+    P = lambda u, v, h: (*M(u, v), z + h)
+    turned(coll, o, "Metall", P(0, 0.245, 0.62), P(0, 0.245, 0.623), [(0.03, 0), (0.03, 1)])   # drain
+    turned(coll, o, "Metall", P(0, 0.245, 0.30), P(0, 0.245, 0.58), [(0.02, 0), (0.02, 1)])
+    turned(coll, o, "Metall", P(0, 0.02, 0.30), P(0, 0.265, 0.30), [(0.02, 0), (0.02, 1)])
+    turned(coll, o, "Metall", P(0, 0.02, 1.10), P(0, 0.03, 1.10), [(0.035, 0), (0.035, 1)])    # rosette
+    turned(coll, o, "Metall", P(0, 0.03, 1.10), P(0, 0.10, 1.10), [(0.025, 0), (0.025, 1)])    # mixer body
+    turned(coll, o, "Metall", P(0, 0.09, 1.09), P(0, 0.22, 1.06), [(0.012, 0), (0.010, 1)])    # spout
+    turned(coll, o, "Metall", P(0, 0.215, 1.065), P(0, 0.215, 1.035), [(0.011, 0), (0.011, 1)])
+    turned(coll, o, "Metall", P(0, 0.08, 1.12), P(0, 0.05, 1.20), [(0.007, 0), (0.006, 1)])    # lever
+
+
 def build_sanitary():
     """Bathrooms and toilets after the fixtures drawn in grundriss_eg/og.png."""
     zo = Z_OG + 0.0
@@ -672,6 +699,8 @@ def build_sanitary():
     # OG WC 2,30: toilet on the south wall, hand basin on the east wall
     toilet("OG", 9.26, 3.98, 0, 1, z=zo)
     basin("OG", 9.92, 5.2, -1, 0, w=0.40, d=0.28, z=zo)
+    # OG Flur: sink right of the Waschküche door (plan: basin symbol), after waschbecken-briol.jpeg
+    flur_sink("OG", 6.45, 6.35, zo)
 
 
 # ---------------------------------------------------------------- furniture
@@ -683,30 +712,52 @@ def post(coll, obj, mat, p0, p1, w, rnd=None):
     add(coll, obj, mat, v, f, rnd)
 
 
+def turned(coll, obj, mat, p0, p1, prof, k=16):
+    """Round solid along the axis p0 -> p1: prof = [(radius, t), ...] with t from 0 (p0) to 1 (p1)."""
+    ax = [b - a for a, b in zip(p0, p1)]
+    n = math.sqrt(sum(c * c for c in ax))
+    ax = [c / n for c in ax]
+    e1 = (1, 0, 0) if abs(ax[0]) < 0.9 else (0, 1, 0)
+    a = [ax[1] * e1[2] - ax[2] * e1[1], ax[2] * e1[0] - ax[0] * e1[2], ax[0] * e1[1] - ax[1] * e1[0]]
+    m = math.sqrt(sum(c * c for c in a))
+    a = [c / m for c in a]
+    b = [ax[1] * a[2] - ax[2] * a[1], ax[2] * a[0] - ax[0] * a[2], ax[0] * a[1] - ax[1] * a[0]]
+    v = [tuple(p0[j] + t * (p1[j] - p0[j]) + r * (math.cos(2 * math.pi * i / k) * a[j] + math.sin(2 * math.pi * i / k) * b[j])
+               for j in range(3)) for r, t in prof for i in range(k)]
+    nr = len(prof)
+    f = [list(range(k))[::-1], list(range((nr - 1) * k, nr * k))]
+    f += [(j * k + i, j * k + (i + 1) % k, (j + 1) * k + (i + 1) % k, (j + 1) * k + i) for j in range(nr - 1) for i in range(k)]
+    add(coll, obj, mat, v, f)
+
+
 def table(coll, x0, x1, y0, y1, h=0.76):
-    """Inn table after table_shape.png: spruce top on an apron, legs splayed outwards,
-    foot rail frame just above the floor."""
-    o = coll + "_Tisch"
-    box(coll, o, "FichteX", x0, x1, y0, y1, h - 0.04, h)                      # top
-    ti, fi, lw = 0.13, 0.06, 0.07                                             # leg inset top / foot
-    ax0, ax1, ay0, ay1 = x0 + ti - lw / 2, x1 - ti + lw / 2, y0 + ti - lw / 2, y1 - ti + lw / 2
-    za = (h - 0.14, h - 0.04)
-    for ya, yb in ((ay0, ay0 + 0.025), (ay1 - 0.025, ay1)):                   # apron
-        box(coll, o, "FichteX", ax0, ax1, ya, yb, *za)
-    for xa, xb in ((ax0, ax0 + 0.025), (ax1 - 0.025, ax1)):
-        box(coll, o, "FichteY", xa, xb, ay0, ay1, *za)
+    """Inn table after tisch-briol.png: a top of three spruce boards on an apron set back from its
+    edge, legs splayed out along the length (a little across), standing on a flat foot frame that
+    rests on corner blocks just above the floor."""
+    o, tt, lw = coll + "_Tisch", 0.045, 0.065                                   # top thickness, leg width
+    bw = (y1 - y0) / 3
+    for k in range(3):                                                         # top boards
+        box(coll, o, "FichteX", x0, x1, y0 + k * bw, y0 + (k + 1) * bw, h - tt, h)
+    tix, tiy, fix, fiy = 0.17, 0.10, 0.06, 0.07                                # leg centre inset top / foot
+    zr = (0.065, 0.09)                                                         # foot frame
     feet = []
     for sx, sy in ((0, 0), (1, 0), (1, 1), (0, 1)):
-        tx, ty = (x1 - ti, x0 + ti)[sx == 0], (y1 - ti, y0 + ti)[sy == 0]
-        fx, fy = (x1 - fi, x0 + fi)[sx == 0], (y1 - fi, y0 + fi)[sy == 0]
-        post(coll, o, "FichteZ", (fx, fy, 0.012), (tx, ty, h - 0.04), lw)
+        tx, ty = (x1 - tix, x0 + tix)[sx == 0], (y1 - tiy, y0 + tiy)[sy == 0]
+        fx, fy = (x1 - fix, x0 + fix)[sx == 0], (y1 - fiy, y0 + fiy)[sy == 0]
+        post(coll, o, "FichteZ", (fx, fy, zr[1]), (tx, ty, h - tt), lw)
+        box(coll, o, "FichteZ", fx - 0.04, fx + 0.04, fy - 0.04, fy + 0.04, 0.012, zr[0])   # corner block
         feet.append((fx, fy))
-    zf = (0.03, 0.09)                                                          # foot rails
-    (fx0, fy0), (fx1, fy1) = feet[0], feet[2]
+    ax0, ax1, ay0, ay1 = x0 + tix - lw / 2, x1 - tix + lw / 2, y0 + tiy - lw / 2, y1 - tiy + lw / 2
+    za, e = (h - tt - 0.11, h - tt), 0.005                                     # apron 5 mm inside the legs' faces
+    for ya, yb in ((ay0 + e, ay0 + e + 0.025), (ay1 - e - 0.025, ay1 - e)):
+        box(coll, o, "FichteX", ax0 + e, ax1 - e, ya, yb, *za)
+    for xa, xb in ((ax0 + e, ax0 + e + 0.025), (ax1 - e - 0.025, ax1 - e)):
+        box(coll, o, "FichteY", xa, xb, ay0 + e + 0.025, ay1 - e - 0.025, *za)
+    r, (fx0, fy0), (fx1, fy1) = random.random(), feet[0], feet[2]              # frame: one rnd (it meets)
     for y in (fy0, fy1):
-        box(coll, o, "FichteX", fx0, fx1, y - 0.02, y + 0.02, *zf)
+        box(coll, o, "FichteX", fx0 - 0.05, fx1 + 0.05, y - 0.045, y + 0.045, *zr, r)
     for x in (fx0, fx1):
-        box(coll, o, "FichteY", x - 0.02, x + 0.02, fy0 + 0.02, fy1 - 0.02, *zf)
+        box(coll, o, "FichteY", x - 0.045, x + 0.045, fy0 + 0.045, fy1 - 0.045, *zr, r)
 
 
 def chair(coll, cx, cy, fx, fy):
@@ -846,8 +897,8 @@ def build_og():
     wall(c, 0, W_OUT, 12.485, D_OUT, z0, z1,
          [fd(3.88, 4.78), fd(6.97, 7.87), fd(10.03, 10.95), fd(12.91, 13.80)], out=+1)
     wall(c, 0, 0.31, 5.12, 12.485, z0, z1, [
-        (11.26, 12.23, z0 + 0.85, z1, "W"), (8.96, 9.95, z0 + 0.85, z1, "W"),   # wall below, up to
-        (6.77, 7.76, z0 + 0.85, z1, "W"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)   # the ceiling (request)
+        (11.26, 12.23, z0 + 0.75, z1, "W"), (8.96, 9.95, z0 + 0.75, z1, "W"),   # wall below, up to
+        (6.77, 7.76, z0 + 0.75, z1, "W"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)   # the ceiling (request)
     wall(c, 0.31, 2.71, 5.12, 5.46, z0, z1)
     wall(c, 2.37, 2.71, 0, 5.12, z0, z1, [(2.03, 2.92, 3.70, 4.70, "W", 1)], out=-1)
     wall(c, 2.71, W_OUT, 0, 0.40, z0, z1,
@@ -1512,6 +1563,107 @@ def bookcase():
     box(c, o, "NussX", x0 - 0.02, x1 + 0.02, y0, y1 + 0.04, 2.35, 2.396)
 
 
+def side_table(c, cx, cy, turn=0.0):
+    """Round side table after tischchen.jpeg: top with a thicker rim on an apron ring, turned
+    baluster column, three curved feet (the first towards `turn` degrees)."""
+    o = c + "_Moebel"
+    turned(c, o, "TeakX", (cx, cy, 0.655), (cx, cy, 0.68), [(0.25, 0), (0.25, 1)], 32)            # top
+    turned(c, o, "TeakX", (cx, cy, 0.60), (cx, cy, 0.656), [(0.205, 0), (0.205, 0.6), (0.215, 1)], 32)  # apron
+    col = [(0.03, 0), (0.05, 0.08), (0.055, 0.10), (0.055, 0.40), (0.065, 0.42), (0.065, 0.46), (0.038, 0.50),
+           (0.045, 0.58), (0.065, 0.68), (0.06, 0.74), (0.03, 0.84), (0.045, 0.87), (0.045, 0.90), (0.05, 0.93),
+           (0.05, 1)]                                                                            # z 0.06 .. 0.60
+    turned(c, o, "TeakZ", (cx, cy, 0.06), (cx, cy, 0.60), col, 20)
+    foot = [(0.04, 0.24), (0.07, 0.21), (0.11, 0.15), (0.16, 0.09), (0.22, 0.05), (0.27, 0.03), (0.30, 0.03),
+            (0.30, 0.012), (0.25, 0.012), (0.20, 0.03), (0.14, 0.06), (0.09, 0.10), (0.04, 0.12)]
+    for k in range(3):
+        a, t = math.radians(turn + 120 * k), 0.018
+        ca, sa = math.cos(a), math.sin(a)
+        pts = [(cx + r * ca - s * t * sa, cy + r * sa + s * t * ca, z) for s in (-1, 1) for r, z in foot]
+        n = len(foot)
+        add(c, o, "TeakX", pts, [list(range(n)), list(range(2 * n - 1, n - 1, -1))]
+            + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)])
+
+
+def armchair(c, cx, cy, face):
+    """Small cocktail armchair after sessel-klein.jpg, seat centred at (cx, cy), facing `face`
+    degrees: bouclé seat box with piping and cushion, back curved in plan and flaring towards
+    the top, four splayed tapered wooden legs."""
+    o, a = c + "_Moebel", math.radians(face)
+    W = lambda u, v, z: (cx - u * math.sin(a) + v * math.cos(a), cy + u * math.cos(a) + v * math.sin(a), z)
+
+    def seat(d, z0, z1, mat):
+        uv = [(-0.26 - d, -0.27 - d), (0.26 + d, -0.27 - d)]                 # back, then the bowed front
+        uv += [((0.31 + d) * math.cos(math.pi * i / 8), 0.26 + (0.05 + d) * math.sin(math.pi * i / 8)) for i in range(9)]
+        xy_prism(c, o, mat, [W(u, v, 0)[:2] for u, v in uv], z0, z1)
+
+    for (ut, vt), (uf, vf) in (((0.21, -0.19), (0.28, -0.29)), ((0.23, 0.19), (0.29, 0.28))):
+        for s in (-1, 1):
+            turned(c, o, "TeakZ", W(s * uf, vf, 0.019), W(s * ut, vt, 0.215), [(0.012, 0), (0.021, 1)], 10)
+    seat(0.0, 0.20, 0.40, "Boucle")
+    seat(0.006, 0.395, 0.405, "Paspel")
+    seat(-0.004, 0.404, 0.45, "Boucle")
+    n, v, f = 12, [], []
+    for i in range(n + 1):                                       # back: front/back surface, bottom/top row
+        s = -1 + 2 * i / n
+        zt = 0.80 - 0.08 * s ** 6
+        for u, vv, z in ((0.27 * s, -0.20 + 0.06 * s * s, 0.22), (0.27 * s, -0.29 + 0.06 * s * s, 0.22),
+                         (0.34 * s, -0.31 + 0.10 * s * s, zt), (0.34 * s, -0.39 + 0.10 * s * s, zt)):
+            v.append(W(u, vv, z))
+    for i in range(n):
+        p, q = 4 * i, 4 * i + 4
+        f += [(p, q, q + 2, p + 2), (p + 1, p + 3, q + 3, q + 1), (p + 2, q + 2, q + 3, p + 3), (p, p + 1, q + 1, q)]
+    f += [(0, 2, 3, 1), (4 * n, 4 * n + 1, 4 * n + 3, 4 * n + 2)]
+    add(c, o, "Boucle", v, f)
+
+
+def sofa(c, cx, cy, face):
+    """Three-seater sofa after sofa.tiff (2.25 x 0.98 m), centred at (cx, cy), facing `face`
+    degrees: linen base to the floor, square arms, back frame, three seat and three back cushions
+    (leaning back), a scatter pillow at each arm."""
+    o, a = c + "_Moebel", math.radians(face)
+    W = lambda u, v, z: (cx - u * math.sin(a) + v * math.cos(a), cy + u * math.cos(a) + v * math.sin(a), z)
+    faces = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+
+    def ubox(u0, u1, v0, v1, z0, z1):
+        add(c, o, "Leinen", [W(u, v, z) for z in (z0, z1) for u, v in ((u0, v0), (u1, v0), (u1, v1), (u0, v1))], faces)
+
+    def cushion(u0, u1, prof):                                   # (v, z) profile extruded along u
+        n = len(prof)
+        add(c, o, "Leinen", [W(u, v, z) for u in (u0, u1) for v, z in prof],
+            [list(range(n))[::-1], list(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)])
+
+    ubox(-0.97, 0.97, -0.30, 0.47, 0.012, 0.40)                  # base
+    ubox(-0.97, 0.97, -0.49, -0.30, 0.012, 0.64)                 # back frame
+    for s in (-1, 1):
+        ubox(s * 0.97, s * 1.125, -0.49, 0.49, 0.012, 0.64)      # arms
+    seat = [(-0.28, 0.40), (0.48, 0.40), (0.485, 0.50), (0.465, 0.53), (-0.28, 0.53)]
+    back = [(-0.30, 0.53), (-0.09, 0.53), (-0.16, 0.83), (-0.20, 0.87), (-0.34, 0.87), (-0.38, 0.83)]
+    w = 1.94 / 3
+    for k in range(3):
+        u0 = -0.97 + k * w
+        cushion(u0 + 0.004, u0 + w - 0.004, seat)
+        cushion(u0 + 0.004, u0 + w - 0.004, back)
+    for s in (-1, 1):                                            # pillows: tilted back, turned in their plane
+        t, r = math.radians(18), math.radians(-s * 15)
+        e1 = (math.cos(r), -math.sin(r) * math.sin(t), math.sin(r) * math.cos(t))    # (u, v, z)
+        e2 = (-math.sin(r), -math.cos(r) * math.sin(t), math.cos(r) * math.cos(t))
+        nv = (0, math.cos(t), math.sin(t))
+        m = (s * 0.68, -0.08, 0.71)
+        pts = [tuple(m[i] + p * 0.18 * e1[i] + q * 0.18 * e2[i] + h * 0.06 * nv[i] for i in range(3))
+               for h in (-1, 1) for p, q in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+        add(c, o, "Leinen", [W(*p) for p in pts], faces)
+
+
+def sitzecke():
+    """Stube: seating corner between the two big windows (south wall face y 0.415, east wall face
+    x 14.351): side table on the corner's diagonal, an armchair either side of it, mirror images
+    about that diagonal, each turned 25° towards the other."""
+    xc, yc = 14.351, 0.415
+    side_table("EG", xc - 0.42, yc + 0.42, -45)
+    armchair("EG", xc - 1.22, yc + 0.49, 65)
+    armchair("EG", xc - 0.49, yc + 1.22, 205)
+
+
 def build_furniture():
     zo = Z_OG
     # EG: Großeltern, Musikraum, Büro, Speis (dining table and chairs: build_eg)
@@ -1539,18 +1691,24 @@ def build_furniture():
     nightstand("OG", 5.02, 5.438, 2.89, 3.37, zo)
     nightstand("OG", 5.02, 5.438, 0.53, 0.99, zo)
     machine("OG", 7.97, 8.588, 3.98, 4.60, zo)
+    machine("OG", 7.97, 8.588, 3.98, 4.60, zo + 0.838)                   # dryer on the washer
     machine("OG", 7.97, 8.588, 3.36, 3.96, zo)
-    cabinet("OG", 7.97, 8.588, 2.792, 3.34, "W", (2.792, 3.34), zo, h=0.90)
+    desk("OG", 5.592, 8.588, 2.792, 3.34, zo)                           # full width of the back wall
     bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)
     cabinet("OG", 11.84, 14.348, 5.38, 6.058, "S", (11.84, 12.86, 13.34, 13.85, 14.348), zo)
+    sitzecke()
+    # Stube sofa: 3/4 of the way from the corner pier between the big windows (room corner) to the
+    # Ofen block's room corner (bed included), facing the pier
+    (sx, sy), (ox, oy) = (14.351, 0.415), (10.96, 4.64)
+    sofa("EG", sx + 0.75 * (ox - sx), sy + 0.75 * (oy - sy), math.degrees(math.atan2(sy - oy, sx - ox)))
 
 
 # ---------------------------------------------------------------- room names on the floor
 # (name, floor, x, y, rotation in degrees so it reads correctly from the room's door)
 ROOM_NAMES = [
-    ("Stube", "EG", 11.9, 2.8, 180), ("Küche", "EG", 7.0, 4.4, 180), ("Speis", "EG", 3.9, 4.4, 90),
+    ("Stube", "EG", 12.5, 2.3, 180), ("Küche", "EG", 7.0, 4.4, 180), ("Speis", "EG", 3.9, 4.4, 90),
     ("Bibliothek", "EG", 12.9, 10.7, 0), ("Oma & Opa", "EG", 4.3, 10.8, 0),
     ("Nadine & Till", "OG", 11.5, 3.2, 180), ("Waschküche", "OG", 7.1, 4.4, 180),
     ("Saschi", "OG", 4.1, 3.2, 180), ("Bichlach", "OG", 11.9, 10.6, 0), ("Jugend", "OG", 7.6, 10.6, 0),
