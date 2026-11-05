@@ -9,6 +9,9 @@ import { INK } from './ink.js';
 export const SHARE = 0.25;          // of Blender's render density
 export const RADIUS = 30;           // m around the house
 
+// camera inside the main house (footprint W_OUT × D_OUT, below the ridge): the grass is skipped
+export const indoors = (ex, [x, y, z]) => x > 0 && x < ex.W_OUT && y > 0 && y < ex.D_OUT && z < ex.RIDGE_Z;
+
 export function density(g, x, y) {
   const r = Math.hypot(x - g.HOUSE_C[0], y - g.HOUSE_C[1]);
   const t = Math.min(Math.max((r - g.NEAR) / (g.FAR - g.NEAR), 0), 1);
@@ -150,13 +153,21 @@ export function buildGarden(bp, { uPaper, uDetail, uInk }) {
   const leafMesh = leaves(g.shrubs, uDetail, rng(11));
   const blobs = new THREE.Group().add(...cores);
   group.add(grass, leafMesh, circles, blobs);
+  let grown = false, inside = false;
   return {
     group,
     update(w) {
       const d = w.detail + w.built;
-      grass.visible = leafMesh.visible = d > 0.001;
+      grown = leafMesh.visible = d > 0.001;
+      grass.visible = grown && !inside;
       circles.visible = w.sketch + w.massing > 0.001;
       blobs.visible = w.sketch < 0.999;              // pure Skizze: the circles alone
+    },
+    setIndoors(v) {                                  // true when it changed what is drawn
+      if (v === inside) return false;
+      inside = v;
+      grass.visible = grown && !inside;
+      return grown;
     },
     get state() {
       return { shrubs: cores.length, layoutShrubs: g.shrubs.length, grassCount: grass.count,

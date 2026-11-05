@@ -103,6 +103,30 @@ test('garden per stage: circles, clay blobs, then grass and leaves', async ({ pa
   await shot(page, 'detail.png');
 });
 
+test('no grass while the camera is indoors, except in the Rundgang', async ({ page }) => {
+  await open(page);
+  await at(page, 2);
+  const grass = () => page.evaluate(() => window.__fl.garden.grassVisible);
+  await page.evaluate(() => window.__fl.lookFrom(7.25, 0.6, 1.6));      // Küche
+  await page.waitForTimeout(300);
+  expect(await grass()).toBe(false);
+  await page.evaluate(() => window.__fl.lookFrom(33, -24, 13));         // outside again
+  await page.waitForTimeout(300);
+  expect(await grass()).toBe(true);
+  // the film keeps everything: a tour frame inside the house still has the grass
+  await page.getByRole('button', { name: 'Rundgang', exact: true }).click();
+  await page.evaluate(() => {
+    const T = window.__fl.tour.duration;
+    for (let i = 0; ; i++) {
+      const [x, y] = window.__fl.tourKey(i);
+      if (x > 1 && x < 13 && y > 1 && y < 11) return window.__fl.tour.seek(i / 25);
+      if (i / 25 > T) throw new Error('no indoor tour frame');
+    }
+  });
+  await page.waitForTimeout(300);
+  expect(await grass()).toBe(true);
+});
+
 // leaf-green pixels (green clearly above red and blue) within r CSS px of a model point
 async function greenAround(page, img, [x, y, z], r) {
   const s = await page.evaluate((p) => window.__fl.project(...p), [x, y, z]);

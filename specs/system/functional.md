@@ -102,6 +102,10 @@ edited: 2026-11-05
 - **The view lives in the URL**, written as it changes: house `?cam=x,y,z&at=x,y,z&p=…&cut=…`
   (model coordinates; optional `&fov=…`, vertical field of view in degrees, default 28), Ofen
   page `?cam=…&at=…&look=wire|mass|full`. A reload or a shared link opens the same view.
+- **Light on the GPU:** a frame is drawn only when something changes (camera, stage, cutaway,
+  sun, window size); a burning fire in view is redrawn at most 30 times a second. The pixel ratio
+  is capped at 1.5. While the camera is inside the main house the meadow grass is not drawn. The
+  Rundgang keeps all of it, so the captured film shows every frame in full.
 - Local: `cd web && npm install && npm run dev` (one server, port 5377). The `.glb` is regenerated
   from the core first, and again whenever a `code/*.py` file is saved; then open pages reload at
   the same view.
