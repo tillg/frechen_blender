@@ -82,6 +82,7 @@ MAT_DEF = {
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
     "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
+"Herd":       dict(rgba=(0.15, 0.16, 0.15, 1), metal=0.5, rough=0.35),   # Wamsler: grey enamelled steel
     "Weide":      dict(speck=((0.30, 0.19, 0.08), (0.62, 0.45, 0.22), 150)),     # wicker laundry baskets
     "Jeans":      dict(rgba=(0.12, 0.18, 0.30, 1), rough=0.9),               # folded clothes
     "Wolle":      dict(rgba=(0.45, 0.14, 0.10, 1), rough=0.95),
@@ -788,18 +789,21 @@ def chair(coll, cx, cy, fx, fy):
 def kitchen():
     """Küche after the EG plan: sink run on the north wall, run on the east wall and a peninsula
     with the cooktop towards the dining table. Spruce carcasses and doors on a dark plinth, granite
-    worktop (one L across run and peninsula), steel sink and tap, black cooktop."""
+    worktop (one L across run and peninsula), steel sink and tap, black cooktop. At the north end
+    of the east run (plan: flue in the NE corner) the Wamsler wood cooker under an old steel hood;
+    wall cabinets over the sink run and over the east run beside the hood."""
     o, zp, zc, zt = "EG_Kueche", 0.10, 0.86, 0.90                 # plinth / carcass / worktop top
     xw, yn, xe = 5.492, 5.847, 8.555                              # wall faces (2 mm clear)
+    hy0, hy1 = 4.94, 5.74                                         # the Herd (80 cm) along the east wall
     # carcasses (x0, x1, y0, y1, plinth inset W/E/S/N)
     for x0, x1, y0, y1, pl in ((xw, 6.70, 5.269, yn, (0, 0.06, 0.04, 0)),          # north run
                                (6.57, xe, 3.05, 3.64, (0.06, 0, 0.06, 0.06)),      # peninsula
-                               (7.977, xe, 3.64, 5.45, (0.06, 0, 0, 0.06))):       # east run
+                               (7.977, xe, 3.64, hy0 - 0.04, (0.06, 0, 0, 0.06))):  # east run
         box("EG", o, "FichteZ", x0, x1, y0, y1, zp, zc)
         box("EG", o, "Fuge", x0 + pl[0], x1 - pl[1], y0 + pl[2], y1 - pl[3], 0.005, zp)
     fronts = [("x", 5.249, +1, (xw, 6.10, 6.70)),          # (frame axis, room face, side, door cuts)
               ("x", 3.66, -1, (6.57, 7.165, 7.957)),
-              ("y", 7.957, +1, (3.663, 4.25, 4.86, 5.45))]
+              ("y", 7.957, +1, (3.663, 4.08, 4.49, hy0 - 0.04))]
     for ax, f, s, cuts in fronts:
         P = frame(ax)
         for a, b in zip(cuts[:-1], cuts[1:]):
@@ -808,7 +812,7 @@ def kitchen():
             m = (a + b) / 2
             lbox("EG", o, "Metall", P, m - 0.07, m + 0.07, f - s * 0.025, f, zc - 0.07, zc - 0.055)
     xy_prism("EG", o, "Granit", [(xw, 5.229), (6.72, 5.229), (6.72, yn), (xw, yn)], zc, zt)
-    xy_prism("EG", o, "Granit", [(6.55, 3.03), (xe, 3.03), (xe, 5.47), (7.937, 5.47),
+    xy_prism("EG", o, "Granit", [(6.55, 3.03), (xe, 3.03), (xe, hy0 - 0.02), (7.937, hy0 - 0.02),
                                  (7.937, 3.68), (6.55, 3.68)], zc, zt)
     box("EG", o, "Metall", 5.58, 6.04, 5.30, 5.76, zt, zt + 0.003)                 # sink
     box("EG", o, "Eisen", 5.61, 6.01, 5.33, 5.70, zt + 0.003, zt + 0.004)
@@ -818,6 +822,30 @@ def kitchen():
     for cx, cy, rr in ((7.36, 3.24, 0.08), (7.36, 3.46, 0.06), (7.76, 3.24, 0.06), (7.76, 3.46, 0.09)):
         xy_prism("EG", o, "Metall", [(cx + rr * math.cos(math.pi * i / 8), cy + rr * math.sin(math.pi * i / 8))
                                      for i in range(16)], zt + 0.005, zt + 0.006)
+    rng = random.Random(14)                       # own stream: the house after this keeps its shading
+    ofen.wamsler("EG", 7.972, hy0, rng)
+    # hood of the old form: rolled lip, straight skirt with a rail, canopy narrowing to the stack
+    h, xf, ym = "EG_Haube", xe - 0.55, (hy0 + hy1) / 2
+    ya, yb, rh = ym - 0.43, ym + 0.43, rng.random()
+    box("EG", h, "Metall", xf - 0.01, xe, ya - 0.01, yb + 0.01, 1.62, 1.64, rh)
+    box("EG", h, "Metall", xf, xe, ya, yb, 1.64, 1.76, rh)
+    v = [(xf, ya, 1.76), (xe, ya, 1.76), (xe, yb, 1.76), (xf, yb, 1.76),
+         (xe - 0.22, ym - 0.15, 2.04), (xe, ym - 0.15, 2.04), (xe, ym + 0.15, 2.04), (xe - 0.22, ym + 0.15, 2.04)]
+    add("EG", h, "Metall", v, [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], rh)
+    box("EG", h, "Metall", xe - 0.20, xe, ym - 0.135, ym + 0.135, 2.04, Z_EG_TOP + 0.02, rh)   # into the ceiling
+    prism("EG", h, "Metall", frame("x"), [(xf - 0.04 + 0.01 * math.cos(math.pi * i / 4), 1.70 + 0.01 * math.sin(math.pi * i / 4))
+                                          for i in range(8)], ya + 0.02, yb - 0.02, rng.random())   # rail
+    for y in (ya + 0.05, yb - 0.05):
+        box("EG", h, "Metall", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705, rng.random())
+    # wall cabinets: north wall over the sink run, east wall from the peninsula to the hood
+    zu0, zu1, du = 1.45, 2.20, 0.35
+    for ax, wf, cuts in (("x", yn, (xw, 6.10, 6.70)), ("y", xe, (3.05, 3.66, 4.27, ya - 0.03))):
+        P, f = frame(ax), wf - du - 0.02
+        lbox("EG", o, "FichteZ", P, cuts[0], cuts[-1], wf - du, wf, zu0, zu1, rng.random())
+        for a, b in zip(cuts[:-1], cuts[1:]):
+            lbox("EG", o, "FichteZ", P, a + 0.003, b - 0.003, f, f + 0.02, zu0 + 0.005, zu1 - 0.005, rng.random())
+            m = (a + b) / 2
+            lbox("EG", o, "Metall", P, m - 0.07, m + 0.07, f - 0.025, f, zu0 + 0.055, zu0 + 0.07, rng.random())
 
 
 # ---------------------------------------------------------------- stairs

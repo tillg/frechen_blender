@@ -34,7 +34,10 @@ edited: 2026-11-05
   - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
     with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
-  - kitchen: sink run, east run, peninsula with cooktop
+  - kitchen: sink run, east run, peninsula with cooktop; at the north end of the east run a
+    Wamsler wood cooker after wamsler.jpeg (grey enamel, fire burning behind the glass, flue pipe
+    into the east wall) under an old-form steel hood (skirt with rail, canopy, stack to the
+    ceiling); spruce wall cabinets over the sink run and over the east run beside the hood
   - big dining table (two joined) after tisch-briol.png: board top, legs splayed on a flat foot
     frame with corner blocks; 14 chairs
   - Stube seating corner between the two big windows: round pedestal side table, two small

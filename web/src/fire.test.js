@@ -12,7 +12,7 @@ const house = extras('public/frechenlehen.glb');
 test('one flame group per fire bed, at its base (z-up -> y-up), outer + core per tongue', () => {
   const F = createFire(house);
   expect(F.group.children.length).toBe(house.fires.length);
-  expect(house.fires.length).toBe(4);                       // Ofen front + back, two workshop stoves
+  expect(house.fires.length).toBe(5);                       // Ofen front + back, two workshop stoves, Küche Herd
   F.group.children.forEach((g, i) => {
     const [x, y, z] = house.fires[i].base;
     expect(g.position.toArray().map((v) => +v.toFixed(6))).toEqual([x, z, -y].map((v) => +v.toFixed(6)));

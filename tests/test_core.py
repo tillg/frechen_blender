@@ -344,9 +344,9 @@ def test_west_og_windows_wall_below_up_to_the_ceiling():
 def test_fires_are_recorded_where_the_stoves_burn():
     """The flames are no longer static geometry: every stove records its fire (base = centre of
     the flame bed in the flame plane, u = unit along the width, w, h, d) in FIRES, and the
-    animated fire component (code/fire.py, web/src/fire.js) draws them. Three in the house (Stube
-    Ofen, Bibliothek and Schlafen SE workshop stoves), one in the Ofen sub-model."""
-    assert len(BP.fires) == 4 and len(house_core.build_ofen().fires) == 2   # the Ofen: front + back door
+    animated fire component (code/fire.py, web/src/fire.js) draws them. Four in the house (Stube
+    Ofen, Bibliothek and Schlafen SE workshop stoves, Küche Herd), one in the Ofen sub-model."""
+    assert len(BP.fires) == 5 and len(house_core.build_ofen().fires) == 2   # the Ofen: front + back door
     house_core.build()                                                    # restore the registries
     assert not any(m == "Feuer" for g in BP.geo.values() for m in g["m"])
 
@@ -360,6 +360,7 @@ def test_fires_are_recorded_where_the_stoves_burn():
     assert sum(inside(f, ("EG", "EG_Ofen_Hintertuer")) for f in BP.fires) == 1
     assert sum(inside(f, ("EG", "EG_Werkstattofen")) for f in BP.fires) == 1
     assert sum(inside(f, ("OG", "OG_Werkstattofen")) for f in BP.fires) == 1
+    assert sum(inside(f, ("EG", "EG_Herd")) for f in BP.fires) == 1
     og = next(f for f in BP.fires if f["base"][2] > house_core.Z_OG)
     assert abs(og["u"][0] - math.cos(math.radians(-135))) < 1e-9                     # turned with its stove
 
@@ -599,3 +600,67 @@ def test_back_windfang_door_glazed_like_the_front_one():
     assert len(back) == 1 and len(front) == 2
     _, lo, hi, _ = back[0]
     assert hi[2] - lo[2] > 0.7 and lo[2] > 0.9                       # upper part of the leaf
+
+
+KUECHE_EAST = 8.557                                                           # east wall face of the Küche
+
+
+def test_kueche_wamsler_herd_at_the_north_end_of_the_east_run():
+    """Küche: a wood-fired Wamsler cooker after input/2026-11-05 input/wamsler.jpeg (grey enamelled
+    steel, steel top with a rail, fire door with glass top left, ash door below, oven door with a
+    window on the right, full-width drawer, flue on top) stands at the north end of the east run
+    (where the plan draws the flue), front facing west, flush with the run's fronts; the run and
+    its granite top end south of it. Its fire burns behind the glass (FIRES)."""
+    herd = list(part_list(("EG", "EG_Herd")))
+    body = [p for p in herd if p[0] == "Herd"]
+    lo = [min(p[1][k] for p in body) for k in range(3)]; hi = [max(p[2][k] for p in body) for k in range(3)]
+    assert 0.75 <= hi[1] - lo[1] <= 0.85 and 0.55 <= hi[0] - lo[0] <= 0.62 and 0.80 <= hi[2] <= 0.92
+    assert KUECHE_EAST - 0.01 < hi[0] < KUECHE_EAST and hi[1] < 5.847 and lo[1] > 4.7   # NE corner of the run
+    assert {"Herd", "Metall", "Eisen", "Ofenglas"} <= {p[0] for p in herd}
+    front = min(p[1][0] for p in herd if p[2][2] < 0.9)                       # doors, handles
+    assert 7.90 < front < 7.96
+    kueche = list(part_list(("EG", "EG_Kueche")))
+    run = [p for p in kueche if p[2][2] <= 0.901 and p[2][0] > 7.9 and p[2][1] > 3.7]
+    assert run and max(p[2][1] for p in run) < lo[1]                          # carcass, doors, granite
+    fire = [f for f in BP.fires if abs(f["base"][0] - lo[0]) < 0.03 and lo[1] < f["base"][1] < hi[1]]
+    assert len(fire) == 1 and fire[0]["base"][1] > (lo[1] + hi[1]) / 2       # fire door: top left, north
+    assert "EG_Herd" not in BP.furniture                                      # built in, like the Ofen
+
+
+def test_kueche_old_steel_hood_above_the_herd():
+    """Küche: above the Herd a steel hood of the old form: a straight skirt with a rail in front,
+    a sloping canopy narrowing to a flue stack that runs up to the ceiling."""
+    herd = [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Herd"]
+    hy0, hy1 = min(p[1][1] for p in herd), max(p[2][1] for p in herd)
+    hood = list(part_list(("EG", "EG_Haube")))
+    assert {p[0] for p in hood} == {"Metall"}
+    lo = [min(p[1][k] for p in hood) for k in range(3)]; hi = [max(p[2][k] for p in hood) for k in range(3)]
+    assert lo[1] < hy0 + 0.01 and hi[1] > hy1 - 0.01 and abs((lo[1] + hi[1]) / 2 - (hy0 + hy1) / 2) < 0.01
+    assert 1.55 <= lo[2] <= 1.75 and hi[2] > house_core.Z_EG_TOP              # up into the ceiling
+    assert KUECHE_EAST - 0.01 < hi[0] < KUECHE_EAST and hi[0] - lo[0] >= 0.5
+    def width(vs, z):                                                         # y extent at height z
+        return max(v[1] for v in vs if v[2] == z) - min(v[1] for v in vs if v[2] == z)
+    taper = [p for p in hood if len(set(p[3])) == 8 and len({v[2] for v in p[3]}) == 2
+             and width(p[3], p[2][2]) < width(p[3], p[1][2]) - 0.3]
+    assert len(taper) == 1                                                    # narrows upwards
+
+
+def test_kueche_wall_cabinets_over_the_rest_of_the_run():
+    """Küche: wall cabinets (spruce like the base units) over the sink run on the north wall and
+    over the east run beside the hood; none over the peninsula and none in the hood's way."""
+    k = list(part_list(("EG", "EG_Kueche")))
+    upper = [p for p in k if p[1][2] > 1.3]
+    assert upper and {p[0] for p in upper} <= {"FichteZ", "Metall"}
+    hood = list(part_list(("EG", "EG_Haube")))
+    hy0 = min(p[1][1] for p in hood)
+    north = [p for p in upper if p[1][1] > 5.4]
+    east = [p for p in upper if p[1][0] > 8.1]
+    assert len(north) + len(east) == len(upper)
+    for side, ax, wall, (a, b) in ((north, 0, 5.849, (5.49, 6.70)), (east, 1, KUECHE_EAST, (3.03, hy0))):
+        lo = [min(p[1][k] for p in side) for k in range(3)]; hi = [max(p[2][k] for p in side) for k in range(3)]
+        assert abs(lo[ax] - a) < 0.03 and b - 0.06 < hi[ax] <= b                 # along the run, clear of the hood
+        assert 1.40 <= lo[2] <= 1.55 and 2.0 <= hi[2] <= 2.30
+        assert wall - 0.01 < hi[1 - ax] < wall and 0.30 <= hi[1 - ax] - lo[1 - ax] <= 0.42   # shallow, on the wall
+        doors = [p for p in side if p[0] == "FichteZ" and p[2][1 - ax] - p[1][1 - ax] < 0.03]
+        handles = [p for p in side if p[0] == "Metall"]
+        assert len(doors) >= 2 and len(handles) == len(doors)
