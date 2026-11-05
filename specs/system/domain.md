@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-03
+edited: 2026-11-05
 ---
 
 # Domain: Frechenlehen house model
@@ -35,7 +35,9 @@ the team uses them:
 | **Opening** | A hole in a wall: `W` window, `FD` french door, `WF` tall window with a fixed light below, `GD` glazed larch door, `D` solid door, `I` bare opening filled by a dedicated builder. |
 | **Leaf** | An interior door leaf, normally opened flat against the wall. |
 | **Component** | A named building part (e.g. entrance door). The name of a reference photo in `input/` is the component it shows. |
-| **Route** | The camera path of the walkthrough film: orbit / path / look / stair / hold segments. |
+| **Route** | The camera path of the walkthrough, in `tour.py`, shared by the film and the viewer's Rundgang: orbit / path / turn / stair / hold segments; turning speed `TURN` and pause length `PAUSE` are one variable each. The route is closed: it ends at its start pose. |
+| **Camera key** | One smoothed frame of the route at 25 fps: position (x, y, z), yaw, pitch (radians, model z-up) and lens (mm, 36 mm sensor width). `tour.build_tour()` bakes the route into them; the film and the viewer both play them. |
+| **Rundgang** (viewer) | Live playback of the camera keys in the viewer, in stage Eingerichtet with the whole house and the entrance door open; it can pause (then the user looks around), be scrubbed, loop ("Endlos") and be left ("Beenden"). |
 | **Collection** | Blender grouping. The house lives in `Haus` with sub-collections `FL_EG`, `FL_OG`, `FL_Dach`, `FL_Balkone`, `FL_Umgebung`, `FL_Referenz`. In the `.glb` it is `extras.collection` per node. |
 | **rnd** | A random value per Part, stored per face, that varies the shade of boards and slabs. |
 | **Core** (`house_core`) | The pure-Python description of the house: constants, materials as data, primitives, builders. It knows nothing about Blender or three.js. |
@@ -72,7 +74,10 @@ erDiagram
     FURNITURE }o--|| MATERIAL : uses
     HOUSE ||--|| SURROUNDINGS : "sits in"
     SURROUNDINGS ||--o{ GARDEN : "terrace, beds, meadow"
-    FILM ||--|{ ROUTE_SEGMENT : follows
+    ROUTE ||--|{ ROUTE_SEGMENT : has
+    ROUTE ||--|{ CAMERA_KEY : "baked into"
+    FILM ||--|{ CAMERA_KEY : keys
+    VIEWER_RUNDGANG ||--|{ CAMERA_KEY : plays
 ```
 
 ```mermaid
@@ -163,7 +168,8 @@ flowchart LR
    `tmp/web/`.
 3. **Deliberate change to the Blender output.** Regenerate the parity golden, diff it, then
    rebuild and save the `.blend`.
-4. **Film.** Bake the route into camera keys, render 3480 frames headless and encode them.
+4. **Film.** Bake the route into camera keys (`tour.build_tour()`), render one frame per key
+   headless and encode them. The viewer's Rundgang plays the same keys live.
 5. **Refresh the README views:** `docs/images/ansicht_*.png`.
 6. **Publish the viewer:** merge to `main`; the Pages workflow builds and deploys.
 
@@ -195,4 +201,5 @@ flowchart LR
   millimetres, or they z-fight.
 - **Colours:** facade and windows RAL 9010, shutters RAL 5014. Doors stay
   natural wood.
-- **The film camera** stays ≥ 0.25 m from all geometry and never passes through a wall.
+- **The route camera** (film and viewer Rundgang) stays ≥ 0.25 m from all geometry and never
+  passes through a wall.

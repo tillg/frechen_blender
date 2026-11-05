@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-04
+edited: 2026-11-05
 ---
 
 # Architecture: Frechenlehen house model
@@ -36,6 +36,7 @@ flowchart TB
         WR["windrose.py"]
         GA["garden.py"]
         FI["film.py"]
+        TO["tour.py<br/>route → camera keys"]
     end
     subgraph blender["Blender 5.2"]
         SC[("scene in frechenlehen.blend")]
@@ -50,6 +51,7 @@ flowchart TB
     OF <--> CORE
     CORE --> BH & EX
     CORE --> PA & WR & GA & FI
+    CORE --> TO --> FI & EX
     MO --> EX
     BH & PA & WR & GA & FI --> SC
     SC --> EV --> OUT["tmp/film/*.png → mp4,<br/>docs/images/*.png"]
@@ -135,10 +137,22 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
   float32 values.
 - **Materials** `FL_<name>`: a `pbrMetallicRoughness` approximation. The full `MAT_DEF` entry,
   `kind` and paint go in `extras`. Materials of open Parts are `doubleSided`.
-- **`scene.extras`:** `room_lights`, `ROOM_LIGHT_H`, `Z_OG`, `W_OUT`, `D_OUT`, `RIDGE_Z`
-  and the garden layout.
+- **`scene.extras`:** `room_lights`, `ROOM_LIGHT_H`, `Z_OG`, `W_OUT`, `D_OUT`, `RIDGE_Z`,
+  the garden layout and (house only, not the Ofen) `tour = {fps, frames}`, the camera keys of
+  `tour.build_tour()` as JSON.
 - **Hidden node `GA_Grasbuschel`:** the grass clump, with `_H` (0 at the root … 1 at the tip).
 - **Axes:** z-up model → y-up glTF as `(x, z, -y)`, so north is −Z in three.js.
+
+### `tour.py` — the route
+
+A second pure-Python module beside the core (ADR-001-XEWL): it imports `HOUSE_C`, `Z_OG` from
+`house_core`; the core never imports it. It holds `ROUTE` (orbit / path / turn / stair / hold
+segments, the helpers `turn()` and `peek()`, the variables `EYE`, `TURN`, `PAUSE`) and
+`build_tour()`, which bakes the route into one smoothed camera key per frame at 25 fps
+`(x, y, z, yaw, pitch, lens)`. When the last raw frame equals the first, it smooths cyclically
+(the window wraps, yaw offset by the full turn), so the last key equals the first and the route
+loops without a seam. `tests/golden/tour.json` pins the keys (`UPDATE_TOUR_GOLDEN=1` after a
+deliberate route change).
 
 ### Other Blender scripts
 
@@ -150,7 +164,7 @@ long-running Blender session picks up core edits.
 | `paint.py` | Overwrites the base colour of plain materials with `PAINT`. | `FL_*` materials from `build_house` |
 | `windrose.py` | Compass rose at `WINDROSE_CENTER`/`WINDROSE_R`, in its own collection. | core |
 | `garden.py` | Meadow: a Geometry Nodes scatter of grass clumps over an emitter grid built from the garden layout (no grass on `no_grass` or `windrose`). Leafy shrubs at the layout's shrub placements. | core, `Beet_*` objects |
-| `film.py` | `ROUTE` → per-frame camera keys on `FL_Kamera_Rundgang`, room fill lights (`Innenlicht`) at `ROOM_LIGHTS` + `ROOM_LIGHT_H`, opens `EG_Haustuer`. | core, `EG_Haustuer` pivot |
+| `film.py` | Keys `FL_Kamera_Rundgang` with `tour.build_tour()` (frame range = key count), room fill lights (`Innenlicht`) at `ROOM_LIGHTS` + `ROOM_LIGHT_H`, opens `EG_Haustuer`. | core, `tour.py`, `EG_Haustuer` pivot |
 
 ### `web/` — the viewer
 
@@ -193,9 +207,20 @@ sequenceDiagram
   progress and cutaway changes) shows an object iff the cutaway does not hide it and, for
   `extras.furniture`, the stage is Eingerichtet.
 - **`ui.js`.** Title, timeline bar (play/pause, scrubber 0–4, stage names), cutaway buttons
-  and the sun toggle. `body.dataset.stage`/`cutaway` mirror the state.
+  and the sun toggle. `body.dataset.stage`/`cutaway` mirror the state. It returns `setCut` so
+  the tour can disable the cutaway buttons.
+- **`tour.js`.** The Rundgang: builds its own button and tour bar (play/pause, scrubber,
+  "Endlos", "Beenden"). Playback is time-based at `SPEED = 0.75`: `step(t, dt, T, loop)` advances
+  (dt clamped) and wraps or clamps, `poseAt(frames, fps, t)` lerps between keys (yaw unwrapped),
+  `fovFor(lens, aspect)` turns the lens into a vertical fov (`2·atan(18/lens/aspect)` landscape,
+  `2·atan(18/lens)` portrait, as Blender's sensor fit AUTO), re-applied on resize. Orientation:
+  direction `(cos p·cos y, cos p·sin y, sin p)` through `yup` and `camera.lookAt`. While playing,
+  OrbitControls are off; on pause their target sits 5 cm ahead of the camera. Start: stage
+  Eingerichtet, cutaway Ganzes Haus, `EG_Haustuer` rotated 90°. Beenden: door closed, previous
+  camera, target and fov restored. `drawDue` caps drawing at 30 fps while the tour is on; the
+  sun stays anchored to a fixed copy of the start target.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
-  `project`, state getters), only outside production builds.
+  `project`, state getters, `tour`, `tourKey`), only outside production builds.
 
 ## Key decisions
 
@@ -223,6 +248,11 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Shrub leaves grow about a **per-instance centre** attribute | `positionLocal.mul(uDetail)` | In three.js 0.187 `positionLocal` is already instance-transformed when `positionNode` runs. `instancedBufferAttribute(typedArray, 'vec3')` drops the instanced flag, so a real `InstancedBufferAttribute` is needed. |
 | e2e runs headless Chromium with `--use-angle=metal` (WebGL2 path) | SwiftShader | SwiftShader took 1.6 s per frame; headless Chromium has no WebGPU. The WebGPU path is checked by hand. |
 | **Open Parts** (lamp cones) are exported double-sided | Guess an orientation | An open surface has no well-defined outward side. |
+| The route lives in its own module **`code/tour.py`**, not in the Blueprint | `ROUTE` in `house_core.py` or `film.py` | The route can be edited apart from house and film. |
+| The `.glb` carries the **baked, smoothed camera keys** as JSON in `scene.extras.tour` | Export the segments and re-implement the baking in JS; binary accessor | One implementation of the route math (ADR-001-XEWL); JSON is small and matches room lights and garden. |
+| `tour.js` builds its own button and bar; `ui.js` only returns `setCut` | Tour controls in `ui.js` | Keeps the tour separable. |
+| The viewer plays at **0.75×**; the film keeps its pace | Lower `WALK` in `tour.py` | The slower pace was asked for the browser only. |
+| The **route is closed** in `tour.py`, for the film too | A viewer-only return leg | One route (ADR-001-XEWL); the viewer can loop it. |
 
 ## Data
 
@@ -245,7 +275,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 ## Infrastructure
 
 Model work runs locally on the owner's Mac (arm64). A headless film render is
-`Blender -b frechenlehen.blend -a`, at about 1 s per frame for 3480 frames. The MP4 is
+`Blender -b frechenlehen.blend -a`, at about 1 s per frame, one frame per camera key. The MP4 is
 linked raw from GitHub. `.github/workflows/pages.yml` builds on `ubuntu-latest`
 (Python 3.13, Node 24) and deploys `web/dist` to `https://tillg.github.io/frechen_blender/`
 (base path `/frechen_blender/`). Only the deploy job holds `pages: write`/`id-token: write`.

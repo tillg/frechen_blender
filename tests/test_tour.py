@@ -31,9 +31,11 @@ def test_keys_are_six_numbers():
 
 
 def test_route_ends_where_it_starts():
-    """Closed route: the viewer loops it without a jump (same pose, same speed at the seam)."""
+    """Closed route: the viewer loops it without a jump (same pose at the seam; the route ends
+    with a pause, so the orbit starts from rest, but no step at the seam exceeds the orbit's)."""
     a, b = KEYS[0], KEYS[-1]
     assert math.dist(a[:3], b[:3]) < 1e-6 and abs(a[4] - b[4]) < 1e-9 and abs(a[5] - b[5]) < 1e-9
     assert abs(math.remainder(b[3] - a[3], 2 * math.pi)) < 1e-9
-    step = math.dist(KEYS[1][:3], KEYS[0][:3])
-    assert abs(math.dist(KEYS[-1][:3], KEYS[-2][:3]) - step) < 0.1 * step
+    cruise = math.dist(KEYS[51][:3], KEYS[50][:3])                  # orbit at full speed
+    seam = (math.dist(KEYS[1][:3], KEYS[0][:3]), math.dist(KEYS[-1][:3], KEYS[-2][:3]))
+    assert max(seam) <= 1.05 * cruise

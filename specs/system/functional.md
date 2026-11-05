@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-04
+edited: 2026-11-05
 ---
 
 # Functional: Frechenlehen house model
@@ -19,7 +19,7 @@ edited: 2026-11-04
   - round-arched entrance door, back door with an oval window
   - windows with larch frames and glazing bars
   - blue shutters with white cross boards
-  - larch terrace doors; tall OG west windows with a fixed light below
+  - larch terrace doors; tall OG west windows (Yoga, Bad): wall below up to a 0.75 m sill, glazed up to the ceiling
   - larch cladding of the whole west side and the east gable, cut around the openings; spaced
     slats over the gable windows
   - sliding door between Bad and WC Großeltern
@@ -27,7 +27,7 @@ edited: 2026-11-04
   - outside lamps
 - **Interior:**
   - panelled interior doors (opened)
-  - glazed Windfang double door
+  - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf)
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor, oak planks elsewhere
@@ -35,8 +35,16 @@ edited: 2026-11-04
     with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
   - kitchen: sink run, east run, peninsula with cooktop
-  - big dining table with 14 chairs
+  - big dining table (two joined) after tisch-briol.png: board top, legs splayed on a flat foot
+    frame with corner blocks; 14 chairs
+  - Stube seating corner between the two big windows: round pedestal side table, two small
+    bouclé cocktail armchairs either side of it
+  - Stube sofa after sofa.tiff: linen three-seater, 3/4 of the way from the corner pier between
+    the big windows to the Ofen, facing the pier
   - bathrooms and WCs: shower, basin, wall-hung WC
+  - OG Flur, right of the Waschküche door: deep ceramic sink on a dark stone panel, one mixer tap
+  - Waschküche: two front loaders at the east wall, a dryer stacked on the north one; a table the
+    full width of the back (south) wall
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
   door outside, panel door between the rooms.
 - **Surroundings:** granite terrace with gravel strip and soil beds, ground.
@@ -50,12 +58,17 @@ edited: 2026-11-04
 - `paint.py`: RAL colours for facade, windows, shutters and stove tiles.
 - `garden.py`: meadow grass (Geometry Nodes) and leafy shrubs.
 - `windrose.py`: compass rose to the SW.
-- **Film** (`film.py`): a walkthrough of 139 s, 3480 frames at 1280×720, 25 fps:
-  1. orbit outside
-  2. enter at the east door, which swings open
-  3. EG rooms
-  4. up the stairs
-  5. OG rooms with peeks into the bathrooms
+- **Film** (`film.py`, route in `tour.py`): a walkthrough of 284 s, 7102 frames at 1280×720,
+  25 fps. Slow turns on the spot (`TURN` °/s), pauses (`PAUSE` s) and the camera height
+  (`EYE`, 1.60 m above the floor) are one variable each:
+  1. orbit outside, enter at the east door, which swings open
+  2. EG: Stube round the sofa to the seating corner (turn, pause at the sofa and Ofen), Essen at the end of the table (turn,
+     pause), look into the Speis, Küche, Großeltern (turn at the wall beside the balcony door),
+     back door (turn, pause), Bibliothek back corner (turn, pause at the piano)
+  3. up the stairs; OG: peeks into the first room on the right and the Waschküche, Schlafen SE
+     back corner (turn, pause at the Kamin), peeks into its Bad, the NE room opposite, the SW room
+     and the end Bad, Yoga back corner (turn)
+  4. down the stairs, out to the start point, turn to face the house, pause; the route is closed
 
 ### Web viewer (`web/`)
 
@@ -72,6 +85,12 @@ edited: 2026-11-04
 - **Orbit** with the mouse (drag, scroll). It starts from the README view in the south-east.
 - **Cutaway:** "Ganzes Haus", "Ohne Dach", "Nur EG".
 - **Sun toggle:** day or dusk, from Detailmodell on.
+- **Rundgang** (button in the tools panel): plays the film's route live from the camera keys in
+  the `.glb`, at 0.75× the film speed, in stage Eingerichtet with the whole house and the entrance
+  door open. Play/pause, a scrubber, "Endlos" (loop; the route ends where it starts) and
+  "Beenden", which closes the door and restores the previous camera (stage and cutaway stay).
+  While paused, the user looks around with the mouse; while it runs, the cutaway buttons are
+  disabled and the page draws at most 30 frames per second.
 - Local: `cd web && npm install && npm run dev`. The `.glb` is regenerated from the core first.
 
 ## User journeys
@@ -119,8 +138,9 @@ sequenceDiagram
 
 The model has no runtime state. In Blender the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
-the state is the timeline progress `p` (0–4), the cutaway (all / noroof / eg) and a forced
-dusk value from the sun toggle (cleared by any timeline move).
+the state is the timeline progress `p` (0–4), the cutaway (all / noroof / eg), a forced
+dusk value from the sun toggle (cleared by any timeline move) and the Rundgang
+(off / playing / paused, its time and the loop flag; `body.dataset.tour`).
 
 ## Permissions and visibility
 
@@ -130,8 +150,8 @@ hook exists only in dev and test builds.
 
 ## Edge cases and known limitations
 
-- The viewer is desktop-only, has no walkthrough, and shows no room names, windrose or
-  reference plans.
+- The viewer is desktop-only, has no free first-person walk (only the fixed Rundgang), and shows
+  no room names, windrose or reference plans.
 - The garden in the viewer is like Blender's, not identical: 25 % grass density, within 30 m,
   grass where the windrose would be.
 - Headless e2e tests run the WebGL2 fallback; the WebGPU path is checked by hand.
