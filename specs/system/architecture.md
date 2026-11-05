@@ -68,7 +68,7 @@ flowchart TB
 | Blender MCP server | How the agent runs code in the open Blender (`execute_blender_code`). |
 | three.js 0.187 | Viewer: `WebGPURenderer` with TSL node materials. It falls back to WebGL2 automatically ([ADR-003-SKGB](../architecture/adr-003-skgb-webgpu-tsl.md)). |
 | Vite 8 | Bundler and dev server for `web/`; vanilla JS, no framework. |
-| pytest · Vitest · Playwright | Python tests, web unit tests, browser e2e (headless Chromium on the real GPU via `--use-angle=metal`, WebGL2 path). |
+| pytest · Vitest · Playwright | Python tests, web unit tests, browser e2e (headless Chromium on the real GPU via `--use-angle=metal`, WebGL2 path). Playwright starts no server of its own: project `dev` tests `/`, project `preview` the build under `/frechen_blender/` (setup project `build` runs `npm run build` first), both on the one dev server on 5377. |
 | GitHub Actions + Pages | Builds the `.glb` and the viewer on push to `main` and publishes `web/dist`. |
 | ffmpeg | Encodes the film frames to H.264 MP4. |
 
@@ -227,6 +227,8 @@ sequenceDiagram
   and then sends a full reload; a failed export is logged and does not reload. `export_gltf.py`
   writes the `.glb` atomically (temp file + `os.replace`), so a page never reads a half-written
   file.
+- **`serve-build.js`** (Vite plugin, dev server only): serves the production build `web/dist/`
+  under `/frechen_blender/`, the GitHub Pages path, so the one dev server shows source and build.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters, `tour`, `tourKey`), only outside production builds; `window.__ofen`
   on the Ofen page.

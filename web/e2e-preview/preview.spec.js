@@ -1,4 +1,4 @@
-// The production build, served by `vite preview` under the GitHub Pages sub-path.
+// The production build (web/dist/), served by the dev server on 5377 under the GitHub Pages sub-path.
 // No test hook here (production), so it checks requests and pixels.
 import { test, expect } from '@playwright/test';
 import { shot } from '../e2e/pixels.js';
