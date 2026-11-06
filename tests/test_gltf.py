@@ -1,5 +1,5 @@
 """export_gltf: Blueprint -> .glb, read back with the standard library only."""
-import json, struct, subprocess, sys
+import json, math, struct, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -167,3 +167,25 @@ def test_tour_keys_in_scene_extras(glb):
     assert t["fps"] == tour.FPS and len(t["frames"]) == len(keys)
     for got, want in zip(t["frames"][::97], keys[::97]):
         assert len(got) == 6 and all(abs(a - b) < 1e-4 for a, b in zip(got, want))
+
+
+def test_desk_export(tmp_path):
+    """--desk: the desk sub-model with its dimension lines; the screen panes are nodes translated to
+    their pivot, their materials carry the image and the pane size."""
+    out = tmp_path / "desk.glb"
+    subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--desk"], check=True)
+    data = out.read_bytes()
+    jlen = struct.unpack_from("<I", data, 12)[0]
+    g = json.loads(data[20:20 + jlen])
+    names = {n["name"] for n in g["nodes"]}
+    assert {"Desk_Moebel", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R", "Desk_Stuehle"} == names
+    bp = house_core.build_desk()
+    house_core.build()
+    pane = next(n for n in g["nodes"] if n["name"] == "Desk_Bildschirm_L")
+    x, y, z = bp.pivot["Desk_Bildschirm_L"]
+    assert pane["translation"] == pytest.approx([x, z, -y])
+    a = math.radians(bp.turn["Desk_Bildschirm_L"]) / 2                     # about glTF y = model z
+    assert pane["rotation"] == pytest.approx([0, math.sin(a), 0, math.cos(a)])
+    m = g["materials"][g["meshes"][pane["mesh"]]["primitives"][0]["material"]]
+    assert m["extras"]["image"] == "textures/screen_a12.jpg" and m["extras"]["size"] == [0.697, 0.392]
+    assert len(g["scenes"][0]["extras"]["dims"]) == len(bp.dims)

@@ -43,7 +43,8 @@ const defs = {};
 const isHouse = (o) => o.isMesh && o.material.userData.kind;       // not the grass clump
 bp.root.traverse((o) => isHouse(o) && (defs[o.material.name] = { name: o.material.name, extras: o.material.userData }));
 const lights = createLighting(scene, bp.extras, controls.target.clone(), uDetail, { hires });   // sun fixed on the house
-const mats = makeMaterials(Object.values(defs), { uPaper, uDetail, uDusk: lights.uDusk });
+const mats = makeMaterials(Object.values(defs), { uPaper, uDetail, uDusk: lights.uDusk,
+  textureBase: import.meta.env.BASE_URL, onTexture: () => { dirty = true; } });   // screen images (desk)
 const surfaces = [];
 bp.root.traverse((o) => {
   if (!isHouse(o)) return;

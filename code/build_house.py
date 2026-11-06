@@ -10,7 +10,7 @@ from mathutils import Vector
 
 PROJECT = "/Users/tgartner/git/frechen_blender"
 sys.path.insert(0, PROJECT + "/code")
-import ofen, house_core; importlib.reload(ofen); importlib.reload(house_core)  # pick up core edits in a long session
+import ofen, desk, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(house_core)  # pick up core edits in a long session
 from house_core import Z_OG, ROOM_NAMES
 
 
@@ -85,6 +85,17 @@ def make_materials(mat_def):
             bump.inputs["Distance"].default_value = 0.01
             L(height, bump.inputs["Height"])
             L(bump.outputs["Normal"], bsdf.inputs["Normal"])
+        if "image" in d:                       # screen: object space from the pivot, x/w and z/h
+            mp = N("ShaderNodeMapping")
+            mp.inputs["Scale"].default_value = (1 / d["size"][0], 1, 1 / d["size"][1])
+            sep, comb = N("ShaderNodeSeparateXYZ"), N("ShaderNodeCombineXYZ")
+            tex = N("ShaderNodeTexImage"); tex.extension = "CLIP"
+            tex.image = bpy.data.images.load(PROJECT + "/web/public/" + d["image"], check_existing=True)
+            L(coord.outputs["Object"], mp.inputs["Vector"]); L(mp.outputs["Vector"], sep.inputs[0])
+            L(sep.outputs["X"], comb.inputs["X"]); L(sep.outputs["Z"], comb.inputs["Y"])
+            L(comb.outputs[0], tex.inputs["Vector"])
+            L(tex.outputs["Color"], bsdf.inputs["Base Color"])
+            L(tex.outputs["Color"], bsdf.inputs["Emission Color"])
         MAT[name] = m
 
 
@@ -190,8 +201,8 @@ def flush_geometry(bp):
     import bmesh
     for (c, name), g in bp.geo.items():
         me = bpy.data.meshes.new(name)
-        piv = bp.pivot.get(name, (0, 0, 0))
-        me.from_pydata([(x - piv[0], y - piv[1], z - piv[2]) for x, y, z in g["v"]], [], g["f"])
+        piv, turn = bp.pivot.get(name, (0, 0, 0)), (bp.turn or {}).get(name, 0.0)
+        me.from_pydata([house_core.local(p, piv, turn) for p in g["v"]], [], g["f"])
         mats = sorted(set(g["m"]))
         for m in mats:
             me.materials.append(MAT[m])
@@ -204,6 +215,7 @@ def flush_geometry(bp):
             me.shade_smooth()
         ob = bpy.data.objects.new(name, me)
         ob.location = piv
+        ob.rotation_euler.z = math.radians(turn)
         coll(c).objects.link(ob)
 
 
