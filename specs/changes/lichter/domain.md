@@ -1,7 +1,7 @@
 ---
 feature: lichter
 title: "Domain: lights off by day, only the nearest at dusk"
-status: proposed
+status: applied
 order: 2
 created: 2026-11-05
 edited: 2026-11-05

@@ -103,28 +103,42 @@ test('garden per stage: circles, clay blobs, then grass and leaves', async ({ pa
   await shot(page, 'detail.png');
 });
 
-test('no grass while the camera is indoors, except in the Rundgang', async ({ page }) => {
-  await open(page);
-  await at(page, 2);
+test('no grass while the camera is indoors, except with hires=on', async ({ page }) => {
   const grass = () => page.evaluate(() => window.__fl.garden.grassVisible);
-  await page.evaluate(() => window.__fl.lookFrom(7.25, 0.6, 1.6));      // Küche
-  await page.waitForTimeout(300);
-  expect(await grass()).toBe(false);
-  await page.evaluate(() => window.__fl.lookFrom(33, -24, 13));         // outside again
-  await page.waitForTimeout(300);
-  expect(await grass()).toBe(true);
-  // the film keeps everything: a tour frame inside the house still has the grass
-  await page.getByRole('button', { name: 'Rundgang', exact: true }).click();
-  await page.evaluate(() => {
-    const T = window.__fl.tour.duration;
-    for (let i = 0; ; i++) {
-      const [x, y] = window.__fl.tourKey(i);
-      if (x > 1 && x < 13 && y > 1 && y < 11) return window.__fl.tour.seek(i / 25);
-      if (i / 25 > T) throw new Error('no indoor tour frame');
-    }
+  // fast mode hides it indoors, in the Rundgang too; hires=on (film capture) keeps everything
+  for (const [url, indoor] of [['/', false], ['/?hires=on', true]]) {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__fl?.ready === true);
+    await at(page, 2);
+    await page.evaluate(() => window.__fl.lookFrom(7.25, 0.6, 1.6));    // Küche
+    await page.waitForTimeout(300);
+    expect(await grass(), url).toBe(indoor);
+    await page.evaluate(() => window.__fl.lookFrom(33, -24, 13));       // outside again
+    await page.waitForTimeout(300);
+    expect(await grass(), url).toBe(true);
+    await page.getByRole('button', { name: 'Rundgang', exact: true }).click();
+    await page.evaluate(() => {                                          // a tour frame inside the house
+      const T = window.__fl.tour.duration;
+      for (let i = 0; ; i++) {
+        const [x, y] = window.__fl.tourKey(i);
+        if (x > 1 && x < 13 && y > 1 && y < 11) return window.__fl.tour.seek(i / 25);
+        if (i / 25 > T) throw new Error('no indoor tour frame');
+      }
+    });
+    await page.waitForTimeout(300);
+    expect(await grass(), `${url} Rundgang`).toBe(indoor);
+  }
+});
+
+test.describe('on a 2× screen', () => {
+  test.use({ deviceScaleFactor: 2 });
+  test('hires=on: full pixel ratio, else capped at 1.5', async ({ page }) => {
+    await open(page);
+    expect(await page.evaluate(() => window.__fl.pixelRatio)).toBe(1.5);
+    await page.goto('/?hires=on');
+    await page.waitForFunction(() => window.__fl?.ready === true);
+    expect(await page.evaluate(() => window.__fl.pixelRatio)).toBe(2);
   });
-  await page.waitForTimeout(300);
-  expect(await grass()).toBe(true);
 });
 
 // leaf-green pixels (green clearly above red and blue) within r CSS px of a model point
@@ -167,6 +181,45 @@ test('Gebaut is darker outside, with warm windows', async ({ page }) => {
   expect(sky(dusk)).toBeLessThan(sky(day) - 40);
   const [r, , b] = await patch(page, dusk, 11.3, 0.2, 1.2);    // Stube glazed doors, light behind
   expect(r).toBeGreaterThan(b + 10);
+});
+
+test('lights: none by day, the nearest few at dusk', async ({ page }) => {
+  await open(page);
+  const lights = () => page.evaluate(() => window.__fl.lights);     // visible room/outside lights, model coords
+  await at(page, 2);
+  expect(await lights()).toEqual({ room: [], outside: [] });
+  const ms = await page.evaluate(async () => {                      // the first dusk compiles the pool variant once
+    const t = performance.now();
+    window.__fl.setProgress(3);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return performance.now() - t;
+  });
+  console.log(`first dusk: ${ms.toFixed(0)} ms to the second frame (headless Chromium, WebGL2 on GPU)`);
+  await page.waitForTimeout(400);
+  let L = await lights();
+  expect(L.room.length).toBe(6);
+  expect(L.outside.length).toBe(2);
+  await page.evaluate(() => window.__fl.lookFrom(11.7, 3.2, 1.6));    // inside the Stube
+  await page.waitForTimeout(400);
+  L = await lights();
+  expect(L.room).toContainEqual([11.7, 3.2, 2.1]);                   // the Stube's own light
+  await page.goto('/?cam=13.1,2.2,1.6&at=9.5,4,1.4&p=3&fov=55');      // the Stube as in the Rundgang
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  await page.waitForTimeout(400);
+  expect((await lights()).room).toContainEqual([11.7, 3.2, 2.1]);
+  await shot(page, 'lights_dusk.png');
+});
+
+test('hires=on keeps every light', async ({ page }) => {
+  await page.goto('/?hires=on&p=3');
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  expect(await page.evaluate(() => window.__fl.hires)).toBe(true);
+  const L = await page.evaluate(() => window.__fl.lights);
+  expect(L.room.length).toBe(23);
+  expect(L.outside.length).toBe(8);
+  await page.evaluate(() => window.__fl.lookFrom(11.7, 3.2, 1.6));
+  await page.waitForTimeout(600);                                    // saveView() runs 300 ms after a change
+  expect(await page.evaluate(() => location.search)).toContain('hires=on');
 });
 
 test('no lines for smooth objects (pebbles, lamps)', async ({ page }) => {

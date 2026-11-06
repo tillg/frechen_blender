@@ -1,10 +1,10 @@
 ---
 feature: lichter
 title: "Architecture: lights off by day, only the nearest at dusk"
-status: proposed
+status: applied
 order: 3
 created: 2026-11-05
-edited: 2026-11-05
+edited: 2026-11-06
 ---
 # Architecture: lights off by day, only the nearest at dusk
 
@@ -94,7 +94,7 @@ flowchart LR
 | `hires=on` switches off all three picture-changing shortcuts: light pool, pixel-ratio cap, grass hidden indoors; it replaces the `!touring` grass exception (grill R2) | `hires` for the lights only | One switch that means what it says ("full quality"); nothing else tied to the tour state. Drawing on demand and the 30 fps cap stay: they don't change captured frames. |
 | `hires` is a URL parameter only (`?hires=on`, default off), kept in the URL by `saveView()`; no toolbar button (grill R2) | URL + toolbar button | A capture/power-user switch; a reload keeps it, like `fov`. |
 | `hires=on` lights = exactly today's per-site lights (always in the render list, intensity `base · v`) | Per-site lights off by day | Unchanged film look; the capture is the only user and runs at dusk. |
-| Accept the one-time pipeline compile at the first dusk; measure it in e2e (grill R1) | Prewarm with `renderer.compileAsync` at load | By day the pool is out of the render list, so the first dusk recompiles every material once per page load. Prewarm only if the stall is noticeable (> ~300 ms), as a later `tweak`. |
+| Fast mode prewarms the dusk variant at load: `lights.prewarm()` makes the pool visible, awaits `renderer.compileAsync(scene, camera)`, then restores `visible = v > 0`; awaited after `renderer.init()`, before the first frame (apply, 2026-11-06; was: accept the stall, grill R1) | Accept the stall; keep the pool in the render list by day at intensity 0 | Measured at apply: without prewarm the Rundgang start (p 0 → 4, first dusk) stalls ~0.7–0.8 s (2.9 fps in the first second vs 14 with `hires=on`) and breaks the tour timing tests; the 2-rAF probe in e2e (~200 ms) underestimated it. `compileAsync` compiles only visible objects: the house materials are covered; grass, furniture and fire compile on first appearance in both modes, as before. |
 | Cut-off fade on intensity | Pop on change; hysteresis | One line, composes with the existing `base · v` stage blend, and a light leaves the pool already dark. |
 | Day = `visible = false` on the pool (switch at `v > 0`) | Intensity 0 (today) | The request: "ganz ab"; out of the render list costs nothing per fragment. |
 | No ADR | ADR for the pool rule | Local to `lighting.js`, easily reversed; a code comment states the cache-key reason. |

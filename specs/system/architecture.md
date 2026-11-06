@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-05
+edited: 2026-11-06
 ---
 
 # Architecture: Frechenlehen house model
@@ -180,10 +180,12 @@ sequenceDiagram
     L-->>M: {root, objects, byName, extras}
     M->>Ma: TSL materials from the material extras
     M->>M: ink.js lines, garden.js grass and shrubs
-    M->>Li: sun, hemisphere, sky, room lights
+    M->>Li: sun, hemisphere, sky, light pool (or per-site lights with hires)
+    M->>Li: prewarm(compileAsync), before the first frame
     U->>S: progress p (play / click / scrub)
     S-->>M: weights {sketch, massing, detail, built, furnished}
     M->>M: uPaper, uDetail, uInk, dusk from the weights
+    M->>Li: before each draw: update(camera, indoors)
 ```
 
 - **`stages.js`.** `weights(p)` gives five weights that sum to 1, with a smoothstep blend
@@ -195,7 +197,21 @@ sequenceDiagram
 - **`ink.js`.** `EdgesGeometry` (30°) per mesh except `SMOOTH` and furniture objects, merged into one
   `LineSegments` per collection.
 - **`lighting.js`.** Day: sun from Blender's angle, hemisphere, sky. Dusk: low warm sun,
-  deep-blue sky, warm `PointLight`s at `ROOM_LIGHTS` + `ROOM_LIGHT_H`.
+  deep-blue sky, warm room and outside-lamp lights. `createLighting(…, { hires })`:
+  - **Fast mode** (default): a **light pool** of `ROOM_N` = 6 `PointLight`s and `OUTSIDE_N` = 2
+    `SpotLight`s (targets 1 m below), created once. `setDusk(v)` sets `visible = v > 0` on the
+    pool. `update(cameraPos, inside)` (called by `main.js` right before each `renderer.render`;
+    a no-op by day) ranks each kind's sites by site distance (`hypot(dx, dy, 3·dz)` while
+    `indoors()`), moves pooled light *k* to the *k*-th nearest site and sets
+    `intensity = base · v · clamp((d_cut − d) / FADE, 0, 1)` (`base` 9 room / 14 outside,
+    `FADE` 1.0 m). `prewarm(compile)` makes the pool visible, awaits
+    `renderer.compileAsync`, catches a failure, and restores the day/dusk visibility; `main.js`
+    awaits it after `renderer.init()`.
+  - **`hires`**: one light per site (23 + 8), always in the render list, intensity `base · v`.
+  - `LAMP_LIGHTS` (the reading lamp above the Ofen bed) are lit by day and at dusk in both modes.
+- **`hires`.** `main.js` reads `?hires=on` once; it also sets the pixel ratio (full vs. ≤ 1.5)
+  and whether the grass is hidden while `indoors()` (fast mode only, Rundgang included), and
+  `saveView()` keeps it in the URL.
 - **`garden.js`.**
   - **Grass:** an `InstancedMesh` of the clump, scattered per 25 cm cell, outside
     `no_grass`, within 30 m of the house, at 25 % of Blender's density.
@@ -230,7 +246,8 @@ sequenceDiagram
 - **`serve-build.js`** (Vite plugin, dev server only): serves the production build `web/dist/`
   under `/frechen_blender/`, the GitHub Pages path, so the one dev server shows source and build.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
-  `project`, state getters, `tour`, `tourKey`), only outside production builds; `window.__ofen`
+  `project`, state getters incl. `lights` (visible room / outside lights), `hires`, `pixelRatio`,
+  `tour`, `tourKey`), only outside production builds; `window.__ofen`
   on the Ofen page.
 
 ## Key decisions
@@ -264,6 +281,11 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | `tour.js` builds its own button and bar; `ui.js` only returns `setCut` | Tour controls in `ui.js` | Keeps the tour separable. |
 | The viewer plays at **0.75×**; the film keeps its pace | Lower `WALK` in `tour.py` | The slower pace was asked for the browser only. |
 | The **route is closed** in `tour.py`, for the film too | A viewer-only return leg | One route (ADR-001-XEWL); the viewer can loop it. |
+| Viewer dusk lights are a **fixed light pool** moved to the sites nearest the camera | Keep one light per site and toggle `visible` on the nearest N | three.js 0.187 hashes the id of every light in the render list into each material's cache key; a changing set would recompile every material while the camera moves. |
+| Separate pools: **6 room lights, 2 outside lamps**, cut-off fade 1.0 m | 4 + 2 with a 1.5 m fade; one ranking over all 31 sites | Point and spot lights can't share a pooled object, and from outside the lamps would starve the rooms. With 4 the last light was nearly always faded (sites lie centimetres apart in distance). 8 lights instead of 31. |
+| Rank sites by distance to the **camera**; indoors the height difference counts **3×** | Distance to the orbit target; plain 3D distance everywhere | The camera is where the viewer stands. Plain 3D fills slots with rooms through floor or ceiling, whose light only leaks (no shadows); outside, a vertical penalty would darken the EG windows in the overview. |
+| By day the pool is **out of the render list** (`visible = false`); the dusk variant is **prewarmed** at load | Intensity 0 by day (no recompile ever); accept the stall | Day lighting costs nothing per fragment. Without the prewarm the first dusk (e.g. the Rundgang start) stalled ~0.8 s; one compile at load is cheaper. |
+| One URL switch **`hires=on`** for full quality (all lights, full pixel ratio, grass indoors); speed shortcuts apply in the Rundgang too | Shortcuts off whenever the tour runs; a capture-only flag | The browser Rundgang should be fast; the film capture asks for full quality by name. The capture script forces it. |
 
 ## Data
 

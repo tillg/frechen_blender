@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-05
+edited: 2026-11-06
 ---
 
 # Functional: Frechenlehen house model
@@ -87,7 +87,8 @@ edited: 2026-11-05
   - **Skizze:** hidden-line ink on paper.
   - **Massenmodell:** clay with soft sun shadows.
   - **Detailmodell:** procedural materials after `MAT_DEF`, daylight, grass and leafy shrubs.
-  - **Gebaut:** dusk sky, low sun, warm light in the rooms.
+  - **Gebaut:** dusk sky, low sun, warm light in the rooms and outside lamps nearest the camera
+    (6 rooms, 2 lamps; inside the house the own storey first). By day all of them are off.
   - **Eingerichtet:** like Gebaut, plus the furniture (nodes with `extras.furniture`), which no
     other stage shows. The cutaway still applies: "Nur EG" hides the OG furniture.
 - **Orbit** with the mouse (drag, scroll). It starts from the README view in the south-east.
@@ -100,12 +101,15 @@ edited: 2026-11-05
   While paused, the user looks around with the mouse; while it runs, the cutaway buttons are
   disabled and the page draws at most 30 frames per second.
 - **The view lives in the URL**, written as it changes: house `?cam=x,y,z&at=x,y,z&p=…&cut=…`
-  (model coordinates; optional `&fov=…`, vertical field of view in degrees, default 28), Ofen
+  (model coordinates; optional `&fov=…`, vertical field of view in degrees, default 28, and
+  `&hires=on`, full quality), Ofen
   page `?cam=…&at=…&look=wire|mass|full`. A reload or a shared link opens the same view.
 - **Light on the GPU:** a frame is drawn only when something changes (camera, stage, cutaway,
-  sun, window size); a burning fire in view is redrawn at most 30 times a second. The pixel ratio
-  is capped at 1.5. While the camera is inside the main house the meadow grass is not drawn. The
-  Rundgang keeps all of it, so the captured film shows every frame in full.
+  sun, window size); a burning fire in view is redrawn at most 30 times a second. In fast mode
+  (the default, Rundgang included) the pixel ratio is capped at 1.5, only the light pool lights
+  the dusk, and the meadow grass is not drawn while the camera is inside the main house; the
+  dusk lighting is compiled once at load, so the first dusk doesn't stall. `?hires=on` (the
+  film capture, `tmp/threejs_film.mjs`, always sets it) switches all of these shortcuts off.
 - Local: `cd web && npm install && npm run dev` (one server, port 5377). The `.glb` is regenerated
   from the core first, and again whenever a `code/*.py` file is saved; then open pages reload at
   the same view.
@@ -156,8 +160,9 @@ sequenceDiagram
 The model has no runtime state. In Blender the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
 the state is the timeline progress `p` (0–4), the cutaway (all / noroof / eg), a forced
-dusk value from the sun toggle (cleared by any timeline move) and the Rundgang
-(off / playing / paused, its time and the loop flag; `body.dataset.tour`).
+dusk value from the sun toggle (cleared by any timeline move), the Rundgang
+(off / playing / paused, its time and the loop flag; `body.dataset.tour`) and the `hires` mode
+(fixed per page load).
 
 ## Permissions and visibility
 

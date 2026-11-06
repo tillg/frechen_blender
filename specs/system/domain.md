@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-05
+edited: 2026-11-06
 ---
 
 # Domain: Frechenlehen house model
@@ -54,7 +54,13 @@ the team uses them:
 | **No-grass area** | A rectangle where no grass grows: around house walls, terrace, gravel strip, beds, annex and the EG balcony (`no_grass`). The **windrose area** (`windrose`: star square plus four letter squares) is separate: Blender keeps grass off it, the viewer ignores it. |
 | **Clump** (Grasbüschel) | One grass instance: 6 curved, tapering blades, 0.3–0.6 m tall. |
 | **Shrub** (Strauch) | A rounded leafy bush in one of the beds (`Beet_Ost`, `Beet_West`), placed in groups of three with a gap. |
-| **Room light** | A warm point light at one of the 23 `ROOM_LIGHTS` (x, y, floor z), `ROOM_LIGHT_H` above the floor. Film fill lights in Blender, dusk lights in the viewer's Gebaut stage. |
+| **Room light** | A warm point light at one of the 23 `ROOM_LIGHTS` sites (x, y, floor z), `ROOM_LIGHT_H` above the floor. In Blender, one film fill light per site. In the viewer (fast mode) by day none is on; at dusk the `ROOM_N` sites nearest the camera are lit; with `hires=on` every site has its own light. |
+| **Outside lamp light** | The viewer's warm spot under an `OUTSIDE_LIGHTS` bulb (gooseneck wall lamps): off by day; at dusk the `OUTSIDE_N` nearest the camera (fast mode) or all of them (`hires=on`). |
+| **Light site** | A position a light can sit at: one `ROOM_LIGHTS` entry + `ROOM_LIGHT_H`, or one `OUTSIDE_LIGHTS` bulb. |
+| **Light pool** | The viewer's fixed set of `ROOM_N` (6) room `PointLight`s and `OUTSIDE_N` (2) outside `SpotLight`s. Its members never change; at dusk each sits at one of the nearest sites, by day the whole pool is off (`visible = false`, out of the render list). |
+| **Site distance** | How far a light site is from the camera for the ranking: `hypot(dx, dy, 3·dz)` while the camera is indoors (own storey first), else the plain 3D distance. |
+| **Cut-off fade** | A pooled light's intensity factor `clamp((d_cut − d) / FADE, 0, 1)`, `d_cut` = distance of the nearest site left out, `FADE` = 1.0 m: a light leaves the pool already dark. |
+| **Fast mode / Full quality (`hires`)** | The viewer's two modes, chosen per page load by the URL switch `hires`. Fast mode (default, Rundgang included): light pool, pixel ratio ≤ 1.5, no grass while the camera is indoors. `?hires=on` (film capture): none of these shortcuts. |
 
 ## Concepts and entities
 
@@ -123,7 +129,7 @@ stateDiagram-v2
     note right of Skizze: visible ink lines on paper (hidden-line)
     note right of Massenmodell: clay surfaces, soft shadows, lines fade out
     note right of Detailmodell: real materials, daylight
-    note right of Gebaut: dusk sky, low sun, warm room lights
+    note right of Gebaut: dusk sky, low sun, warm lights nearest the camera
     note right of Eingerichtet: like Gebaut, with furniture
 ```
 

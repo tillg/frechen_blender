@@ -12,9 +12,11 @@ import { createTour, drawDue } from './tour.js';
 import { createUI } from './ui.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
+// ?hires=on: full quality for the film capture, no speed shortcut that changes the picture
+const hires = new URLSearchParams(location.search).get('hires') === 'on';
 
 const renderer = new THREE.WebGPURenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));   // Retina: 44 % fewer pixels, barely softer
+renderer.setPixelRatio(hires ? window.devicePixelRatio : Math.min(window.devicePixelRatio, 1.5));   // Retina: 44 % fewer pixels, barely softer
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;      // soft via shadow.radius
@@ -40,7 +42,7 @@ const bp = await loadBlueprint(import.meta.env.BASE_URL + 'frechenlehen.glb');
 const defs = {};
 const isHouse = (o) => o.isMesh && o.material.userData.kind;       // not the grass clump
 bp.root.traverse((o) => isHouse(o) && (defs[o.material.name] = { name: o.material.name, extras: o.material.userData }));
-const lights = createLighting(scene, bp.extras, controls.target.clone(), uDetail);   // sun fixed on the house
+const lights = createLighting(scene, bp.extras, controls.target.clone(), uDetail, { hires });   // sun fixed on the house
 const mats = makeMaterials(Object.values(defs), { uPaper, uDetail, uDusk: lights.uDusk });
 const surfaces = [];
 bp.root.traverse((o) => {
@@ -102,7 +104,7 @@ function saveView() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     const q = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`
-      + (viewFov !== FOV ? `&fov=${viewFov}` : '');
+      + (viewFov !== FOV ? `&fov=${viewFov}` : '') + (hires ? '&hires=on' : '');
     if (q !== location.search) history.replaceState(history.state, '', q);
   }, 300);
 }
@@ -141,29 +143,31 @@ function fireInView() {
   return fireBoxes.some((b) => frustum.intersectsBox(b));
 }
 
+window.addEventListener('resize', () => {                             // before the awaits: no resize lost while compiling
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  tour.resize();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  dirty = true;
+});
+
 await renderer.init();
+await lights.prewarm(() => renderer.compileAsync(scene, camera));   // fast mode: no stall at the first dusk
 let draws = 0, lastDraw = -Infinity;
 renderer.setAnimationLoop((now) => {
   const touring = tour.state !== 'off';
   if (!tour.update(now)) controls.update();
-  const p = camera.position;                                        // the Rundgang keeps the grass (film)
-  if (garden.setIndoors(!touring && indoors(bp.extras, [p.x, -p.z, p.y]))) dirty = true;
+  const p = camera.position, inside = indoors(bp.extras, [p.x, -p.z, p.y]);
+  if (garden.setIndoors(!hires && inside)) dirty = true;            // hires (film capture) keeps the grass
   // tour and fire: ≤ 30 fps, less GPU load; otherwise only after a change
   if (touring || (!dirty && fireInView())) { if (!drawDue(now, lastDraw)) return; }
   else if (!dirty) return;
   dirty = touring;                                                  // the first frame after the tour draws too
   lastDraw = now;
   fire.tick(now / 1000);
+  lights.update(p, inside);                                         // fast mode, dusk: the pool to the nearest sites
   renderer.render(scene, camera);
   draws++;
-});
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  tour.resize();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  dirty = true;
 });
 
 if (import.meta.env.MODE !== 'production') {
@@ -174,6 +178,12 @@ if (import.meta.env.MODE !== 'production') {
     get progress() { return progress; },
     get linesVisible() { return ink.group.visible; },
     get garden() { return garden.state; },
+    hires,
+    get pixelRatio() { return renderer.getPixelRatio(); },
+    get lights() {                                                  // visible room / outside lights, model coords
+      const at = (ls) => ls.filter((l) => l.visible).map((l) => [l.position.x, -l.position.z, l.position.y].map((v) => +v.toFixed(3)));
+      return { room: at(lights.roomLights), outside: at(lights.outsideLights) };
+    },
     cameraAt: () => [camera.position.x, -camera.position.z, camera.position.y].map((v) => +v.toFixed(3)),
     fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y,   // a flame's height (0: off)
     setProgress,
