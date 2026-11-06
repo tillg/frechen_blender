@@ -1,10 +1,10 @@
 ---
 feature: lichter
 title: "Proposal: lights off by day, only the nearest at dusk"
-status: proposed
+status: applied
 order: 1
 created: 2026-11-05
-edited: 2026-11-05
+edited: 2026-11-06
 ---
 # Proposal: lights off by day, only the nearest at dusk
 
@@ -44,8 +44,7 @@ so it needs a switch that says so instead of being tied to the tour state.
 - Out (non-goals): the Blender film lights (`film.py`, `Innenlicht`); the switched-on lamp above
   the Ofen bed (`LAMP_LIGHTS`, one light, lit by day and at dusk — unchanged); the fire's look;
   `ROOM_LIGHTS` / `OUTSIDE_LIGHTS` positions and their export (unchanged, `blueprint.test.js` still
-  expects 23); shadow-casting room lights; a pipeline prewarm (only if the measured first-dusk
-  stall is noticeable, as a later `tweak`); a toolbar button for `hires`; the Ofen page; drawing on
+  expects 23); shadow-casting room lights; a toolbar button for `hires`; the Ofen page; drawing on
   demand and the 30 fps tour/fire cap (unchanged in both modes).
 
 ## Expected outcome
@@ -57,8 +56,8 @@ so it needs a switch that says so instead of being tied to the tour state.
   rooms of the same storey (OG at the Galerie: no EG site in the pool).
 - Moving the camera never changes which light objects exist or are visible, only their positions
   and intensities — so no material pipeline is rebuilt while orbiting or touring (three.js hashes
-  light ids into the material cache key). The first dusk per page load compiles once; e2e logs
-  how long.
+  light ids into the material cache key). The dusk variant is compiled once at load (prewarm), so
+  the first dusk — e.g. the Rundgang start — does not stall.
 - No visible pop when the nearest set changes: a light fades to 0 within 1.0 m of the cut-off.
 - Fast mode: no grass while the camera is indoors, in the Rundgang too.
 - `?hires=on`: 23 + 8 per-site lights as today, pixel ratio = `devicePixelRatio`, grass visible
