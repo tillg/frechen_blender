@@ -693,3 +693,79 @@ def test_chairs_are_board_chairs_after_stuhl_png():
         lean = math.dist(c, (mean(top, 0), mean(top, 1))) - math.dist(c, (mean(low, 0), mean(low, 1)))
         assert lean > 0.12 * (top[0][2] - low[0][2])                         # leans back
     assert sum(0.90 <= p[2][2] <= 1.0 for p in board) == 3 * 15                # tall: about 0.95
+
+
+def test_desk_submodel():
+    """code/desk.py: the Büro desk (today's table, 1.948 x 0.991 x 0.75 m) as its own sub-model
+    (web/desk.html), at its own origin: two LG 32" monitors showing the screenshots of
+    input/2026-11-06 input/ (a12 left, pilcrow right), edge to edge at about 170°, turned towards
+    the chair; the MacBook Pro closed, left, partly under the left monitor, a softly lit Apple logo
+    on its lid; a white keyboard and a white trackpad in front; all standing on the top; the chair
+    at it; dimension lines."""
+    import desk
+    bp = house_core.build_desk()
+    assert {c for c, _ in bp.geo} == {"Desk"} and bp.garden is None
+    assert {n for _, n in bp.geo} == {"Desk_Moebel", "Desk_Stuehle", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R"}
+    v = bp.geo[("Desk", "Desk_Moebel")]["v"]
+    lo, hi = [min(p[k] for p in v) for k in range(3)], [max(p[k] for p in v) for k in range(3)]
+    assert [round(a, 3) for a in lo[:2] + hi] == [0, 0, desk.DESK_W, desk.DESK_D, 0.75]
+    W, D, T = desk.DESK_W, desk.DESK_D, 0.75
+    g = bp.geo[("Desk", "Desk_Geraete")]
+    assert all(-1e-9 <= x <= W and -1e-9 <= y <= D and z >= T - 1e-9 for x, y, z in g["v"])   # on the top
+    assert {"Alu", "Tasten", "Apfel", "Eisen"} <= set(g["m"])
+    panes = {}
+    for side, img in (("L", "screen_a12"), ("R", "screen_pilcrow")):
+        name = "Desk_Bildschirm_" + side
+        pg = bp.geo[("Desk", name)]
+        (m,) = set(pg["m"])
+        d = bp.mat_def[m]
+        assert d["image"] == f"textures/{img}.jpg" and (CODE.parent / "web" / "public" / d["image"]).exists()
+        w, h = d["size"]
+        assert abs(w / h - 16 / 9) < 0.01 and 0.69 < w < 0.71                 # 31.5" 16:9 panel
+        loc = [house_core.local(p, bp.pivot[name], bp.turn[name]) for p in pg["v"]]   # pivot: lower-left
+        assert abs(min(p[0] for p in loc)) < 1e-9 and abs(max(p[0] for p in loc) - w) < 1e-9
+        assert abs(min(p[2] for p in loc)) < 1e-9 and abs(max(p[2] for p in loc) - h) < 1e-9
+        assert max(abs(p[1]) for p in loc) < 0.003                            # flat in its plane
+        panes[side] = pg["v"]
+    assert abs(bp.turn["Desk_Bildschirm_L"] - bp.turn["Desk_Bildschirm_R"] - (180 - 170)) < 1e-9   # 170° apart,
+    assert bp.turn["Desk_Bildschirm_L"] > 0                                   # front sides towards the chair
+    inner = max(panes["L"], key=lambda p: p[0] - p[2]), min(panes["R"], key=lambda p: p[0] + p[2])   # lower inner corners
+    assert math.dist(*inner) < 2 * 0.0085 + 0.004                             # only the two bezels between: touching
+    lid = [g["v"][i] for f, m in zip(g["f"], g["m"]) if m == "Apfel" for i in f]
+    mac = desk.MAC_X, desk.MAC_X + desk.MAC[0]
+    assert all(mac[0] < p[0] < mac[1] and abs(p[2] - T - 0.0168) < 0.001 for p in lid)   # logo on the closed lid
+    assert bp.mat_def["Apfel"]["emit"] <= 1.0                                 # softly lit
+    left = [p[0] for p in panes["L"]]
+    assert mac[0] < min(left) < mac[1]                                        # partly under the left monitor
+    assert T + desk.MAC[2] < min(p[2] for p in panes["L"]) - 0.05
+    keys = [g["v"][i] for f, m in zip(g["f"], g["m"]) if m == "Tasten" for i in f]
+    assert max(p[1] for p in keys) < 0.5 and max(p[2] for p in keys) < T + 0.02   # flat, in front
+    assert len(bp.dims) >= 5 and any("194.8" in t for _, _, t in bp.dims)
+
+
+def test_desk_built_into_the_bibliothek():
+    """The desk sub-model stands in the Bibliothek at today's place (SW corner 10.919 / 11.48),
+    unrotated; its devices and screens are loose furniture ("Eingerichtet"), the screens keep their
+    pivots."""
+    import desk
+    sub = house_core.build_desk()
+    house_core.build()                                                    # restore the registries
+    x0, y0 = desk.DESK_AT
+    for n in ("Geraete", "Bildschirm_L", "Bildschirm_R"):
+        a, b = sub.geo[("Desk", "Desk_" + n)]["v"], BP.geo[("EG", "EG_" + n)]["v"]
+        assert len(a) == len(b) and all(math.dist((p[0] + x0, p[1] + y0, p[2]), q) < 1e-9 for p, q in zip(a, b))
+        assert "EG_" + n in BP.furniture
+    px, py, pz = sub.pivot["Desk_Bildschirm_L"]
+    assert math.dist(BP.pivot["EG_Bildschirm_L"], (px + x0, py + y0, pz)) < 1e-9
+    assert BP.turn["EG_Bildschirm_L"] == sub.turn["Desk_Bildschirm_L"]
+    assert desk.DESK_AT == (10.919, 11.48)
+
+
+def test_back_door_has_lever_handles_inside_and_outside():
+    """Back door (west wall): a black lever handle outside (on the lock plate) and inside (on its
+    own backplate), at the lock (south side), levers pointing towards the hinge (north)."""
+    levers = [(lo, hi) for m, lo, hi, _ in part_list(("EG", "EG_Hintertuer"))
+              if m == "Eisen" and 1.0 < lo[2] and hi[2] < 1.15 and hi[1] - lo[1] > 0.12]
+    assert any(hi[0] < -0.04 for lo, hi in levers)                           # outside the leaf
+    assert any(lo[0] > 0.09 for lo, hi in levers)                            # inside
+    assert all(lo[1] < 7.408 + 0.09 + 0.12 for lo, hi in levers)             # at the lock, south side

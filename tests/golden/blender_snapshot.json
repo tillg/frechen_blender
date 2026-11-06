@@ -289,6 +289,48 @@
   "rnd": "0b2a9dfdf42b7f84",
   "verts": 696
  },
+ "EG_Bildschirm_L": {
+  "bbox": [
+   11.19023,
+   12.21652,
+   0.8795,
+   11.88471,
+   12.27876,
+   1.2715
+  ],
+  "faces": 6,
+  "materials": [
+   "FL_Bildschirm_A12"
+  ],
+  "origin": [
+   11.19036,
+   12.21652,
+   0.8795
+  ],
+  "rnd": "d9a19909b4719bf0",
+  "verts": 8
+ },
+ "EG_Bildschirm_R": {
+  "bbox": [
+   11.90129,
+   12.21652,
+   0.8795,
+   12.59577,
+   12.27876,
+   1.2715
+  ],
+  "faces": 6,
+  "materials": [
+   "FL_Bildschirm_Pilcrow"
+  ],
+  "origin": [
+   11.90129,
+   12.27727,
+   0.8795
+  ],
+  "rnd": "b010ee0a65a1f82b",
+  "verts": 8
+ },
  "EG_Boden": {
   "bbox": [
    0.2,
@@ -398,6 +440,30 @@
   "rnd": "82b544b3f969a22f",
   "verts": 2736
  },
+ "EG_Geraete": {
+  "bbox": [
+   10.969,
+   11.66,
+   0.75,
+   12.60646,
+   12.4287,
+   1.28
+  ],
+  "faces": 922,
+  "materials": [
+   "FL_Alu",
+   "FL_Apfel",
+   "FL_Eisen",
+   "FL_Tasten"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "0579c58a364d1712",
+  "verts": 1480
+ },
  "EG_Haube": {
   "bbox": [
    7.955,
@@ -469,14 +535,14 @@
  },
  "EG_Hintertuer": {
   "bbox": [
-   -0.022,
+   -0.07,
    7.502,
    0.01,
-   0.054,
+   0.11,
    8.283,
    2.206
   ],
-  "faces": 512,
+  "faces": 542,
   "materials": [
    "FL_Eisen",
    "FL_Gitter",
@@ -489,8 +555,8 @@
    0.0,
    0.0
   ],
-  "rnd": "77598378600d406d",
-  "verts": 620
+  "rnd": "91bbf13909623612",
+  "verts": 660
  },
  "EG_Innentueren": {
   "bbox": [

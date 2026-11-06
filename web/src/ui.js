@@ -29,7 +29,8 @@ export function createUI(api) {
   const sun = el('button', { type: 'button', className: 'fl-sun' });
   sun.onclick = () => { api.toggleSun(); refresh(); };
   const ofen = el('a', { href: 'ofen.html', title: 'Teilmodell Ofen mit Maßen' }, 'Ofen');   // relative: works under the Pages base too
-  tools.append(...cutButtons.map(([, b]) => b), el('span', { className: 'fl-sep' }), sun, el('span', { className: 'fl-sep' }), ofen);
+  const desk = el('a', { href: 'desk.html', title: 'Teilmodell Schreibtisch mit Maßen' }, 'Schreibtisch');
+  tools.append(...cutButtons.map(([, b]) => b), el('span', { className: 'fl-sep' }), sun, el('span', { className: 'fl-sep' }), ofen, desk);
 
   const bar = el('div', { className: 'fl-bar' });
   const play = el('button', { type: 'button', className: 'fl-play' });

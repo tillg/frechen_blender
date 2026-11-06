@@ -10,6 +10,7 @@ Details (doors, balconies, cladding, terrace, lamps, eaves) follow the photos in
 import math, random
 from dataclasses import dataclass
 import ofen  # the stoves (code/ofen.py); it uses the primitives below via house_core.*
+import desk  # the Büro desk sub-model (code/desk.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -88,6 +89,14 @@ MAT_DEF = {
     "Wolle":      dict(rgba=(0.45, 0.14, 0.10, 1), rough=0.95),
     "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0, night=True),   # viewer: lit at dusk only
     "GluehfadenAn": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),              # switched-on lamp (Ofen bed)
+    "Alu":        dict(rgba=(0.72, 0.72, 0.74, 1), metal=0.15, rough=0.35),   # desk: MacBook, keyboard, monitor stands
+    "Tasten":     dict(rgba=(0.93, 0.93, 0.92, 1), rough=0.45),             # white keys, trackpad glass
+    "Apfel":      dict(rgba=(0.95, 0.95, 0.97, 1), emit=0.5, rough=0.3),   # the softly lit logo on the closed MacBook
+    # image: screenshot under web/public/ (2560 x 1440, made once from input/2026-11-06 input/ with
+    # sips: downscaled, padded to 16:9); size: the pane's w, h in metres. The pane is its own object
+    # with the pivot at its lower-left corner; object-space x/w, z/h map to the image
+    "Bildschirm_A12":     dict(rgba=(0.55, 0.60, 0.66, 1), image="textures/screen_a12.jpg", size=(0.697, 0.392), emit=0.8, rough=0.2),
+    "Bildschirm_Pilcrow": dict(rgba=(0.70, 0.72, 0.70, 1), image="textures/screen_pilcrow.jpg", size=(0.697, 0.392), emit=0.8, rough=0.2),
 }
 # RAL colours (sRGB 0-255) that override the base colour of plain materials (paint.py, viewer):
 # facade and windows RAL 9010 Reinweiß, shutters RAL 5014 Taubenblau
@@ -97,6 +106,16 @@ PAINT = {"Putz": RAL_9010, "Rahmen": RAL_9010, "Laden": RAL_5014}
 GEO = {}      # (collection, object) -> {"v": [...], "f": [...], "m": [...], "r": [...]}
 SMOOTH = set()  # objects shaded smooth
 PIVOT = {}    # object -> origin (for parts that get animated, e.g. the entrance door)
+TURN = {}     # object -> its rotation about the vertical through its PIVOT, degrees (counter-
+              # clockwise from above): the backends store its mesh unturned (local()) and turn the
+              # object, so object space runs along it (the desk's angled screen panes)
+
+
+def local(p, piv, turn=0.0):
+    """World point p in the object space of an object with origin piv, turned by `turn` degrees."""
+    a = math.radians(-turn)
+    x, y, z = p[0] - piv[0], p[1] - piv[1], p[2] - piv[2]
+    return (x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a), z)
 OPENINGS = []  # exterior wall openings, used by the west cladding
 FIRES = []     # fire beds for the animated fire component (code/fire.py): dict(base, u, w, h, d)
 LEAVES = []    # opened interior door leaves (collection, [corner, corner]) – for clash checks
@@ -518,6 +537,13 @@ def back_door():
              zc - eb - 0.06, zc + eb + 0.06)
     lbox(c, o, "Eisen", P, la, lb, -0.008, 0.0, 0.97, 1.03)                  # strap
     lbox(c, o, "Metall", P, la + 0.06, la + 0.14, -0.02, 0.0, 1.02, 1.12)     # lock (south side)
+    # black lever handles at the lock, pointing towards the hinge (north): outside on the lock
+    # plate, inside on a backplate. Fixed rnd (plain colour), so no later part's random value shifts
+    hu, zh = la + 0.10, 1.06
+    lbox(c, o, "Eisen", P, hu - 0.025, hu + 0.025, 0.05, 0.06, 0.93, 1.19, 0.5)
+    for f, s in ((-0.02, -1), (0.06, 1)):                                      # face, outward
+        lbox(c, o, "Eisen", P, hu - 0.012, hu + 0.012, f, f + s * 0.05, zh - 0.0125, zh + 0.0125, 0.5)
+        lbox(c, o, "Eisen", P, hu - 0.012, hu + 0.13, f + s * 0.035, f + s * 0.05, zh - 0.0125, zh + 0.0125, 0.5)
 
 
 def stube_niche():
@@ -1426,7 +1452,7 @@ def build_annex():
 # Loose furniture appears in the viewer's last stage "Eingerichtet" (Blueprint.furniture); the
 # built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
-FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "OG_Moebel"}
+FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R"}
 
 
 def _grain(ax):
@@ -1511,14 +1537,6 @@ def bunk_bed(c, x0, x1, y0, y1, ladder, z):
     for k in range(5):
         zr = z + 0.40 + 0.26 * k
         box(c, o, "FichteY", xl + 0.005, xl + 0.035, y1 - 0.45, y1 - 0.12, zr, zr + 0.03)
-
-
-def desk(c, x0, x1, y0, y1, z=0.0):
-    o = c + "_Moebel"
-    box(c, o, "FichteX", x0, x1, y0, y1, z + 0.72, z + 0.75)
-    for xa in (x0 + 0.03, x1 - 0.08):
-        for ya in (y0 + 0.03, y1 - 0.08):
-            box(c, o, "FichteZ", xa, xa + 0.05, ya, ya + 0.05, z + 0.012, z + 0.72)
 
 
 def shelf(c, x0, x1, y0, y1, ax):
@@ -1785,9 +1803,9 @@ def build_furniture():
     nightstand("EG", 5.62, 6.02, 11.77, 12.25)
     nightstand("EG", 5.62, 6.02, 9.41, 9.87)
     grand_piano()
-    desk("EG", 10.919, 12.867, 11.48, 12.471)               # between the two north french doors
+    desk.desk_neu("EG", *desk.DESK_AT)                      # between the two north french doors, with its devices
     bookcase()
-    chair("EG", 11.893, 11.25, 0, 1)
+    desk.stuhl("EG", *desk.DESK_AT)
     shelf("EG", 2.774, 3.34, 3.292, 5.847, "y")
     shelf("EG", 3.342, 4.67, 5.22, 5.847, "x")
     shelf("EG", 4.672, 5.238, 4.63, 5.847, "y")
@@ -1807,7 +1825,7 @@ def build_furniture():
     machine("OG", 7.97, 8.588, 4.23, 4.85, zo)
     machine("OG", 7.97, 8.588, 4.23, 4.85, zo + 0.838)                   # dryer on the washer
     machine("OG", 7.97, 8.588, 3.61, 4.21, zo)
-    desk("OG", 5.592, 8.588, 2.792, 3.592, zo)                          # full width of the back wall
+    desk.desk("OG", 5.592, 8.588, 2.792, 3.592, zo)                     # full width of the back wall
     folded_stack("OG", 6.45, 3.20, zo + 0.75, ("Jeans", "Jeans", "Wolle", "Bettwaesche", "Creme", "Leinen"))
     folded_stack("OG", 7.15, 3.20, zo + 0.75, ("Bettwaesche", "Creme", "Bettwaesche", "Leinen", "Bettwaesche"))
     basket_cupboard("OG", 5.59, 6.19, 3.612, 5.95, zo)                  # right wall from the door
@@ -1970,12 +1988,13 @@ class Blueprint:
     lamp_lights: list = ()      # LAMP_LIGHTS: switched-on lamps inside
     fires: list = ()   # FIRES: base (centre of the flame bed, in the flame plane), u (unit along
                        # the width, normal = (-u_y, u_x) towards the viewer), w, h, d
+    turn: dict = None  # TURN: object -> degrees about its pivot (None: no turned object)
 
 
 def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
-    OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); SMOOTH.clear(); LEAVES.clear()
+    OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SMOOTH.clear(); LEAVES.clear()
     OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
@@ -1984,7 +2003,8 @@ def build():
     build_furniture()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
-                     outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES))
+                     outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
+                     turn=dict(TURN))
 
 
 def build_ofen():
@@ -1994,3 +2014,14 @@ def build_ofen():
     dims = ofen.ofen_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
                      [], None, set(), dims, fires=list(FIRES), lamp_lights=list(LAMP_LIGHTS))
+
+
+def build_desk():
+    """The desk sub-model alone (web/desk.html): desk, devices and chair at the origin, plus its
+    dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear()
+    random.seed(22)
+    dims = desk.desk_neu()
+    desk.stuhl("Desk", 0.0, 0.0)
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
+                     [], None, set(), dims, turn=dict(TURN))

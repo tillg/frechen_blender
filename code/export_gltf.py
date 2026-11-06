@@ -1,9 +1,9 @@
 """Frechenlehen – glTF backend: writes the Blueprint of house_core.py as a .glb for the web viewer.
 
 Standard library only:  python3 code/export_gltf.py web/public/frechenlehen.glb
-(`--ofen`: the Ofen sub-model of house_core.build_ofen() instead, with its dimension lines in
-scene.extras.dims)
-- one node per GEO object (name = object name, translation = pivot, extras.collection,
+(`--ofen` / `--desk`: the Ofen or desk sub-model of house_core.build_ofen() / build_desk() instead,
+with its dimension lines in scene.extras.dims)
+- one node per GEO object (name = object name, translation = pivot, rotation = turn, extras.collection,
   extras.smooth for SMOOTH objects, extras.furniture for the furniture of the last stage)
 - one primitive per material: POSITION, NORMAL, _RND (the Part's rnd), uint32 indices
 - materials FL_<name>: a pbrMetallicRoughness approximation; the full MAT_DEF entry (+ paint)
@@ -122,8 +122,10 @@ def export(path, bp=None):
     mats = [material(n, bp.mat_def[n], bp.paint) for n in names]
     nodes, meshes = [], []
     for (coll, name), g in bp.geo.items():
-        piv = bp.pivot.get(name, (0.0, 0.0, 0.0))
-        prims, open_mats = object_primitives(g, bp.parts[(coll, name)], name in bp.smooth, piv)
+        piv, turn = bp.pivot.get(name, (0.0, 0.0, 0.0)), (bp.turn or {}).get(name, 0.0)
+        if turn:                                             # stored unturned, the node turns it
+            g = {**g, "v": [house_core.local(p, piv, turn) for p in g["v"]]}
+        prims, open_mats = object_primitives(g, bp.parts[(coll, name)], name in bp.smooth, (0.0, 0.0, 0.0) if turn else piv)
         for m in open_mats:
             mats[names.index(m)]["doubleSided"] = True
         meshes.append({"name": name, "primitives": [
@@ -138,6 +140,8 @@ def export(path, bp=None):
             node["extras"]["furniture"] = True
         if name in bp.pivot:
             node["translation"] = list(yup(piv))
+        if turn:                                             # about the vertical: glTF y
+            node["rotation"] = [0.0, math.sin(math.radians(turn) / 2), 0.0, math.cos(math.radians(turn) / 2)]
         nodes.append(node)
     extras = {"coordinates": "z-up model metres (x east, y north); glTF positions are (x, z, -y)"}
     if bp.garden:                                            # the house (not the Ofen sub-model)
@@ -197,5 +201,6 @@ def export(path, bp=None):
 
 
 if __name__ == "__main__":
-    size = export(sys.argv[1], house_core.build_ofen() if "--ofen" in sys.argv else None)
+    sub = house_core.build_ofen if "--ofen" in sys.argv else house_core.build_desk if "--desk" in sys.argv else None
+    size = export(sys.argv[1], sub and sub())
     print(f"wrote {sys.argv[1]} ({size / 1e6:.1f} MB)")
