@@ -419,6 +419,28 @@
   "rnd": "76c5a30b23286111",
   "verts": 2156
  },
+ "EG_Fliesen": {
+  "bbox": [
+   0.31,
+   5.477,
+   0.015,
+   2.358,
+   10.098,
+   1.115
+  ],
+  "faces": 8268,
+  "materials": [
+   "FL_Fliese",
+   "FL_Fugengrau"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "23cf63730a1aefe8",
+  "verts": 11024
+ },
  "EG_Gelaender": {
   "bbox": [
    7.6006,
@@ -659,7 +681,7 @@
    0.0,
    0.0
   ],
-  "rnd": "1cf50f16d57dd92e",
+  "rnd": "9c1a17ff8e41fa87",
   "verts": 4376
  },
  "EG_Ofen_Bank": {
@@ -865,14 +887,15 @@
  "EG_Sanitaer": {
   "bbox": [
    0.298,
-   5.475,
-   0.015,
+   5.485,
+   0.014,
    2.358,
    12.485,
    2.05
   ],
-  "faces": 272,
+  "faces": 696,
   "materials": [
+   "FL_Eisen",
    "FL_Glas",
    "FL_Keramik",
    "FL_Metall",
@@ -883,8 +906,8 @@
    0.0,
    0.0
   ],
-  "rnd": "d71db8a5833dd232",
-  "verts": 444
+  "rnd": "9c658cc5e379536b",
+  "verts": 1144
  },
  "EG_Stuehle": {
   "bbox": [
@@ -906,7 +929,7 @@
    0.0,
    0.0
   ],
-  "rnd": "7c8dcf62751fffa6",
+  "rnd": "6f7b671fc4a1f0c3",
   "verts": 1590
  },
  "EG_Tisch": {
@@ -2363,6 +2386,28 @@
   "rnd": "14d6660213bf3b4b",
   "verts": 2352
  },
+ "OG_Fliesen": {
+  "bbox": [
+   0.31,
+   3.982,
+   2.715,
+   9.92,
+   6.438,
+   3.815
+  ],
+  "faces": 6420,
+  "materials": [
+   "FL_Fliese",
+   "FL_Fugengrau"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "666ecf6acc1c65be",
+  "verts": 8560
+ },
  "OG_Gelaender": {
   "bbox": [
    7.6,
@@ -2476,7 +2521,7 @@
    0.0,
    0.0
   ],
-  "rnd": "36658f23d49618b4",
+  "rnd": "601b4efd293b2d3d",
   "verts": 59328
  },
  "OG_Raumnamen": {
@@ -2502,15 +2547,16 @@
  },
  "OG_Sanitaer": {
   "bbox": [
-   0.31,
+   0.32,
    0.4,
    2.712,
    9.92,
    8.57,
    4.75
   ],
-  "faces": 558,
+  "faces": 982,
   "materials": [
+   "FL_Eisen",
    "FL_Glas",
    "FL_Keramik",
    "FL_Metall",
@@ -2522,8 +2568,8 @@
    0.0,
    0.0
   ],
-  "rnd": "3a1f920dcd62513c",
-  "verts": 912
+  "rnd": "a5916c452eda42fe",
+  "verts": 1612
  },
  "OG_Waende": {
   "bbox": [
@@ -2650,7 +2696,7 @@
    0.0,
    0.0
   ],
-  "rnd": "2cdb5e92d88f08ac",
+  "rnd": "4c10ec065f814b4e",
   "verts": 1096
  },
  "Verschalung_West": {
@@ -2672,7 +2718,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f63b734df9221087",
+  "rnd": "f5da10464a42b519",
   "verts": 2136
  },
  "WR_N": {

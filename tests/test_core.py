@@ -789,3 +789,58 @@ def test_bathrooms_have_limestone_like_the_eg_corridor():
     assert pts("OG", [(1.0, 6.0), (4.0, 7.5), (7.0, 4.0)]) == {"Eiche"}                                # WC, Flur, HWR
     assert pts("EG", [(1.2, 11.0), (1.2, 9.5)]) == {"Eiche"}                                           # Großeltern
     assert pts("EG", [(5.0, 7.5)]) == {"Kalkstein"}                                                    # EG Flur
+
+
+def _part_at(key, x, y, z):
+    """Material of the first part of GEO object `key` whose bounding box holds (x, y, z)."""
+    if key not in BP.geo:
+        return None
+    g = BP.geo[key]
+    for first, n in BP.parts[key]:
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        if all(min(v[k] for v in vs) < p < max(v[k] for v in vs) for k, p in enumerate((x, y, z))):
+            return g["m"][first]
+
+
+# the four WCs: (collection, floor z, interior rectangle, door span on the north wall)
+WCS = [("EG", 0.0, (0.31, 2.358, 5.475, 6.574), (1.349, 2.288)),                 # by the back hall
+       ("EG", 0.0, (0.31, 2.358, 8.656, 10.10), (0.56, 1.25)),                   # WC Großeltern
+       ("OG", house_core.Z_OG, (0.31, 1.57, 5.46, 6.44), (0.48, 1.42)),          # WC 2,26
+       ("OG", house_core.Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]          # WC 2,30
+
+
+def test_wcs_have_green_tiles_to_hip_height():
+    """Request 2026-11-08 after input/2026-11-08 input/bad_mallnitz.jpeg: green subway tiles about
+    1.1 m high (with a cap row) on all WC walls, cut at the door; the Bäder have none."""
+    for c, z, (x0, x1, y0, y1), (da, db) in WCS:
+        key, d = (c, c + "_Fliesen"), 0.008
+        na, nb = max(((x0, da), (db, x1)), key=lambda s: s[1] - s[0])            # wider tiled part
+        walls = [((x0 + x1) / 2, y0 + d), ((na + nb) / 2 - 0.025, y1 - d),
+                 (x0 + d, (y0 + y1) / 2), (x1 - d, (y0 + y1) / 2)]
+        for x, y in walls:
+            hits = {_part_at(key, x + dx, y, z + h) for h in (0.3, 0.45, 0.6, 0.75) for dx in (0.0, 0.05)}
+            assert "Fliese" in hits, (c, x, y)
+            assert _part_at(key, x, y, z + 1.4) is None
+        for dd in (0.003, 0.008, 0.012):
+            assert _part_at(key, (da + db) / 2, y1 - dd, z + 0.6) is None              # door left free
+    zo = house_core.Z_OG
+    assert ("OG", "OG_Fliesen") in BP.geo
+    assert all(_part_at(("OG", "OG_Fliesen"), x, y, zo + 0.6) is None
+               for x, y in ((1.0, 8.562), (7.0, 0.408), (5.598, 1.5)))                 # Bad NW, Bad S
+
+
+def test_wc_fixtures_after_the_photo():
+    """WCs after the same photo: floor-standing toilet with a close-coupled cistern, the hand
+    basins on chrome console legs, a black frame round their mirror. The Bäder keep theirs."""
+    zo = house_core.Z_OG
+    at = lambda wx, wy, fx, fy: lambda u, v: (wx + fx * v - fy * u, wy + fy * v + fx * u)
+    for c, z, *w in [("EG", 0.0, 1.17, 8.656, 0, 1), ("EG", 0.0, 1.325, 5.475, 0, 1),
+                     ("OG", zo, 0.31, 6.0, 1, 0), ("OG", zo, 9.26, 3.98, 0, 1)]:
+        M, key = at(*w), (c, c + "_Sanitaer")
+        assert _part_at(key, *M(0, 0.10), z + 0.60) == "Keramik", w            # cistern
+        assert _part_at(key, *M(0, 0.40), z + 0.03) == "Keramik", w            # pedestal on the floor
+    for c, z, *w in [("EG", 0.0, 2.358, 9.12, -1, 0), ("OG", zo, 9.92, 5.2, -1, 0)]:
+        M, key = at(*w), (c, c + "_Sanitaer")
+        assert {_part_at(key, *M(s * 0.16, 0.25), z + 0.30) for s in (-1, 1)} == {"Metall"}, w   # legs
+        assert {_part_at(key, *M(s * 0.27, 0.02), z + 1.60) for s in (-1, 1)} == {"Eisen"}, w    # frame
+    assert _part_at(("OG", "OG_Sanitaer"), *at(6.11, 0.40, 0, 1)(0.27, 0.02), zo + 1.6) != "Eisen"

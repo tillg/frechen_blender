@@ -49,7 +49,11 @@ edited: 2026-11-08
     bouclé cocktail armchairs either side of it
   - Stube sofa after sofa.tiff: linen three-seater, 3/4 of the way from the corner pier between
     the big windows to the Ofen, facing the pier
-  - bathrooms and WCs: shower, basin, wall-hung WC
+  - bathrooms: shower, basin with mirror
+  - the four WCs (also the WC Großeltern), after `input/2026-11-08 input/bad_mallnitz.jpeg`:
+    green subway tiles about 1.1 m high with a cap row, floor-standing toilet with a
+    close-coupled cistern; where the plan draws a hand basin (WC Großeltern, WC 2,30) a basin
+    on chrome console legs under a mirror in a black frame
   - OG Flur, right of the Waschküche door: deep ceramic sink on a dark stone panel, one mixer tap
   - Waschküche: two front loaders at the east wall, a dryer stacked on the north one; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the

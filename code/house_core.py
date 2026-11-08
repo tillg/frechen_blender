@@ -78,6 +78,8 @@ MAT_DEF = {
     "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
+    "Fliese":     dict(speck=((0.018, 0.075, 0.032), (0.030, 0.115, 0.050), 8), hue=0.03, rough=0.12),   # WC tiles
+    "Fugengrau":  dict(rgba=(0.42, 0.42, 0.40, 1)),                         # their grout
     "Spiegel":    dict(rgba=(0.92, 0.92, 0.92, 1), metal=1.0, rough=0.02),
     "Eisen":      dict(rgba=(0.018, 0.018, 0.02, 1), metal=0.4, rough=0.45),
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
@@ -643,13 +645,21 @@ def rounded(M, w, d, v0=0.0, n=12):
 
 
 def toilet(coll, wx, wy, fx, fy, z=0.0):
-    """Wall-hung toilet with a chrome flush plate."""
-    o, M = coll + "_Sanitaer", at_wall(wx, wy, fx, fy)
-    xy_prism(coll, o, "Keramik", rounded(M, 0.30, 0.46, 0.04), z + 0.22, z + 0.30)
-    xy_prism(coll, o, "Keramik", rounded(M, 0.36, 0.55), z + 0.30, z + 0.40)
-    xy_prism(coll, o, "Keramik", rounded(M, 0.37, 0.56, 0.02), z + 0.40, z + 0.425)       # seat
-    (xa, ya), (xb, yb) = M(-0.12, 0.0), M(0.12, 0.012)
-    box(coll, o, "Metall", xa, xb, ya, yb, z + 0.98, z + 1.14)
+    """Floor-standing toilet with a close-coupled cistern and a chrome side lever, lid down, after
+    bad_mallnitz.jpeg (input/2026-11-08 input/); stands on the WC tiles (all toilets are in the WCs)."""
+    T = WC_TILE_T
+    o, M = coll + "_Sanitaer", at_wall(wx + fx * T, wy + fy * T, fx, fy)
+    rect = lambda u0, u1, v0, v1: [M(u0, v0), M(u1, v0), M(u1, v1), M(u0, v1)]
+    xy_prism(coll, o, "Keramik", rounded(M, 0.26, 0.42, 0.13), z + 0.014, z + 0.05)         # foot
+    xy_prism(coll, o, "Keramik", rounded(M, 0.20, 0.36, 0.16), z + 0.05, z + 0.32)          # pedestal
+    xy_prism(coll, o, "Keramik", rounded(M, 0.36, 0.52, 0.16), z + 0.32, z + 0.40)          # bowl
+    xy_prism(coll, o, "Keramik", rect(-0.12, 0.12, 0.04, 0.19), z + 0.30, z + 0.42)        # back
+    xy_prism(coll, o, "Keramik", rounded(M, 0.37, 0.49, 0.20), z + 0.40, z + 0.42)          # seat
+    xy_prism(coll, o, "Keramik", rounded(M, 0.35, 0.47, 0.21), z + 0.42, z + 0.445)         # lid
+    xy_prism(coll, o, "Keramik", rect(-0.20, 0.20, 0.0, 0.19), z + 0.42, z + 0.78)         # cistern
+    xy_prism(coll, o, "Keramik", rect(-0.215, 0.215, 0.0, 0.21), z + 0.78, z + 0.81)       # its lid
+    xy_prism(coll, o, "Metall", rect(0.20, 0.215, 0.15, 0.18), z + 0.72, z + 0.75)         # lever
+    xy_prism(coll, o, "Metall", rect(0.215, 0.27, 0.16, 0.17), z + 0.73, z + 0.745)
 
 
 def basin(coll, wx, wy, fx, fy, w=0.60, d=0.46, z=0.0, mirror=True):
@@ -661,6 +671,46 @@ def basin(coll, wx, wy, fx, fy, w=0.60, d=0.46, z=0.0, mirror=True):
     if mirror:
         (xa, ya), (xb, yb) = M(-w / 2, 0.0), M(w / 2, 0.008)
         box(coll, o, "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
+
+
+def wc_basin(coll, wx, wy, fx, fy, w=0.40, d=0.28, z=0.0):
+    """Hand basin of the WCs after bad_mallnitz.jpeg (input/2026-11-08 input/): open ceramic bowl on two
+    chrome console legs with a towel rail, pillar mixer, chrome trap; above the tiles a mirror
+    in a stepped black frame."""
+    T = WC_TILE_T
+    o, M = coll + "_Sanitaer", at_wall(wx + fx * T, wy + fy * T, fx, fy)
+    rect = lambda u0, u1, v0, v1: [M(u0, v0), M(u1, v0), M(u1, v1), M(u0, v1)]
+    P = lambda u, v, h: (*M(u, v), z + h)
+    K = lambda *a: xy_prism(coll, o, "Keramik", rect(*a[:4]), z + a[4], z + a[5])
+    K(-w / 2 + 0.02, w / 2 - 0.02, 0.0, d - 0.02, 0.70, 0.76)                    # bowl bottom
+    K(-w / 2, w / 2, 0.0, 0.08, 0.70, 0.85)                                       # tap deck
+    K(-w / 2, w / 2, d - 0.03, d, 0.70, 0.85)                                     # front rim
+    for s in (-1, 1):
+        K(*sorted((s * w / 2, s * (w / 2 - 0.03))), 0.08, d - 0.03, 0.70, 0.85)  # side rims
+    turned(coll, o, "Metall", P(0, d / 2 + 0.03, 0.76), P(0, d / 2 + 0.03, 0.763), [(0.025, 0), (0.025, 1)])
+    turned(coll, o, "Metall", P(0, 0.045, 0.85), P(0, 0.045, 0.95), [(0.018, 0), (0.016, 1)])   # mixer
+    turned(coll, o, "Metall", P(0, 0.045, 0.94), P(0, 0.13, 0.92), [(0.009, 0), (0.008, 1)])    # spout
+    turned(coll, o, "Metall", P(0, 0.045, 0.95), P(0, 0.02, 1.00), [(0.006, 0), (0.005, 1)])    # lever
+    turned(coll, o, "Metall", P(0, d / 2 + 0.03, 0.70), P(0, d / 2 + 0.03, 0.46), [(0.02, 0), (0.02, 1)])
+    turned(coll, o, "Metall", P(0, d / 2 + 0.03, 0.47), P(0, 0.0, 0.47), [(0.016, 0), (0.016, 1)])
+    lu, lv = w / 2 - 0.04, d - 0.04
+    for s in (-1, 1):                                                             # console legs
+        turned(coll, o, "Metall", P(s * lu, lv, 0.014), P(s * lu, lv, 0.70), [(0.014, 0), (0.014, 1)])
+        turned(coll, o, "Metall", P(s * lu, lv, 0.014), P(s * lu, lv, 0.02), [(0.025, 0), (0.025, 1)])
+        turned(coll, o, "Metall", P(s * lu, lv, 0.25), P(s * lu, 0.0, 0.25), [(0.009, 0), (0.009, 1)])
+    turned(coll, o, "Metall", P(-lu, lv + 0.02, 0.62), P(lu, lv + 0.02, 0.62), [(0.008, 0), (0.008, 1)])  # rail
+    for s in (-1, 1):
+        turned(coll, o, "Metall", P(s * lu, lv, 0.62), P(s * lu, lv + 0.02, 0.62), [(0.008, 0), (0.008, 1)])
+    M = at_wall(wx, wy, fx, fy)                                                   # mirror on the plaster
+    z0, z1, mw, fw = z + 1.22, z + 2.05, 0.30, 0.07
+    F = lambda u0, u1, v1, za, zb: box(coll, o, "Eisen", *[c for p in zip(M(u0, 0.0), M(u1, v1)) for c in sorted(p)], za, zb)
+    F(-mw, mw, 0.035, z0, z0 + fw); F(-mw, mw, 0.035, z1 - fw, z1)
+    F(-mw, -mw + fw, 0.035, z0, z1); F(mw - fw, mw, 0.035, z0, z1)
+    i = mw - fw                                                                   # raised inner bead
+    F(-i, i, 0.05, z0 + fw, z0 + fw + 0.02); F(-i, i, 0.05, z1 - fw - 0.02, z1 - fw)
+    F(-i, -i + 0.02, 0.05, z0 + fw, z1 - fw); F(i - 0.02, i, 0.05, z0 + fw, z1 - fw)
+    (xa, ya), (xb, yb) = M(-i, 0.0), M(i, 0.012)
+    box(coll, o, "Spiegel", xa, xb, ya, yb, z0 + fw, z1 - fw)
 
 
 def shower(coll, x0, x1, y0, y1, glass, head, z=0.0):
@@ -705,16 +755,71 @@ def flur_sink(coll, wx, wy, z):
     turned(coll, o, "Metall", P(0, 0.08, 1.12), P(0, 0.05, 1.20), [(0.007, 0), (0.006, 1)])    # lever
 
 
+WC_TILE_T = 0.010            # tile face in front of the plaster (WC fixtures stand on it)
+WCS = [  # (collection, floor z, interior rectangle, door span left free on the north wall)
+    ("EG", 0.0, (0.31, 2.358, 5.475, 6.574), (1.349, 2.288)),     # WC by the back hall (architraves)
+    ("EG", 0.0, (0.31, 2.358, 8.656, 10.10), (0.56, 1.25)),       # WC Großeltern (sliding door)
+    ("OG", Z_OG, (0.31, 1.57, 5.46, 6.44), (0.48, 1.42)),         # WC 2,26
+    ("OG", Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]         # WC 2,30
+
+
+def wainscot(coll, z, x0, x1, y0, y1, door):
+    """Green subway tiles (7.5 x 15 cm, running bond, 14 rows) with a stepped cap row on all four
+    walls of a WC, after input/2026-11-08 input/bad_mallnitz.jpeg.
+    Grout backing 2 mm off the plaster; the y walls stop short of the x walls' tiles in the
+    corners; the north wall leaves `door` free. Own random stream, so later parts don't shift."""
+    o, rng, TL, TH, J = coll + "_Fliesen", random.Random(11), 0.15, 0.075, 0.003
+    zb, zt = z + 0.015, z + 0.015 + 14 * TH                       # above the oak floor
+    T = WC_TILE_T
+    for side in "snwe":
+        along_x = side in "sn"
+        face, n = {"s": (y0, 1), "n": (y1, -1), "w": (x0, 1), "e": (x1, -1)}[side]
+        ua, ub = (x0, x1) if along_x else (y0, y1)
+        spans = [(ua, door[0]), (door[1], ub)] if side == "n" else [(ua, ub)]
+
+        def B(m, a, b, t0, t1, za, zc, r, cut=0.0):              # u in [a, b], t in front of the face
+            if not along_x:                                       # y walls: clear of the x walls
+                a, b = max(a, y0 + cut), min(b, y1 - cut)
+            if b - a < 0.005:
+                return
+            ta, tb = face + n * t0, face + n * t1
+            if along_x:
+                box(coll, o, m, a, b, ta, tb, za, zc, r)
+            else:
+                box(coll, o, m, ta, tb, a, b, za, zc, r)
+
+        for sa, sb in spans:
+            sa, sb = max(sa, ua), min(sb, ub)
+            B("Fugengrau", sa, sb, 0.002, 0.007, zb, zt, 0.5, T + 0.001)
+            for k in range(14):
+                u = ua - (TL / 2 if k % 2 else 0)
+                while u < sb:
+                    a, b = max(u, sa), min(u + TL, sb)
+                    if b > a:
+                        B("Fliese", a + J / 2, b - J / 2, 0.004, T, zb + k * TH + J / 2, zb + (k + 1) * TH - J / 2,
+                          rng.random(), T + 0.001)
+                    u += TL
+            u = ua
+            while u < sb:                                         # cap row: stepped bullnose
+                a, b, r = max(u, sa) + J / 2, min(u + TL, sb) - J / 2, rng.random()
+                if b > a:
+                    B("Fliese", a, b, 0.004, 0.014, zt + J / 2, zt + 0.035, r, 0.015)
+                    B("Fliese", a, b, 0.004, 0.011, zt + 0.035, zt + 0.05, r, 0.015)
+                u += TL
+
+
 def build_sanitary():
     """Bathrooms and toilets after the fixtures drawn in grundriss_eg/og.png."""
     zo = Z_OG + 0.0
+    for c, z, rect, door in WCS:
+        wainscot(c, z, *rect, door)
     # EG Bad Großeltern (N): corner shower NW, basin on the west wall
     shower("EG", 0.31, 1.10, 11.66, 12.473, [(1.10, 11.66, 1.10, 12.473), (0.31, 11.66, 0.70, 11.66)],
            (0.70, 12.473, 0, -1))
     basin("EG", 0.31, 11.0, 1, 0)
     # EG WC Großeltern (S): toilet on the south wall, hand basin on the east wall
     toilet("EG", 1.17, 8.656, 0, 1)
-    basin("EG", 2.358, 9.12, -1, 0, w=0.40, d=0.28)
+    wc_basin("EG", 2.358, 9.12, -1, 0)
     # EG WC by the back hall
     toilet("EG", 1.325, 5.475, 0, 1)
     # OG Bad NW: basin on the north wall, shower in the south alcove
@@ -728,7 +833,7 @@ def build_sanitary():
     basin("OG", 6.11, 0.40, 0, 1, w=0.62, d=0.48, z=zo)
     # OG WC 2,30: toilet on the south wall, hand basin on the east wall
     toilet("OG", 9.26, 3.98, 0, 1, z=zo)
-    basin("OG", 9.92, 5.2, -1, 0, w=0.40, d=0.28, z=zo)
+    wc_basin("OG", 9.92, 5.2, -1, 0, z=zo)
     # OG Flur: sink right of the Waschküche door (plan: basin symbol), after waschbecken-briol.jpeg
     flur_sink("OG", 6.45, 6.35, zo)
 
