@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1445" height="935" viewBox="0 0 1445 935">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+<rect width="6" height="6" fill="#ddd"/><line x1="0" y1="0" x2="0" y2="6" stroke="#999" stroke-width="1.5"/></pattern>
+<marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#900"/></marker>
+<marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#a60"/></marker></defs>
+<style>
+.wall{fill:url(#hatch);stroke:#555;stroke-width:1}.win{fill:#fff;stroke:#555;stroke-width:1}
+.new{fill:#d33;stroke:#900;stroke-width:1}.glass{fill:#5ad;stroke:#26a;stroke-width:1.5}
+.leafA{fill:#f6c;stroke:#900;stroke-width:1}.leafB{fill:#fb4;stroke:#a60;stroke-width:1}
+.fix{fill:#fff;stroke:#900;stroke-width:1.5}.fixl{fill:none;stroke:#900;stroke-width:1.5}
+.cab{fill:#e8d2b0;stroke:#865;stroke-width:1}.cabx{stroke:#865;stroke-width:0.6}.rod{stroke:#555;stroke-width:2}.hanger{stroke:#865;stroke-width:1}.shelf{fill:#f4eee6;stroke:#a87;stroke-width:1;stroke-dasharray:4 3}
+.swing{fill:none;stroke:#777;stroke-width:1}.none{display:none}
+.arrowR{stroke:#900;stroke-width:1.5;marker-end:url(#ah)}.arrowL{stroke:#a60;stroke-width:1.5;marker-end:url(#ah2)}
+.call{fill:none;stroke:#26a;stroke-width:1}.dim{stroke:#333;stroke-width:1}
+text{font-family:Helvetica,Arial,sans-serif}
+.t{font-size:20px;font-weight:bold}.t2{font-size:15px;font-weight:bold;fill:#900}.s{font-size:15px}.s2{font-size:12px;fill:#555}
+.n{font-size:12px;fill:#900}.nw{display:none}.q{font-size:13px;fill:#888;font-style:italic}.c{font-size:14px;fill:#26a}
+.d{font-size:12px;fill:#000;font-weight:bold}.h{font-size:18px;font-weight:bold}
+</style><rect width="1445" height="935" fill="#fff"/>
+<rect x="272.0" y="702.1" width="52.7" height="156.4" class="wall"/>
+<rect x="272.0" y="61.7" width="52.7" height="543.5" class="wall"/>
+<rect x="272.0" y="61.7" width="188.5" height="70.4" class="wall"/>
+<rect x="613.4" y="61.7" width="315.9" height="70.4" class="wall"/>
+<rect x="1082.0" y="61.7" width="346.0" height="70.4" class="wall"/>
+<rect x="672.9" y="577.0" width="50.8" height="281.5" class="wall"/>
+<rect x="672.9" y="132.1" width="50.8" height="24.3" class="wall"/>
+<rect x="324.7" y="781.0" width="348.2" height="25.5" class="wall"/>
+<rect x="723.7" y="743.6" width="297.3" height="51.0" class="wall"/>
+<rect x="1179.0" y="743.6" width="249.0" height="51.0" class="wall"/>
+<rect x="1296.1" y="132.1" width="25.5" height="611.5" class="wall"/>
+<rect x="618.8" y="132.4" width="54.1" height="59.7" class="wall"/>
+<rect x="460.5" y="61.7" width="152.8" height="70.4" class="win"/>
+<rect x="929.2" y="61.7" width="152.8" height="70.4" class="win"/>
+<rect x="272.0" y="605.2" width="52.7" height="96.9" class="win"/>
+<path d="M1021.0,743.6 l0,-158.1 A158.1,158.1 0 0 1 1179.0,743.6" class="swing"/>
+<rect x="488.6" y="577.0" width="20.4" height="204.0" class="new"/>
+<rect x="324.7" y="569.3" width="184.3" height="6.0" class="leafA"/>
+<rect x="488.6" y="560.8" width="184.3" height="6.0" class="leafB"/>
+<line x1="340.0" y1="532.8" x2="459.0" y2="532.8" class="arrowR"/>
+<text x="399.5" y="522.6" class="n" text-anchor="middle">WC-Tür öffnet → hinter Schranktür</text>
+<line x1="657.9" y1="498.8" x2="527.0" y2="498.8" class="arrowL"/>
+<text x="588.2" y="488.6" class="n" text-anchor="middle">Schranktür öffnet ← vor WC-Tür</text>
+<rect x="460.7" y="132.1" width="2.0" height="59.5" class="glass"/>
+<rect x="460.7" y="191.6" width="20.4" height="204.0" class="new"/>
+<rect x="469.9" y="191.6" width="2.0" height="204.0" class="glass"/>
+<rect x="477.7" y="191.6" width="0.0" height="1.7" class="none"/>
+<rect x="481.1" y="208.6" width="85.0" height="170.0" class="fix"/>
+<ellipse cx="527.0" cy="336.1" rx="25.5" ry="30.6" class="fixl"/>
+<ellipse cx="527.0" cy="251.1" rx="25.5" ry="30.6" class="fixl"/>
+<line x1="392.7" y1="132.1" x2="392.7" y2="187.0" class="fixl"/>
+<line x1="367.2" y1="187.0" x2="418.2" y2="187.0" class="fixl"/>
+<circle cx="392.7" cy="221.0" r="13.6" class="fixl"/>
+<path d="M376.0,781.0 l0,-68.0 a30.6,30.6 0 0 0 61.2,0 l0,68.0" class="fixl"/>
+<line x1="517.5" y1="772.5" x2="517.5" y2="585.5" class="none"/>
+<line x1="517.5" y1="772.5" x2="517.5" y2="585.5" class="none"/>
+<line x1="517.5" y1="772.5" x2="517.5" y2="585.5" class="none"/>
+<rect x="509.0" y="679.0" width="163.9" height="102.0" class="cab"/>
+<line x1="509.0" y1="679.0" x2="672.9" y2="781.0" class="cabx"/>
+<line x1="509.0" y1="781.0" x2="672.9" y2="679.0" class="cabx"/>
+<rect x="509.0" y="577.0" width="102.0" height="102.0" class="cab"/>
+<line x1="560.0" y1="675.6" x2="560.0" y2="580.4" class="rod"/>
+<line x1="522.6" y1="665.4" x2="597.4" y2="665.4" class="hanger"/>
+<line x1="522.6" y1="648.4" x2="597.4" y2="648.4" class="hanger"/>
+<line x1="522.6" y1="631.4" x2="597.4" y2="631.4" class="hanger"/>
+<line x1="522.6" y1="614.4" x2="597.4" y2="614.4" class="hanger"/>
+<line x1="522.6" y1="597.4" x2="597.4" y2="597.4" class="hanger"/>
+<line x1="324.7" y1="158.1" x2="460.7" y2="158.1" class="dim"/>
+<line x1="324.7" y1="166.6" x2="324.7" y2="149.6" class="dim"/>
+<line x1="460.7" y1="166.6" x2="460.7" y2="149.6" class="dim"/>
+<text x="392.7" y="151.3" class="d" text-anchor="middle">0,80</text>
+<line x1="443.7" y1="191.6" x2="443.7" y2="132.1" class="dim"/>
+<line x1="435.2" y1="191.6" x2="452.2" y2="191.6" class="dim"/>
+<line x1="435.2" y1="132.1" x2="452.2" y2="132.1" class="dim"/>
+<text x="436.9" y="161.8" class="d" text-anchor="middle" transform="rotate(-90 436.9 161.8)">0,35</text>
+<line x1="443.7" y1="395.6" x2="443.7" y2="191.6" class="dim"/>
+<line x1="435.2" y1="395.6" x2="452.2" y2="395.6" class="dim"/>
+<line x1="435.2" y1="191.6" x2="452.2" y2="191.6" class="dim"/>
+<text x="436.9" y="293.6" class="d" text-anchor="middle" transform="rotate(-90 436.9 293.6)">1,20</text>
+<line x1="586.5" y1="378.6" x2="586.5" y2="208.6" class="dim"/>
+<line x1="578.0" y1="378.6" x2="595.0" y2="378.6" class="dim"/>
+<line x1="578.0" y1="208.6" x2="595.0" y2="208.6" class="dim"/>
+<text x="593.3" y="293.6" class="d" text-anchor="middle" transform="rotate(-90 593.3 293.6)">1,00</text>
+<line x1="324.7" y1="687.5" x2="488.6" y2="687.5" class="dim"/>
+<line x1="324.7" y1="696.0" x2="324.7" y2="679.0" class="dim"/>
+<line x1="488.6" y1="696.0" x2="488.6" y2="679.0" class="dim"/>
+<text x="406.6" y="680.7" class="d" text-anchor="middle">0,964</text>
+<line x1="509.0" y1="767.4" x2="672.9" y2="767.4" class="dim"/>
+<line x1="509.0" y1="775.9" x2="509.0" y2="758.9" class="dim"/>
+<line x1="672.9" y1="775.9" x2="672.9" y2="758.9" class="dim"/>
+<text x="590.9" y="760.6" class="d" text-anchor="middle">0,964</text>
+<line x1="659.3" y1="781.0" x2="659.3" y2="679.0" class="dim"/>
+<line x1="650.8" y1="781.0" x2="667.8" y2="781.0" class="dim"/>
+<line x1="650.8" y1="679.0" x2="667.8" y2="679.0" class="dim"/>
+<text x="652.5" y="730.0" class="d" text-anchor="middle" transform="rotate(-90 652.5 730.0)">0,60</text>
+<line x1="509.0" y1="590.6" x2="611.0" y2="590.6" class="dim"/>
+<line x1="509.0" y1="599.1" x2="509.0" y2="582.1" class="dim"/>
+<line x1="611.0" y1="599.1" x2="611.0" y2="582.1" class="dim"/>
+<text x="560.0" y="583.8" class="d" text-anchor="middle">0,60</text>
+<text x="498.8" y="730.0" class="d" text-anchor="middle">12</text>
+<line x1="253.3" y1="781.0" x2="253.3" y2="577.0" class="dim"/>
+<line x1="244.8" y1="781.0" x2="261.8" y2="781.0" class="dim"/>
+<line x1="244.8" y1="577.0" x2="261.8" y2="577.0" class="dim"/>
+<text x="246.5" y="679.0" class="d" text-anchor="middle" transform="rotate(-90 246.5 679.0)">1,20 tief</text>
+<text x="1009.8" y="399.5" class="t" text-anchor="middle">Großeltern</text>
+<text x="1009.8" y="447.1" class="s" text-anchor="middle">12,13 m²</text>
+<text x="392.7" y="289.0" class="n" text-anchor="middle">Dusche</text>
+<text x="392.7" y="314.5" class="n" text-anchor="middle">begehbar</text>
+<text x="464.1" y="331.5" class="nw" text-anchor="middle" transform="rotate(-90 464.1 331.5)">Mauer 1 m hoch,</text>
+<text x="617.1" y="273.2" class="n" text-anchor="start">Doppel-</text>
+<text x="617.1" y="300.4" class="n" text-anchor="start">waschbecken</text>
+<text x="406.6" y="636.5" class="t2" text-anchor="middle">WC</text>
+<text x="590.9" y="719.8" class="t2" text-anchor="middle">Schrank</text>
+<path d="M585.5,619.5 L773.5,555.9" class="call"/>
+<text x="782.0" y="561.0" class="c" text-anchor="start">Hängeschrank 60 tief (Kleiderstange), bis zum hinteren Schrank</text>
+<text x="641.6" y="611.0" class="q" text-anchor="middle" transform="rotate(-90 641.6 611.0)">frei</text>
+<text x="586.5" y="204.0" class="s" text-anchor="middle">Bad Großeltern</text>
+<text x="537.2" y="51.0" class="s2" text-anchor="middle">Fenstertür</text>
+<text x="1006.4" y="51.0" class="s2" text-anchor="middle">Fenstertür</text>
+<text x="1099.9" y="816.0" class="s2" text-anchor="middle">Tür vom Flur</text>
+<text x="646.0" y="170.0" class="s2" text-anchor="middle">Schacht</text>
+<path d="M462.4,161.5 L773.5,161.5" class="call"/>
+<text x="782.0" y="166.6" class="c" text-anchor="start">dünnes Glas, 35 cm</text>
+<path d="M469.2,217.1 L773.5,238.0" class="call"/>
+<text x="782.0" y="232.9" class="c" text-anchor="start">Mauer 1 m hoch, 1,20 m lang, 12 cm dick</text>
+<text x="782.0" y="263.5" class="c" text-anchor="start">darüber Klarglas bis zur Decke (wie der Streifen an der Dusche)</text>
+<text x="782.0" y="467.5" class="c" text-anchor="start">Nische: 2 verschränkte Schiebetüren auf 2 versetzten Schienen –</text>
+<text x="782.0" y="498.1" class="c" text-anchor="start">beide zu, oder WC offen, oder Schrank offen (nie beide)</text>
+<path d="M676.3,566.8 L773.5,476.0" class="call"/>
+<text x="25.5" y="906.1" class="s2" text-anchor="middle"></text>
+<text x="25.5" y="34.0" class="h">EG Großeltern – Skizze v4 (2026-11-08)</text>
+<rect x="25.5" y="117.3" width="42.5" height="20.4" class="wall"/>
+<text x="81.6" y="134.3" class="n" text-anchor="start">Bestand (Modell)</text>
+<rect x="25.5" y="147.9" width="42.5" height="20.4" class="new"/>
+<text x="81.6" y="164.9" class="n" text-anchor="start">neu (Mauer)</text>
+<rect x="25.5" y="178.5" width="42.5" height="20.4" class="glass"/>
+<text x="81.6" y="195.5" class="n" text-anchor="start">Glas</text>
+<rect x="25.5" y="209.1" width="42.5" height="20.4" class="leafA"/>
+<text x="81.6" y="226.1" class="n" text-anchor="start">Schiebetür WC (hinten)</text>
+<rect x="25.5" y="239.7" width="42.5" height="20.4" class="leafB"/>
+<text x="81.6" y="256.7" class="n" text-anchor="start">Schiebetür Schrank (vorn)</text>
+<line x1="1122.0" y1="901.0" x2="1292.0" y2="901.0" class="dim"/>
+<text x="1207.0" y="892.5" class="s2" text-anchor="middle">1 m</text>
+<text x="25.5" y="918.0" class="q" text-anchor="start">entfällt: Wand WC/Bad; Wand rechts vom Schrank endet an der Schrankfront – Bad und Schlafzimmer offen bis zu den Schiebetüren</text>
+</svg>

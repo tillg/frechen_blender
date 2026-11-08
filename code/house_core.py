@@ -11,6 +11,7 @@ import math, random
 from dataclasses import dataclass
 import ofen  # the stoves (code/ofen.py); it uses the primitives below via house_core.*
 import desk  # the Büro desk sub-model (code/desk.py), the same way
+import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -406,21 +407,6 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style=
         (glazed_leaf if style == "glazed" else six_panel_leaf)(part, LW, LH)
 
 
-def sliding_door(coll, a, b, face, z0=0.0, head=DOOR_H):
-    """Sliding door (WC Großeltern, plan 2026-10-19) in an x wall: a six-panel leaf on the +y face
-    `face`, hung from a steel rail and slid open past jamb b (the plan's arrow points west, but
-    there the wall is too short for the leaf)."""
-    P, o, LT = frame("x"), coll + "_Innentueren", 0.04
-    LW, LH, u0, tc = b - a + 0.04, head - z0 - 0.01, b - 0.02, face + 0.012 + LT / 2
-
-    def part(w0, w1, d0, d1, za, zb, r=0.9, m="Innentuer"):
-        lbox(coll, o, m, P, u0 + w0, u0 + w1, tc + d0, tc + d1, z0 + 0.005 + za, z0 + 0.005 + zb, r)
-
-    six_panel_leaf(part, LW, LH)
-    lbox(coll, o, "Metall", P, a - 0.05, u0 + LW + 0.05, face, face + 0.035, head + 0.005, head + 0.045)
-    LEAVES.append((coll, [P(u0, tc - LT / 2, z0), P(u0 + LW, tc + LT / 2, head)]))
-
-
 def six_panel_leaf(part, LW, LH):
     part(0, LW, -0.012, 0.012, 0, LH, 0.05)                        # core = panel ground
     rows = [0.091, 0.271, 0.112, 0.31, 0.05, 0.149, 0.046]         # bottom -> top, from the photo
@@ -593,8 +579,8 @@ def build_eg():
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
-    # Großeltern: the Bad is open to the bedroom (unhatched in the plan), the WC is reached from the Bad
-    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False, "glazed"), (10.33, 12.33)])   # back Windfang
+    # Großeltern: the Bad is open to the bedroom from its niche front (code/bad.py) to the shaft
+    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False, "glazed"), (9.856, 12.33)])   # back Windfang
     interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")],   # Küche door (opens to the Flur)
              ops=[ofen.back_opening()])                                   # the Ofen's back door (Flur)
     stube_niche()                                                         # 10.804 .. 12.003
@@ -603,8 +589,7 @@ def build_eg():
     interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580, -1, "a", False)])   # Speis door (plan)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
-    interior(c, 0.31, 2.358, 10.10, 10.25, [(0.56, 1.25)])  # WC (south) / Bad (north) Großeltern
-    sliding_door(c, 0.56, 1.25, 10.25)
+    bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
     interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
     ofen.ofen_im_haus()
@@ -759,7 +744,6 @@ def flur_sink(coll, wx, wy, z):
 WC_TILE_T = 0.010            # tile face in front of the plaster (WC fixtures stand on it)
 WCS = [  # (collection, floor z, interior rectangle, door span left free on the north wall)
     ("EG", 0.0, (0.31, 2.358, 5.475, 6.574), (1.349, 2.288)),     # WC by the back hall (architraves)
-    ("EG", 0.0, (0.31, 2.358, 8.656, 10.10), (0.56, 1.25)),       # WC Großeltern (sliding door)
     ("OG", Z_OG, (0.31, 1.57, 5.46, 6.44), (0.48, 1.42)),         # WC 2,26
     ("OG", Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]         # WC 2,30
 
@@ -810,17 +794,11 @@ def wainscot(coll, z, x0, x1, y0, y1, door):
 
 
 def build_sanitary():
-    """Bathrooms and toilets after the fixtures drawn in grundriss_eg/og.png."""
+    """Bathrooms and toilets after the fixtures drawn in grundriss_eg/og.png (the Bad Großeltern
+    with its WC: code/bad.py, built in build_eg())."""
     zo = Z_OG + 0.0
     for c, z, rect, door in WCS:
         wainscot(c, z, *rect, door)
-    # EG Bad Großeltern (N): corner shower NW, basin on the west wall
-    shower("EG", 0.31, 1.10, 11.66, 12.473, [(1.10, 11.66, 1.10, 12.473), (0.31, 11.66, 0.70, 11.66)],
-           (0.70, 12.473, 0, -1))
-    basin("EG", 0.31, 11.0, 1, 0)
-    # EG WC Großeltern (S): toilet on the south wall, hand basin on the east wall
-    toilet("EG", 1.17, 8.656, 0, 1)
-    wc_basin("EG", 2.358, 9.12, -1, 0)
     # EG WC by the back hall
     toilet("EG", 1.325, 5.475, 0, 1)
     # OG Bad NW: basin on the north wall, shower in the south alcove
@@ -1185,7 +1163,8 @@ def slab(coll, obj, mat, z0, z1, inset=0.0, hole=None):
 
 
 CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.358, 6.723, 8.506)]   # Flur/Windfang, back hall
-# OG Bad NW (with the shower alcove) and Bad S; the Bad Großeltern (EG) stays oak, it is rebuilt later
+BATH_EG = (0.31, 2.358, 9.856, 12.473)   # Bad Großeltern north of its niche (code/bad.py); WC, Schrank: oak
+# OG Bad NW (with the shower alcove) and Bad S
 BATHS_OG = [(0.31, 2.57, 6.54, 8.57), (1.67, 2.57, 5.46, 6.54), (5.59, 8.59, 0.40, 2.62)]
 
 
@@ -1233,7 +1212,7 @@ def build_slabs():
     slab("EG", "EG_Boden", "Fuge", 0.0, 0.01, inset=0.2)
     slab("OG", "OG_Decke_EG", "Decke", Z_EG_TOP, Z_OG, hole=STAIR_HOLE)
     slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
-    floor_cover("EG", 0.0, CORRIDOR_EG)
+    floor_cover("EG", 0.0, CORRIDOR_EG + [BATH_EG])
     floor_cover("OG", Z_OG, BATHS_OG, STAIR_HOLE)           # OG corridor: oak like the rooms
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 
@@ -2138,3 +2117,14 @@ def build_desk():
     desk.stuhl("Desk", 0.0, 0.0)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
                      [], None, set(), dims, turn=dict(TURN))
+
+
+def build_bad():
+    """The Bad Großeltern sub-model alone (web/bad.html): the room's fixtures, niche and its own
+    walls at the origin (the room's inner SW corner), plus its dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear()
+    LEAVES.clear()
+    random.seed(22)
+    dims = bad.bad_neu()
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
+                     [], None, set(), dims)

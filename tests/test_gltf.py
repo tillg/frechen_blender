@@ -189,3 +189,18 @@ def test_desk_export(tmp_path):
     m = g["materials"][g["meshes"][pane["mesh"]]["primitives"][0]["material"]]
     assert m["extras"]["image"] == "textures/screen_a12.jpg" and m["extras"]["size"] == [0.697, 0.392]
     assert len(g["scenes"][0]["extras"]["dims"]) == len(bp.dims)
+
+
+def test_bad_export(tmp_path):
+    """--bad: the Bad Großeltern sub-model with its dimension lines, no Rundgang."""
+    out = tmp_path / "bad.glb"
+    subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--bad"], check=True)
+    data = out.read_bytes()
+    jlen = struct.unpack_from("<I", data, 12)[0]
+    g = json.loads(data[20:20 + jlen])
+    names = {n["name"] for n in g["nodes"]}
+    assert {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank"} == names
+    bp = house_core.build_bad()
+    house_core.build()
+    ex = g["scenes"][0]["extras"]
+    assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex

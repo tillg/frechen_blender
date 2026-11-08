@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "blueprint": "python3 ../code/export_gltf.py public/frechenlehen.glb && python3 ../code/export_gltf.py public/ofen.glb --ofen && python3 ../code/export_gltf.py public/desk.glb --desk",
+    "blueprint": "python3 ../code/export_gltf.py public/frechenlehen.glb && python3 ../code/export_gltf.py public/ofen.glb --ofen && python3 ../code/export_gltf.py public/desk.glb --desk && python3 ../code/export_gltf.py public/bad.glb --bad",
     "predev": "npm run blueprint",
     "dev": "vite --port 5377 --strictPort",
     "prebuild": "npm run blueprint",

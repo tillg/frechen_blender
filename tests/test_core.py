@@ -784,13 +784,14 @@ def _floor_at(coll, x, y):
 
 
 def test_bathrooms_have_limestone_like_the_eg_corridor():
-    """Request 2026-11-08: Bäder get the limestone of the EG Flur, except the Bad of the
-    Großeltern (to be rebuilt later)."""
+    """Request 2026-11-08: Bäder get the limestone of the EG Flur, the Bad of the Großeltern too
+    (bad-grosseltern); its WC and Schrank niche keep oak."""
     pts = lambda c, ps: {_floor_at(c, x, y) for x, y in ps} - {None}
     assert pts("OG", [(0.4, 6.6), (1.2, 7.5), (2.5, 8.5), (2.1, 5.55), (2.1, 6.4)]) == {"Kalkstein"}  # Bad NW + alcove
     assert pts("OG", [(5.65, 0.45), (7.0, 1.5), (8.55, 2.55)]) == {"Kalkstein"}                       # Bad S
     assert pts("OG", [(1.0, 6.0), (4.0, 7.5), (7.0, 4.0)]) == {"Eiche"}                                # WC, Flur, HWR
-    assert pts("EG", [(1.2, 11.0), (1.2, 9.5)]) == {"Eiche"}                                           # Großeltern
+    assert pts("EG", [(1.2, 11.0)]) == {"Kalkstein"}                                                   # Bad Großeltern
+    assert pts("EG", [(0.8, 9.3), (1.6, 9.3)]) == {"Eiche"}                                            # its WC, Schrank
     assert pts("EG", [(5.0, 7.5)]) == {"Kalkstein"}                                                    # EG Flur
 
 
@@ -807,7 +808,7 @@ def _part_at(key, x, y, z):
 
 # the four WCs: (collection, floor z, interior rectangle, door span on the north wall)
 WCS = [("EG", 0.0, (0.31, 2.358, 5.475, 6.574), (1.349, 2.288)),                 # by the back hall
-       ("EG", 0.0, (0.31, 2.358, 8.656, 10.10), (0.56, 1.25)),                   # WC Großeltern
+       ("EG", 0.0, (0.31, 1.274, 8.656, 9.856), (0.31, 1.274)),                  # WC Großeltern: niche, north open
        ("OG", house_core.Z_OG, (0.31, 1.57, 5.46, 6.44), (0.48, 1.42)),          # WC 2,26
        ("OG", house_core.Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]          # WC 2,30
 
@@ -818,8 +819,9 @@ def test_wcs_have_green_tiles_to_hip_height():
     for c, z, (x0, x1, y0, y1), (da, db) in WCS:
         key, d = (c, c + "_Fliesen"), 0.008
         na, nb = max(((x0, da), (db, x1)), key=lambda s: s[1] - s[0])            # wider tiled part
-        walls = [((x0 + x1) / 2, y0 + d), ((na + nb) / 2 - 0.025, y1 - d),
-                 (x0 + d, (y0 + y1) / 2), (x1 - d, (y0 + y1) / 2)]
+        walls = [((x0 + x1) / 2, y0 + d), (x0 + d, (y0 + y1) / 2), (x1 - d, (y0 + y1) / 2)]
+        if nb - na > 0.05:                                                       # north wall not all open
+            walls.append(((na + nb) / 2 - 0.025, y1 - d))
         for x, y in walls:
             hits = {_part_at(key, x + dx, y, z + h) for h in (0.3, 0.45, 0.6, 0.75) for dx in (0.0, 0.05)}
             assert "Fliese" in hits, (c, x, y)
@@ -837,13 +839,131 @@ def test_wc_fixtures_after_the_photo():
     basins on chrome console legs, a black frame round their mirror. The Bäder keep theirs."""
     zo = house_core.Z_OG
     at = lambda wx, wy, fx, fy: lambda u, v: (wx + fx * v - fy * u, wy + fy * v + fx * u)
-    for c, z, *w in [("EG", 0.0, 1.17, 8.656, 0, 1), ("EG", 0.0, 1.325, 5.475, 0, 1),
+    for c, z, *w in [("EG", 0.0, 0.31 + 0.482, 8.656, 0, 1), ("EG", 0.0, 1.325, 5.475, 0, 1),
                      ("OG", zo, 0.31, 6.0, 1, 0), ("OG", zo, 9.26, 3.98, 0, 1)]:
         M, key = at(*w), (c, c + "_Sanitaer")
         assert _part_at(key, *M(0, 0.10), z + 0.60) == "Keramik", w            # cistern
         assert _part_at(key, *M(0, 0.40), z + 0.03) == "Keramik", w            # pedestal on the floor
-    for c, z, *w in [("EG", 0.0, 2.358, 9.12, -1, 0), ("OG", zo, 9.92, 5.2, -1, 0)]:
+    for c, z, *w in [("OG", zo, 9.92, 5.2, -1, 0)]:                         # the Bad Großeltern's WC has none
         M, key = at(*w), (c, c + "_Sanitaer")
         assert {_part_at(key, *M(s * 0.16, 0.25), z + 0.30) for s in (-1, 1)} == {"Metall"}, w   # legs
         assert {_part_at(key, *M(s * 0.27, 0.02), z + 1.60) for s in (-1, 1)} == {"Eisen"}, w    # frame
     assert _part_at(("OG", "OG_Sanitaer"), *at(6.11, 0.40, 0, 1)(0.27, 0.02), zo + 1.6) != "Eisen"
+
+
+def _parts(bp, key):
+    """(material, lo, hi) per Part of object key of Blueprint bp."""
+    g = bp.geo.get(key, {"v": [], "f": [], "m": []})
+    for first, n in bp.parts.get(key, []):
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        yield g["m"][first], [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
+
+
+def _mat_at(bp, key, x, y, z):
+    return next((m for m, lo, hi in _parts(bp, key) if all(lo[k] < p < hi[k] for k, p in enumerate((x, y, z)))), None)
+
+
+def test_bad_submodel():
+    """code/bad.py: the Großeltern's bathroom after plan_grosseltern_bad.jpeg (input/2026-11-08 input/)
+    and the agreed drawing grosseltern_v4.svg (same folder), at its own origin (the room's inner SW
+    corner, 2.048 x 3.817 m): walk-in shower 0.80 wide in the NW corner, 35 cm glass from the north
+    wall, a 1.20 m wall 1.00 high with glass to the ceiling, the Waschtrog on its east face; in the
+    south a 1.20 m niche split by a 12 cm wall into WC and Schrank, closed by two interlocking
+    sliding leaves (the WC leaf open behind the Schrank leaf)."""
+    import bad
+    bp = house_core.build_bad()
+    leaves = [pts for c, pts in house_core.LEAVES if c == "Bad"]
+    house_core.build()                                                    # restore the registries
+    assert {c for c, _ in bp.geo} == {"Bad"} and bp.garden is None
+    assert {n for _, n in bp.geo} == {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank"}
+    W, D, H = 2.048, 3.817, 2.40
+    assert all(-1e-9 <= x <= W + 1e-9 and -1e-9 <= y <= D + 1e-9 and -1e-9 <= z <= H + 1e-9
+               for g in bp.geo.values() for x, y, z in g["v"])                # no part outside the room
+    box = lambda m, lo, hi: [m, [round(a, 3) for a in lo], [round(a, 3) for a in hi]]
+    walls = [box(*p) for p in _parts(bp, ("Bad", "Bad_Waende"))]
+    assert ["Putz", [0.964, 0, 0], [1.084, 1.2, 2.4]] in walls                # niche wall: WC, Schrank 96.4 each
+    assert ["Putz", [0.8, 2.267, 0], [0.92, 3.467, 1.0]] in walls             # low wall 120 x 12, 1.00 high
+    for u in (0.5, 1.5):                                                       # lintel over the niche
+        assert _mat_at(bp, ("Bad", "Bad_Waende"), u, 1.14, 2.2) == "Putz"
+        assert _mat_at(bp, ("Bad", "Bad_Waende"), u, 1.14, 2.0) is None
+    san = ("Bad", "Bad_Sanitaer")
+    glass = [box(m, lo, hi) for m, lo, hi in _parts(bp, san) if m == "Glas"]
+    assert any(lo[0] >= 0.799 and hi[0] <= 0.815 and lo[1] == 3.467 and hi[1] == 3.817 and lo[2] <= 0.02 and hi[2] == 2.4
+               for _, lo, hi in glass)                                         # 35 cm glass from the north wall
+    assert any(lo[0] >= 0.8 and hi[0] <= 0.92 and lo[1] == 2.267 and hi[1] == 3.467 and lo[2] == 1.0 and hi[2] == 2.4
+               for _, lo, hi in glass)                                         # glass on the low wall
+    # sliding leaves: two tracks 5 cm apart, both over the Schrank half (WC leaf open behind it)
+    assert len(leaves) == 2
+    lb = sorted(([min(p[k] for p in l) for k in range(3)], [max(p[k] for p in l) for k in range(3)]) for l in leaves)
+    lb.sort(key=lambda b: b[0][1])
+    (rlo, rhi), (flo, fhi) = lb                                                # rear = WC, front = Schrank
+    for lo, hi in lb:
+        assert abs(lo[0] - 0.964) < 0.005 and abs(hi[0] - W) < 0.005 and hi[2] >= 1.98
+    assert abs((flo[1] - rlo[1]) - 0.05) < 0.002 and rhi[1] < flo[1] and rlo[1] > 1.20
+    inn = ("Bad", "Bad_Innentueren")
+    assert {_mat_at(bp, inn, 0.48, 1.23, z) for z in (0.5, 1.0, 1.5)} == {None}   # WC half open
+    assert _mat_at(bp, inn, 1.5, 1.23, 1.0) and _mat_at(bp, inn, 1.5, 1.28, 1.0)  # both leaves over the Schrank
+    assert any(m == "Metall" and lo[0] <= 0.01 and hi[0] >= W - 0.01 and 1.999 <= lo[2] for m, lo, hi in _parts(bp, inn))  # rail
+    for lo, hi in lb:                                                          # no leaf in a wall
+        assert not any(all(a[k] < hi[k] - 1e-6 and lo[k] + 1e-6 < b[k] for k in range(3)) for _, a, b in _parts(bp, ("Bad", "Bad_Waende")))
+    # WC half: toilet in its middle on the south wall, green tiles; none in the Schrank
+    assert _mat_at(bp, san, 0.482, 0.10, 0.60) == "Keramik" and _mat_at(bp, san, 0.482, 0.40, 0.03) == "Keramik"
+    til = ("Bad", "Bad_Fliesen")
+    for x, y in ((0.482, 0.008), (0.008, 0.6), (0.956, 0.6)):
+        assert "Fliese" in {_mat_at(bp, til, x + dx, y, h) for h in (0.3, 0.45, 0.6) for dx in (0.0, 0.05)}, (x, y)
+    assert not any(m == "Fliese" and hi[0] > 0.97 for m, lo, hi in _parts(bp, til))
+    # walk-in shower: limestone on the west and north walls to 2.0, on the low wall's west face to 1.0
+    for x, y, z in ((0.009, 3.0, 1.9), (0.4, 3.808, 1.9), (0.791, 2.8, 0.5)):
+        assert _mat_at(bp, til, x, y, z) == "Kalkstein", (x, y, z)
+    assert _mat_at(bp, til, 0.009, 3.0, 2.1) is None and _mat_at(bp, til, 0.791, 2.8, 1.5) is None
+    assert not any(m == "Keramik" and hi[0] < 0.8 and lo[1] > 2.2 for m, lo, hi in _parts(bp, san))   # no tray: flush
+    # Waschtrog: one 1.00 m trough on the low wall's east face, centred on it, top 0.85, two mixers
+    trog = [(lo, hi) for m, lo, hi in _parts(bp, san) if m == "Keramik" and lo[1] > 2.2]
+    lo = [min(b[0][k] for b in trog) for k in range(3)]
+    hi = [max(b[1][k] for b in trog) for k in range(3)]
+    assert [round(a, 3) for a in (lo[0], lo[1], hi[1], hi[2])] == [0.92, 2.367, 3.367, 0.85] and hi[0] <= 1.42 + 1e-9
+    assert abs((lo[1] + hi[1]) / 2 - (2.267 + 3.467) / 2) < 1e-9
+    assert _mat_at(bp, san, 1.2, 2.867, 0.80) is None                          # one open bowl
+    mix = {round((lo[1] + hi[1]) / 2, 2) for m, lo, hi in _parts(bp, san)
+           if m == "Metall" and lo[0] > 0.92 and lo[2] >= 0.85 - 1e-9 and hi[2] > 0.9}
+    assert mix == {2.62, 3.12}
+    assert not any("Spiegel" in g["m"] for g in bp.geo.values())
+    # Schrank: back cabinet 60 deep over the full width, hanging wardrobe 60 x 60 against the niche wall
+    sch = ("Bad", "Bad_Schrank")
+    cab = [(lo, hi) for m, lo, hi in _parts(bp, sch) if hi[1] <= 0.6 + 1e-9]
+    assert round(min(b[0][0] for b in cab), 3) == 1.084 and round(max(b[1][0] for b in cab), 3) == W
+    assert sum(1 for lo, hi in cab if hi[0] - lo[0] > 0.9 and hi[2] - lo[2] < 0.04) >= 4   # shelves
+    war = [(m, lo, hi) for m, lo, hi in _parts(bp, sch) if lo[1] >= 0.6 - 1e-9]
+    assert round(min(lo[0] for _, lo, _ in war), 3) == 1.084 and round(max(hi[0] for _, _, hi in war), 3) == 1.684
+    assert round(max(hi[1] for _, _, hi in war), 3) <= 1.2
+    assert any(m == "Metall" and hi[1] - lo[1] > 0.5 and hi[0] - lo[0] < 0.05 for m, lo, hi in war)   # rail, front to back
+    assert all(m == "Rahmen" for m, lo, hi in _parts(bp, sch) if m != "Metall")                       # white
+    nums = sorted(float(t.split()[0] if t[0].isdigit() else t.split()[-1]) for _, _, t in bp.dims)
+    assert nums == sorted([80, 35, 120, 100, 100, 96.4, 12, 96.4, 120, 60, 60])
+
+
+def test_bad_built_into_the_grosseltern():
+    """The Bad sub-model stands in the house at BAD_AT, unrotated, every part the same; the wall
+    between the old WC and Bad and its sliding door are gone; the bedroom wall ends at the niche
+    front, so Bad and bedroom are open to each other; limestone in the Bad, oak in WC and Schrank."""
+    import bad
+    sub = house_core.build_bad()
+    house_core.build()                                                    # restore the registries
+    x0, y0 = bad.BAD_AT
+    assert bad.BAD_AT == (0.31, 8.656)
+
+    def solids(bp, key, dx=0.0, dy=0.0):
+        g = bp.geo[key]
+        return {tuple(sorted({(round(g["v"][i][0] + dx, 6), round(g["v"][i][1] + dy, 6), round(g["v"][i][2], 6))
+                              for f in g["f"][a:a + n] for i in f})) for a, n in bp.parts[key]}
+
+    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Schrank"):
+        assert solids(sub, ("Bad", "Bad_" + n), x0, y0) <= solids(BP, ("EG", "EG_" + n)), n
+    wl = list(_parts(BP, ("EG", "EG_Waende")))
+    assert not any(lo[1] > 10.0 and hi[1] < 10.3 and lo[0] >= 0.3 and hi[0] <= 2.36 for _, lo, hi in wl)   # WC/Bad wall
+    assert not any(lo[0] >= 2.35 and hi[0] <= 2.66 and lo[1] < 12.3 and hi[1] > 9.9 and lo[2] < 2.0 for _, lo, hi in wl)
+    assert any(lo[0] >= 2.35 and hi[0] <= 2.66 and abs(hi[1] - 9.856) < 1e-6 and lo[2] < 0.1 for _, lo, hi in wl)
+    assert not any(lo[1] > 10.2 and hi[1] < 10.35 and hi[0] < 2.36 for _, lo, hi in _parts(BP, ("EG", "EG_Innentueren")))
+    assert len([1 for c, l in house_core.LEAVES if c == "EG" and 0.3 < l[0][0] < 2.4 and 9.8 < l[0][1] < 10.0]) == 2
+    assert _floor_at("EG", 1.2, 11.0) == "Kalkstein"
+    assert {_floor_at("EG", x, 9.3) for x in (0.8, 1.6)} == {"Eiche"}
