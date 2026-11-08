@@ -608,7 +608,8 @@ def build_eg():
     interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
     ofen.ofen_im_haus()
-    ofen.werkstattofen("EG", 9.651, 9.176, 0.0)          # Bibliothek: Flur wall, 10 cm east of the wall stub
+    ofen.werkstattofen("EG", 9.351 + 0.10 + 0.21 * 2 ** 0.5, 8.876 + 0.10 + 0.21 * 2 ** 0.5, 0.0, -45)   # Bibliothek:
+    # corner of the Flur wall and the wall stub, turned 45° to face the room (request 2026-11-08)
     build_stairs()
     for x0, x1 in ((4.26, 6.05), (6.05, 7.85)):             # dining table (plan: two joined tables)
         table("EG", x0 + 0.002, x1 - 0.002, 1.18, 1.91)
@@ -1750,7 +1751,8 @@ def folded_stack(c, x, y, z, mats):
 def grand_piano():
     """Grand piano in the Musikraum after the plan symbol: case outline, lid, three legs,
     keyboard towards the south, bench in front; turned 30° to the left (counter-clockwise, on
-    request) about the case centre."""
+    request) about the case centre, then 180° about the centre of its footprint (on request
+    2026-11-08: keyboard and bench to the north; about the case centre it would hit the wall)."""
     c, o = "EG", "EG_Moebel"
     n0 = len(GEO.get((c, o), {"v": []})["v"])
     a, b, cx, yb = 0.585, 0.43, 8.385, 11.75
@@ -1771,6 +1773,9 @@ def grand_piano():
             box(c, o, "Klavierlack", x, x + 0.04, y, y + 0.04, 0.012, 0.46)
     g, (px, py), ca, sa = GEO[(c, o)], (8.415, 11.33), math.cos(math.radians(30)), math.sin(math.radians(30))
     g["v"][n0:] = [(px + (x - px) * ca - (y - py) * sa, py + (x - px) * sa + (y - py) * ca, z) for x, y, z in g["v"][n0:]]
+    xs, ys = [v[0] for v in g["v"][n0:]], [v[1] for v in g["v"][n0:]]          # then 180° in place: same
+    cx, cy = min(xs) + max(xs), min(ys) + max(ys)                              # footprint, keyboard north
+    g["v"][n0:] = [(cx - x, cy - y, z) for x, y, z in g["v"][n0:]]
 
 
 def bookcase():

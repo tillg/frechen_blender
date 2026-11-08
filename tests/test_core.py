@@ -247,23 +247,26 @@ def test_ofen_built_into_the_stube():
 
 def test_bibliothek_piano_desk_and_werkstattofen():
     """Bibliothek (Musikraum + Büro): grand piano turned 30° to the left (counter-clockwise from
-    above), desk filling the wall between the two north french doors (10.919 .. 12.867), and a
-    small workshop stove (input/2026-11-03 input/werkstattofen.jpeg) on the Flur wall, east of the
-    wall stub at the offener Kamin."""
+    above) and then 180° in place (keyboard and bench to the north), desk filling the wall between the two north french doors (10.919 .. 12.867), and a
+    small workshop stove (input/2026-11-03 input/werkstattofen.jpeg) in the corner of the Flur wall
+    and the wall stub at the offener Kamin, turned 45° to face the room."""
     g = BP.geo[("EG", "EG_Moebel")]
     on = lambda mat: {i for f, m in zip(g["f"], g["m"]) if m == mat for i in f}
     keys = [g["v"][i] for i in on("Keramik")]                            # white keys: one long box
     top = [(x, y) for x, y, z in keys if z == max(p[2] for p in keys)]
     (ax, ay), (bx, by) = next((p, q) for p in top for q in top if 1.09 < math.dist(p, q) < 1.105)  # long edge, 1.10
     assert abs(math.degrees(math.atan2(by - ay, bx - ax)) % 180 - 30) < 0.5        # 15°, then "etwas mehr"
+    assert sum(y for _, y, _ in keys) / len(keys) > 11.4      # then 180° (2026-11-08): keyboard to the north
     desk = [(x, y) for x, y, z in g["v"] if z == 0.75 and y > 11 and 10 < x < 14.6]
     assert round(min(x for x, _ in desk), 3) == 10.919 and round(max(x for x, _ in desk), 3) == 12.867
     assert max(y for _, y in desk) <= 12.473
     ofen = BP.geo[("EG", "EG_Werkstattofen")]
     lo = [round(min(p[k] for p in ofen["v"]), 3) for k in range(3)]
     hi = [round(max(p[k] for p in ofen["v"]), 3) for k in range(3)]
-    assert 9.351 + 0.05 <= lo[0] < 9.6 and lo[1] >= 8.876 + 0.05 and hi[1] < 9.6   # on the Flur wall
-    assert 1.0 <= hi[2] <= 1.1 and 0.38 <= hi[0] - lo[0] <= 0.45
+    assert 9.351 + 0.09 < lo[0] < 9.351 + 0.15 and 8.876 + 0.09 < lo[1] < 8.876 + 0.15   # in the corner
+    assert 1.0 <= hi[2] <= 1.1 and 0.55 < hi[0] - lo[0] < 0.65                      # turned 45° (2026-11-08)
+    (fire,) = [f for f in house_core.FIRES if 9.351 < f["base"][0] < 10.2 and 8.876 < f["base"][1] < 9.8]
+    assert abs(fire["u"][0] + fire["u"][1]) < 1e-6 and fire["u"][0] > 0.7          # front (along u) faces NE
     assert {"Eisen", "Ofenglas"} <= set(ofen["m"])          # its fire: FIRES (test_fires_...)
     assert "EG_Werkstattofen" not in BP.furniture                        # built in, like the Ofen
 
