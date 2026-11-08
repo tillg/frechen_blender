@@ -16,7 +16,8 @@ edited: 2026-11-08
   - roof with rafters, purlins and soffit boards
   - eaves and gable overhangs
 - **Exterior details from photos:**
-  - round-arched entrance door, back door with an oval window
+  - round-arched entrance door, back door with an oval window and black lever handles inside and
+    outside
   - windows with larch frames and glazing bars
   - blue shutters with white cross boards
   - larch terrace doors; tall OG west windows (Yoga, Bad): wall below up to a 0.75 m sill, glazed up to the ceiling
@@ -42,6 +43,10 @@ edited: 2026-11-08
     ceiling); spruce wall cabinets over the sink run and over the east run beside the hood
   - big dining table (two joined) after tisch-briol.png: board top, legs splayed on a flat foot
     frame with corner blocks; 14 chairs
+  - Büro desk in the Bibliothek between the two north french doors: two LG UltraFine 6K 32"
+    monitors at 170° showing the screenshots `screen_a12` (left) and `screen_pilcrow` (right),
+    a closed MacBook Pro partly under the left one with a softly lit logo, white Magic Keyboard
+    and Magic Trackpad
   - all chairs (dining table, Bibliothek desk) are board chairs after stuhl.png: thick plank
     seat on battens, four splayed stick legs without stretchers, one tall backrest board leaning
     back with a pointed heart cut out
@@ -108,8 +113,8 @@ edited: 2026-11-08
   disabled and the page draws at most 30 frames per second.
 - **The view lives in the URL**, written as it changes: house `?cam=x,y,z&at=x,y,z&p=…&cut=…`
   (model coordinates; optional `&fov=…`, vertical field of view in degrees, default 28, and
-  `&hires=on`, full quality), Ofen
-  page `?cam=…&at=…&look=wire|mass|full`. A reload or a shared link opens the same view.
+  `&hires=on`, full quality), sub-model
+  pages `?cam=…&at=…&look=wire|mass|full`. A reload or a shared link opens the same view.
 - **Light on the GPU:** a frame is drawn only when something changes (camera, stage, cutaway,
   sun, window size); a burning fire in view is redrawn at most 30 times a second. In fast mode
   (the default, Rundgang included) the pixel ratio is capped at 1.5, only the light pool lights

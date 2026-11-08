@@ -42,7 +42,8 @@ export function makeMaterials(defs, { uPaper, uDetail, uDusk = float(1), texture
   for (const { name, extras: d } of defs) {
     let image = null;                              // loads in the background; onTexture once it is there
     if (d.image) {
-      image = new THREE.TextureLoader().load(textureBase + d.image, onTexture);
+      const url = textureBase + d.image;
+      image = new THREE.TextureLoader().load(url, onTexture, undefined, () => console.error(`texture missing: ${url}`));
       image.colorSpace = THREE.SRGBColorSpace;
       image.anisotropy = 8;
     }
@@ -65,7 +66,7 @@ export function makeMaterials(defs, { uPaper, uDetail, uDusk = float(1), texture
     m.polygonOffset = true;                         // the ink lines win the depth test
     m.polygonOffsetFactor = m.polygonOffsetUnits = 1;
     m.name = name;
-    m.userData = { kind: d.kind, base, emit: d.emit, night: d.night, alpha: d.alpha, usesRnd, image: d.image };
+    m.userData = { kind: d.kind, base, emit: d.emit, night: d.night, alpha: d.alpha, usesRnd };
     out[name] = m;
   }
   return out;

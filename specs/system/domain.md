@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-06
+edited: 2026-11-08
 ---
 
 # Domain: Frechenlehen house model
@@ -41,11 +41,13 @@ the team uses them:
 | **Collection** | Blender grouping. The house lives in `Haus` with sub-collections `FL_EG`, `FL_OG`, `FL_Dach`, `FL_Balkone`, `FL_Umgebung`, `FL_Referenz`. In the `.glb` it is `extras.collection` per node. |
 | **rnd** | A random value per Part, stored per face, that varies the shade of boards and slabs. |
 | **Core** (`house_core`) | The pure-Python description of the house: constants, materials as data, primitives, builders. It knows nothing about Blender or three.js. |
-| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `MAT_DEF`, paint colours, room lights and the garden layout. Not to be confused with "model", the whole 3D house. |
+| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `MAT_DEF`, paint colours, room lights and the garden layout. Not to be confused with "model", the whole 3D house. |
 | **Backend** | Turns a Blueprint into output. **Blender backend** (`build_house.py`): the `.blend` scene. **glTF backend** (`export_gltf.py`): the `.glb` file. |
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
 | **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
 | **Viewer** | The three.js web page in `web/`. |
+| **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page linked from the viewer: the **Ofen** (`ofen.py`, `ofen.html`) and the **Schreibtisch** (`desk.py`, `desk.html`). The house places the same parts, only translated. |
+| **Bildschirm** | A monitor pane of the Schreibtisch whose material shows a screen image (a screenshot) instead of a colour or procedural texture. |
 | **Stage** | One of five looks in the viewer: **Skizze** (sketch), **Massenmodell** (massing model), **Detailmodell** (detailed model), **Gebaut** (built reality), **Eingerichtet** (furnished: Gebaut plus furniture). |
 | **Timeline** | The bar that moves between stages. Its progress `p` runs from 0 to 3; integer values are the pure stages, values in between blend two neighbours. |
 | **Cutaway** | Viewer setting that hides the roof ("Ohne Dach") or the roof and the OG ("Nur EG"). |
@@ -191,7 +193,7 @@ flowchart LR
 - **Faces point outward.** Every closed Part is oriented to a positive signed volume, as
   Blender's normal recalculation does. Open Parts (the two lamp cones) are double-sided.
 - **Object space = world space.** GEO vertices are in world coordinates, except pivoted
-  objects, which are shifted by the pivot. Wood grain lines up the same way in Blender and in
+  objects, which are shifted by the pivot (and stored unturned when they have a `TURN`). Wood grain lines up the same way in Blender and in
   the `.glb`.
 - **The garden is alike, not identical.** Both outputs plant from the same garden layout;
   blades and leaves land in different spots, and the browser uses 25 % of the grass density.

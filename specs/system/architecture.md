@@ -1,15 +1,15 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-06
+edited: 2026-11-08
 ---
 
 # Architecture: Frechenlehen house model
 
 ## Overview
 
-The house is described once, in a **pure-Python core** (`code/house_core.py` plus the stoves in
-`code/ofen.py`, no `bpy`). Two
+The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
+`code/ofen.py` (stoves) and `code/desk.py` (Büro desk), no `bpy`). Two
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -29,6 +29,7 @@ flowchart TB
     subgraph py["code/ — Python"]
         CORE["house_core.py<br/>pure Python, no bpy"]
         OF["ofen.py<br/>stoves, part of the core"]
+        DK["desk.py<br/>desk, part of the core"]
         MO["mesh_ops.py<br/>triangulate · orient"]
         BH["build_house.py<br/>Blender backend"]
         EX["export_gltf.py<br/>glTF backend"]
@@ -48,7 +49,7 @@ flowchart TB
     end
     PDF -. measured by hand .-> CORE
     PH -. modelled by hand .-> CORE
-    OF <--> CORE
+    OF & DK <--> CORE
     CORE --> BH & EX
     CORE --> PA & WR & GA & FI
     CORE --> TO --> FI & EX
@@ -90,6 +91,15 @@ flowchart LR
   (`ofen_im_haus()`) and `werkstattofen()`; `house_core` imports it and calls them, `build_ofen()`
   stays in `house_core`. `ofen.py` uses the primitives and `GEO`/`PARTS` through `house_core` (the two
   modules import each other). Its materials are entries of `MAT_DEF`.
+- **Desk.** `code/desk.py` the same way: the table builder `desk()` (Büro desk, OG laundry
+  table), `desk_neu(c, x0, y0)` (table, two monitors, MacBook, keyboard, trackpad, built straight
+  into collection `c`: `EG` at `DESK_AT`, or `Desk` at the origin) and `stuhl()`; `build_desk()`
+  stays in `house_core`. The devices draw `rnd` from their own `random.Random(3)`, so no later part
+  shifts. Each screen pane is an object with a `PIVOT` (lower-left corner) and a `TURN` (yaw);
+  its material carries `image` (path under `web/public/`) and `size` (w, h in metres), mapped in
+  object space by both backends (`local()` stores the mesh unturned).
+- **Sub-models.** `build_ofen()` / `build_desk()` return a Blueprint of the sub-model alone
+  (`garden=None`, its dimension lines in `dims`) for `web/ofen.html` / `web/desk.html`.
 - **Geometry accumulator.** Builders append vertices, faces, material names and an `rnd`
   value per face to `GEO[(collection, object)]`. Faces are polygons (quads or n-gons, may be
   concave) with no consistent winding. Each `add()` call is one **Part** (a closed solid,
@@ -110,26 +120,30 @@ flowchart LR
   `random.Random(5)` and the shrubs `random.Random(6)`.
 
 `build()` returns the **Blueprint**: `geo`, `parts`, `smooth`, `pivot`, `mat_def`, `paint`,
-`room_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet").
+`room_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
+`dims` (sub-models only), `turn` (`TURN`: object → yaw in degrees about its pivot).
 
 ### `build_house.py` — Blender backend
 
 It keeps only what needs Blender: `make_materials` (MAT_DEF → Principled BSDF node trees;
 wood is noise stretched along the grain → ramp → hue/value by `rnd` → bump; all texture
 coordinates in object space), `reset_collections`, `flush_geometry` (one mesh per GEO entry,
-`rnd` face attribute, normals recalculated with bmesh, `SMOOTH`, origins at `PIVOT`),
+`rnd` face attribute, normals recalculated with bmesh, `SMOOTH`, origins at `PIVOT`, z rotation
+from `TURN`; image materials map the picture through Texture Coordinate › Object),
 `build_room_names` (font curves), `build_references` and `setup_scene` (sun, world, camera).
 
 ### `mesh_ops.py` and `export_gltf.py` — glTF backend
 
 Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writer.md)):
-`python3 code/export_gltf.py web/public/frechenlehen.glb`.
+`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk`: the sub-model's
+`.glb` instead).
 
 - `mesh_ops` does what bmesh does in Blender:
   - **triangulates** n-gons by ear clipping on the dominant plane of the Newell normal;
   - **orients** each Part outward: flood-filled consistent winding, flipped if the signed
     volume is negative. Open Parts keep their winding and are marked open.
-- **One node per GEO object.** The name is the object name, `translation` is the pivot.
+- **One node per GEO object.** The name is the object name, `translation` is the pivot,
+  `rotation` the `TURN` yaw.
   `extras.collection` holds the collection; `extras.smooth` marks `SMOOTH` objects,
   `extras.furniture` the `FURNITURE` objects.
 - **One primitive per material**, with `POSITION`, `NORMAL` (flat, or averaged within a
@@ -192,7 +206,8 @@ sequenceDiagram
   between neighbouring stages. `stageAt(p)` gives the nearest stage. No three.js.
 - **`materials.js`.** One `MeshStandardNodeMaterial` per `FL_*` material, built from the
   extras: plain, wood (noise along the grain, ramp, `_rnd` variation), speck, bump, alpha,
-  emit. The colour is `mix(paper, clay, …)` → `mix(clay, detail, uDetail)`. In Skizze the
+  emit, image (`texture()` over `positionLocal` / `size`, loaded in the background; a missing
+  file is logged). The colour is `mix(paper, clay, …)` → `mix(clay, detail, uDetail)`. In Skizze the
   surfaces are paper and write depth, so the ink lines are hidden-line.
 - **`ink.js`.** `EdgesGeometry` (30°) per mesh except `SMOOTH` and furniture objects, merged into one
   `LineSegments` per collection.
@@ -235,8 +250,11 @@ sequenceDiagram
   Eingerichtet, cutaway Ganzes Haus, `EG_Haustuer` rotated 90°. Beenden: door closed, previous
   camera, target and fov restored. `drawDue` caps drawing at 30 fps while the tour is on; the
   sun stays anchored to a fixed copy of the start target.
-- **View in the URL.** `main.js` and `ofen.js` read `?cam=&at=` (model coordinates) plus
-  `p`/`cut` (house) or `look` (Ofen) on load and write them back with `history.replaceState`,
+- **Sub-model pages.** `submodel.js` draws a sub-model page (views, looks Drahtmodell / Masse /
+  Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js` and `desk.js` only configure
+  it. `ui.js` links the house page to both; each links back.
+- **View in the URL.** `main.js` and `submodel.js` read `?cam=&at=` (model coordinates) plus
+  `p`/`cut` (house) or `look` (sub-models) on load and write them back with `history.replaceState`,
   debounced to 300 ms, on every controls change, stage, cutaway or look change.
 - **`blueprint-watch.js`** (Vite plugin, dev server only, off under Vitest): watches `code/*.py`;
   a save runs `npm run blueprint` (debounced, one export at a time, again if saved meanwhile)
@@ -248,7 +266,7 @@ sequenceDiagram
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters incl. `lights` (visible room / outside lights), `hires`, `pixelRatio`,
   `tour`, `tourKey`), only outside production builds; `window.__ofen`
-  on the Ofen page.
+  / `window.__desk` on the sub-model pages.
 
 ## Key decisions
 
@@ -280,6 +298,8 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | The `.glb` carries the **baked, smoothed camera keys** as JSON in `scene.extras.tour` | Export the segments and re-implement the baking in JS; binary accessor | One implementation of the route math (ADR-001-XEWL); JSON is small and matches room lights and garden. |
 | `tour.js` builds its own button and bar; `ui.js` only returns `setCut` | Tour controls in `ui.js` | Keeps the tour separable. |
 | The viewer plays at **0.75×**; the film keeps its pace | Lower `WALK` in `tour.py` | The slower pace was asked for the browser only. |
+| Screen images mapped in **object space around the pane's pivot** | UVs through accumulator, `mesh_ops` and writer | The project already maps textures in object space; no new vertex attribute in three code paths. |
+| Screenshots downscaled once (`sips`) and **committed as JPEG** under `web/public/textures/` | Embed the PNGs in the `.glb`; convert at build time | CI is Ubuntu + stdlib (no `sips`, no Pillow); the house page should not load 8.6 MB more. |
 | The **route is closed** in `tour.py`, for the film too | A viewer-only return leg | One route (ADR-001-XEWL); the viewer can loop it. |
 | Viewer dusk lights are a **fixed light pool** moved to the sites nearest the camera | Keep one light per site and toggle `visible` on the nearest N | three.js 0.187 hashes the id of every light in the render list into each material's cache key; a changing set would recompile every material while the camera moves. |
 | Separate pools: **6 room lights, 2 outside lamps**, cut-off fade 1.0 m | 4 + 2 with a 1.5 m fade; one ranking over all 31 sites | Point and spot lights can't share a pooled object, and from outside the lamps would starve the rooms. With 4 the last light was nearly always faded (sites lie centimetres apart in distance). 8 lights instead of 31. |
