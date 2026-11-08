@@ -31,9 +31,9 @@ edited: 2026-11-08
   - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf)
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
-  - floors: limestone in the EG corridor and the two OG bathrooms (Bad NW with its shower
-    alcove, Bad S), oak planks elsewhere (also in the WCs and the Bad Großeltern, which is
-    rebuilt later)
+  - floors: limestone in the EG corridor, the Bäder (Bad Großeltern, OG Bad NW with its shower
+    alcove, Bad S) and all four WCs (also the WC in the Bad Großeltern's niche), oak planks
+    elsewhere (also in the niche's Schrank)
   - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
     with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
@@ -77,12 +77,13 @@ edited: 2026-11-08
 - `paint.py`: RAL colours for facade, windows, shutters and stove tiles.
 - `garden.py`: meadow grass (Geometry Nodes) and leafy shrubs.
 - `windrose.py`: compass rose to the SW.
-- **Film** (`film.py`, route in `tour.py`): a walkthrough of 284 s, 7102 frames at 1280×720,
+- **Film** (`film.py`, route in `tour.py`): a walkthrough of 305 s, 7632 frames at 1280×720,
   25 fps. Slow turns on the spot (`TURN` °/s), pauses (`PAUSE` s) and the camera height
   (`EYE`, 1.60 m above the floor) are one variable each:
   1. orbit outside, enter at the east door, which swings open
   2. EG: Stube round the sofa to the seating corner (turn, pause at the sofa and Ofen), Essen at the end of the table (turn,
-     pause), look into the Speis, Küche, Großeltern (turn at the wall beside the balcony door),
+     pause), look into the Speis, Küche, Großeltern: into their Bad (look into the shower and
+     the WC, pause at each), then turn at the wall beside the balcony door,
      back door (turn, pause), Bibliothek back corner (turn, pause at the piano)
   3. up the stairs; OG: peeks into the first room on the right and the Waschküche, Schlafen SE
      back corner (turn, pause at the Kamin), peeks into its Bad, the NE room opposite, the SW room

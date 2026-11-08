@@ -789,9 +789,9 @@ def test_bathrooms_have_limestone_like_the_eg_corridor():
     pts = lambda c, ps: {_floor_at(c, x, y) for x, y in ps} - {None}
     assert pts("OG", [(0.4, 6.6), (1.2, 7.5), (2.5, 8.5), (2.1, 5.55), (2.1, 6.4)]) == {"Kalkstein"}  # Bad NW + alcove
     assert pts("OG", [(5.65, 0.45), (7.0, 1.5), (8.55, 2.55)]) == {"Kalkstein"}                       # Bad S
-    assert pts("OG", [(1.0, 6.0), (4.0, 7.5), (7.0, 4.0)]) == {"Eiche"}                                # WC, Flur, HWR
+    assert pts("OG", [(4.0, 7.5), (7.0, 4.0)]) == {"Eiche"}                                            # Flur, HWR
     assert pts("EG", [(1.2, 11.0)]) == {"Kalkstein"}                                                   # Bad Großeltern
-    assert pts("EG", [(0.8, 9.3), (1.6, 9.3)]) == {"Eiche"}                                            # its WC, Schrank
+    assert pts("EG", [(1.6, 9.3)]) == {"Eiche"}                                                        # its Schrank
     assert pts("EG", [(5.0, 7.5)]) == {"Kalkstein"}                                                    # EG Flur
 
 
@@ -966,4 +966,13 @@ def test_bad_built_into_the_grosseltern():
     assert not any(lo[1] > 10.2 and hi[1] < 10.35 and hi[0] < 2.36 for _, lo, hi in _parts(BP, ("EG", "EG_Innentueren")))
     assert len([1 for c, l in house_core.LEAVES if c == "EG" and 0.3 < l[0][0] < 2.4 and 9.8 < l[0][1] < 10.0]) == 2
     assert _floor_at("EG", 1.2, 11.0) == "Kalkstein"
-    assert {_floor_at("EG", x, 9.3) for x in (0.8, 1.6)} == {"Eiche"}
+    assert _floor_at("EG", 0.8, 9.3) == "Kalkstein" and _floor_at("EG", 1.6, 9.3) == "Eiche"   # WC, Schrank
+
+
+def test_wcs_have_limestone_floors():
+    """Request 2026-11-08: all toilets get stone floors (the limestone of the EG Flur and the
+    Bäder): the three WCs of WCS and the WC half of the Bad Großeltern's niche; its Schrank half
+    keeps oak."""
+    for c, z, (x0, x1, y0, y1), _ in WCS:                                   # incl. the WC Großeltern
+        assert _floor_at(c, (x0 + x1) / 2 + 0.02, (y0 + y1) / 2 + 0.03) == "Kalkstein", (c, x0, y0)
+    assert _floor_at("EG", 1.6, 9.3) == "Eiche"                           # its Schrank

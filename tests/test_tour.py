@@ -39,3 +39,17 @@ def test_route_ends_where_it_starts():
     cruise = math.dist(KEYS[51][:3], KEYS[50][:3])                  # orbit at full speed
     seam = (math.dist(KEYS[1][:3], KEYS[0][:3]), math.dist(KEYS[-1][:3], KEYS[-2][:3]))
     assert max(seam) <= 1.05 * cruise
+
+
+def test_route_looks_into_the_grosseltern_shower_and_wc():
+    """Request 2026-11-08: the Rundgang steps into the Bad Großeltern (code/bad.py) and looks into
+    its walk-in shower (NW corner, x 0.31-1.11, y 10.92-12.47) and into its WC (niche, west half,
+    toilet at x 0.79 on the south wall), pausing at each."""
+    def looking_at(k, tx, ty, tol=12):
+        a = math.degrees(math.atan2(ty - k[1], tx - k[0]) - k[3])
+        return abs((a + 180) % 360 - 180) < tol
+    bad = [k for k in KEYS if 0.31 < k[0] < 2.358 and 9.9 < k[1] < 12.47 and k[2] < 2]
+    shower = [k for k in bad if looking_at(k, 0.71, 11.7)]
+    wc = [k for k in bad if looking_at(k, 0.79, 9.1)]
+    assert len(shower) >= tour.PAUSE * tour.FPS and len(wc) >= tour.PAUSE * tour.FPS
+    assert min(k[4] for k in wc) < -0.3                                   # looks down at the toilet
