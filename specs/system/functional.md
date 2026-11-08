@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-06
+edited: 2026-11-08
 ---
 
 # Functional: Frechenlehen house model
@@ -30,7 +30,9 @@ edited: 2026-11-06
   - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf)
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
-  - floors: limestone in the EG corridor, oak planks elsewhere
+  - floors: limestone in the EG corridor and the two OG bathrooms (Bad NW with its shower
+    alcove, Bad S), oak planks elsewhere (also in the WCs and the Bad Großeltern, which is
+    rebuilt later)
   - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
     with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
@@ -177,6 +179,5 @@ hook exists only in dev and test builds.
 - The garden in the viewer is like Blender's, not identical: 25 % grass density, within 30 m,
   grass where the windrose would be.
 - Headless e2e tests run the WebGL2 fallback; the WebGPU path is checked by hand.
-- Bathrooms have oak floors, not tiles (open point).
 - `film.py` adds new `Innenlicht_*` lights with rising suffixes on each run (cosmetic).
 - Plan accuracy is about ±5 cm. The stair is longer than drawn ("Treppe wird verschoben").

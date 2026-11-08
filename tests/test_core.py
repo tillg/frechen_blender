@@ -769,3 +769,23 @@ def test_back_door_has_lever_handles_inside_and_outside():
     assert any(hi[0] < -0.04 for lo, hi in levers)                           # outside the leaf
     assert any(lo[0] > 0.09 for lo, hi in levers)                            # inside
     assert all(lo[1] < 7.408 + 0.09 + 0.12 for lo, hi in levers)             # at the lock, south side
+
+
+def _floor_at(coll, x, y):
+    """Material of the floor-cover piece under (x, y) (None in a joint)."""
+    g = BP.geo[(coll, coll + "_Bodenbelag")]
+    for first, n in BP.parts[(coll, coll + "_Bodenbelag")]:
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        if min(v[0] for v in vs) < x < max(v[0] for v in vs) and min(v[1] for v in vs) < y < max(v[1] for v in vs):
+            return g["m"][first]
+
+
+def test_bathrooms_have_limestone_like_the_eg_corridor():
+    """Request 2026-11-08: Bäder get the limestone of the EG Flur, except the Bad of the
+    Großeltern (to be rebuilt later)."""
+    pts = lambda c, ps: {_floor_at(c, x, y) for x, y in ps} - {None}
+    assert pts("OG", [(0.4, 6.6), (1.2, 7.5), (2.5, 8.5), (2.1, 5.55), (2.1, 6.4)]) == {"Kalkstein"}  # Bad NW + alcove
+    assert pts("OG", [(5.65, 0.45), (7.0, 1.5), (8.55, 2.55)]) == {"Kalkstein"}                       # Bad S
+    assert pts("OG", [(1.0, 6.0), (4.0, 7.5), (7.0, 4.0)]) == {"Eiche"}                                # WC, Flur, HWR
+    assert pts("EG", [(1.2, 11.0), (1.2, 9.5)]) == {"Eiche"}                                           # Großeltern
+    assert pts("EG", [(5.0, 7.5)]) == {"Kalkstein"}                                                    # EG Flur

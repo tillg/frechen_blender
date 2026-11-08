@@ -1079,6 +1079,8 @@ def slab(coll, obj, mat, z0, z1, inset=0.0, hole=None):
 
 
 CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.358, 6.723, 8.506)]   # Flur/Windfang, back hall
+# OG Bad NW (with the shower alcove) and Bad S; the Bad Großeltern (EG) stays oak, it is rebuilt later
+BATHS_OG = [(0.31, 2.57, 6.54, 8.57), (1.67, 2.57, 5.46, 6.54), (5.59, 8.59, 0.40, 2.62)]
 
 
 def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=()):
@@ -1109,7 +1111,8 @@ def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(
 
 def floor_cover(coll, z, corridors, hole=None):
     """Floors after inside_floor_rooms.jpg (oak planks in all rooms) and
-    stone_floor_corridor.jpg (limestone slabs in the EG corridors); dark base shows in the joints."""
+    stone_floor_corridor.jpg (limestone slabs in the EG corridors and the OG bathrooms);
+    dark base shows in the joints."""
     o, ex = coll + "_Bodenbelag", [hole] if hole else []
     for x0, x1, y0, y1 in FOOT:
         tiles(coll, o, "Eiche", x0, x1, y0, y1, z + 0.002, z + 0.014, [0.2], (1.2, 2.4), 0.003,
@@ -1125,7 +1128,7 @@ def build_slabs():
     slab("OG", "OG_Decke_EG", "Decke", Z_EG_TOP, Z_OG, hole=STAIR_HOLE)
     slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
     floor_cover("EG", 0.0, CORRIDOR_EG)
-    floor_cover("OG", Z_OG, [], STAIR_HOLE)                 # OG corridor: oak like the rooms
+    floor_cover("OG", Z_OG, BATHS_OG, STAIR_HOLE)           # OG corridor: oak like the rooms
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 
 
