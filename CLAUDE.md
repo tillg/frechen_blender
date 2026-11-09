@@ -18,7 +18,7 @@ for s in ("build_house", "fire", "paint", "windrose", "garden", "film"):
 bpy.ops.wm.save_mainfile()
 ```
 
-Always rebuild in this order: `fire`, `paint`, `garden` and `film` all depend on objects (or materials) that `build_house` recreates. Every script is idempotent (re-running replaces its own collection/objects). No hand edits live in the `.blend`; the scripts are the source of truth. Every Blender script imports the core with `sys.path` + `importlib.reload(house_core)`; without the reload a long-running Blender session would silently keep the old core. Without the MCP, the same rebuild runs headless: `Blender -b frechenlehen.blend --python <script that execs the six and saves>`.
+Always rebuild in this order: `fire`, `paint`, `garden` and `film` all depend on objects (or materials) that `build_house` recreates. Every script is idempotent (re-running replaces its own collection/objects). No hand edits live in the `.blend`; the scripts are the source of truth. Every Blender script imports the core with `sys.path` (`code/` next to the open `.blend`, so each clone builds its own core; no `.blend` open: the caller's `PROJECT`) + `importlib.reload(house_core)`; without the reload a long-running Blender session would silently keep the old core. Without the MCP, the same rebuild runs headless: `Blender -b frechenlehen.blend --python <script that execs the six and saves>`.
 
 Tests:
 

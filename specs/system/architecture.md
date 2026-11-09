@@ -191,7 +191,9 @@ deliberate route change).
 ### Other Blender scripts
 
 Each one imports the core with `sys.path` + `importlib.reload(house_core)`, so a
-long-running Blender session picks up core edits.
+long-running Blender session picks up core edits. The path is `code/` next to the open `.blend`
+(`bpy.data.filepath`), so each clone's Blender builds its own core; with no `.blend` open (the
+headless parity build) the caller's `PROJECT` (`tests/blender/snapshot.py`) gives it.
 
 | Script | Responsibility | Depends on |
 |---|---|---|

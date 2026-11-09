@@ -4,9 +4,9 @@ per-frame keys) and creates point lights in the collection "Innenlicht". Neither
 the Ofen bed) get a small warm light in "Innenlicht" too.
 Run inside Blender: exec(open(".../code/film.py").read())
 """
-import bpy, importlib, math, sys
+import bpy, importlib, math, os, sys
 
-sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
 import ofen, desk, bad, kueche, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(house_core)  # pick up core edits
 import tour; importlib.reload(tour)                    # the route (after the core it imports)
 from house_core import ROOM_LIGHT_H, ROOM_LIGHTS
@@ -87,7 +87,7 @@ def main():
     sc.eevee.shadow_pool_size = "1024"
     sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 1280, 720, 100
     sc.render.image_settings.file_format = "PNG"
-    sc.render.filepath = "/Users/tgartner/git/frechen_blender/tmp/film/frame_"
+    sc.render.filepath = os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "tmp", "film", "frame_")
     return n
 
 

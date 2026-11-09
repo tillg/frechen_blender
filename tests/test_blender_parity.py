@@ -46,3 +46,11 @@ def test_saved_blend_matches_golden(tmp_path):
                    check=True, capture_output=True, text=True)
     d = diff(json.loads(GOLDEN.read_text()), json.loads(out.read_text()))
     assert not d, "saved .blend differs from golden:\n" + json.dumps(sorted(d))[:2000]
+
+
+def test_blender_scripts_use_this_clone():
+    """The Blender scripts import the core of the repo they belong to, never a fixed clone path
+    (specs/bugs/blender-scripts-import-other-clone.md)."""
+    hits = [f"{p.name}:{i}" for p in sorted((ROOT / "code").glob("*.py"))
+            for i, line in enumerate(p.read_text().splitlines(), 1) if "/Users/tgartner/git/frechen_blender" in line]
+    assert hits == []

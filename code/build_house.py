@@ -8,8 +8,8 @@ Re-running replaces the "Haus" collection.
 import bpy, importlib, math, os, sys
 from mathutils import Vector
 
-PROJECT = "/Users/tgartner/git/frechen_blender"
-sys.path.insert(0, PROJECT + "/code")
+PROJECT = os.path.dirname(bpy.data.filepath) or PROJECT   # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's)
+sys.path.insert(0, os.path.join(PROJECT, "code"))
 import ofen, desk, bad, kueche, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(house_core)  # pick up core edits in a long session
 from house_core import Z_OG, ROOM_NAMES
 

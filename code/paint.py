@@ -6,9 +6,9 @@ Run inside Blender: exec(open(".../code/paint.py").read())  – re-running is sa
   Fensterläden RAL 5014 Taubenblau (weiße Querbretter)
   Türen bleiben Naturholz (Materialien aus build_house.py)
 """
-import bpy, importlib, sys
+import bpy, importlib, os, sys
 
-sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
 import house_core; importlib.reload(house_core)        # pick up core edits in a long session
 from house_core import PAINT
 

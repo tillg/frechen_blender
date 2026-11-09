@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = sys.argv[sys.argv.index("--") + 1]
 
 
-G = {"__name__": "__main__"}          # one namespace for all scripts, as in the MCP rebuild
+G = {"__name__": "__main__", "PROJECT": str(ROOT)}   # one namespace for all scripts, as in the MCP
+                                                    # rebuild; PROJECT: the scripts' repo when no .blend is open
 
 
 def run(script):

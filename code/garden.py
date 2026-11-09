@@ -6,10 +6,10 @@ the clump shape and the shrub placements come from the garden layout in house_co
 The meadow is a Geometry Nodes scatter of grass-clump instances; the viewport shows 10 %.
 Run inside Blender: exec(open(".../code/garden.py").read())
 """
-import bpy, bmesh, importlib, math, random, sys
+import bpy, bmesh, importlib, math, os, random, sys
 from mathutils import Vector, noise
 
-sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
 import ofen, desk, bad, kueche, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(house_core)  # pick up core edits in a long session
 from house_core import CELL, DENSITY, density
 

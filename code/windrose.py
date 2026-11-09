@@ -3,9 +3,9 @@
 Lives in its own collection "Windrose" so build_house.py never touches it.
 Run inside Blender: exec(open(".../code/windrose.py").read())  – re-running replaces only the rose.
 """
-import bpy, importlib, math, sys
+import bpy, importlib, math, os, sys
 
-sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
 import house_core; importlib.reload(house_core)        # pick up core edits in a long session
 from house_core import WINDROSE_CENTER as CENTER, WINDROSE_R as R   # SW of the house; main point length
 

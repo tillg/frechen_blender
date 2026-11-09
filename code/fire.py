@@ -11,7 +11,7 @@ noise, plus a flickering warm light per fire. Re-running replaces the collection
 build_house (same rebuild order as the others):
     exec(open(".../code/fire.py").read())
 """
-import importlib, math, random, sys
+import importlib, math, os, random, sys
 
 try:
     import bpy
@@ -121,7 +121,7 @@ def burn(coll, f, i, outer, core):
 
 
 def main():
-    sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
+    sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
     import ofen, desk, bad, kueche, house_core
     importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(house_core)    # pick up core edits in a long session
     bp = house_core.build()
