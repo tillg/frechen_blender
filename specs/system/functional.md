@@ -72,7 +72,9 @@ edited: 2026-11-09
     width, nothing in front of it), closed by two interlocking sliding doors (the WC leaf open,
     slid behind the Schrank leaf); 96.7 cm passage between the front leaf and the wall's end;
     floor: limestone strip 96.4 cm wide (the WC's width) from the south wall to the north wall,
-    oak elsewhere, part of the sub-model
+    oak elsewhere, part of the sub-model. The sliding doors show how they work: every 4 s one
+    leaf, picked at random, rolls to the other end of its track in 2 s, on the sub-model page
+    and in the house in stage Eingerichtet; the Rundgang sees them as built (WC leaf open)
   - OG bathrooms: shower, basin with mirror
   - the four WCs (also the WC in the Bad Großeltern's niche), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: green subway tiles about 1.1 m high with a cap

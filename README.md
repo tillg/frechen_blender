@@ -76,8 +76,10 @@ mit seinen Geräten in der Stufe Eingerichtet.
 
 Teilmodell **Bad Oma & Opa** (`bad.html`): das Bad der Großeltern mit Dusche, Mauer mit Glas,
 Waschtrog und der Nische mit WC, Schrank und den zwei verschränkten Schiebetüren, mit Maßen;
-Ansichten schräg, von oben und in die Nische, Darstellung wie beim Ofen. Im Haus steht dasselbe
-Bad, zum Schlafzimmer offen.
+Ansichten schräg, von oben und in die Nische, Darstellung wie beim Ofen. Damit man sieht, wie die
+Schiebetüren funktionieren, rollt alle 4 Sekunden ein zufällig gewähltes Türblatt in 2 Sekunden
+auf die andere Seite seiner Schiene. Im Haus steht dasselbe Bad, zum Schlafzimmer offen; dort
+rollen die Türen genauso in der Stufe „Eingerichtet“, nur im Rundgang stehen sie still (WC offen).
 
 Teilmodell **Küche** (`kueche.html`): Spülzeile bis ins Eck unter dem Abzug, Ostzeile 60 cm,
 Wamsler-Holzherd mit Haube, Halbinsel mit Kochfeld, Hängeschränke und Besenschrank, mit Maßen;

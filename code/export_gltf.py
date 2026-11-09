@@ -140,6 +140,8 @@ def export(path, bp=None):
             node["extras"]["furniture"] = True
         if name in bp.pivot:
             node["translation"] = list(yup(piv))
+        if name in (bp.slide or {}):                         # the sub-model viewer rolls it there and back
+            node["extras"]["slide"] = list(yup(bp.slide[name]))
         if turn:                                             # about the vertical: glTF y
             node["rotation"] = [0.0, math.sin(math.radians(turn) / 2), 0.0, math.cos(math.radians(turn) / 2)]
         nodes.append(node)

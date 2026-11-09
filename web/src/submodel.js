@@ -11,13 +11,15 @@ import { createFire } from './fire.js';
 import { INK } from './ink.js';
 import { makeMaterials, updateStage } from './materials.js';
 import { navSelect } from './nav.js';
+import { slidingNodes } from './slides.js';
 import './ui.css';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 
 // cfg: glb (file under public/), views {name: [cam, target]} (model coords; the first is the
 // default), colors {object: line colour}, walls [[w, h, centre, rotation about the vertical]],
-// grid [x, y] (centre of the 4 x 4 m floor), sun [position, target], hook (window.<hook>)
+// grid [x, y] (centre of the 4 x 4 m floor), sun [position, target], hook (window.<hook>).
+// Objects with extras.slide (the Bad's sliding leaves) roll there and back (slides.js).
 export async function startSubmodel(cfg) {
   document.querySelector('.fl-tools').append(navSelect());
   const renderer = new THREE.WebGPURenderer({ antialias: true });
@@ -89,8 +91,12 @@ export async function startSubmodel(cfg) {
   const mats = makeMaterials(Object.values(defs), { uPaper: uniform(0), uDetail,
     textureBase: import.meta.env.BASE_URL, onTexture: () => textures++ });
   let edges = 0;
+  const slides = slidingNodes(bp.objects);                  // the sliding leaves, each with its edge lines
+  const sliders = slides.nodes.map((n) => ({ ...n, lines: new THREE.Group() }));
+  for (const s of sliders) lines.add(s.lines);
   for (const obj of bp.objects) {
     const lineMat = new THREE.LineBasicNodeMaterial({ color: cfg.colors[obj.name] ?? INK });
+    const into = sliders.find((s) => s.obj === obj)?.lines ?? lines;
     obj.traverse((m) => {
       if (!m.isMesh) return;
       m.userData.mat = mats[m.material.name];
@@ -99,7 +105,7 @@ export async function startSubmodel(cfg) {
       meshes.push(m);
       const geo = new THREE.EdgesGeometry(m.geometry, 1).applyMatrix4(m.matrixWorld);
       edges += geo.attributes.position.count / 2;
-      lines.add(new THREE.LineSegments(geo, lineMat));
+      into.add(new THREE.LineSegments(geo, lineMat));
     });
   }
   const fire = createFire(bp.extras);                       // a stove's fire behind the glass (code/fire.py)
@@ -166,14 +172,17 @@ export async function startSubmodel(cfg) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     labels.setSize(window.innerWidth, window.innerHeight);
   });
+  let t0;
   renderer.setAnimationLoop((now) => {
     controls.update();
     fire.tick(now / 1000);
+    if (slides.update(now / 1000 - (t0 ??= now / 1000))) for (const s of sliders) s.lines.position.subVectors(s.obj.position, s.home);
     renderer.render(scene, camera);
     labels.render(scene, camera);
   });
   if (import.meta.env.DEV) window[cfg.hook] = { ready: true, view, setLook, look: () => look, edges, dims: bp.extras.dims.length,
     textures: () => textures,                                                  // image textures loaded
+    slides: slides.state,
     get camera() { const p = camera.position; return [p.x, -p.z, p.y]; },        // model z-up coords
     fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y };   // a flame's height (0: off)
 }

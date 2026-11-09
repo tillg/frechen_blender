@@ -8,6 +8,7 @@ import { inkLines } from './ink.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
+import { slidingNodes } from './slides.js';
 import { createTour, drawDue } from './tour.js';
 import { createUI } from './ui.js';
 
@@ -56,6 +57,11 @@ bp.root.traverse((o) => {
 const ink = inkLines(bp, uInk);
 const garden = buildGarden(bp, { uPaper, uDetail, uInk });
 const fire = createFire(bp.extras);                       // the stoves' fires (code/fire.py)
+// the Bad's sliding leaves roll in Eingerichtet, outside the Rundgang (it sees them as built); their
+// travel boxes count as in view like the fires
+const slides = slidingNodes(bp.objects);
+const slideBoxes = slides.nodes.map((n) => new THREE.Box3().setFromObject(n.obj)
+  .union(new THREE.Box3().setFromObject(n.obj).translate(n.by)));
 scene.add(bp.root, ink.group, garden.group, fire.group);
 
 let progress = 0, cut = 'all', sun = null;               // sun: null = follow the stage, else forced dusk 0/1
@@ -137,12 +143,12 @@ const tour = createTour({
 // a fire counts as in view when its box (tongues at full height) meets the camera frustum
 const fireBoxes = fire.group.children.map((g) => new THREE.Box3().setFromObject(g));
 const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
-function fireInView() {
-  if (!fire.group.visible) return false;
+function inView(boxes) {
   camera.updateMatrixWorld();
   frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse), camera.coordinateSystem);
-  return fireBoxes.some((b) => frustum.intersectsBox(b));
+  return boxes.some((b) => frustum.intersectsBox(b));
 }
+const fireInView = () => fire.group.visible && inView(fireBoxes);
 
 window.addEventListener('resize', () => {                             // before the awaits: no resize lost while compiling
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -154,14 +160,15 @@ window.addEventListener('resize', () => {                             // before 
 
 await renderer.init();
 await lights.prewarm(() => renderer.compileAsync(scene, camera));   // fast mode: no stall at the first dusk
-let draws = 0, lastDraw = -Infinity;
+let draws = 0, lastDraw = -Infinity, t0;
 renderer.setAnimationLoop((now) => {
   const touring = tour.state !== 'off';
   if (!tour.update(now)) controls.update();
   const p = camera.position, inside = indoors(bp.extras, [p.x, -p.z, p.y]);
   if (garden.setIndoors(!hires && inside)) dirty = true;            // hires (film capture) keeps the grass
-  // tour and fire: ≤ 30 fps, less GPU load; otherwise only after a change
-  if (touring || (!dirty && fireInView())) { if (!drawDue(now, lastDraw)) return; }
+  const rolling = slides.update(now / 1000 - (t0 ??= now / 1000), stageAt(progress) === 'furnished' && !touring);
+  // tour, fire and rolling leaves: ≤ 30 fps, less GPU load; otherwise only after a change
+  if (touring || (!dirty && (fireInView() || (rolling && inView(slideBoxes))))) { if (!drawDue(now, lastDraw)) return; }
   else if (!dirty) return;
   dirty = touring;                                                  // the first frame after the tour draws too
   lastDraw = now;
@@ -187,6 +194,7 @@ if (import.meta.env.MODE !== 'production') {
     },
     cameraAt: () => [camera.position.x, -camera.position.z, camera.position.y].map((v) => +v.toFixed(3)),
     fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y,   // a flame's height (0: off)
+    slides: slides.state,                                                       // the Bad's sliding leaves
     setProgress,
     setCutaway,
     visible: (name) => bp.byName[name].visible,

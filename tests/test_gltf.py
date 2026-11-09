@@ -200,7 +200,10 @@ def test_bad_export(tmp_path):
     g = json.loads(data[20:20 + jlen])
     names = {n["name"] for n in g["nodes"]}
     assert {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank", "Bad_Bodenbelag",
-            "Bad_Boden"} == names
+            "Bad_Boden", "Bad_Schiebetuer_hinten", "Bad_Schiebetuer_vorne"} == names
+    slide = {n["name"]: n["extras"]["slide"] for n in g["nodes"] if "slide" in n["extras"]}   # glTF (x, z, -y)
+    assert {k: [round(c, 3) + 0.0 for c in v] for k, v in slide.items()} == {
+        "Bad_Schiebetuer_hinten": [-0.964, 0.0, 0.0], "Bad_Schiebetuer_vorne": [-0.964, 0.0, 0.0]}
     bp = house_core.build_bad()
     house_core.build()
     ex = g["scenes"][0]["extras"]

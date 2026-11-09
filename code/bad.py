@@ -61,13 +61,14 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     # Schrank half (the WC leaf open behind the Schrank leaf); closed, the WC leaf spans 0 .. HALF + NW
     LW, LT, zl = HALF + NW, 0.04, 0.005
     LH = LIN - 0.05 - zl - 0.005
-    for tc in (NICHE + 0.01 + LT / 2, NICHE + 0.06 + LT / 2):
+    for tc, o in ((NICHE + 0.01 + LT / 2, "_Schiebetuer_hinten"), (NICHE + 0.06 + LT / 2, "_Schiebetuer_vorne")):
         rl = 0.8 + 0.2 * rng.random()
 
-        def part(w0, w1, d0, d1, za, zb, r=rl, m="Innentuer", tc=tc):
-            B("_Innentueren", m, HALF + w0, HALF + w1, tc + d0, tc + d1, zl + za, zl + zb, r)
+        def part(w0, w1, d0, d1, za, zb, r=rl, m="Innentuer", tc=tc, o=o):
+            B(o, m, HALF + w0, HALF + w1, tc + d0, tc + d1, zl + za, zl + zb, r)
 
         hc.six_panel_leaf(part, LW, LH)
+        hc.SLIDE[c + o] = (-HALF, 0.0, 0.0)          # one object each: rolls over the WC half and back
         hc.LEAVES.append((c, [(x0 + HALF, y0 + tc - LT / 2, zl), (x0 + HALF + LW, y0 + tc + LT / 2, zl + LH)]))
     B("_Innentueren", "Metall", 0, W, NICHE, NICHE + 0.11, LIN - 0.05, LIN - 0.005, rng.random())   # rail
 

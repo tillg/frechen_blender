@@ -113,6 +113,8 @@ PIVOT = {}    # object -> origin (for parts that get animated, e.g. the entrance
 TURN = {}     # object -> its rotation about the vertical through its PIVOT, degrees (counter-
               # clockwise from above): the backends store its mesh unturned (local()) and turn the
               # object, so object space runs along it (the desk's angled screen panes)
+SLIDE = {}    # object -> (dx, dy, dz) to its other end of travel (the Bad's sliding leaves): the
+              # sub-model viewer rolls it there and back
 
 
 def local(p, piv, turn=0.0):
@@ -2052,12 +2054,13 @@ class Blueprint:
     fires: list = ()   # FIRES: base (centre of the flame bed, in the flame plane), u (unit along
                        # the width, normal = (-u_y, u_x) towards the viewer), w, h, d
     turn: dict = None  # TURN: object -> degrees about its pivot (None: no turned object)
+    slide: dict = None  # SLIDE: object -> (dx, dy, dz) to its other end of travel (None: none)
 
 
 def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
-    OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SMOOTH.clear(); LEAVES.clear()
+    OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SMOOTH.clear(); LEAVES.clear()
     OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
@@ -2067,7 +2070,7 @@ def build():
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
-                     turn=dict(TURN))
+                     turn=dict(TURN), slide=dict(SLIDE))
 
 
 def build_ofen():
@@ -2082,7 +2085,7 @@ def build_ofen():
 def build_desk():
     """The desk sub-model alone (web/desk.html): desk, devices and chair at the origin, plus its
     dimension lines."""
-    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
     random.seed(22)
     dims = desk.desk_neu()
     desk.stuhl("Desk", 0.0, 0.0)
@@ -2093,7 +2096,7 @@ def build_desk():
 def build_kueche():
     """The Küche sub-model alone (web/kueche.html): its furnishings and the flue box at the origin
     (the room's inner NW corner), plus its dimension lines."""
-    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
     LEAVES.clear()
     random.seed(22)
     dims = kueche.kueche_neu()
@@ -2104,9 +2107,9 @@ def build_kueche():
 def build_bad():
     """The Bad Großeltern sub-model alone (web/bad.html): the room's fixtures, niche and its own
     walls at the origin (the room's inner SW corner), plus its dimension lines."""
-    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
     LEAVES.clear()
     random.seed(22)
     dims = bad.bad_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
-                     [], None, set(), dims)
+                     [], None, set(), dims, slide=dict(SLIDE))

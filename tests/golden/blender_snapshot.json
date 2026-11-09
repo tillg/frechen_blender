@@ -591,7 +591,7 @@
    9.966,
    2.17
   ],
-  "faces": 1494,
+  "faces": 1326,
   "materials": [
    "FL_Eisen",
    "FL_Innentuer",
@@ -603,8 +603,8 @@
    0.0,
    0.0
   ],
-  "rnd": "18d12813aaf5d407",
-  "verts": 1992
+  "rnd": "f096e23c1897094f",
+  "verts": 1768
  },
  "EG_Kueche": {
   "bbox": [
@@ -907,6 +907,48 @@
   ],
   "rnd": "0e05f6db5a6aff64",
   "verts": 832
+ },
+ "EG_Schiebetuer_hinten": {
+  "bbox": [
+   1.274,
+   9.866,
+   0.005,
+   2.358,
+   9.906,
+   1.995
+  ],
+  "faces": 84,
+  "materials": [
+   "FL_Innentuer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "a468ce4f1b87cdb8",
+  "verts": 112
+ },
+ "EG_Schiebetuer_vorne": {
+  "bbox": [
+   1.274,
+   9.916,
+   0.005,
+   2.358,
+   9.956,
+   1.995
+  ],
+  "faces": 84,
+  "materials": [
+   "FL_Innentuer"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "9ffb83bb1f8bcbf1",
+  "verts": 112
  },
  "EG_Schrank": {
   "bbox": [

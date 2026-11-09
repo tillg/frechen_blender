@@ -876,7 +876,7 @@ def test_bad_submodel():
     house_core.build()                                                    # restore the registries
     assert {c for c, _ in bp.geo} == {"Bad"} and bp.garden is None
     assert {n for _, n in bp.geo} == {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank",
-                                      "Bad_Bodenbelag", "Bad_Boden"}
+                                      "Bad_Bodenbelag", "Bad_Boden", "Bad_Schiebetuer_hinten", "Bad_Schiebetuer_vorne"}
     W, D, H = 2.048, 3.817, 2.40
     assert all(-1e-9 <= x <= W + 1e-9 and -1e-9 <= y <= D + 1e-9 and -1e-9 <= z <= H + 1e-9
                for g in bp.geo.values() for x, y, z in g["v"])                # no part outside the room
@@ -910,8 +910,12 @@ def test_bad_submodel():
         assert abs(lo[0] - 0.964) < 0.005 and abs(hi[0] - W) < 0.005 and hi[2] >= 1.98
     assert abs((flo[1] - rlo[1]) - 0.05) < 0.002 and rhi[1] < flo[1] and rlo[1] > 1.20
     inn = ("Bad", "Bad_Innentueren")
-    assert {_mat_at(bp, inn, 0.48, 1.23, z) for z in (0.5, 1.0, 1.5)} == {None}   # WC half open
-    assert _mat_at(bp, inn, 1.5, 1.23, 1.0) and _mat_at(bp, inn, 1.5, 1.28, 1.0)  # both leaves over the Schrank
+    rear, front = ("Bad", "Bad_Schiebetuer_hinten"), ("Bad", "Bad_Schiebetuer_vorne")   # one object each (animated)
+    assert {_mat_at(bp, k, 0.48, y, z) for k, y in ((rear, 1.23), (front, 1.28)) for z in (0.5, 1.0, 1.5)} == {None}   # WC half open
+    assert _mat_at(bp, rear, 1.5, 1.23, 1.0) and _mat_at(bp, front, 1.5, 1.28, 1.0)  # both leaves over the Schrank
+    assert not [1 for m, lo, hi in _parts(bp, inn) if m != "Metall"]          # Innentueren: only the rail
+    # each leaf rolls to the other end of the rail: over the WC half, HALF to the west
+    assert bp.slide == {"Bad_Schiebetuer_hinten": (-0.964, 0.0, 0.0), "Bad_Schiebetuer_vorne": (-0.964, 0.0, 0.0)}
     assert any(m == "Metall" and lo[0] <= 0.01 and hi[0] >= W - 0.01 and 1.999 <= lo[2] for m, lo, hi in _parts(bp, inn))  # rail
     for lo, hi in lb:                                                          # no leaf in a wall
         assert not any(all(a[k] < hi[k] - 1e-6 and lo[k] + 1e-6 < b[k] for k in range(3)) for _, a, b in _parts(bp, ("Bad", "Bad_Waende")))
@@ -976,8 +980,10 @@ def test_bad_built_into_the_grosseltern():
         return {tuple(sorted({(round(g["v"][i][0] + dx, 6), round(g["v"][i][1] + dy, 6), round(g["v"][i][2], 6))
                               for f in g["f"][a:a + n] for i in f})) for a, n in bp.parts[key]}
 
-    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Schrank", "Bodenbelag", "Boden"):
+    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Schrank", "Bodenbelag", "Boden", "Schiebetuer_hinten",
+              "Schiebetuer_vorne"):
         assert solids(sub, ("Bad", "Bad_" + n), x0, y0) <= solids(BP, ("EG", "EG_" + n)), n
+    assert BP.slide == {"EG_Schiebetuer_hinten": (-0.964, 0.0, 0.0), "EG_Schiebetuer_vorne": (-0.964, 0.0, 0.0)}
     wl = list(_parts(BP, ("EG", "EG_Waende")))
     assert not any(lo[1] > 10.0 and hi[1] < 10.3 and lo[0] >= 0.3 and hi[0] <= 2.36 for _, lo, hi in wl)   # WC/Bad wall
     assert not any(lo[0] >= 2.35 and hi[0] <= 2.66 and lo[1] < 12.3 and hi[1] > 9.9 and lo[2] < 2.0 for _, lo, hi in wl)

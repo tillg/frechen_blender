@@ -143,7 +143,9 @@ flowchart LR
 
 `build()` returns the **Blueprint**: `geo`, `parts`, `smooth`, `pivot`, `mat_def`, `paint`,
 `room_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
-`dims` (sub-models only), `turn` (`TURN`: object → yaw in degrees about its pivot).
+`dims` (sub-models only), `turn` (`TURN`: object → yaw in degrees about its pivot), `slide`
+(`SLIDE`: object → (dx, dy, dz) to its other end of travel; the Bad's two sliding leaves, one
+object each; glTF node `extras.slide`).
 
 ### `build_house.py` — Blender backend
 
@@ -276,7 +278,10 @@ sequenceDiagram
   sun stays anchored to a fixed copy of the start target.
 - **Sub-model pages.** `submodel.js` draws a sub-model page (views, looks Drahtmodell / Masse /
   Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js`, `desk.js`, `bad.js` and
-  `kueche.js` only configure it. `nav.js` builds the "Teilmodell" drop-down (one list of pages, relative URLs,
+  `kueche.js` only configure it. Nodes with `extras.slide` roll there and back, edge lines
+  included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); `main.js` rolls
+  them too, in stage Eingerichtet outside the Rundgang (else as built), and draws while they
+  move and their travel is in view, throttled like a fire. `nav.js` builds the "Teilmodell" drop-down (one list of pages, relative URLs,
   the current page preselected); `ui.js` puts it into the house toolbar, `submodel.js` into every
   sub-model page.
 - **View in the URL.** `main.js` and `submodel.js` read `?cam=&at=` (model coordinates) plus
