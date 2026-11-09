@@ -1,11 +1,13 @@
 """Frechenlehen – the Bad Großeltern (EG, NW corner) as a sub-model (web/bad.html), after the user's
 sketch input/2026-11-08 input/plan_grosseltern_bad.jpeg and the agreed drawing
 input/2026-11-08 input/grosseltern_v4.svg. From north to south: a walk-in shower 0.80 wide in the NW corner
-(clear of the north french door), east of it 35 cm thin glass from the north wall, then a wall
-1.20 m long, 1.00 m high, 12 cm thick with clear glass above it to the ceiling; the Waschtrog (one
-1.00 m trough, two deck mixers) on that wall's east face; in the south a niche 1.20 m deep over the
-full width, split by a 12 cm wall into WC (west) and Schrank (east), closed by two interlocking
-sliding leaves on two offset tracks (the WC leaf open, slid behind the Schrank leaf).
+(clear of the north french door), east of it a wall 1.20 m long, 1.00 m high, 12 cm thick and one
+L-shaped clear glass pane in its centre plane (above it to the ceiling, 35 cm from the north wall
+down to the floor); the Waschtrog (one 1.00 m trough, two deck mixers) on that wall's east face; in
+the south a niche 1.20 m deep over the full width, split by a 12 cm wall into WC (west) and Schrank
+(east), closed by two interlocking sliding leaves on two offset tracks (the WC leaf open, slid
+behind the Schrank leaf). The floor: a limestone strip as wide as the WC along the west wall, oak
+elsewhere.
 
 Pure Python like house_core.py, which imports this module: build_eg() calls bad_neu() at BAD_AT;
 house_core.build_bad() wraps it at the origin as the Blueprint of web/bad.html. Everything is
@@ -48,10 +50,12 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     lv0, lv1, lh, lt = LOW
     B("_Waende", "Putz", SHOWER, SHOWER + lt, lv0, lv1, 0, lh, rng.random())
 
-    # glass: 35 cm from the north wall, and on the low wall up to the ceiling
-    B("_Sanitaer", "Glas", SHOWER, SHOWER + 0.01, lv1, D, 0.0, H, rng.random())
+    # glass: one L-shaped pane in the low wall's centre plane, on the wall up to the ceiling and
+    # 35 cm from the north wall down to the floor
     um = SHOWER + lt / 2
-    B("_Sanitaer", "Glas", um - 0.006, um + 0.006, lv0, lv1, lh, H, rng.random())
+    hc.prism(c, c + "_Sanitaer", "Glas", lambda u, t, z: (x0 + t, y0 + u, z),
+             [(lv0, lh), (lv1, lh), (lv1, 0.0), (D, 0.0), (D, H), (lv0, H)], um - 0.006, um + 0.006, rng.random())
+    rng.random()                                 # the second pane's draw: later parts keep their rnd
 
     # niche: interlocking sliding leaves on two tracks (rear = WC, front = Schrank), both over the
     # Schrank half (the WC leaf open behind the Schrank leaf); closed, the WC leaf spans 0 .. HALF + NW
@@ -71,8 +75,7 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     hc.toilet(c, x0 + HALF / 2, y0, 0, 1)
     hc.wainscot(c, 0.0, x0, x0 + HALF, y0, y0 + NICHE, (x0, x0 + HALF))
 
-    # Schrank, open, white: back cabinet over the full width with shelves, hanging wardrobe
-    # against the niche wall up to it (rail front to back, hat shelf)
+    # Schrank, open, white: back cabinet over the full width with shelves, nothing in front of it
     S, m, u0, r = "_Schrank", "Rahmen", HALF + NW, rng.random()
     B(S, m, u0, W, 0, 0.02, 0.012, LIN, r)                                          # back
     B(S, m, u0, u0 + 0.02, 0.02, 0.60, 0.012, LIN, r)                               # sides
@@ -80,12 +83,6 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     B(S, m, u0 + 0.02, W - 0.02, 0.02, 0.60, LIN - 0.02, LIN, r)                    # top
     for zb in (0.10, 0.48, 0.86, 1.24, 1.62):                                       # bottom + shelves
         B(S, m, u0 + 0.02, W - 0.02, 0.02, 0.59, zb - 0.02, zb, r)
-    uw = u0 + 0.60
-    B(S, m, uw - 0.02, uw, 0.60, NICHE, 0.012, LIN, r)                              # wardrobe side
-    B(S, m, u0, uw - 0.02, 0.60, NICHE - 0.02, 1.78, 1.80, r)                       # hat shelf
-    ur = u0 + 0.30
-    T(S, "Metall", (ur, 0.60, 1.70), (ur, NICHE - 0.02, 1.70), [(0.0125, 0), (0.0125, 1)], r)   # rail
-    B(S, "Metall", ur - 0.006, ur + 0.006, NICHE - 0.05, NICHE - 0.04, 1.70, 1.78, r)          # its hanger
 
     # walk-in shower: limestone on the west and north walls to 2.0 and on the low wall's west face
     # to 1.0 (dark backing, slabs with joints); floor flush, drain, rain head on an arm
@@ -118,8 +115,10 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
         T("_Sanitaer", "Metall", (um, v, tt + 0.13), (um - 0.03, v, tt + 0.18), [(0.006, 0), (0.005, 1)], r)   # lever
         disc("_Sanitaer", "Metall", ua + deck + (td - deck - e) / 2, v, 0.025, tt - 0.12, tt - 0.117, r)       # drain
 
-    f = 0.06
-    return [((0, D - 0.15, 0.02), (SHOWER, D - 0.15, 0.02), "Dusche 80"),
+    floor(c, x0, y0)
+    f, front = 0.06, NICHE + 0.06 + LT              # front: the front sliding leaf's room face
+    return [((SHOWER + lt / 2, front, 0.02), (SHOWER + lt / 2, lv0, 0.02), f"Durchgang {round((lv0 - front) * 100, 1):g}"),
+            ((0, D - 0.15, 0.02), (SHOWER, D - 0.15, 0.02), "Dusche 80"),
             ((SHOWER - f, lv1, CLAD + 0.2), (SHOWER - f, D, CLAD + 0.2), "Glas 35"),
             ((SHOWER - f, lv0, lh), (SHOWER - f, lv1, lh), "Mauer 120"),
             ((SHOWER + lt / 2, lv0 - f, 0), (SHOWER + lt / 2, lv0 - f, lh), "100 hoch"),
@@ -128,8 +127,23 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
             ((HALF, NICHE + 0.35, 0.02), (HALF + NW, NICHE + 0.35, 0.02), "12"),
             ((HALF + NW, 0.08, LIN + 0.05), (W, 0.08, LIN + 0.05), "Schrank 96.4"),
             ((W - 0.08, 0, 0.02), (W - 0.08, NICHE, 0.02), "120 tief"),
-            ((W - 0.08, 0, LIN + 0.05), (W - 0.08, 0.60, LIN + 0.05), "60"),
-            ((u0, NICHE - 0.08, LIN + 0.05), (uw, NICHE - 0.08, LIN + 0.05), "60")]
+            ((W - 0.08, 0, LIN + 0.05), (W - 0.08, 0.60, LIN + 0.05), "60")]
+
+
+def floor(c, x0, y0):
+    """The room's floor, last and from its own generator (the parts before keep their rnd): a
+    limestone strip as wide as the WC along the west wall, from the south wall behind the toilet to
+    the north wall at the shower's end (WC, shower), oak elsewhere (Schrank, the room before the
+    Waschtrog); slabs and planks as the house's floor_cover(), none under the low wall and the
+    niche wall. A dark base under the joints (in the house inside EG_Boden)."""
+    rng = random.Random(7)
+    lv0, lv1, _, lt = LOW
+    wall = lambda u0, u1, v0, v1: (x0 + u0, x0 + u1, y0 + v0, y0 + v1)
+    hc.box(c, c + "_Boden", "Fuge", x0, x0 + W, y0, y0 + D, 0.0, 0.002, rng.random())
+    hc.tiles(c, c + "_Bodenbelag", "Kalkstein", x0, x0 + HALF, y0, y0 + D, 0.002, 0.018, [0.5, 0.4, 0.55, 0.45],
+             (0.35, 0.8), 0.006, [wall(SHOWER, SHOWER + lt, lv0, lv1)], rng)
+    hc.tiles(c, c + "_Bodenbelag", "Eiche", x0 + HALF, x0 + W, y0, y0 + D, 0.002, 0.014, [0.2], (1.2, 2.4), 0.003,
+             [wall(HALF, HALF + NW, 0, NICHE)], rng)
 
 
 def stone(c, x0, y0, side, rng):

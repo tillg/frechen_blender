@@ -1145,20 +1145,21 @@ def slab(coll, obj, mat, z0, z1, inset=0.0, hole=None):
 
 
 CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.358, 6.723, 8.506)]   # Flur/Windfang, back hall
-BATH_EG = (0.31, 2.358, 9.856, 12.473)   # Bad Großeltern north of its niche (code/bad.py); Schrank: oak
-WC_EG = (0.31, 1.274, 8.656, 9.856)      # its WC (the niche's west half)
+BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
+                                         # lays its own floor (code/bad.py): left out of the EG's
 # OG Bad NW (with the shower alcove) and Bad S
 BATHS_OG = [(0.31, 2.57, 6.54, 8.57), (1.67, 2.57, 5.46, 6.54), (5.59, 8.59, 0.40, 2.62)]
 
 
-def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=()):
+def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(), rng=random):
     """Rows along x (row widths cycling through `widths`), pieces of random length, skipping
-    the exclusion rectangles. Rows are split at exclusion edges so pieces never overlap them."""
+    the exclusion rectangles. Rows are split at exclusion edges so pieces never overlap them.
+    Lengths and rnd come from rng (a sub-model passes its own generator)."""
     y, i = y0, 0
     while y1 - y > 0.02:
         ya, yb = y, min(y + widths[i % len(widths)], y1)
         y, i = yb, i + 1
-        cuts = sorted({ya, yb} | {e for r in excl for e in r[2:] if ya < e < yb})
+        cuts = sorted({ya, yb} | {e for r in excl for e in r[2:] if ya + 1e-6 < e < yb - 1e-6})   # no sliver rows
         for ra, rb in zip(cuts[:-1], cuts[1:]):
             gaps = sorted((r[0], r[1]) for r in excl if r[2] <= ra + 1e-6 and rb <= r[3] + 1e-6)
             spans, cur = [], x0
@@ -1169,12 +1170,13 @@ def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(
             if cur < x1:
                 spans.append((cur, x1))
             for sa, sb in spans:
-                l = sa - random.uniform(0, lengths[1])            # stagger the joints row by row
+                l = sa - rng.uniform(0, lengths[1])               # stagger the joints row by row
                 while l < sb:
-                    la, lb = max(l, sa), min(l + random.uniform(*lengths), sb)
+                    la, lb = max(l, sa), min(l + rng.uniform(*lengths), sb)
                     l = lb if lb > l else sb
                     if lb - la > 0.01:
-                        box(coll, obj, mat, la + joint / 2, lb - joint / 2, ra + joint / 2, rb - joint / 2, z0, z1)
+                        box(coll, obj, mat, la + joint / 2, lb - joint / 2, ra + joint / 2, rb - joint / 2, z0, z1,
+                            rng.random())
 
 
 def floor_cover(coll, z, corridors, hole=None):
@@ -1196,7 +1198,7 @@ def build_slabs():
     slab("OG", "OG_Decke_EG", "Decke", Z_EG_TOP, Z_OG, hole=STAIR_HOLE)
     slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
     wcs = lambda c: [r for k, _, r, _ in WCS if k == c]     # all toilets: stone floors
-    floor_cover("EG", 0.0, CORRIDOR_EG + [BATH_EG, WC_EG] + wcs("EG"))
+    floor_cover("EG", 0.0, CORRIDOR_EG + wcs("EG"), BAD_EG)
     floor_cover("OG", Z_OG, BATHS_OG + wcs("OG"), STAIR_HOLE)   # OG corridor: oak like the rooms
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 

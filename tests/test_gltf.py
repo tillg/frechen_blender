@@ -199,7 +199,8 @@ def test_bad_export(tmp_path):
     jlen = struct.unpack_from("<I", data, 12)[0]
     g = json.loads(data[20:20 + jlen])
     names = {n["name"] for n in g["nodes"]}
-    assert {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank"} == names
+    assert {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank", "Bad_Bodenbelag",
+            "Bad_Boden"} == names
     bp = house_core.build_bad()
     house_core.build()
     ex = g["scenes"][0]["extras"]

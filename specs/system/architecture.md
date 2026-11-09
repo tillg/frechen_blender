@@ -106,8 +106,10 @@ flowchart LR
   origin), after `input/2026-11-08 input/grosseltern_v4.svg`: its own walls (12 cm niche wall,
   lintel, 1 m low wall), glass, walk-in shower with limestone cladding, Waschtrog, toilet + WC
   tiles (`toilet()`, `wainscot()`), the white Schrank (`_Schrank`) and the two interlocking
-  sliding leaves (WC leaf open, both in `LEAVES`); own `random.Random(5)`. Its limestone floor is
-  `BATH_EG` in the core; the outer walls and the shortened bedroom wall stay in `build_eg()`.
+  sliding leaves (WC leaf open, both in `LEAVES`); own `random.Random(5)`. Its floor too, last
+  and from its own `random.Random(7)` (`floor()`: limestone strip, oak, a `Fuge` base in
+  `_Boden`, laid with `tiles(…, rng)`); the house leaves the room (`BAD_EG`) out of the EG's
+  `floor_cover()`. The outer walls and the shortened bedroom wall stay in `build_eg()`.
 - **Küche.** `code/kueche.py` the same way: `kueche_neu(c, x0, y0)` builds Spülzeile, Ostzeile,
   Halbinsel, the Wamsler (`ofen.wamsler()`) with its hood, wall cabinets, Besenschrank and the
   Abzug (`c + "_Waende"`) straight into collection `c` with the room's inner NW corner at

@@ -30,9 +30,10 @@ edited: 2026-11-09
   - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf)
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
-  - floors: limestone in the EG corridor, the Bäder (Bad Großeltern, OG Bad NW with its shower
-    alcove, Bad S) and all four WCs (also the WC in the Bad Großeltern's niche), oak planks
-    elsewhere (also in the niche's Schrank)
+  - floors: limestone in the EG corridor, the Bäder (OG Bad NW with its shower alcove, Bad S) and
+    all four WCs; in the Bad Großeltern a limestone strip as wide as its WC along the west wall
+    (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip and in its
+    niche's Schrank)
   - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
     with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
@@ -64,11 +65,14 @@ edited: 2026-11-09
     the big windows to the Ofen, facing the pier
   - Bad Großeltern after `input/2026-11-08 input/grosseltern_v4.svg` (also a sub-model page),
     open to the bedroom: walk-in shower 0.80 m in the NW corner with limestone cladding to 2.0 m
-    and a rain head; east of it 35 cm glass from the north wall, then a 1.20 m wall 1.00 m high
-    with clear glass to the ceiling; on its east face one 1.00 m Waschtrog with two mixers; in the
-    south a 1.20 m niche split by a 12 cm wall into WC and an open white Schrank (cabinet 60 cm
-    deep over the full width, hanging wardrobe with rail), closed by two interlocking sliding
-    doors (the WC leaf open, slid behind the Schrank leaf)
+    and a rain head; east of it a 1.20 m wall 1.00 m high and one L-shaped clear glass pane in
+    its centre plane, on the wall to the ceiling and 35 cm from the north wall down to the floor;
+    on the wall's east face one 1.00 m Waschtrog with two mixers; in the south a 1.20 m niche
+    split by a 12 cm wall into WC and an open white Schrank (cabinet 60 cm deep over the full
+    width, nothing in front of it), closed by two interlocking sliding doors (the WC leaf open,
+    slid behind the Schrank leaf); 96.7 cm passage between the front leaf and the wall's end;
+    floor: limestone strip 96.4 cm wide (the WC's width) from the south wall to the north wall,
+    oak elsewhere, part of the sub-model
   - OG bathrooms: shower, basin with mirror
   - the four WCs (also the WC in the Bad Großeltern's niche), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: green subway tiles about 1.1 m high with a cap
