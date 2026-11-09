@@ -1,7 +1,7 @@
 # The DXF format
 
-A primer for the `use-dxf` change (`specs/changes/use-dxf/`): how a DXF file is built, what it can
-hold, how its parts refer to each other and how it can include other files.
+A primer: how a DXF file is built, what it can hold, how its parts refer to each other and how it
+can include other files. Section 8 records why the house is not described in DXF.
 
 ## 1. Encoding: group code / value pairs
 
@@ -120,8 +120,8 @@ ENTITIES: INSERT "Fenster_120"  at (3.2, 0, 0.9)  rotation 90°  scale 1,1,1
    other file with a transform, like any block. The xref's layers appear as `ofen|FL_Putz`.
    *Attach* passes nested xrefs on, *overlay* doesn't. Paths may be absolute or relative.
    AutoCAD, BricsCAD & co. resolve xrefs; simple viewers often show nothing. In Python, `ezdxf`
-   (≥ 1.1) has `ezdxf.xref` to attach, load and embed; nothing is resolved automatically, our build
-   would resolve them itself.
+   (≥ 1.1) has `ezdxf.xref` to attach, load and embed; nothing is resolved automatically, a reader
+   has to resolve them itself.
 2. **Copying blocks** between files (import the block definition): a one-time copy, no live link.
 3. **Underlays / images:** a PDF, DWF, DGN or raster file placed as visual reference only, no
    geometry. A PDF underlay of the architect's plan under layer `EG` would be an alignment aid.
@@ -130,24 +130,36 @@ ENTITIES: INSERT "Fenster_120"  at (3.2, 0, 0.9)  rotation 90°  scale 1,1,1
 
 | Mechanism | Holds | Notes |
 |---|---|---|
-| **XDATA** | Typed values on one entity under a registered APPID (`1000` string, `1040` real, `1010` point, `1070` int, `1002 {` `}` nesting) | ≤ 16 KB per entity; CAD tools keep it on copy. For us: `rnd`, pivot, turn, smooth. |
+| **XDATA** | Typed values on one entity under a registered APPID (`1000` string, `1040` real, `1010` point, `1070` int, `1002 {` `}` nesting) | ≤ 16 KB per entity; CAD tools keep it on copy. Would fit `rnd`, pivot, turn, smooth. |
 | **Extension dictionary + XRECORD** | Any amount of tagged data per entity | Bigger, structured. |
 | **XRECORD in the root dictionary** | File-wide data | E.g. a garden layout, if it ever moved into the DXF. |
-| **Header custom properties** | Key/value strings | Shown in the CAD tool's drawing properties. For us: plan constants (`Z_OG`, …). |
+| **Header custom properties** | Key/value strings | Shown in the CAD tool's drawing properties. Would fit plan constants (`Z_OG`, …). |
 | **`MATERIAL` objects** | Render materials, linkable from layers/entities | Only roughly like `MAT_DEF` (no procedural wood). |
 
-## 8. What this means for `use-dxf`
+## 8. What this means for this project
 
-- The mapping (ADR-004-QGLK) uses only robust, widely supported parts: `MESH` per Part, block +
-  one `INSERT` per object, layers per collection and material, XDATA, `POINT`, `DIMENSION`, header
-  properties. No ACIS.
-- **The Ofen/desk that exist twice** (open question) are an XREF case: `haus.dxf` could reference
-  `ofen.dxf` and `desk.dxf` with insertion point and rotation instead of copies. Catches: `plan_io`
-  has to resolve the xrefs, the transform changes the house's stove floats and its `rnd` would
-  follow `ofen.dxf`, so the house `.glb` can't stay byte-identical. Hence a follow-up after the
-  migration.
-- Repeated parts (windows, shutters, chairs) could later become one block with many inserts:
-  smaller files, global edits. Same caveat: transforms cost byte identity.
+**Decision (2026-11-09): the Python core stays the source** (ADR-001-XEWL). Making 3D DXF files
+the source was considered and dropped: the core describes the house parametrically (moving a
+window is one opening tuple; wall cut, frame, shutters, cross boards and cladding follow), while a
+mesh DXF holds only the result (the same move would be 10+ separate `MESH` edits with matching
+`rnd` values). CAD tools edit meshes poorly, and an architect works in 2D or BIM, not in a mesh
+DXF. For viewing and exchange, a DXF **exported** from the core gives the same benefit.
+
+If such an export is ever built, these findings apply:
+
+- **Mapping:** only robust, widely supported parts: `MESH` per Part (no vertex merging), block +
+  one `INSERT` per object, layers per collection and per material, XDATA (`rnd`, object flags),
+  `POINT`s for light sites and fire beds, `DIMENSION`s, header properties for plan constants. No
+  ACIS.
+- **Floats** round-trip exactly with `ezdxf` 1.4.5 (`MESH` vertices come back as `np.float64`,
+  equal after `float()`; XDATA `1040`, `POINT` and header values exact, incl. `-0.0`), so a `.glb`
+  rebuilt from the DXF could be byte-identical.
+- **Size and speed:** the house as 9,989 `MESH` is ~18 MB of ASCII DXF; `ezdxf.readfile` takes
+  ~1.6 s.
+- **Ofen and desk** inside the house could be XREFs to their own files (insertion point and
+  rotation instead of copies); the transform changes the house's floats, so byte identity is lost.
+- Repeated parts (windows, shutters, chairs) could become one block with many inserts: smaller
+  files, same caveat.
 
 ## 9. What a MESH is
 
