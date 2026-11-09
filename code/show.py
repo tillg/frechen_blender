@@ -22,11 +22,13 @@ import house_core  # noqa: E402
 
 PORT = 5377
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGES = {"ofen": house_core.build_ofen, "desk": house_core.build_desk, "bad": house_core.build_bad}
+PAGES = {"ofen": house_core.build_ofen, "desk": house_core.build_desk, "bad": house_core.build_bad,
+         "kueche": house_core.build_kueche}
 FOV = {"house": 28.0, "sub": 35.0}       # vertical field of view of main.js / submodel.js
 MARGIN = 1.15                             # bounding sphere radius x MARGIN fills half the frame height
 EDGE = 0.2                                # closer to the outer face than this: an outside object
 SIDES = {"n": (0, 1), "e": (1, 0), "s": (0, -1), "w": (-1, 0), "se": (1, -1), "top": (0, -1)}
+FACING = {"kueche": "s"}                  # a sub-model seen from the SE unless its page opens elsewhere
 UP = {"outside": 20.0, "inside": 55.0, "sub": 30.0, "top": 85.0}   # elevation, degrees
 
 
@@ -114,7 +116,7 @@ def main(argv=None):
         box = (tuple(c - 0.5 for c in pt), tuple(c + 0.5 for c in pt))
     else:
         box = bbox(bp, o.objects)
-    cam, at, p, cut = view(bp, box, o.side)
+    cam, at, p, cut = view(bp, box, o.side or FACING.get(o.page))
     link = url(o.page, cam, at, p if o.p is None else o.p, cut)
     if not o.print:
         pid = subprocess.run(["lsof", "-tiTCP:%d" % PORT, "-sTCP:LISTEN"], capture_output=True, text=True).stdout.split()

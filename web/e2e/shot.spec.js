@@ -6,11 +6,14 @@ import { SHOTS } from './pixels.js';
 
 const ROOT = new URL('../../', import.meta.url).pathname;
 
-test('shot.js writes a screenshot of the URL', async ({ page }) => {
-  const url = execFileSync(ROOT + '.venv/bin/python', [ROOT + 'code/show.py', 'EG_Haustuer', '--print'],
+for (const [name, args, start] of [
+  ['haustuer', ['EG_Haustuer'], /^http:\/\/localhost:5377\/\?cam=/],
+  ['kueche', ['Kueche_Herd', '--page', 'kueche'], /^http:\/\/localhost:5377\/kueche\.html\?cam=/],
+]) test(`shot.js writes a screenshot of the URL (${name})`, async ({ page }) => {
+  const url = execFileSync(ROOT + '.venv/bin/python', [ROOT + 'code/show.py', ...args, '--print'],
     { encoding: 'utf8' }).trim();
-  expect(url).toMatch(/^http:\/\/localhost:5377\/\?cam=/);
-  const png = SHOTS + 'shot-haustuer.png';
+  expect(url).toMatch(start);
+  const png = SHOTS + `shot-${name}.png`;
   rmSync(png, { force: true });
   execFileSync('node', [ROOT + 'web/shot.js', url, png], { cwd: ROOT + 'web', timeout: 90_000 });
   expect(existsSync(png)).toBe(true);

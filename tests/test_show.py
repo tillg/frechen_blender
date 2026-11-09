@@ -87,3 +87,12 @@ def test_stage_only_on_the_house_page():
     with pytest.raises(SystemExit) as e:
         show.main(["--page", "bad", "--p", "2", "--print"])
     assert e.value.code == 2
+
+
+def test_kueche_page(capsys):
+    """The Küche sub-model page (kueche.html) is a --page like the other sub-models."""
+    assert show.main(["Kueche_Herd", "--page", "kueche", "--print"]) == 0
+    link = capsys.readouterr().out.strip()
+    assert link.startswith("http://localhost:5377/kueche.html?cam=") and link.endswith("&look=full")
+    cam, at = (tuple(map(float, q.split("=")[1].split(","))) for q in link.split("?")[1].split("&")[:2])
+    assert cam[1] < at[1] and cam[0] == at[0]      # from the open south, not through the east wall (SE)

@@ -157,7 +157,7 @@ edited: 2026-11-09
 - **Show**: `.venv/bin/python code/show.py <object…>` opens the user's browser on the dev server
   at a view URL that frames the named objects (prefix match) — outside objects from the nearest
   facade, 20° up, whole house; inside objects from the SE diagonal, 55° up, with the storeys above
-  cut away; sub-model pages (`--page ofen|desk|bad`) from the SE, 30° up, Gerendert. Options:
+  cut away; sub-model pages (`--page ofen|desk|bad|kueche`) from the SE (Küche from the open south), 30° up, Gerendert. Options:
   `--from n|e|s|w|top`, `--at x,y,z`, `--p 0…4` (house only), `--print` (only print the URL). It
   refuses (exit 2) when the server on 5377 runs from another clone.
 - `cd web && node shot.js '<url>' <png>`: one headless 1280×720 screenshot of a view URL after the
