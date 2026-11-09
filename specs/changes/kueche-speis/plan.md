@@ -24,7 +24,7 @@ Baseline before step 1: `python3 -m pytest -q` (parity included), `cd web && npm
 - [x] [python] Kitchen door at its real place; Speis wall, opening and fit-out A/B/C (`speis()`,
   `EG_Speis`), Speis/Essen wall gone, sliding leaf + rail, three Speis shelves gone
   - Test first: `tests/test_core.py` › `test_kuechentuer_as_built`, `test_speis_v6` — Flur wall
-    open at x 6.2–6.9 and closed at 7.5; kitchen leaf at 90° east of the Besenschrank, no clash;
+    open at x 6.10–6.96 (probed at 6.5) and closed at 7.5; kitchen leaf at 90° east of the Besenschrank, no clash;
     no wall at (4.0, 3.2); wall x 5.24–5.49 from 3.13, open 4.33–5.249; A/B/C extents and heights
     to ≥ 2.39; sliding leaf at x 5.50–5.54, y 3.28–4.28, in `LEAVES` — fails today: old layout
   - Verify: `python3 -m pytest -q` (parity excluded until the Blender step) → green

@@ -1,9 +1,9 @@
 """Frechenlehen – the Küche (EG) as a sub-model (web/kueche.html), after the agreed drawing
 input/2026-11-09 input/speis_kueche_v6.svg (the kitchen door measured from a photo of 2026-11-09).
-On the north wall the sink run from the kitchen door's frame into the NE corner, under the flue box
-(Abzug, from 1.80 m up); on the east wall a 60 cm run from the peninsula's front, then the Wamsler
-wood cooker under its old steel hood; the peninsula with the cooktop towards the dining table; wall
-cabinets over the sink run and over the east run; the Besenschrank in the NW corner, behind the
+On the north wall the Spülzeile from the kitchen door's frame into the NE corner, under the Abzug
+(flue box, from 1.80 m up); on the east wall the Ostzeile, 60 cm from the Halbinsel's front, then the
+Wamsler wood cooker under its old steel hood; the Halbinsel with the cooktop towards the dining
+table; wall cabinets over the Spülzeile and the Ostzeile; the Besenschrank in the NW corner, behind the
 kitchen door opened into the room.
 
 Pure Python like house_core.py, which imports this module: build_eg() calls kueche_neu() at
@@ -19,10 +19,10 @@ import ofen
 KUECHE_AT = (5.49, 5.849)                    # house: the room's inner NW corner (Speis wall x Flur wall)
 ZP, ZC, ZT = 0.10, 0.86, 0.90                # plinth / carcass / worktop top
 XW, YN, XE = 5.492, 5.847, 8.555             # wall faces (2 mm clear): Speis wall, Flur wall, east wall
-SINK_X0 = 7.05                               # sink run: from the kitchen door's frame (7.03) ...
-HY0, HY1 = 4.30, 5.10                        # the Herd (80) along the east wall, right after the east run
-RUN = (3.66, 4.26)                           # east run's door: 60 from the peninsula's front
-ABZUG = (8.227, 5.55, 1.80)                  # flue box: x from, y from, underside (depth assumed)
+SINK_X0 = 7.05                               # Spülzeile: from the kitchen door's frame (7.03) ...
+HY0, HY1 = 4.30, 5.10                        # the Herd (80) along the east wall, right after the Ostzeile
+OSTZEILE = (3.66, 4.26)                      # the Ostzeile's door: 60 from the Halbinsel's front
+ABZUG = (8.227, 5.55, 1.80)                  # Abzug: x from, y from (depth 30 assumed), underside
 BESEN = (6.002, 5.297, 2.20)                 # Besenschrank: x to, y from (incl. door), height
 
 
@@ -43,14 +43,14 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
                 rng.random() if r is None else r)
 
     # carcasses (x0, x1, y0, y1, plinth inset W/E/S/N)
-    for xa, xb, ya, yb, pl in ((SINK_X0, XE, 5.269, YN, (0, 0, 0.04, 0)),                # sink run
-                               (6.57, XE, 3.05, 3.64, (0.06, 0, 0.06, 0.06)),             # peninsula
-                               (7.977, XE, 3.64, HY0 - 0.04, (0.06, 0, 0, 0.06))):        # east run
+    for xa, xb, ya, yb, pl in ((SINK_X0, XE, 5.269, YN, (0, 0, 0.04, 0)),                # Spülzeile
+                               (6.57, XE, 3.05, 3.64, (0.06, 0, 0.06, 0.06)),             # Halbinsel
+                               (7.977, XE, 3.64, HY0 - 0.04, (0.06, 0, 0, 0.06))):        # Ostzeile
         B(o, "FichteZ", xa, xb, ya, yb, zp, zc)
         B(o, "Fuge", xa + pl[0], xb - pl[1], ya + pl[2], yb - pl[3], 0.005, zp)
     fronts = [("x", 5.249, +1, (SINK_X0, 7.45, 7.85, 8.20, XE)),   # (frame axis, room face, side, door cuts)
               ("x", 3.66, -1, (6.57, 7.165, 7.957)),
-              ("y", 7.957, +1, RUN)]
+              ("y", 7.957, +1, OSTZEILE)]
     for ax, f, s, cuts in fronts:
         for a, b in zip(cuts[:-1], cuts[1:]):
             L(o, "FichteZ", ax, a + 0.003, b - 0.003, f, f + s * 0.02, zp + 0.005, zc - 0.005)
@@ -85,7 +85,7 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
              ya + 0.02 + dy, yb - 0.02 + dy, rng.random())                            # rail
     for y in (ya + 0.05, yb - 0.05):
         B(h, "Metall", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705)
-    # wall cabinets: north wall over the sink run up to the flue box, east wall from the peninsula
+    # wall cabinets: north wall over the Spülzeile up to the Abzug, east wall from the Halbinsel
     # to the hood
     zu0, zu1, du = 1.45, 2.20, 0.35
     for ax, wf, cuts in (("x", YN, (SINK_X0, 7.63, ABZUG[0] - 0.02)), ("y", XE, (3.05, 3.66, ya - 0.03))):
@@ -103,16 +103,17 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
     B(o, "FichteZ", XW + 0.003, bx - 0.003, by, by + 0.02, zp + 0.005, bh - 0.005)
     B(o, "Metall", bx - 0.06, bx - 0.045, by - 0.025, by, 0.95, 1.10)
 
-    # flue box (Abzug) in the NE corner, plastered, from 1.80 m to the ceiling
+    # Abzug (flue box) in the NE corner, plastered, from 1.80 m to the ceiling
     ax0, ay0, az = ABZUG
     B(c + "_Waende", "Putz", ax0, XE, ay0, YN, az, hc.Z_EG_TOP)
 
     f = 0.06                                                        # dimension lines
     P = lambda x, y, z: (x - KUECHE_AT[0], y - KUECHE_AT[1], z)
     return [(P(SINK_X0, 5.229 - f, zt), P(XE, 5.229 - f, zt), "Spülzeile 150.5"),
-            (P(7.957 - f, RUN[0], zt), P(7.957 - f, RUN[1], zt), "Ostzeile 60"),
+            (P(7.957 - f, OSTZEILE[0], zt), P(7.957 - f, OSTZEILE[1], zt), "Ostzeile 60"),
             (P(7.957 - f, HY0, zt), P(7.957 - f, HY1, zt), "Herd 80"),
             (P(XW, by - f, bh), P(bx, by - f, bh), "Besenschrank 51"),
             (P(bx + f, by, bh), P(bx + f, YN, bh), "55 tief"),
             (P(ax0 - f, ay0, 0.0), P(ax0 - f, ay0, az), "Abzug ab 180"),
+            (P(ax0 - f, ay0, hc.Z_EG_TOP - 0.05), P(ax0 - f, YN, hc.Z_EG_TOP - 0.05), "Abzug 30 tief (angenommen)"),
             (P(6.57, 3.03 - f, zt), P(XE, 3.03 - f, zt), "Halbinsel 198.5")]

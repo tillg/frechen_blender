@@ -14,9 +14,9 @@ test('Küche page draws the kitchen with the core dimensions, without errors', a
   await page.goto('/kueche.html');
   await page.waitForFunction(() => window.__kueche?.ready === true);
   expect(await page.evaluate(() => window.__kueche.edges)).toBeGreaterThan(50);
-  expect(DIMS.length).toBe(7);                                     // kueche.py draws seven
+  expect(DIMS.length).toBe(8);                                     // kueche.py draws eight
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['Spülzeile 150.5', 'Ostzeile 60', 'Herd 80', 'Besenschrank 51', '55 tief', 'Abzug ab 180', 'Halbinsel 198.5']) {
+  for (const t of ['Spülzeile 150.5', 'Ostzeile 60', 'Herd 80', 'Besenschrank 51', '55 tief', 'Abzug ab 180', 'Halbinsel 198.5', 'Abzug 30 tief (angenommen)']) {
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Spülzeile', 'Gerendert']]) {

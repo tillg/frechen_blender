@@ -1,6 +1,6 @@
 """The walkthrough route ("Rundgang"): orbit around the house, in through the east entrance and
 the Windfang round the sofa to the Stube's seating corner (slow turn, pause at the sofa and Ofen) -> Essen, end of the table
-(turn, pause) -> peek into the Speis -> Küche -> Großeltern: into their Bad (look into the shower,
+(turn, pause) -> Küche: look down the Speis aisle, out through the Küche door -> Großeltern: into their Bad (look into the shower,
 then the WC, pausing at each), then turn at the wall beside the balcony door -> along the Flur to the back door (turn, pause) -> Bibliothek, back corner (turn, pause at the
 piano) -> stairs -> OG: peeks into the first room on the right and the Waschküche -> Schlafen SE,
 back corner (turn, pause at the Kamin), peek into its Bad -> peek into the NE room opposite ->

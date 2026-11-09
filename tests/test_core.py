@@ -1023,7 +1023,7 @@ def test_kueche_submodel():
                    for p in k)                                                # nothing in the flue box
     labels = {t for _, _, t in sub.dims}
     assert {"Spülzeile 150.5", "Ostzeile 60", "Herd 80", "Besenschrank 51", "55 tief", "Abzug ab 180",
-            "Halbinsel 198.5"} <= labels
+            "Halbinsel 198.5", "Abzug 30 tief (angenommen)"} <= labels
 
 
 def test_kuechentuer_as_built():
