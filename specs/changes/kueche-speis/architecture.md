@@ -23,7 +23,7 @@ Positions (house coordinates; from `input/2026-11-09 input/speis_kueche_v6.svg`)
 | Part | x | y | z |
 |---|---|---|---|
 | Kitchen door opening (Flur wall), hinge west, swing into the Küche, 90° | 6.10–6.96 (architraves 6.03–7.03, clear 0.81) | 5.849–6.349 | 0–2.0 |
-| Besenschrank (carcass + door south, plinth) | 5.492–6.00 | 5.30–5.847 | 0–2.20 |
+| Besenschrank (carcass + door south, plinth) | 5.492–6.002 | 5.297–5.847 | 0–2.20 |
 | Sink run carcass, fronts south at 5.249, granite 5.229–5.847 | 7.05–8.555 | 5.269–5.847 | 0–0.90 |
 | Sink (centre 7.46, at today's water connection), tap | 7.23–7.69 | 5.30–5.76 | |
 | Ostzeile (one 60 door from the peninsula's front 3.66) | 7.977–8.555 | 3.64–4.26 | 0–0.90 |
