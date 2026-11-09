@@ -204,3 +204,17 @@ def test_bad_export(tmp_path):
     house_core.build()
     ex = g["scenes"][0]["extras"]
     assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex
+
+
+def test_kueche_export(tmp_path):
+    """--kueche: the Küche sub-model with its dimension lines and the Wamsler's fire, no Rundgang."""
+    out = tmp_path / "kueche.glb"
+    subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--kueche"], check=True)
+    data = out.read_bytes()
+    jlen = struct.unpack_from("<I", data, 12)[0]
+    g = json.loads(data[20:20 + jlen])
+    assert {n["name"] for n in g["nodes"]} == {"Kueche_Kueche", "Kueche_Herd", "Kueche_Haube", "Kueche_Waende"}
+    bp = house_core.build_kueche()
+    house_core.build()
+    ex = g["scenes"][0]["extras"]
+    assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex and len(ex["fires"]) == 1

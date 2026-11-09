@@ -105,7 +105,7 @@ test('the built-in Ofen shows in every stage, without dimensions, and "Ofen" ope
     expect(await vis(page, 'EG_Ofen_Bett')).toBe(true);
   }
   expect(await page.locator('.dim').count()).toBe(0);
-  await page.getByRole('link', { name: 'Ofen' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Ofen' });
   await page.waitForURL(/\/ofen\.html$/);
   await page.waitForFunction(() => window.__ofen?.ready === true);
   await expect(page.locator('.dim', { hasText: 'Bett 190' })).toBeVisible();

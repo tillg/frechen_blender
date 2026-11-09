@@ -35,10 +35,10 @@ test('Bad page draws the bathroom with the core dimensions, without errors', asy
 test('the house links to the Bad page and back', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__fl?.ready === true);
-  await page.getByRole('link', { name: 'Bad Oma & Opa' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Bad Oma & Opa' });
   await page.waitForFunction(() => window.__bad?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/bad.html');
-  await page.getByRole('link', { name: '← Haus' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/');
 });

@@ -46,7 +46,10 @@ the team uses them:
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
 | **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
 | **Viewer** | The three.js web page in `web/`. |
-| **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page linked from the viewer: the **Ofen** (`ofen.py`, `ofen.html`) and the **Schreibtisch** (`desk.py`, `desk.html`). The house places the same parts, only translated. |
+| **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page reached through the viewer's "Teilmodell" drop-down: the **Ofen** (`ofen.py`, `ofen.html`), the **Schreibtisch** (`desk.py`, `desk.html`), the **Bad Großeltern** (`bad.py`, `bad.html`; it brings walls of its own) and the **Küche** (`kueche.py`, `kueche.html`). The house places the same parts, only translated. |
+| **Küche terms** | **Spülzeile** (sink run on the north wall, door frame → NE corner), **Ostzeile** (60 cm base unit on the east wall), **Halbinsel** (peninsula with the cooktop), **Abzug** (flue box in the NE corner from 1.80 m up), **Besenschrank** (broom cupboard behind the open kitchen door). |
+| **Bad Großeltern terms** | **Nische** (the 1.20 m WC + Schrank strip in the south, split by a 12 cm wall), **verschränkte Schiebetüren** (two sliding leaves on offset tracks closing the Nische; at most one half open), **Raumteiler** (35 cm glass + 1 m wall with glass above, between shower and basin), **Waschtrog** (one 1.00 m trough basin, two mixers), **Hängeschrank** (hanging wardrobe in the Schrank). |
+| **Speis A / B / C** | The pantry's built-ins: open shelf A on the Flur wall, open shelf B on the aisle, cabinet C back to back with B with doors to the Essen; all to the ceiling. |
 | **Bildschirm** | A monitor pane of the Schreibtisch whose material shows a screen image (a screenshot) instead of a colour or procedural texture. |
 | **Stage** | One of five looks in the viewer: **Skizze** (sketch), **Massenmodell** (massing model), **Detailmodell** (detailed model), **Gebaut** (built reality), **Eingerichtet** (furnished: Gebaut plus furniture). |
 | **Timeline** | The bar that moves between stages. Its progress `p` runs from 0 to 3; integer values are the pure stages, values in between blend two neighbours. |
@@ -113,7 +116,8 @@ erDiagram
 - **House:** a main block of 14.885 × 12.887 m with an annex (Elektroraum, Heizung) in the SW corner.
 - **Storeys:** EG and OG. They are joined by an open stair with 15 risers (18.0/25.5 cm) and
   a stairwell in the OG slab.
-- **Rooms:** EG has Stube, Küche/Essen, Bibliothek, Speis, Oma & Opa and the Windfang. OG has
+- **Rooms:** EG has Stube, Küche/Essen, Bibliothek, Speis, Oma & Opa (bedroom open to its Bad,
+  WC in the Bad's niche) and the Windfang. OG has
   Nadine & Till, Waschküche, Saschi, Bichlach, Jugend and Yoga, plus bathrooms and WCs.
   Their names are written on the floor (Blender only).
 - **Materials:** about 35 named materials (`FL_*`). Kinds:
