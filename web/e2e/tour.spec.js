@@ -50,7 +50,7 @@ test('Beenden restores the previous view', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Detailmodell' })).toBeVisible();
 });
 
-test('stills along the Rundgang (for the eye)', async ({ page }) => {
+test('stills along the Rundgang (for the eye)', { tag: '@eye' }, async ({ page }) => {
   await open(page);
   await page.getByRole('button', { name: 'Rundgang', exact: true }).click();
   for (const s of [10, 30, 40, 55, 75, 95, 115, 135]) {

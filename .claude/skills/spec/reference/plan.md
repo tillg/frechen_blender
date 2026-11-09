@@ -20,18 +20,18 @@ Every checkbox step carries both sub-bullets. They are plain bullets, not checkb
 |---|---|
 | `- [ ] [kind] <step>` | One small, imperative unit of behaviour — one red → green cycle. `[kind]` is one of the kinds below. |
 | `Test first:` | The test to write before any code: file › case, what it asserts, why it fails today. |
-| `Verify:` | A command that exits 0 only when the step is done, and what passing looks like. Usually the targeted test plus the full suite. |
+| `Verify:` | A command that exits 0 only when the step is done, and what passing looks like. Usually the targeted test; the per-step check (`project.md`) runs next to it. |
 
 ## Step kinds
 
 The kind tells `/spec:apply` which harness applies. Commands per kind: `project.md` in this
 directory.
 
-| Kind | What it changes | Test first | Verify |
+| Kind | What it changes | Test first | Verify (plus the per-step check, `project.md`) |
 |---|---|---|---|
-| `[python]` | Pure-Python code under `code/` that runs without bpy (shared core, exporters) | pytest test in `tests/` | `python3 -m pytest -q` |
+| `[python]` | Pure-Python code under `code/` that runs without bpy (shared core, exporters) | pytest test in `tests/` | the new pytest test; a visible model change is shown in the browser |
 | `[blender]` | bpy build scripts (`build_house.py`, `paint.py`, `garden.py`, `film.py`, …) | a check run in Blender via the MCP server (object/vertex counts, clash or clearance check), else `none — visual only` | rebuild in order, then render a still to `tmp/details/` and read it; film route: camera clearance check |
-| `[web]` | three.js viewer under `web/` | Vitest/Node unit test or Playwright spec | `cd web && npm test && npx playwright test`, screenshots read at 1× |
+| `[web]` | three.js viewer under `web/` | Vitest/Node unit test or Playwright spec | the new test run alone (Playwright: its spec, `-g "<case>"`), screenshots read at 1× |
 | `[docs]` / `[config]` | No runtime surface (README, settings, …) | `none — <why>` | the strongest mechanical check: a `grep` that must match, a JSON parse |
 
 By kind of change:
@@ -63,7 +63,8 @@ flowchart LR
    states. A test that passes before the code exists tests nothing: fix the test.
 2. **Green** — write the least code that makes it pass. Surgical: `principles.md`.
 3. **Refactor** — clean up with the test green. Only what the step touched.
-4. **Verify** — run the step's `Verify` command and the project's full suite. Both must pass.
+4. **Verify** — run the step's `Verify` command and the project's per-step check (`project.md`).
+   Both must pass. The final check runs once after the last step.
 5. **Tick** — only now `- [ ]` → `- [x]`.
 
 Never make a test pass by weakening, skipping or deleting it, or by mocking what the step is meant

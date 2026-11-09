@@ -5,7 +5,8 @@ argument-hint: "[change-name]"
 ---
 
 Implement the plan of a change, test-first: for every step the test is written and seen failing
-before the code, and the step is ticked only when its `Verify:` and the full suite pass.
+before the code, and the step is ticked only when its `Verify:` and the **per-step check** pass;
+the **final check** runs once after the last step. Both checks are defined in `project.md`.
 
 **Read first**: `.claude/skills/spec/reference/plan.md` (the cycle and the step kinds),
 `principles.md` (surgical changes), `project.md` (commands), `frontmatter.md`.
@@ -25,11 +26,11 @@ pick and log (`decisions.md`). Announce "Using change: <name>" and how to overri
    and stop. Steps lacking `[kind]`, `Test first:` or `Verify:` → derive them from the step and
    the architecture, write them into `plan.md` first, and say so.
 
-3. **Baseline**: run the suites the plan's kinds need (`project.md`: `python3 -m pytest -q`,
-   a still render, `cd web && npm test`) once before the first step, so a red baseline
+3. **Baseline**: run the final check (`project.md`) once before the first step, so a red baseline
    isn't mistaken for your breakage. Red baseline → show it and ask (**AskUserQuestion**):
-   "Continue — done means no *new* failures" / "Stop". No harness for a kind the plan needs → the
-   first step must set it up; add it to `plan.md` if missing.
+   "Continue — done means no *new* failures" / "Stop"; known bugs (`specs/bugs/`) count as
+   known reds. No harness for a kind the plan needs → the first step must set it up; add it to
+   `plan.md` if missing.
 
 4. **Implement steps — loop until done or blocked.** Per step, the cycle from `plan.md`:
    - Show which step is being worked on.
@@ -39,21 +40,19 @@ pick and log (`decisions.md`). Announce "Using change: <name>" and how to overri
    - **Green** — the minimum code that makes it pass. Surgical: only what the step names; match the
      file's style; no drive-by refactors (note them instead).
    - **Refactor** — tidy while green, within the step's files.
-   - **Verify** — the step's `Verify:` and the full relevant suite. Both pass → show the output.
+   - **Verify** — the step's `Verify:` and the per-step check (`project.md`). Both pass → show the
+     output.
+   - **Show** — when the step has a visible effect: look at it first (`project.md`), then open the
+     user's browser on it in a new tab; collect the links for the summary.
    - **Tick** `- [ ]` → `- [x]`, bump `plan.md`'s `edited`. After the **first** tick set
      `status: applying` on every file of the change (a status-only change doesn't bump `edited`).
      If the step undoes a `reverted` decision in `DECISIONS.md`, append `Undone in <commit or
      "working tree">.` to it.
 
-   **Per kind** (`project.md`):
-   - `[python]` — pytest under `tests/`; `python3 -m pytest -q`.
-   - `[blender]` — run the scripts via the Blender MCP server in the order of `CLAUDE.md` ›
-     Running; render a still from a temporary camera to `tmp/details/` and read it (then remove the
-     camera and restore `scene.camera`); film route changes also need the camera clearance check.
-   - `[web]` — `cd web && npm test && npx playwright test`; read the screenshots at 1×.
-   - `[docs]`/`[config]` — the mechanical check named in `Verify:`.
+   **Per kind**: the per-step check and Show for each step kind are in `project.md`.
 
-   When every step is `[x]` and the full suite is green, set `status: applied` on every file.
+   When every step is `[x]`, run the **final check** (`project.md`) once. Green (no new failures)
+   → set `status: applied` on every file.
 
    **Pause** (report, wait for guidance) when: a step is unclear; implementation reveals an
    architectural issue (suggest updating the artifacts, or an ADR); an error or blocker; the test
@@ -61,7 +60,7 @@ pick and log (`decisions.md`). Announce "Using change: <name>" and how to overri
    Unattended: decide and log instead of pausing; never tick a red step.
 
 5. **Status at the end** (completion or pause): steps completed this session, `N/M`, decisions
-   logged; all done → "Review it with `/spec:adversarial-code-review`, then `/spec:archive`";
+   logged, the Show links of this session; all done → "Review it with `/spec:adversarial-code-review`, then `/spec:archive`";
    paused → why, and the options.
 
 **Output during implementation**
@@ -72,14 +71,16 @@ pick and log (`decisions.md`). Announce "Using change: <name>" and how to overri
 Step 3/7 [python]: <step>
 ✗ Red: test_core › gable windows are recorded fails — list stays empty (as planned)
 ✓ Green: passes
-✓ Verify: python3 -m pytest -q — green
+✓ Verify: <the step's Verify> + per-step check — green
+✓ Show: <link> (looked at first)
 ✓ Step complete
 ```
 
 **Guardrails**
 
 - Tests first, always: no production code for a step before its test has been seen failing.
-- Tick a step only after its Verify and the full suite pass — then immediately.
+- Tick a step only after its Verify and the per-step check pass — then immediately. The final
+  check runs once, before `status: applied`.
 - Never make a test pass by weakening, skipping, deleting or mocking it without the user's
   explicit agreement.
 - Keep changes minimal and scoped to the step; `status` identical in all files of the change.

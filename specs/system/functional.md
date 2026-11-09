@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-08
+edited: 2026-11-09
 ---
 
 # Functional: Frechenlehen house model
@@ -126,6 +126,27 @@ edited: 2026-11-08
   from the core first, and again whenever a `code/*.py` file is saved; then open pages reload at
   the same view.
 
+### Checks and Show (development)
+
+- **Two check tiers**, run and timed by `scripts/check.sh` (log `tmp/check-<ts>.log`, a table of
+  seconds per part, non-zero exit on any failure):
+  - `quick` — `pytest -m "not slow"` and Vitest, about 15 s (warns above 60 s); after every
+    change, together with the change's own new test run alone.
+  - `full` — all pytest incl. the `slow` Blender parity tests, `npm test`, all Playwright
+    projects, about 6–7 min; once at the end of a change, at archive, on request.
+- Python tests run in a repo-local `.venv` (`requirements-dev.txt`).
+- The Playwright `@eye` test (stills along the Rundgang, for a human to look at) is not in the
+  default run: `npx playwright test --grep @eye`.
+- **Show**: `.venv/bin/python code/show.py <object…>` opens the user's browser on the dev server
+  at a view URL that frames the named objects (prefix match) — outside objects from the nearest
+  facade, 20° up, whole house; inside objects from the SE diagonal, 55° up, with the storeys above
+  cut away; sub-model pages (`--page ofen|desk|bad`) from the SE, 30° up, Gerendert. Options:
+  `--from n|e|s|w|top`, `--at x,y,z`, `--p 0…4` (house only), `--print` (only print the URL). It
+  refuses (exit 2) when the server on 5377 runs from another clone.
+- `cd web && node shot.js '<url>' <png>`: one headless 1280×720 screenshot of a view URL after the
+  page is ready (on the desk page also its two screen images), so the agent looks before the
+  link goes to the user.
+
 ## User journeys
 
 ```mermaid
@@ -135,13 +156,14 @@ sequenceDiagram
     participant B as Blender (MCP)
     participant W as Viewer
     Owner->>Agent: "the balcony should look like this photo"
-    Agent->>Agent: edit code/house_core.py, run tests
-    Agent->>B: run build_house, paint, windrose, garden, film
-    Agent->>B: render still from temp camera → tmp/details/
-    Agent->>W: npm run dev / playwright screenshots → tmp/web/
-    Agent->>Agent: look at stills and screenshots, iterate
-    Agent->>B: save .blend
-    Agent->>Owner: still / README views / new film / viewer link
+    Agent->>Agent: edit code/house_core.py, own test + check.sh quick
+    Agent->>W: show.py → view URL, shot.js → tmp/web/*.png
+    Agent->>Agent: look at the screenshot, iterate
+    Agent->>Owner: browser tab at the change (show.py)
+    Agent->>B: last step: run build_house, fire, paint, windrose, garden, film
+    Agent->>B: render one still from temp camera → tmp/details/, save .blend
+    Agent->>Agent: check.sh full
+    Agent->>Owner: links, still / README views / new film
 ```
 
 ```mermaid
@@ -164,7 +186,7 @@ sequenceDiagram
 | `input/*.pdf`, `grundriss_*.png` (plans) | `frechenlehen.blend` |
 | `input/*.png/jpg` detail photos, named after their component | `frechenlehen_rundgang.mp4` |
 | `input/farben_*.png` colour references | `docs/images/ansicht_*.png` (README views) |
-| | `tmp/details/*.png` check stills, `tmp/web/*.png` viewer screenshots |
+| | `tmp/details/*.png` check stills, `tmp/web/*.png` viewer screenshots, `tmp/check-*.log` check logs |
 | | `web/public/frechenlehen.glb` (generated), `web/dist/` → GitHub Pages |
 
 ## States and transitions
@@ -189,5 +211,7 @@ hook exists only in dev and test builds.
 - The garden in the viewer is like Blender's, not identical: 25 % grass density, within 30 m,
   grass where the windrose would be.
 - Headless e2e tests run the WebGL2 fallback; the WebGPU path is checked by hand.
+- `show.py` frames turned objects (front door, screen panes) in their unturned pose, and cuts the
+  storeys for an inside object by the height of its box centre, not by its collection.
 - `film.py` adds new `Innenlicht_*` lights with rising suffixes on each run (cosmetic).
 - Plan accuracy is about ±5 cm. The stair is longer than drawn ("Treppe wird verschoben").

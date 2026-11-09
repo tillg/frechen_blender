@@ -19,8 +19,8 @@ auto-select here.
    b. `plan.md`: unticked steps? → warn with the count, ask to continue.
    c. `review.md` present? Missing → recommend `/spec:adversarial-code-review` first; continue only
       on explicit confirmation. CRITICAL/HIGH findings in it not marked fixed or accepted → same.
-   d. **Run the tests**: the full suites for the plan's kinds (`project.md`) and every `Verify:` in
-      `plan.md`; model validation if models changed. Show the result. Red → recommend fixing via
+   d. **Run the tests**: the final check (`project.md`) and every `Verify:` in `plan.md`; model
+      validation if models changed. Show the result. Red → recommend fixing via
       `/spec:apply`; continue only on an explicit "archive anyway".
    e. **Decisions gate** (blocks): if `DECISIONS.md` exists, run the review flow of `decisions.md`
       over the change's `open` decisions. Any still `open` or a pending revert → stop, name what to

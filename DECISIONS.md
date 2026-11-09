@@ -1,7 +1,7 @@
 ---
 title: "Decisions"
 created: 2026-11-08
-edited: 2026-11-08
+edited: 2026-11-09
 ---
 
 # 2026-11-08 23:45 — Rundgang into the Bad Großeltern, stone floors in all WCs, new film {#run-2026-11-08-2345}
@@ -99,3 +99,33 @@ edited: 2026-11-08
 - **Why:** keeps it under the limit at a quality close to the earlier committed films.
 - **Alternatives:** Git LFS; not committing the film.
 - **Consequences:** if it still exceeds 100 MB, raise crf by 1–2 and re-encode.
+
+# 2026-11-09 10:15 — /spec:apply tests: choices made without asking {#run-2026-11-09-1015}
+
+- **Started by:** `/spec:apply tests` (attended; small choices taken in-flight, logged for archive)
+- **Task, as given:** > /spec:apply tests
+
+## 09:55 — Storey cut from the box height {#run-2026-11-09-1015-1}
+
+- **Status:** confirmed
+- **Context:** change `tests`, plan step 4: `show.view(bp, box, side)` has no object names.
+- **Question:** decide `cut=eg|noroof|all` for an inside box by collection or by height?
+- **Decision:** by the box centre z: `< Z_EG_TOP` → `eg`, `< Z_OG_TOP` → `noroof`, else `all`;
+  outside = box within `EDGE = 0.2` m of the `W_OUT × D_OUT` footprint or beyond; sub-models from
+  the SE diagonal, 30° up, `look=full`.
+- **Why:** keeps the architecture's signature and also serves `--at x,y,z` points.
+- **Alternatives:** the viewer's `cutLevel` by collection (needs names, fails for `--at`).
+- **Consequences:** an object in collection `OG` below `Z_EG_TOP` would be cut away; none today.
+  Promoted to specs/system/architecture.md.
+
+## 10:05 — `--grep @eye` with a config grepInvert {#run-2026-11-09-1015-2}
+
+- **Status:** confirmed
+- **Context:** change `tests`, plan step 7: config `grepInvert: /@eye/` also drops the test under
+  `npx playwright test --grep @eye`, and a CLI `--grep-invert` doesn't override it.
+- **Question:** change the on-request command, or the config?
+- **Decision:** `playwright.config.js` leaves `grepInvert` out when an argument contains `@eye`.
+- **Why:** keeps the command agreed in the plan and the docs.
+- **Alternatives:** an env var (`EYE=1 npx playwright test --grep @eye`).
+- **Consequences:** any CLI argument mentioning `@eye` turns the exclusion off.
+  Promoted to specs/system/architecture.md.

@@ -45,11 +45,13 @@ A judgement call, not a line count.
 3. **Check the limits before any code**; a broken limit → **escalate** (below) without writing code.
 
 4. **Show the inline plan** in the chat (not a file), in the `plan.md` step format — `[kind]`,
-   `Test first:`, `Verify:`. More than about 3 steps → escalate. Run the relevant suite once as the
-   **baseline**; red → show it and ask: "Continue — done means no *new* failures" / "Stop".
+   `Test first:`, `Verify:`. More than about 3 steps → escalate. Run the per-step check
+   (`project.md`) once as the **baseline**; red → show it and ask: "Continue — done means no *new*
+   failures" / "Stop".
 
-5. **Run each step test-first**: red → green → refactor → verify, showing each result; the
-   per-kind rules of `/spec:apply` step 4 apply. After each step re-check the limits; outgrown →
+5. **Run each step test-first**: red → green → refactor → verify (the step's `Verify:` + the
+   per-step check) → Show when it has a visible effect, showing each result; the per-kind rules of
+   `project.md` apply. After each step re-check the limits; outgrown →
    finish the current step green, then escalate.
 
 6. **Update the system description in place**: every `specs/system/*.md` whose truth the tweak

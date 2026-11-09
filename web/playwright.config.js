@@ -6,6 +6,9 @@ export default defineConfig({
   outputDir: 'test-results',
   timeout: 120_000,
   workers: 1,
+  // @eye tests only make pictures for a human: run them on request (npx playwright test --grep @eye;
+  // a config grepInvert would also drop them then, so it is left out when @eye is asked for)
+  grepInvert: process.argv.some((a) => a.includes('@eye')) ? undefined : /@eye/,
   use: {
     viewport: { width: 1280, height: 720 },
     // real GPU (Metal via ANGLE) instead of SwiftShader; WebGPU is still off in headless

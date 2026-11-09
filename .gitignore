@@ -11,3 +11,4 @@ web/public/desk.glb
 web/public/bad.glb
 web/test-results/
 web/playwright-report/
+.venv/

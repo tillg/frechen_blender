@@ -6,6 +6,8 @@ Runs headless Blender on tests/blender/snapshot.py. Regenerate the golden on pur
 import json, os, subprocess
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 BLENDER = os.environ.get("BLENDER", "/Applications/Blender.app/Contents/MacOS/Blender")
 GOLDEN = ROOT / "tests" / "golden" / "blender_snapshot.json"
@@ -24,6 +26,7 @@ def diff(old, new):
     return {k: {"golden": old.get(k), "now": new.get(k)} for k in keys if old.get(k) != new.get(k)}
 
 
+@pytest.mark.slow
 def test_rebuild_matches_golden_snapshot(tmp_path):
     snap = snapshot(tmp_path)
     if os.environ.get("UPDATE_GOLDEN"):
@@ -34,6 +37,7 @@ def test_rebuild_matches_golden_snapshot(tmp_path):
     assert not d, "objects differ from golden:\n" + json.dumps(d, indent=1)[:4000]
 
 
+@pytest.mark.slow
 def test_saved_blend_matches_golden(tmp_path):
     """frechenlehen.blend is generated output: it must be the current build, saved."""
     out = tmp_path / "saved.json"

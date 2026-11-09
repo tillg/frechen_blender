@@ -37,6 +37,7 @@ Blender-Modell und die interaktive Web-Ansicht im Browser.
 | `garden.py` | Wiese (Geometry-Nodes-Streuung, im Viewport 10 %) und grüne Laubsträucher in den Erd-Beeten nach dem Gartenplan des Kerns (eigene Collection „Garten“) – nach `build_house.py` erneut ausführen. Seit der Web-Ansicht stehen die Sträucher um wenige Zentimeter anders |
 | `tour.py` | die Route des Rundgangs (ohne Blender): außen herum, durch EG und OG (langsame Drehungen und Blicke in die Räume, auch in Dusche und WC der Großeltern; Drehgeschwindigkeit `TURN`, Pausendauer `PAUSE` und Kamerahöhe `EYE` = 1,60 m über dem Boden sind je eine Variable), über Treppe und Haustür zurück zum Startpunkt; daraus die Kamera pro Bild – für den Film und den Rundgang in der Web-Ansicht |
 | `film.py` | Kamerafahrt nach `tour.py`, Raumlichter, geöffnete Haustür; Renderausgabe nach `tmp/film/` |
+| `show.py` | ohne Blender: berechnet aus dem Kern einen Blickpunkt auf die genannten Objekte und öffnet die Web-Ansicht dort im Browser (siehe Tests) |
 
 Ausführen in Blender: `exec(open("/Users/tgartner/git/frechen_blender/code/<skript>.py").read())`
 Reihenfolge beim Neubau: `build_house` → `fire` → `paint` → `windrose` → `garden` → `film`.
@@ -84,6 +85,16 @@ Browser.
 
 ## Tests
 
-- Python (ohne Blender, der Paritätstest startet Blender selbst im Hintergrund):
-  `python3 -m pytest -q`
-- Web: `cd web && npm test && npx playwright test` (Screenshots nach `tmp/web/`)
+- Einmalig: `python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt` und
+  `cd web && npm install`
+- Schnell (nach jeder Änderung, ≤ 60 s): `bash scripts/check.sh quick` – Python-Tests ohne
+  Blender (`pytest -m "not slow"`) und Vitest, mit Zeit pro Teil
+- Vollständig: `bash scripts/check.sh full` – alle Python-Tests (der Paritätstest startet Blender
+  selbst im Hintergrund), Vitest und alle Playwright-Tests (Screenshots nach `tmp/web/`); die
+  Bildstrecke entlang des Rundgangs nur auf Wunsch: `cd web && npx playwright test --grep @eye`
+- Eine Änderung ansehen: `.venv/bin/python code/show.py EG_Haustuer` öffnet den Browser auf dem
+  Dev-Server mit Blick auf die genannten Objekte (außen von der nächsten Fassade, innen von oben
+  mit abgeschnittenen Geschossen darüber; `--from n|e|s|w|top`, `--page ofen|desk|bad`,
+  `--at x,y,z` für einen Punkt statt Objekten, `--p 0…4` für eine andere Stufe als Eingerichtet
+  (nur Haus), `--print` gibt nur den Link aus). `cd web && node shot.js '<url>' ../tmp/web/bild.png` macht davon ein
+  Bildschirmfoto.

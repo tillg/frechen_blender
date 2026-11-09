@@ -97,7 +97,7 @@ Exactly these keys, in this order.
 |---|---|---|---|
 | `title` | yes | quoted string `"Bug: <short title>"` | Same text as the file's `# …` heading. |
 | `priority` | yes | `critical` · `high` · `medium` · `low` | How soon to fix it. `critical` = a core journey is blocked. |
-| `areas` | yes | list, one or more of `usermanagement` · `clerk` · `inmate` · `antraege` · `ui` · `security` (add new ones here) | Which parts of the app the bug shows in; `ui` = layout, navigation, rendering; `security` = sessions, access, data exposure. |
+| `areas` | yes | list, one or more of `usermanagement` · `clerk` · `inmate` · `antraege` · `ui` · `security` · `blender` (add new ones here) | Which parts of the app the bug shows in; `ui` = layout, navigation, rendering; `security` = sessions, access, data exposure; `blender` = build scripts and the Blender output. |
 | `created` | yes | `YYYY-MM-DD` | Day the bug was recorded. |
 | `edited` | yes | `YYYY-MM-DD` ≥ `created` | Day of the last content change. |
 

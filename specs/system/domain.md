@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-08
+edited: 2026-11-09
 ---
 
 # Domain: Frechenlehen house model
@@ -63,6 +63,12 @@ the team uses them:
 | **Site distance** | How far a light site is from the camera for the ranking: `hypot(dx, dy, 3·dz)` while the camera is indoors (own storey first), else the plain 3D distance. |
 | **Cut-off fade** | A pooled light's intensity factor `clamp((d_cut − d) / FADE, 0, 1)`, `d_cut` = distance of the nearest site left out, `FADE` = 1.0 m: a light leaves the pool already dark. |
 | **Fast mode / Full quality (`hires`)** | The viewer's two modes, chosen per page load by the URL switch `hires`. Fast mode (default, Rundgang included): light pool, pixel ratio ≤ 1.5, no grass while the camera is indoors. `?hires=on` (film capture): none of these shortcuts. |
+| **Quick check** (per-step check) | What runs after every change: the change's own new test alone, `pytest -m "not slow"` and Vitest (`scripts/check.sh quick`, ≤ 60 s), then a Show when the change is visible. |
+| **Full check** (final check) | Everything: all pytest incl. slow tests, Vitest, all Playwright projects except `@eye` (`scripts/check.sh full`); once at the end of a change (after a Blender rebuild, save and still if the Blender output changed), at archive and on request. Known bugs in `specs/bugs/` don't count as new failures. |
+| **Slow test** | A pytest test marked `slow` (the Blender parity tests: they start Blender); not in the quick check. |
+| **`@eye` test** | A Playwright test that only makes pictures for a human (stills along the Rundgang); not in the default run, `--grep @eye` runs it. |
+| **View URL** | The viewer's URL state: house `?cam=x,y,z&at=x,y,z&p=0…4&cut=` `all` / `noroof` / `eg`, sub-model pages `?cam=&at=&look=`, model coordinates (z up). |
+| **Show** | Opening the user's browser at a view URL that frames changed objects (`code/show.py`), after the agent has looked at a screenshot of the same URL (`web/shot.js`). |
 
 ## Concepts and entities
 

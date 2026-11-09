@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-08
+edited: 2026-11-09
 ---
 
 # Architecture: Frechenlehen house model
@@ -38,6 +38,7 @@ flowchart TB
         GA["garden.py"]
         FI["film.py"]
         TO["tour.py<br/>route → camera keys"]
+        SH["show.py<br/>view URL on objects"]
     end
     subgraph blender["Blender 5.2"]
         SC[("scene in frechenlehen.blend")]
@@ -57,6 +58,7 @@ flowchart TB
     BH & PA & WR & GA & FI --> SC
     SC --> EV --> OUT["tmp/film/*.png → mp4,<br/>docs/images/*.png"]
     EX -->|npm run blueprint| GLB --> APP
+    CORE --> SH -->|opens view URL| APP
     APP -->|vite build · Actions| PAGES[("GitHub Pages")]
 ```
 
@@ -69,7 +71,7 @@ flowchart TB
 | Blender MCP server | How the agent runs code in the open Blender (`execute_blender_code`). |
 | three.js 0.187 | Viewer: `WebGPURenderer` with TSL node materials. It falls back to WebGL2 automatically ([ADR-003-SKGB](../architecture/adr-003-skgb-webgpu-tsl.md)). |
 | Vite 8 | Bundler and dev server for `web/`; vanilla JS, no framework. |
-| pytest · Vitest · Playwright | Python tests, web unit tests, browser e2e (headless Chromium on the real GPU via `--use-angle=metal`, WebGL2 path). Playwright starts no server of its own: project `dev` tests `/`, project `preview` the build under `/frechen_blender/` (setup project `build` runs `npm run build` first), both on the one dev server on 5377. |
+| pytest · Vitest · Playwright | Python tests, web unit tests, browser e2e (headless Chromium on the real GPU via `--use-angle=metal`, WebGL2 path). pytest runs from a repo-local `.venv` (`requirements-dev.txt`); `pytest.ini` registers the marker `slow` (Blender parity) with `--strict-markers`. Playwright starts no server of its own: project `dev` tests `/`, project `preview` the build under `/frechen_blender/` (setup project `build` runs `npm run build` first), both on the one dev server on 5377; tests tagged `@eye` are left out unless `@eye` is on the command line. `scripts/check.sh quick\|full` runs and times the two check tiers. |
 | GitHub Actions + Pages | Builds the `.glb` and the viewer on push to `main` and publishes `web/dist`. |
 | ffmpeg | Encodes the film frames to H.264 MP4. |
 
@@ -268,6 +270,43 @@ sequenceDiagram
   `tour`, `tourKey`), only outside production builds; `window.__ofen`
   / `window.__desk` on the sub-model pages.
 
+### Checks and Show — `scripts/check.sh`, `code/show.py`, `web/shot.js`
+
+```mermaid
+flowchart LR
+    S[change / plan step] --> T[its own test]
+    T --> Q["check.sh quick<br/>pytest -m 'not slow' · vitest"]
+    Q --> SH["show.py objects → view URL"]
+    SH --> SHOT["shot.js URL → tmp/web/*.png<br/>(the agent reads it)"]
+    SHOT -->|hidden| SH
+    SHOT --> BR["show.py opens the URL in the browser"]
+    BR -->|last step| BL["Blender output changed?<br/>rebuild · save · one still"]
+    BL --> F["check.sh full<br/>all pytest · npm test · playwright"]
+```
+
+- **`scripts/check.sh quick|full`** (bash): runs the tier's parts with `.venv/bin/python`, times
+  each, prints a table, tees to `tmp/check-<ts>.log`, warns when quick exceeds 60 s, exits 1 when
+  any part failed (2 on a wrong argument).
+- **`code/show.py`** (pure Python, no bpy) reads the Blueprint (`build()`, or `build_ofen()` /
+  `build_desk()` / `build_bad()` for `--page`), so the view comes from the geometry the viewer
+  draws:
+  - `bbox(bp, names)`: min/max over the GEO vertices of the objects whose name starts with a
+    given prefix (all objects without names; `--at` frames a 1 m box around a point).
+  - `view(bp, box, side)` → `(cam, at, p, cut)`: `at` = box centre; distance so the bounding
+    sphere × 1.15 fits the vertical field of view (28° house, 35° sub-model). A box within
+    `EDGE` = 0.2 m of the footprint `W_OUT × D_OUT` or beyond it is outside: nearest facade, 20° up,
+    `cut=all`. Otherwise inside: SE diagonal, 55° up, `cut=eg` below `Z_EG_TOP`, `noroof` below
+    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up.
+    `side` (`--from`) picks n/e/s/w (or `top`, 85° up from the south). `p = 4` unless `--p`
+    (house only).
+  - `url()` writes the viewer's format (`+n.toFixed(3)`, ties away from zero); `server_is_ours()`
+    compares the cwd of the process listening on 5377 (`lsof`) with this repo's `web/`; the CLI
+    refuses with exit 2 otherwise, else `open`s the URL and prints it.
+- **`web/shot.js <url> <png>`** (Node, `@playwright/test`'s Chromium with the config's GPU flags,
+  1280×720 at 1×): waits for `__fl` / `__ofen` / `__desk` / `__bad` `ready` (on the desk page also
+  for its two screen textures), 500 ms more, then saves the screenshot. Tested by
+  `e2e/shot.spec.js`.
+
 ## Key decisions
 
 ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared core),
@@ -305,6 +344,16 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Separate pools: **6 room lights, 2 outside lamps**, cut-off fade 1.0 m | 4 + 2 with a 1.5 m fade; one ranking over all 31 sites | Point and spot lights can't share a pooled object, and from outside the lamps would starve the rooms. With 4 the last light was nearly always faded (sites lie centimetres apart in distance). 8 lights instead of 31. |
 | Rank sites by distance to the **camera**; indoors the height difference counts **3×** | Distance to the orbit target; plain 3D distance everywhere | The camera is where the viewer stands. Plain 3D fills slots with rooms through floor or ceiling, whose light only leaks (no shadows); outside, a vertical penalty would darken the EG windows in the overview. |
 | By day the pool is **out of the render list** (`visible = false`); the dusk variant is **prewarmed** at load | Intensity 0 by day (no recompile ever); accept the stall | Day lighting costs nothing per fragment. Without the prewarm the first dusk (e.g. the Rundgang start) stalled ~0.8 s; one compile at load is cheaper. |
+| **Two check tiers**: quick after every step (own test + `pytest -m "not slow"` + Vitest, no e2e suite), full once at the end of a change and at archive | The full suite after every step | A `[web]` step cost ≥ 7 min of waiting; the step's own test covers the change, the Show covers the look, the final full run catches regressions. |
+| Blender parity is a **`slow`** test, outside the quick check | Keep it in quick (8 s) | It starts Blender twice and needs the saved `.blend`, which is stale in the middle of a change. |
+| Core changes are checked by a **Show** per step; one Blender still at the end when the Blender output changed; Blender-only steps keep per-step stills | A Blender still per step | The browser shows the same core; bpy-only changes aren't visible in the browser. |
+| The **view is computed in Python from the Blueprint** (`show.py`) | A viewer `?focus=` parameter; hand-written URLs | No viewer change; the bounding boxes come from the core (ADR-001-XEWL); testable with pytest. |
+| Framing rule: outside → nearest facade, inside → from above with the storeys above cut away; `--from` to override | Named views per room; ray-casting for occlusion | Simple and predictable; covers doors, windows, facades and rooms. |
+| The storey cut follows the **box centre height**, not the collection | The viewer's `cutLevel` by collection | `view()` gets only a box, and `--at` points have no collection; no object is cut by its own level today. |
+| `show.py` **refuses** when 5377 runs from another clone | Restart the server here; a second server | One dev server (CLAUDE.md); showing another clone's code would be a false check. |
+| **`web/shot.js`** for the agent's own look | Only the Playwright MCP; the full e2e run | The MCP can be down; one shot takes seconds. |
+| **`@eye`** tests out of the default e2e run; `playwright.config.js` drops `grepInvert` when an argument contains `@eye` | Keep them (66 s every run); an env var to opt in | They assert nothing a human doesn't check. A config `grepInvert` also applies under `--grep @eye` and a CLI `--grep-invert` doesn't override it. |
+| Repo-local **`.venv`** with pinned pytest | pytest into the Homebrew Python; pyenv | Reproducible, leaves the system Python alone, works in non-interactive shells. |
 | One URL switch **`hires=on`** for full quality (all lights, full pixel ratio, grass indoors); speed shortcuts apply in the Rundgang too | Shortcuts off whenever the tour runs; a capture-only flag | The browser Rundgang should be fast; the film capture asks for full quality by name. The capture script forces it. |
 
 ## Data
@@ -315,7 +364,8 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
   `frechenlehen_rundgang.mp4` (~45 MB), `docs/images/*.png`,
   `tests/golden/blender_snapshot.json`.
 - **Generated, git-ignored:** `web/public/frechenlehen.glb` (`npm run blueprint`, run before
-  `dev`, `build` and `test`, and by the dev server after each saved `code/*.py`), `web/dist/`.
+  `dev`, `build` and `test`, and by the dev server after each saved `code/*.py`), `web/dist/`,
+  the test environment `.venv/`.
 - **Scratch:** `tmp/` (git-ignored): film frames, detail stills, web screenshots, logs.
 
 ## System boundaries and external systems
