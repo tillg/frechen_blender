@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-08
+edited: 2026-11-09
 ---
 
 # Functional: Frechenlehen house model
@@ -37,10 +37,19 @@ edited: 2026-11-08
   - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
     with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
-  - kitchen: sink run, east run, peninsula with cooktop; at the north end of the east run a
-    Wamsler wood cooker after wamsler.jpeg (grey enamel, fire burning behind the glass, flue pipe
-    into the east wall) under an old-form steel hood (skirt with rail, canopy, stack to the
-    ceiling); spruce wall cabinets over the sink run and over the east run beside the hood
+  - Küche after `input/2026-11-09 input/speis_kueche_v6.svg` (also a sub-model page): the door
+    to the Flur where it really is (clear 81 cm, hinged west, opened 90° into the Küche); behind
+    it a Besenschrank 51 × 55 × 2.20 m; the Spülzeile (~150 cm, sink at the water connection)
+    from the door frame into the NE corner, under the Abzug (plastered flue box from 1.80 m, depth
+    assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
+    after wamsler.jpeg (grey enamel, fire burning behind the glass, flue pipe into the east wall)
+    under an old-form steel hood (skirt with rail, canopy, stack to the ceiling); the Halbinsel
+    with the induction cooktop towards the dining table; spruce wall cabinets over the Spülzeile
+    (up to the Abzug) and over the Ostzeile (up to the hood)
+  - Speis (no wall to the Essen): from the Flur wall open shelf A (60 cm), the aisle (91.9 cm,
+    west end free), open shelf B (60 cm) and, back to back with it, cabinet C with doors to the
+    Essen (60 cm); all spruce, to the ceiling; the wall to the Küche ends at C's front and is open
+    over the aisle, where a sliding door on the Küche side stands slid open to the south
   - big dining table (two joined) after tisch-briol.png: board top, legs splayed on a flat foot
     frame with corner blocks; 14 chairs
   - Büro desk in the Bibliothek between the two north french doors: two LG UltraFine 6K 32"
@@ -82,7 +91,7 @@ edited: 2026-11-08
   (`EYE`, 1.60 m above the floor) are one variable each:
   1. orbit outside, enter at the east door, which swings open
   2. EG: Stube round the sofa to the seating corner (turn, pause at the sofa and Ofen), Essen at the end of the table (turn,
-     pause), look into the Speis, Küche, Großeltern: into their Bad (look into the shower and
+     pause), Küche: look down the Speis aisle, out through the Küche door, Großeltern: into their Bad (look into the shower and
      the WC, pause at each), then turn at the wall beside the balcony door,
      back door (turn, pause), Bibliothek back corner (turn, pause at the piano)
   3. up the stairs; OG: peeks into the first room on the right and the Waschküche, Schlafen SE
@@ -106,6 +115,8 @@ edited: 2026-11-08
 - **Orbit** with the mouse (drag, scroll). It starts from the README view in the south-east.
 - **Cutaway:** "Ganzes Haus", "Ohne Dach", "Nur EG".
 - **Sun toggle:** day or dusk, from Detailmodell on.
+- **"Teilmodell" drop-down** (house toolbar and every sub-model page): Haus, Ofen, Schreibtisch,
+  Bad Oma & Opa, Küche; the current page is preselected, choosing another opens it.
 - **Rundgang** (button in the tools panel): plays the film's route live from the camera keys in
   the `.glb`, at 0.75× the film speed, in stage Eingerichtet with the whole house and the entrance
   door open. Play/pause, a scrubber, "Endlos" (loop; the route ends where it starts) and

@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-08
+edited: 2026-11-09
 ---
 
 # Architecture: Frechenlehen house model
@@ -9,7 +9,7 @@ edited: 2026-11-08
 ## Overview
 
 The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
-`code/ofen.py` (stoves) and `code/desk.py` (Büro desk), no `bpy`). Two
+`code/ofen.py` (stoves), `code/desk.py` (Büro desk) and `code/kueche.py` (Küche), no `bpy`). Two
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -98,8 +98,18 @@ flowchart LR
   shifts. Each screen pane is an object with a `PIVOT` (lower-left corner) and a `TURN` (yaw);
   its material carries `image` (path under `web/public/`) and `size` (w, h in metres), mapped in
   object space by both backends (`local()` stores the mesh unturned).
-- **Sub-models.** `build_ofen()` / `build_desk()` return a Blueprint of the sub-model alone
-  (`garden=None`, its dimension lines in `dims`) for `web/ofen.html` / `web/desk.html`.
+- **Küche.** `code/kueche.py` the same way: `kueche_neu(c, x0, y0)` builds Spülzeile, Ostzeile,
+  Halbinsel, the Wamsler (`ofen.wamsler()`) with its hood, wall cabinets, Besenschrank and the
+  Abzug (`c + "_Waende"`) straight into collection `c` with the room's inner NW corner at
+  (x0, y0) (`EG` at `KUECHE_AT`, or `Kueche` at the origin, so the sub-model lies at y ≤ 0).
+  Positions are written in house coordinates (those of `input/2026-11-09 input/speis_kueche_v6.svg`)
+  and shifted; own `random.Random(14)`. The room's walls, the kitchen door and the Speis
+  (`speis()`: shelves A/B, cabinet C, sliding leaf on the kitchen side, own `random.Random(9)`)
+  stay in `house_core`.
+- **Sub-models.** `build_ofen()` / `build_desk()` / `build_kueche()` return a Blueprint of the
+  sub-model alone (`garden=None`, its dimension lines in `dims`) for `web/ofen.html` /
+  `web/desk.html` / `web/kueche.html`. A dimension label containing "angenommen" is an assumed
+  measure (shown in italics).
 - **Geometry accumulator.** Builders append vertices, faces, material names and an `rnd`
   value per face to `GEO[(collection, object)]`. Faces are polygons (quads or n-gons, may be
   concave) with no consistent winding. Each `add()` call is one **Part** (a closed solid,
@@ -135,7 +145,7 @@ from `TURN`; image materials map the picture through Texture Coordinate › Obje
 ### `mesh_ops.py` and `export_gltf.py` — glTF backend
 
 Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writer.md)):
-`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk`: the sub-model's
+`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk` / `--kueche`: the sub-model's
 `.glb` instead).
 
 - `mesh_ops` does what bmesh does in Blender:
@@ -251,8 +261,10 @@ sequenceDiagram
   camera, target and fov restored. `drawDue` caps drawing at 30 fps while the tour is on; the
   sun stays anchored to a fixed copy of the start target.
 - **Sub-model pages.** `submodel.js` draws a sub-model page (views, looks Drahtmodell / Masse /
-  Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js` and `desk.js` only configure
-  it. `ui.js` links the house page to both; each links back.
+  Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js`, `desk.js` and `kueche.js`
+  only configure it. `nav.js` builds the "Teilmodell" drop-down (one list of pages, relative URLs,
+  the current page preselected); `ui.js` puts it into the house toolbar, `submodel.js` into every
+  sub-model page.
 - **View in the URL.** `main.js` and `submodel.js` read `?cam=&at=` (model coordinates) plus
   `p`/`cut` (house) or `look` (sub-models) on load and write them back with `history.replaceState`,
   debounced to 300 ms, on every controls change, stage, cutaway or look change.
@@ -266,7 +278,7 @@ sequenceDiagram
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters incl. `lights` (visible room / outside lights), `hires`, `pixelRatio`,
   `tour`, `tourKey`), only outside production builds; `window.__ofen`
-  / `window.__desk` on the sub-model pages.
+  / `window.__desk` / `window.__kueche` on the sub-model pages.
 
 ## Key decisions
 
@@ -279,6 +291,9 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | The core's output is called **Blueprint** | "Model" | "Model" means the whole 3D house (scene, `.blend`). |
 | The **parity test** pins the Blender build to `tests/golden/blender_snapshot.json` (per object: counts, bbox, materials, `rnd` hash) and checks the saved `.blend` | Visual checks only | Moving code between core and backends can change the output silently. Deliberate changes regenerate the golden. |
 | Stages change by **crossfade** | Construction build-up | Smaller scope; build-up is a later candidate. |
+| Speis shelves and cabinet are **built-ins** (`EG_Speis`, stage Gebaut) | Furniture (`EG_Moebel`, Eingerichtet) | Cabinet C replaces a wall; floor-to-ceiling joinery belongs to the house like the kitchen. |
+| Sub-model navigation is **one drop-down** built by `nav.js` | A link per sub-model on each page | With four sub-models the links no longer fit; one page list in one place. |
+| Leaves are modelled **open** (kitchen door 90° into the Küche, Speis sliding leaf slid south) | Closed | The Rundgang walks through the kitchen door and looks into the Speis aisle. |
 | **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public; the viewer shows no room names. |
 | **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. |
 | Look: **same palette, recognisably the same house** as the Blender renders | Pixel parity | A starting point, tuned in later iterations. |
