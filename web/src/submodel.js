@@ -10,6 +10,7 @@ import { loadBlueprint } from './blueprint.js';
 import { createFire } from './fire.js';
 import { INK } from './ink.js';
 import { makeMaterials, updateStage } from './materials.js';
+import { navSelect } from './nav.js';
 import './ui.css';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
@@ -18,6 +19,7 @@ const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> 
 // default), colors {object: line colour}, walls [[w, h, centre, rotation about the vertical]],
 // grid [x, y] (centre of the 4 x 4 m floor), sun [position, target], hook (window.<hook>)
 export async function startSubmodel(cfg) {
+  document.querySelector('.fl-tools').append(navSelect());
   const renderer = new THREE.WebGPURenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);

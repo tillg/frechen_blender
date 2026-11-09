@@ -43,22 +43,22 @@ test('Ofen looks: Drahtmodell, Masse, Gerendert (fire behind the glass)', async 
   expect(await fire('Drahtmodell')).toBe(0);
 });
 
-test('"← Haus" leads back to the house', async ({ page }) => {
+test('the drop-down "Teilmodell" leads back to the house', async ({ page }) => {
   await page.goto('/ofen.html');
   await page.waitForFunction(() => window.__ofen?.ready === true);
-  await page.getByRole('link', { name: '← Haus' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/');
 });
 
-test('house and Ofen page share the menu style (title panel, toolbar, link, pressed button)', async ({ page }) => {
+test('house and Ofen page share the menu style (title panel, toolbar, drop-down, pressed button)', async ({ page }) => {
   const look = () => page.evaluate(() => {
     const css = (sel, keys) => { const s = getComputedStyle(document.querySelector(sel)); return keys.map((k) => s[k]); };
     return {
       title: css('.fl-title', ['top', 'left', 'backgroundColor', 'borderRadius', 'boxShadow']),
       h1: css('.fl-title h1', ['fontFamily', 'fontSize']),
       tools: css('.fl-tools', ['top', 'right', 'backgroundColor', 'borderRadius', 'padding', 'fontSize']),
-      link: css('.fl-tools a', ['padding', 'borderRadius', 'fontSize', 'color', 'textDecorationLine']),
+      nav: css('.fl-tools select', ['padding', 'borderRadius', 'fontSize', 'color', 'borderTopColor']),
       button: css('.fl-tools button:not([aria-pressed="true"])', ['padding', 'borderRadius', 'backgroundColor']),
       pressed: css('.fl-tools button[aria-pressed="true"]', ['backgroundColor', 'color']),
     };

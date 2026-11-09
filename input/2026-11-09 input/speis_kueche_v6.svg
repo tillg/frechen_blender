@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="1010" viewBox="0 0 1420 1010">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+<rect width="6" height="6" fill="#ddd"/><line x1="0" y1="0" x2="0" y2="6" stroke="#999" stroke-width="1.5"/></pattern>
+<marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#26a"/></marker></defs>
+<style>
+.wall{fill:url(#hatch);stroke:#555;stroke-width:1}.win{fill:#fff;stroke:#555;stroke-width:1}.thin{stroke:#777;stroke-width:1}
+.gone{fill:#fde6e6;stroke:#c33;stroke-width:1.2;stroke-dasharray:5 3}.gone_o{fill:none;stroke:#c33;stroke-width:1.5;stroke-dasharray:4 3}.gone_l{fill:none;stroke:#c33;stroke-width:1;stroke-dasharray:5 3}
+.shelf{fill:#f4e7d0;stroke:#865;stroke-width:1.5}.cab{fill:#e2c79c;stroke:#865;stroke-width:1.5}
+.div{stroke:#a87;stroke-width:1}.back{stroke:#654;stroke-width:2.5}.front{stroke:#654;stroke-width:3}
+.openf{stroke:#865;stroke-width:1.5;stroke-dasharray:6 4}
+.zarge{fill:#a0612a;stroke:#6b3d14;stroke-width:1}.swingo{fill:none;stroke:#aaa;stroke-width:1;stroke-dasharray:3 3}.kaminup{fill:none;stroke:#666;stroke-width:1.2;stroke-dasharray:4 3}.kamin{fill:#ccc;stroke:#666;stroke-width:1}.kitx{fill:none;stroke:#c33;stroke-width:1.2;stroke-dasharray:5 3}.leaf{fill:#c98a4b;stroke:#6b3d14;stroke-width:1}.kitn{fill:#dfe9f2;stroke:#26a;stroke-width:1.5}.rail{stroke:#555;stroke-width:1.5}.slide{fill:#26a;stroke:#134;stroke-width:1}.slideo{fill:none;stroke:#26a;stroke-width:1.2;stroke-dasharray:4 3}.arrow{stroke:#26a;stroke-width:1.5;marker-end:url(#ah)}.q2{font-size:12px;fill:#26a}.kitm{fill:#e4e4e4;stroke:#555;stroke-width:1.2}.kitold{fill:none;stroke:#999;stroke-width:1;stroke-dasharray:2 3}.clash{fill:#fde6e6;stroke:#c33;stroke-width:1.5}.kit{fill:#eee;stroke:#888;stroke-width:1}.kitl{fill:none;stroke:#888;stroke-width:1}
+.tab{fill:#f6f2ea;stroke:#888;stroke-width:1}.chair{fill:#fff;stroke:#aaa;stroke-width:1}
+.swing{fill:none;stroke:#888;stroke-width:1}.swingn{fill:none;stroke:#26a;stroke-width:1.5;stroke-dasharray:6 3}
+.dim{stroke:#333;stroke-width:1}
+text{font-family:Helvetica,Arial,sans-serif}
+.t{font-size:20px;font-weight:bold}.h3{font-size:16px;font-weight:bold}.s{font-size:14px}.s2{font-size:12px;fill:#555}
+.n{font-size:12px;fill:#c33}.q{font-size:14px;fill:#26a}.d{font-size:12px;font-weight:bold}
+.h{font-size:18px;font-weight:bold;fill:#444}.lbl{font-size:13px;fill:#432}.lblg{font-size:14px;fill:#26a;font-weight:bold}
+</style><rect width="1420" height="1010" fill="#fff"/>
+<rect x="137.0" y="878.2" width="176.8" height="49.8" class="wall" />
+<rect x="421.6" y="878.2" width="226.6" height="49.8" class="wall" />
+<rect x="804.0" y="878.2" width="178.0" height="49.8" class="wall" />
+<rect x="137.0" y="226.1" width="49.7" height="652.1" class="wall" />
+<rect x="137.0" y="166.1" width="453.8" height="60.0" class="wall" />
+<rect x="688.0" y="166.1" width="294.0" height="60.0" class="wall" />
+<rect x="880.8" y="863.2" width="59.9" height="15.0" class="wall" />
+<rect x="880.8" y="226.1" width="59.9" height="349.3" class="wall" />
+<rect x="482.8" y="226.1" width="30.0" height="72.0" class="wall" />
+<rect x="482.8" y="408.4" width="30.0" height="144.0" class="wall" />
+<rect x="313.7" y="878.2" width="107.9" height="49.8" class="win" />
+<rect x="648.2" y="878.2" width="155.9" height="49.8" class="win" />
+<line x1="313.7" y1="903.1" x2="421.6" y2="903.1" class="thin"/>
+<line x1="648.2" y1="903.1" x2="804.0" y2="903.1" class="thin"/>
+<text x="367.6" y="948.4" class="s2" text-anchor="middle">Fenster</text>
+<text x="726.4" y="948.4" class="s2" text-anchor="middle">Fenstertür</text>
+<rect x="577.6" y="226.1" width="13.2" height="2.9" class="zarge" />
+<rect x="688.0" y="226.1" width="9.6" height="2.9" class="zarge" />
+<path d="M590.8,226.1 L590.8,323.3 A97.2,97.2 0 0 0 688.0,226.1" class="swing"/>
+<rect x="586.0" y="226.1" width="4.8" height="97.2" class="leaf" />
+<rect x="513.0" y="226.4" width="61.0" height="65.6" class="cab" />
+<text x="543.5" y="253.6" class="lbl" text-anchor="middle">Besen-</text>
+<text x="543.5" y="270.4" class="lbl" text-anchor="middle">schrank</text>
+<text x="543.5" y="284.8" class="s2" text-anchor="middle">51 × 55</text>
+<rect x="699.4" y="166.1" width="107.9" height="60.0" class="gone_o" />
+<text x="752.8" y="199.6" class="n" text-anchor="middle">Tür laut Plan</text>
+<text x="934.0" y="118.0" class="h" text-anchor="middle">Flur</text>
+<rect x="186.6" y="533.2" width="296.2" height="19.2" class="gone" />
+<text x="250.0" y="570.4" class="n" text-anchor="start">Wand Speis/Essen (16) entfällt</text>
+<rect x="482.8" y="552.4" width="30.0" height="15.4" class="gone" />
+<rect x="186.9" y="226.4" width="295.7" height="71.8" class="shelf" />
+<line x1="260.8" y1="298.1" x2="260.8" y2="226.4" class="div"/>
+<line x1="334.7" y1="298.1" x2="334.7" y2="226.4" class="div"/>
+<line x1="408.6" y1="298.1" x2="408.6" y2="226.4" class="div"/>
+<text x="334.7" y="268.0" class="lbl" text-anchor="middle">A  Regal offen, 60 tief, bis Decke</text>
+<text x="334.7" y="352.0" class="lblg" text-anchor="middle">Gang 91,9 – Westende frei</text>
+<rect x="186.9" y="408.4" width="295.7" height="72.0" class="shelf" />
+<line x1="260.8" y1="480.4" x2="260.8" y2="408.4" class="div"/>
+<line x1="334.7" y1="480.4" x2="334.7" y2="408.4" class="div"/>
+<line x1="408.6" y1="480.4" x2="408.6" y2="408.4" class="div"/>
+<text x="334.7" y="448.0" class="lbl" text-anchor="middle">B  Regal offen zum Gang, 60, bis Decke</text>
+<rect x="186.9" y="480.4" width="295.7" height="72.0" class="cab" />
+<line x1="186.9" y1="480.4" x2="482.6" y2="480.4" class="back"/>
+<line x1="187.5" y1="553.8" x2="260.2" y2="553.8" class="front"/>
+<line x1="261.4" y1="553.8" x2="334.1" y2="553.8" class="front"/>
+<line x1="260.8" y1="552.4" x2="260.8" y2="480.4" class="div"/>
+<line x1="335.3" y1="553.8" x2="408.0" y2="553.8" class="front"/>
+<line x1="334.7" y1="552.4" x2="334.7" y2="480.4" class="div"/>
+<line x1="409.2" y1="553.8" x2="482.0" y2="553.8" class="front"/>
+<line x1="408.6" y1="552.4" x2="408.6" y2="480.4" class="div"/>
+<text x="334.7" y="520.0" class="lbl" text-anchor="middle">C  Schrank, Türen → Esstisch, 60, bis Decke</text>
+<line x1="186.9" y1="298.1" x2="482.6" y2="298.1" class="openf"/>
+<line x1="186.9" y1="408.4" x2="482.6" y2="408.4" class="openf"/>
+<text x="244.0" y="382.0" class="h" text-anchor="middle">Speis</text>
+<rect x="482.8" y="408.4" width="30.0" height="83.9" class="gone_o" />
+<text x="497.8" y="466.0" class="n" text-anchor="middle" transform="rotate(-90 497.8 466.0)">alte Tür → zu</text>
+<line x1="519.4" y1="536.8" x2="519.4" y2="293.8" class="rail"/>
+<rect x="513.4" y="294.4" width="4.2" height="120.0" class="slide" />
+<rect x="513.4" y="414.4" width="4.2" height="120.0" class="slideo" />
+<line x1="533.2" y1="322.0" x2="533.2" y2="478.0" class="arrow"/>
+<text x="542.8" y="373.6" class="q2" text-anchor="start">Schiebetür 100, Küchenseite</text>
+<text x="542.8" y="391.6" class="q2" text-anchor="start">schiebt nach links (von der</text>
+<text x="542.8" y="409.6" class="q2" text-anchor="start">Küche aus) vor die Wand</text>
+<rect x="811.2" y="340.0" width="69.4" height="151.2" class="kitold" />
+<rect x="811.2" y="239.2" width="69.4" height="96.0" class="kitold" />
+<rect x="700.0" y="226.4" width="180.6" height="69.4" class="kitn" />
+<rect x="719.2" y="236.8" width="60.0" height="51.6" class="kitl" />
+<rect x="642.4" y="491.2" width="238.2" height="70.8" class="kitm" />
+<rect x="811.2" y="416.8" width="69.4" height="74.4" class="kitm" />
+<rect x="811.2" y="316.0" width="69.4" height="96.0" class="kitm" />
+<text x="846.4" y="366.4" class="s2" text-anchor="middle">Herd</text>
+<circle cx="737.2" cy="539.2" r="9.6" class="kitl"/>
+<circle cx="737.2" cy="512.8" r="7.2" class="kitl"/>
+<circle cx="785.2" cy="539.2" r="7.2" class="kitl"/>
+<circle cx="785.2" cy="512.8" r="10.8" class="kitl"/>
+<text x="748.0" y="418.0" class="h" text-anchor="middle">Küche</text>
+<rect x="841.2" y="226.1" width="39.6" height="35.9" class="kaminup" />
+<text x="860.8" y="248.8" class="s2" text-anchor="middle">Abzug</text>
+<rect x="365.4" y="698.8" width="430.3" height="87.6" class="tab" />
+<line x1="580.0" y1="786.4" x2="580.0" y2="698.8" class="thin"/>
+<rect x="378.4" y="648.4" width="50.4" height="50.4" class="chair" />
+<rect x="378.4" y="786.4" width="50.4" height="50.4" class="chair" />
+<rect x="446.8" y="648.4" width="50.4" height="50.4" class="chair" />
+<rect x="446.8" y="786.4" width="50.4" height="50.4" class="chair" />
+<rect x="516.4" y="648.4" width="50.4" height="50.4" class="chair" />
+<rect x="516.4" y="786.4" width="50.4" height="50.4" class="chair" />
+<rect x="595.6" y="648.4" width="50.4" height="50.4" class="chair" />
+<rect x="595.6" y="786.4" width="50.4" height="50.4" class="chair" />
+<rect x="662.8" y="648.4" width="50.4" height="50.4" class="chair" />
+<rect x="662.8" y="786.4" width="50.4" height="50.4" class="chair" />
+<rect x="732.4" y="648.4" width="50.4" height="50.4" class="chair" />
+<rect x="732.4" y="786.4" width="50.4" height="50.4" class="chair" />
+<rect x="314.8" y="717.4" width="50.4" height="50.4" class="chair" />
+<rect x="796.0" y="717.4" width="50.4" height="50.4" class="chair" />
+<text x="580.0" y="751.6" class="s" text-anchor="middle">Esstisch</text>
+<path d="M260.8,552.4 L260.8,626.3 A73.9,73.9 0 0 0 186.9,552.4" class="swing"/>
+<line x1="100.0" y1="226.1" x2="100.0" y2="552.4" class="dim"/>
+<line x1="92.8" y1="233.3" x2="107.2" y2="218.9" class="dim"/>
+<line x1="92.8" y1="305.3" x2="107.2" y2="290.9" class="dim"/>
+<line x1="92.8" y1="415.6" x2="107.2" y2="401.2" class="dim"/>
+<line x1="92.8" y1="487.6" x2="107.2" y2="473.2" class="dim"/>
+<line x1="92.8" y1="559.6" x2="107.2" y2="545.2" class="dim"/>
+<text x="90.4" y="262.1" class="d" text-anchor="middle" transform="rotate(-90 90.4 262.1)">60</text>
+<text x="90.4" y="353.3" class="d" text-anchor="middle" transform="rotate(-90 90.4 353.3)">91,9</text>
+<text x="90.4" y="444.4" class="d" text-anchor="middle" transform="rotate(-90 90.4 444.4)">60</text>
+<text x="90.4" y="516.4" class="d" text-anchor="middle" transform="rotate(-90 90.4 516.4)">60</text>
+<line x1="70.0" y1="226.1" x2="70.0" y2="552.4" class="dim"/>
+<line x1="62.8" y1="233.3" x2="77.2" y2="218.9" class="dim"/>
+<line x1="62.8" y1="559.6" x2="77.2" y2="545.2" class="dim"/>
+<text x="60.4" y="389.3" class="d" text-anchor="middle" transform="rotate(-90 60.4 389.3)">271,9</text>
+<line x1="186.6" y1="144.4" x2="482.8" y2="144.4" class="dim"/>
+<line x1="179.4" y1="151.6" x2="193.8" y2="137.2" class="dim"/>
+<line x1="475.6" y1="151.6" x2="490.0" y2="137.2" class="dim"/>
+<text x="334.7" y="137.2" class="d" text-anchor="middle">246,8 lichte Breite Speis</text>
+<line x1="512.8" y1="144.4" x2="880.8" y2="144.4" class="dim"/>
+<line x1="505.6" y1="151.6" x2="520.0" y2="137.2" class="dim"/>
+<line x1="570.4" y1="151.6" x2="584.8" y2="137.2" class="dim"/>
+<line x1="690.4" y1="151.6" x2="704.8" y2="137.2" class="dim"/>
+<line x1="834.0" y1="151.6" x2="848.4" y2="137.2" class="dim"/>
+<line x1="873.6" y1="151.6" x2="888.0" y2="137.2" class="dim"/>
+<text x="545.2" y="137.2" class="d" text-anchor="middle">54</text>
+<text x="637.6" y="137.2" class="d" text-anchor="middle">100 Zarge</text>
+<text x="769.4" y="137.2" class="d" text-anchor="middle">120</text>
+<text x="861.0" y="137.2" class="d" text-anchor="middle">33</text>
+<line x1="512.8" y1="114.4" x2="688.0" y2="114.4" class="dim"/>
+<line x1="505.6" y1="121.6" x2="520.0" y2="107.2" class="dim"/>
+<line x1="583.6" y1="121.6" x2="598.0" y2="107.2" class="dim"/>
+<line x1="680.8" y1="121.6" x2="695.2" y2="107.2" class="dim"/>
+<text x="551.8" y="107.2" class="d" text-anchor="middle">65</text>
+<text x="639.4" y="107.2" class="d" text-anchor="middle">81 licht</text>
+<line x1="512.8" y1="84.4" x2="880.8" y2="84.4" class="dim"/>
+<line x1="505.6" y1="91.6" x2="520.0" y2="77.2" class="dim"/>
+<line x1="873.6" y1="91.6" x2="888.0" y2="77.2" class="dim"/>
+<text x="696.8" y="77.2" class="d" text-anchor="middle">306,7 Küche innen</text>
+<line x1="448.0" y1="552.4" x2="448.0" y2="648.4" class="dim"/>
+<line x1="440.8" y1="559.6" x2="455.2" y2="545.2" class="dim"/>
+<line x1="440.8" y1="655.6" x2="455.2" y2="641.2" class="dim"/>
+<text x="438.4" y="600.4" class="d" text-anchor="middle" transform="rotate(-90 438.4 600.4)">80 bis Stuhl</text>
+<line x1="797.2" y1="412.0" x2="797.2" y2="316.0" class="dim"/>
+<line x1="790.0" y1="419.2" x2="804.4" y2="404.8" class="dim"/>
+<line x1="790.0" y1="323.2" x2="804.4" y2="308.8" class="dim"/>
+<text x="787.6" y="364.0" class="d" text-anchor="middle" transform="rotate(-90 787.6 364.0)">Herd 80</text>
+<line x1="797.2" y1="488.8" x2="797.2" y2="416.8" class="dim"/>
+<line x1="790.0" y1="496.0" x2="804.4" y2="481.6" class="dim"/>
+<line x1="790.0" y1="424.0" x2="804.4" y2="409.6" class="dim"/>
+<text x="787.6" y="452.8" class="d" text-anchor="middle" transform="rotate(-90 787.6 452.8)">60</text>
+<line x1="700.0" y1="305.2" x2="880.6" y2="305.2" class="dim"/>
+<line x1="692.8" y1="312.4" x2="707.2" y2="298.0" class="dim"/>
+<line x1="873.4" y1="312.4" x2="887.8" y2="298.0" class="dim"/>
+<text x="790.3" y="298.0" class="d" text-anchor="middle">≈ 150 Spülzeile bis ins Eck</text>
+<text x="1085" y="60" class="t">Speis / Küche – v6</text>
+<text x="1085" y="86" class="s2">vereinbart: Halbinsel bleibt, Ostzeile 60</text>
+<text x="1085" y="107" class="s2">Maßstab ≈ 1:83 · Maße in cm · Norden oben</text>
+<text x="1085" y="128" class="s2">Küchentür aus Foto geschätzt, ±5 cm</text>
+<text x="1085" y="170" class="h3">Speis, von der Flurwand nach Süden:</text>
+<text x="1085" y="196" class="s">A  Regal offen, 60 tief, bis zur Decke</text>
+<text x="1085" y="217" class="s">    Gang 91,9, Westende frei</text>
+<text x="1085" y="238" class="s">B  Regal offen zum Gang, 60, bis zur Decke</text>
+<text x="1085" y="259" class="s">C  Schrank, Türen zum Esstisch, 60, bis Decke,</text>
+<text x="1085" y="280" class="s">    Rücken an Rücken mit B, statt Wand Speis/Essen</text>
+<text x="1085" y="301" class="s">Wand Speis/Küche endet bündig mit C (y 3,13)</text>
+<text x="1085" y="343" class="h3">Küche:</text>
+<text x="1085" y="369" class="s">Küchentür wie Bestand, öffnet in die Küche</text>
+<text x="1085" y="390" class="s">Besenschrank hinter der offenen Tür, 51 × 55</text>
+<text x="1085" y="411" class="s">Speis: Schiebetür 100, Küchenseite, nach links</text>
+<text x="1085" y="432" class="s">Herd + Ostzeile 60 nach Süden (grau gepunktet:</text>
+<text x="1085" y="453" class="s">    heutige Lage laut Plan)</text>
+<text x="1085" y="474" class="s">Spülzeile rechts der Tür bis ins Eck ≈ 150</text>
+<text x="1085" y="495" class="s">    (Abzug erst ab ≈ 1,8 m, gestrichelt)</text>
+<text x="1085" y="516" class="s">Ofenrohr vom Herd zum Abzug geführt</text>
+<text x="1085" y="537" class="s">Halbinsel bleibt; Ostzeile 60, Herd daneben</text>
+<rect x="1085" y="555" width="34" height="16" class="wall"/>
+<text x="1129" y="568" class="s">Wand Bestand</text>
+<rect x="1085" y="579" width="34" height="16" class="gone"/>
+<text x="1129" y="592" class="s">entfällt / laut Plan, passt nicht</text>
+<rect x="1085" y="603" width="34" height="16" class="shelf"/>
+<text x="1129" y="616" class="s">Regal offen (neu)</text>
+<rect x="1085" y="627" width="34" height="16" class="cab"/>
+<text x="1129" y="640" class="s">Schrank mit Türen (neu)</text>
+<rect x="1085" y="651" width="34" height="16" class="kitn"/>
+<text x="1129" y="664" class="s">Spülzeile (neu)</text>
+<rect x="1085" y="675" width="34" height="16" class="slide"/>
+<text x="1129" y="688" class="s">Schiebetür (neu)</text>
+<rect x="1085" y="699" width="34" height="16" class="kitm"/>
+<text x="1129" y="712" class="s">Küche verschoben</text>
+<rect x="1085" y="723" width="34" height="16" class="kitold"/>
+<text x="1129" y="736" class="s">Küche laut Plan</text>
+</svg>

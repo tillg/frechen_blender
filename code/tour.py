@@ -51,9 +51,9 @@ ROUTE = [
     turn((8.8, 1.74), L),                                                 # passage to the Essen
     ("path", [(13.1, 2.2), (11.2, 1.9), (9.6, 2.3), (8.3, 2.75), (3.9, 2.75), (3.35, 1.6)], EYE, WALK),  # end of the table
     turn((8.0, 3.3), L), ("hold", PAUSE),                                 # passage to the Stube + Küche
-    ("path", [(3.35, 1.6), (3.8, 2.72), (5.0, 2.7), (5.95, 2.72), (6.0, 3.5), (5.95, 4.1)], EYE, WALK),
-    turn((3.3, 4.6)),                                                     # look into the Speis
-    ("path", [(5.95, 4.1), (6.6, 4.5), (7.4, 5.0), (7.5, 5.6), (7.5, 6.9), (5.3, 7.25), (4.87, 8.0),
+    ("path", [(3.35, 1.6), (3.8, 2.72), (5.0, 2.7), (5.95, 2.72), (6.05, 3.6), (5.95, 4.79)], EYE, WALK),
+    turn((3.0, 4.79)),                                                    # down the Speis aisle
+    ("path", [(5.95, 4.79), (6.55, 4.6), (6.55, 6.9), (5.3, 7.25), (4.87, 8.0),   # Küche door to the Flur
               (4.87, 9.25), (3.45, 9.8), (2.5, 10.3), (1.2, 10.35)], EYE, WALK),   # Großeltern: into their Bad
     turn((0.6, 12.2, 1.2)), ("hold", PAUSE),                              # the walk-in shower
     turn((0.79, 8.9, 0.6), L), ("hold", PAUSE),                           # the WC in the niche

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import ofen  # the stoves (code/ofen.py); it uses the primitives below via house_core.*
 import desk  # the Büro desk sub-model (code/desk.py), the same way
 import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
+import kueche  # the Küche sub-model (code/kueche.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -581,16 +582,17 @@ def build_eg():
     interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
     # Großeltern: the Bad is open to the bedroom from its niche front (code/bad.py) to the shaft
     interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False, "glazed"), (9.856, 12.33)])   # back Windfang
-    interior(c, 2.358, 10.804, 5.849, 6.349, [(7.045, 7.944, 1, "a")],   # Küche door (opens to the Flur)
+    interior(c, 2.358, 10.804, 5.849, 6.349, [(6.10, 6.96, -1, "a", False)],   # Küche door as built (photo,
+             # speis_kueche_v6.svg): hinged west, opened 90 deg into the Küche beside the Besenschrank
              ops=[ofen.back_opening()])                                   # the Ofen's back door (Flur)
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
-    interior(c, 5.240, 5.490, 3.002, 5.849, [(3.631, 4.580, -1, "a", False)])   # Speis door (plan)
+    interior(c, 5.240, 5.490, 3.13, 5.849, [(4.33, 5.249)])  # Speis / Küche: ends at the cabinet C, open
+    speis()                                                 # over the aisle (sliding leaf on the Küche side)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
-    interior(c, 2.772, 5.240, 3.13, 3.29)                   # new: Speis / Essen
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
     ofen.ofen_im_haus()
     ofen.werkstattofen("EG", 9.351 + 0.10 + 0.21 * 2 ** 0.5, 8.876 + 0.10 + 0.21 * 2 ** 0.5, 0.0, -45)   # Bibliothek:
@@ -603,7 +605,7 @@ def build_eg():
         chair("EG", x, 0.97, 0, 1)
     chair("EG", 4.05, 1.545, 1, 0)
     chair("EG", 8.06, 1.545, -1, 0)
-    kitchen()
+    kueche.kueche_neu("EG", *kueche.KUECHE_AT)               # sink run, Herd, peninsula, Besenschrank
     box(c, "EG_Waende", "Putz", 2.04, 2.358, 12.12, 12.471, z0, z1)   # shaft in the Bad Großeltern (plan 2026-10)
 
 
@@ -909,66 +911,46 @@ def chair(coll, cx, cy, fx, fy):
         prism(coll, o, "FichteZ", PB, pts, 0, 0.035, r)
 
 
-def kitchen():
-    """Küche after the EG plan: sink run on the north wall, run on the east wall and a peninsula
-    with the cooktop towards the dining table. Spruce carcasses and doors on a dark plinth, granite
-    worktop (one L across run and peninsula), steel sink and tap, black cooktop. At the north end
-    of the east run (plan: flue in the NE corner) the Wamsler wood cooker under an old steel hood;
-    wall cabinets over the sink run and over the east run beside the hood."""
-    o, zp, zc, zt = "EG_Kueche", 0.10, 0.86, 0.90                 # plinth / carcass / worktop top
-    xw, yn, xe = 5.492, 5.847, 8.555                              # wall faces (2 mm clear)
-    hy0, hy1 = 4.94, 5.74                                         # the Herd (80 cm) along the east wall
-    # carcasses (x0, x1, y0, y1, plinth inset W/E/S/N)
-    for x0, x1, y0, y1, pl in ((xw, 6.70, 5.269, yn, (0, 0.06, 0.04, 0)),          # north run
-                               (6.57, xe, 3.05, 3.64, (0.06, 0, 0.06, 0.06)),      # peninsula
-                               (7.977, xe, 3.64, hy0 - 0.04, (0.06, 0, 0, 0.06))):  # east run
-        box("EG", o, "FichteZ", x0, x1, y0, y1, zp, zc)
-        box("EG", o, "Fuge", x0 + pl[0], x1 - pl[1], y0 + pl[2], y1 - pl[3], 0.005, zp)
-    fronts = [("x", 5.249, +1, (xw, 6.10, 6.70)),          # (frame axis, room face, side, door cuts)
-              ("x", 3.66, -1, (6.57, 7.165, 7.957)),
-              ("y", 7.957, +1, (3.663, 4.08, 4.49, hy0 - 0.04))]
-    for ax, f, s, cuts in fronts:
-        P = frame(ax)
-        for a, b in zip(cuts[:-1], cuts[1:]):
-            r = random.random()
-            lbox("EG", o, "FichteZ", P, a + 0.003, b - 0.003, f, f + s * 0.02, zp + 0.005, zc - 0.005, r)
-            m = (a + b) / 2
-            lbox("EG", o, "Metall", P, m - 0.07, m + 0.07, f - s * 0.025, f, zc - 0.07, zc - 0.055)
-    xy_prism("EG", o, "Granit", [(xw, 5.229), (6.72, 5.229), (6.72, yn), (xw, yn)], zc, zt)
-    xy_prism("EG", o, "Granit", [(6.55, 3.03), (xe, 3.03), (xe, hy0 - 0.02), (7.937, hy0 - 0.02),
-                                 (7.937, 3.68), (6.55, 3.68)], zc, zt)
-    box("EG", o, "Metall", 5.58, 6.04, 5.30, 5.76, zt, zt + 0.003)                 # sink
-    box("EG", o, "Eisen", 5.61, 6.01, 5.33, 5.70, zt + 0.003, zt + 0.004)
-    box("EG", o, "Metall", 5.80, 5.83, 5.77, 5.80, zt, zt + 0.26)                  # tap
-    box("EG", o, "Metall", 5.805, 5.825, 5.60, 5.77, zt + 0.235, zt + 0.255)
-    box("EG", o, "Eisen", 7.18, 7.95, 3.12, 3.58, zt, zt + 0.005)                  # cooktop
-    for cx, cy, rr in ((7.36, 3.24, 0.08), (7.36, 3.46, 0.06), (7.76, 3.24, 0.06), (7.76, 3.46, 0.09)):
-        xy_prism("EG", o, "Metall", [(cx + rr * math.cos(math.pi * i / 8), cy + rr * math.sin(math.pi * i / 8))
-                                     for i in range(16)], zt + 0.005, zt + 0.006)
-    rng = random.Random(14)                       # own stream: the house after this keeps its shading
-    ofen.wamsler("EG", 7.972, hy0, rng)
-    # hood of the old form: rolled lip, straight skirt with a rail, canopy narrowing to the stack
-    h, xf, ym = "EG_Haube", xe - 0.55, (hy0 + hy1) / 2
-    ya, yb, rh = ym - 0.43, ym + 0.43, rng.random()
-    box("EG", h, "Metall", xf - 0.01, xe, ya - 0.01, yb + 0.01, 1.62, 1.64, rh)
-    box("EG", h, "Metall", xf, xe, ya, yb, 1.64, 1.76, rh)
-    v = [(xf, ya, 1.76), (xe, ya, 1.76), (xe, yb, 1.76), (xf, yb, 1.76),
-         (xe - 0.22, ym - 0.15, 2.04), (xe, ym - 0.15, 2.04), (xe, ym + 0.15, 2.04), (xe - 0.22, ym + 0.15, 2.04)]
-    add("EG", h, "Metall", v, [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], rh)
-    box("EG", h, "Metall", xe - 0.20, xe, ym - 0.135, ym + 0.135, 2.04, Z_EG_TOP + 0.02, rh)   # into the ceiling
-    prism("EG", h, "Metall", frame("x"), [(xf - 0.04 + 0.01 * math.cos(math.pi * i / 4), 1.70 + 0.01 * math.sin(math.pi * i / 4))
-                                          for i in range(8)], ya + 0.02, yb - 0.02, rng.random())   # rail
-    for y in (ya + 0.05, yb - 0.05):
-        box("EG", h, "Metall", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705, rng.random())
-    # wall cabinets: north wall over the sink run, east wall from the peninsula to the hood
-    zu0, zu1, du = 1.45, 2.20, 0.35
-    for ax, wf, cuts in (("x", yn, (xw, 6.10, 6.70)), ("y", xe, (3.05, 3.66, 4.27, ya - 0.03))):
-        P, f = frame(ax), wf - du - 0.02
-        lbox("EG", o, "FichteZ", P, cuts[0], cuts[-1], wf - du, wf, zu0, zu1, rng.random())
-        for a, b in zip(cuts[:-1], cuts[1:]):
-            lbox("EG", o, "FichteZ", P, a + 0.003, b - 0.003, f, f + 0.02, zu0 + 0.005, zu1 - 0.005, rng.random())
-            m = (a + b) / 2
-            lbox("EG", o, "Metall", P, m - 0.07, m + 0.07, f - 0.025, f, zu0 + 0.055, zu0 + 0.07, rng.random())
+def speis():
+    """Speis after the agreed drawing input/2026-11-09 input/speis_kueche_v6.svg, from the Flur wall
+    south: shelf A (60, open), the aisle (91.9, west end free), shelf B (60, open to the aisle) and,
+    back to back with it, cabinet C (60, doors to the Essen) in place of the former Speis/Essen
+    wall; all to the ceiling, spruce like the kitchen. The Speis door: a sliding leaf on the Küche
+    side of the wall, slid open to the south (left as seen from the Küche), under its rail. Own
+    random stream, like the sub-models."""
+    c, o, rng = "EG", "EG_Speis", random.Random(9)
+    x0, x1, top = 2.774, 5.238, Z_EG_TOP - 0.003
+
+    def shelves(ya, yb):                     # uprights at the ends and about every 0.9 m, seven boards
+        n = round((x1 - x0) / 0.9)
+        for k in range(n + 1):
+            ua = x0 + (x1 - x0 - 0.02) * k / n
+            box(c, o, "FichteZ", ua, ua + 0.02, ya, yb, 0.012, top, rng.random())
+        for zb in (0.10, 0.48, 0.86, 1.24, 1.62, 2.00, 2.38):
+            box(c, o, "FichteX", x0 + 0.002, x1 - 0.002, ya + 0.005, yb - 0.005, zb - 0.025, zb, rng.random())
+
+    shelves(5.249, 5.847)                                                     # A
+    shelves(3.732, 4.33)                                                      # B
+    yd, yc = 3.13, 3.15                                                       # C: doors / carcass front
+    box(c, o, "FichteZ", x0, x1, yc, 3.728, 0.10, top, rng.random())
+    box(c, o, "Fuge", x0, x1, yc + 0.06, 3.728, 0.005, 0.10, rng.random())
+    n = 4
+    for k in range(n):
+        a, b = x0 + (x1 - x0) * k / n, x0 + (x1 - x0) * (k + 1) / n
+        for za, zb in ((0.105, 1.995), (2.005, top - 0.003)):               # tall door, top door
+            box(c, o, "FichteZ", a + 0.003, b - 0.003, yd, yc, za, zb, rng.random())
+        hx = b - 0.06 if k % 2 == 0 else a + 0.045
+        box(c, o, "Metall", hx, hx + 0.015, yd - 0.025, yd, 0.95, 1.10, rng.random())
+    # sliding leaf on the Küche face (x 5.49), 1.00 wide, open over the wall south of the opening
+    ys, tc, LT, zl, LH = 3.28, 5.52, 0.04, 0.005, DOOR_H + 0.025
+    rl = 0.8 + 0.2 * rng.random()
+
+    def part(w0, w1, d0, d1, za, zb, r=rl, m="Innentuer"):
+        box(c, "EG_Innentueren", m, tc + d0, tc + d1, ys + w0, ys + w1, zl + za, zl + zb, r)
+
+    six_panel_leaf(part, 1.00, LH)
+    LEAVES.append((c, [(tc - LT / 2, ys, zl), (tc + LT / 2, ys + 1.00, zl + LH)]))
+    box(c, "EG_Innentueren", "Metall", 5.495, 5.56, 3.26, 5.29, zl + LH + 0.005, zl + LH + 0.045, rng.random())   # rail
 
 
 # ---------------------------------------------------------------- stairs
@@ -1629,18 +1611,6 @@ def bunk_bed(c, x0, x1, y0, y1, ladder, z):
         box(c, o, "FichteY", xl + 0.005, xl + 0.035, y1 - 0.45, y1 - 0.12, zr, zr + 0.03)
 
 
-def shelf(c, x0, x1, y0, y1, ax):
-    """Open shelving along axis ax: uprights at the ends and about every 0.9 m, six boards."""
-    o, P, G = c + "_Moebel", frame(ax), _grain(ax)
-    u0, u1, t0, t1 = (x0, x1, y0, y1) if ax == "x" else (y0, y1, x0, x1)
-    n = max(1, round((u1 - u0) / 0.9))
-    for k in range(n + 1):
-        ua = u0 + (u1 - u0 - 0.02) * k / n
-        lbox(c, o, "FichteZ", P, ua, ua + 0.02, t0, t1, 0.012, 2.0)
-    for zb in (0.10, 0.48, 0.86, 1.24, 1.62, 1.98):
-        lbox(c, o, G, P, u0 + 0.002, u1 - 0.002, t0 + 0.005, t1 - 0.005, zb - 0.025, zb)
-
-
 def ngon_x(c, o, m, xa, xb, yc, zc, r, k=20):
     """Disc of radius r in the y-z plane, from x = xa to xb."""
     v = [(x, yc + r * math.cos(2 * math.pi * i / k), zc + r * math.sin(2 * math.pi * i / k))
@@ -1892,7 +1862,7 @@ def sitzecke():
 
 def build_furniture():
     zo = Z_OG
-    # EG: Großeltern, Musikraum, Büro, Speis (dining table and chairs: build_eg)
+    # EG: Großeltern, Musikraum, Büro (dining table and chairs, Speis built-ins: build_eg)
     bed("EG", 3.98, 6.022, 9.89, 11.75, "E", n=2)
     nightstand("EG", 5.62, 6.02, 11.77, 12.25)
     nightstand("EG", 5.62, 6.02, 9.41, 9.87)
@@ -1900,9 +1870,6 @@ def build_furniture():
     desk.desk_neu("EG", *desk.DESK_AT)                      # between the two north french doors, with its devices
     bookcase()
     desk.stuhl("EG", *desk.DESK_AT)
-    shelf("EG", 2.774, 3.34, 3.292, 5.847, "y")
-    shelf("EG", 3.342, 4.67, 5.22, 5.847, "x")
-    shelf("EG", 4.672, 5.238, 4.63, 5.847, "y")
     # OG: Yoga, Jugend (two bunk beds instead of the plan's double bed), Schlafen NE, SW, SE, HWR
     bed("OG", 0.86, 2.45, 8.862, 10.85, "S", zo, n=2)
     bunk_bed("OG", 6.22, 7.17, 8.90, 10.96, "E", zo)
@@ -2119,6 +2086,17 @@ def build_desk():
     desk.stuhl("Desk", 0.0, 0.0)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
                      [], None, set(), dims, turn=dict(TURN))
+
+
+def build_kueche():
+    """The Küche sub-model alone (web/kueche.html): its furnishings and the flue box at the origin
+    (the room's inner NW corner), plus its dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear()
+    LEAVES.clear()
+    random.seed(22)
+    dims = kueche.kueche_neu()
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
+                     [], None, set(), dims, fires=list(FIRES))
 
 
 def build_bad():

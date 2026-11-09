@@ -20,7 +20,7 @@
    0.0,
    0.0
   ],
-  "rnd": "ab6a70fde3233998",
+  "rnd": "6116ee6ce82914c9",
   "verts": 4416
  },
  "Balkon_EG_Nord": {
@@ -42,7 +42,7 @@
    0.0,
    0.0
   ],
-  "rnd": "7340de555bc57699",
+  "rnd": "94864a5a35fdac39",
   "verts": 7448
  },
  "Balkon_OG_Nord": {
@@ -66,7 +66,7 @@
    0.0,
    0.0
   ],
-  "rnd": "fac1180717d5198c",
+  "rnd": "55621ec34b3914b2",
   "verts": 15252
  },
  "Balkon_OG_Ost": {
@@ -89,7 +89,7 @@
    0.0,
    0.0
   ],
-  "rnd": "e2b55d6cecfda641",
+  "rnd": "29abdd264fc05ef5",
   "verts": 12096
  },
  "Balkon_OG_Sued": {
@@ -113,7 +113,7 @@
    0.0,
    0.0
   ],
-  "rnd": "ee11d76e7bf33e2d",
+  "rnd": "2c0b61d074e983de",
   "verts": 5676
  },
  "Beet_Ost": {
@@ -134,7 +134,7 @@
    0.0,
    0.0
   ],
-  "rnd": "e8c1b77f687b9742",
+  "rnd": "364a581bc99763c3",
   "verts": 8
  },
  "Beet_West": {
@@ -155,7 +155,7 @@
    0.0,
    0.0
   ],
-  "rnd": "3b2043807e352c17",
+  "rnd": "4f4d77bba7e95f84",
   "verts": 8
  },
  "Dach": {
@@ -176,7 +176,7 @@
    0.0,
    0.0
   ],
-  "rnd": "3955f97d48d819e9",
+  "rnd": "ac8ea6c29078d2d2",
   "verts": 16
  },
  "Dach_Anbau": {
@@ -197,7 +197,7 @@
    0.0,
    0.0
   ],
-  "rnd": "1b6a6d4aac854f87",
+  "rnd": "15a4b591c1d2b2be",
   "verts": 12
  },
  "Dach_Sparren": {
@@ -219,7 +219,7 @@
    0.0,
    0.0
   ],
-  "rnd": "438b480a975207f4",
+  "rnd": "253defed2972884b",
   "verts": 448
  },
  "Dach_Untersicht": {
@@ -240,7 +240,7 @@
    0.0,
    0.0
   ],
-  "rnd": "fd486b71e5ef5c29",
+  "rnd": "f0e1cfba1200d228",
   "verts": 904
  },
  "Decke_OG": {
@@ -261,7 +261,7 @@
    0.0,
    0.0
   ],
-  "rnd": "0b5198fc426abc39",
+  "rnd": "a79245c22fe7127b",
   "verts": 16
  },
  "EG_Anbau": {
@@ -286,7 +286,7 @@
    0.0,
    0.0
   ],
-  "rnd": "49bca98da0392005",
+  "rnd": "bd5d520bd8ea8a6f",
   "verts": 696
  },
  "EG_Bildschirm_L": {
@@ -349,7 +349,7 @@
    0.0,
    0.0
   ],
-  "rnd": "5a4c8fbd3b395778",
+  "rnd": "3b27a4102bde3517",
   "verts": 16
  },
  "EG_Bodenbelag": {
@@ -361,7 +361,7 @@
    12.8855,
    0.018
   ],
-  "faces": 4386,
+  "faces": 4416,
   "materials": [
    "FL_Eiche",
    "FL_Kalkstein"
@@ -371,8 +371,8 @@
    0.0,
    0.0
   ],
-  "rnd": "493b98edbcc67e73",
-  "verts": 5848
+  "rnd": "6b86446b16ef1515",
+  "verts": 5888
  },
  "EG_Bodenplatte": {
   "bbox": [
@@ -392,7 +392,7 @@
    0.0,
    0.0
   ],
-  "rnd": "c4d1848f62b8bc66",
+  "rnd": "8f0d75f3a350f279",
   "verts": 16
  },
  "EG_Fenster_Tueren": {
@@ -461,7 +461,7 @@
    0.0,
    0.0
   ],
-  "rnd": "c027c070ebf2429e",
+  "rnd": "82b544b3f969a22f",
   "verts": 2736
  },
  "EG_Geraete": {
@@ -491,10 +491,10 @@
  "EG_Haube": {
   "bbox": [
    7.955,
-   4.9,
+   4.26,
    1.62,
    8.555,
-   5.78,
+   5.14,
    2.42
   ],
   "faces": 46,
@@ -506,7 +506,7 @@
    0.0,
    0.0
   ],
-  "rnd": "1ed7a48abdff281c",
+  "rnd": "a7e20d65560ca950",
   "verts": 64
  },
  "EG_Haustuer": {
@@ -536,10 +536,10 @@
  "EG_Herd": {
   "bbox": [
    7.91961,
-   4.935,
+   4.295,
    0.005,
    8.585,
-   5.745,
+   5.105,
    1.35885
   ],
   "faces": 280,
@@ -554,7 +554,7 @@
    0.0,
    0.0
   ],
-  "rnd": "9f9046213667e117",
+  "rnd": "5d47d1a8e049cc5e",
   "verts": 416
  },
  "EG_Hintertuer": {
@@ -591,7 +591,7 @@
    9.966,
    2.17
   ],
-  "faces": 1524,
+  "faces": 1494,
   "materials": [
    "FL_Eisen",
    "FL_Innentuer",
@@ -603,8 +603,8 @@
    0.0,
    0.0
   ],
-  "rnd": "33cab840553276f8",
-  "verts": 2032
+  "rnd": "2376d05af0338b94",
+  "verts": 1992
  },
  "EG_Kueche": {
   "bbox": [
@@ -615,7 +615,7 @@
    5.847,
    2.2
   ],
-  "faces": 308,
+  "faces": 320,
   "materials": [
    "FL_Eisen",
    "FL_FichteZ",
@@ -628,8 +628,8 @@
    0.0,
    0.0
   ],
-  "rnd": "5305ccea4db773ca",
-  "verts": 444
+  "rnd": "570eb9a0c2dca390",
+  "verts": 460
  },
  "EG_Laeden": {
   "bbox": [
@@ -654,20 +654,19 @@
  },
  "EG_Moebel": {
   "bbox": [
-   2.774,
+   3.98,
    0.49474,
    0.012,
    14.27126,
    12.471,
    2.396
   ],
-  "faces": 3262,
+  "faces": 3106,
   "materials": [
    "FL_Bettwaesche",
    "FL_Boucle",
    "FL_Buecher",
    "FL_FichteX",
-   "FL_FichteY",
    "FL_FichteZ",
    "FL_Keramik",
    "FL_Klavierlack",
@@ -683,8 +682,8 @@
    0.0,
    0.0
   ],
-  "rnd": "2e82679d0c85458b",
-  "verts": 4376
+  "rnd": "144842b73b24da2c",
+  "verts": 4168
  },
  "EG_Ofen_Bank": {
   "bbox": [
@@ -706,7 +705,7 @@
    0.0,
    0.0
   ],
-  "rnd": "667b05d69c982083",
+  "rnd": "5cc15623424d32df",
   "verts": 144
  },
  "EG_Ofen_Bett": {
@@ -729,7 +728,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f5e856be8510d18a",
+  "rnd": "fd25ac4998ecbb5c",
   "verts": 44
  },
  "EG_Ofen_Bettrand": {
@@ -751,7 +750,7 @@
    0.0,
    0.0
   ],
-  "rnd": "9ba0fb316bba6d9d",
+  "rnd": "c8c5608e11fe18c8",
   "verts": 24
  },
  "EG_Ofen_Bettzeug": {
@@ -795,7 +794,7 @@
    0.0,
    0.0
   ],
-  "rnd": "26040ee054b631e0",
+  "rnd": "ed7cb3203d6977fc",
   "verts": 64
  },
  "EG_Ofen_Hintertuer": {
@@ -817,7 +816,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f0f4b36209a0d4f8",
+  "rnd": "c92cd17622756197",
   "verts": 48
  },
  "EG_Ofen_Koerper": {
@@ -838,7 +837,7 @@
    0.0,
    0.0
   ],
-  "rnd": "d0ea3cb7ce15732b",
+  "rnd": "60405a7ab13471f2",
   "verts": 465
  },
  "EG_Ofen_Lampe": {
@@ -862,7 +861,7 @@
    0.0,
    0.0
   ],
-  "rnd": "a6fa4303d8973d6c",
+  "rnd": "20a1a2ef7049d6d3",
   "verts": 552
  },
  "EG_Raumnamen": {
@@ -906,7 +905,7 @@
    0.0,
    0.0
   ],
-  "rnd": "14c57aadc78a32f7",
+  "rnd": "91bac06ba6f6c13e",
   "verts": 836
  },
  "EG_Schrank": {
@@ -931,6 +930,30 @@
   "rnd": "b12f69cf0e24cbf1",
   "verts": 128
  },
+ "EG_Speis": {
+  "bbox": [
+   2.774,
+   3.105,
+   0.005,
+   5.238,
+   5.847,
+   2.397
+  ],
+  "faces": 216,
+  "materials": [
+   "FL_FichteX",
+   "FL_FichteZ",
+   "FL_Fuge",
+   "FL_Metall"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "8af0349e6a1840e3",
+  "verts": 288
+ },
  "EG_Stuehle": {
   "bbox": [
    3.78604,
@@ -951,7 +974,7 @@
    0.0,
    0.0
   ],
-  "rnd": "39cb76dffea59f74",
+  "rnd": "0daf888957726750",
   "verts": 1590
  },
  "EG_Tisch": {
@@ -974,7 +997,7 @@
    0.0,
    0.0
   ],
-  "rnd": "1ec42f240c27bfb4",
+  "rnd": "17f99a69cc3fdabd",
   "verts": 304
  },
  "EG_Treppe": {
@@ -996,7 +1019,7 @@
    0.0,
    0.0
   ],
-  "rnd": "931b1a9feff0b31a",
+  "rnd": "630375b22b793224",
   "verts": 248
  },
  "EG_Waende": {
@@ -1017,7 +1040,7 @@
    0.0,
    0.0
   ],
-  "rnd": "8a6c85e0117ed33a",
+  "rnd": "b68426845019154c",
   "verts": 1068
  },
  "EG_Werkstattofen": {
@@ -1039,7 +1062,7 @@
    0.0,
    0.0
   ],
-  "rnd": "bf72a38ea96754f4",
+  "rnd": "23508720fbc39d50",
   "verts": 88
  },
  "Flamme_0_0": {
@@ -1759,10 +1782,10 @@
  "Flamme_3_0": {
   "bbox": [
    7.96275,
-   5.53569,
+   4.89569,
    0.59301,
    7.96525,
-   5.6179,
+   4.9779,
    0.71914
   ],
   "faces": 26,
@@ -1771,7 +1794,7 @@
   ],
   "origin": [
    7.964,
-   5.57875,
+   4.93875,
    0.595
   ],
   "rnd": "none",
@@ -1780,10 +1803,10 @@
  "Flamme_3_0_Kern": {
   "bbox": [
    7.96125,
-   5.55718,
+   4.91718,
    0.59505,
    7.96375,
-   5.60043,
+   4.96043,
    0.66591
   ],
   "faces": 26,
@@ -1792,7 +1815,7 @@
   ],
   "origin": [
    7.9625,
-   5.57875,
+   4.93875,
    0.595
   ],
   "rnd": "none",
@@ -1801,10 +1824,10 @@
  "Flamme_3_1": {
   "bbox": [
    7.96275,
-   5.57469,
+   4.93469,
    0.59545,
    7.96525,
-   5.6486,
+   5.0086,
    0.69514
   ],
   "faces": 26,
@@ -1813,7 +1836,7 @@
   ],
   "origin": [
    7.964,
-   5.61125,
+   4.97125,
    0.595
   ],
   "rnd": "none",
@@ -1822,10 +1845,10 @@
  "Flamme_3_1_Kern": {
   "bbox": [
    7.96125,
-   5.58973,
+   4.94973,
    0.5949,
    7.96375,
-   5.63259,
+   4.99259,
    0.65415
   ],
   "faces": 26,
@@ -1834,7 +1857,7 @@
   ],
   "origin": [
    7.9625,
-   5.61125,
+   4.97125,
    0.595
   ],
   "rnd": "none",
@@ -2213,7 +2236,7 @@
    0.0,
    0.0
   ],
-  "rnd": "dac15b9d0f52e751",
+  "rnd": "488ff4ef6412b602",
   "verts": 8
  },
  "Giebel": {
@@ -2234,7 +2257,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f6857859e31b2cb4",
+  "rnd": "af67c97a8adf5d59",
   "verts": 132
  },
  "Giebel_Fenster": {
@@ -2256,7 +2279,7 @@
    0.0,
    0.0
   ],
-  "rnd": "a27e0a2130257496",
+  "rnd": "c4278b7c81a31cf3",
   "verts": 172
  },
  "Kiesel": {
@@ -2277,7 +2300,7 @@
    0.0,
    0.0
   ],
-  "rnd": "0b282055b49f22b1",
+  "rnd": "0e4a065ab669e0de",
   "verts": 50080
  },
  "Kiesstreifen": {
@@ -2298,7 +2321,7 @@
    0.0,
    0.0
   ],
-  "rnd": "d98fbc7a77d19c36",
+  "rnd": "e5af42038101a031",
   "verts": 24
  },
  "Laeden_Querbretter": {
@@ -2340,7 +2363,7 @@
    0.0,
    0.0
   ],
-  "rnd": "d3bd31a2ad6d67a8",
+  "rnd": "c0f9d7c83fcc1bd4",
   "verts": 40
  },
  "OG_Bodenbelag": {
@@ -2352,7 +2375,7 @@
    12.8855,
    2.718
   ],
-  "faces": 4386,
+  "faces": 4392,
   "materials": [
    "FL_Eiche",
    "FL_Kalkstein"
@@ -2362,8 +2385,8 @@
    0.0,
    0.0
   ],
-  "rnd": "50370254b42a9fc8",
-  "verts": 5848
+  "rnd": "0ec00f25f7c2aeb8",
+  "verts": 5856
  },
  "OG_Decke_EG": {
   "bbox": [
@@ -2383,7 +2406,7 @@
    0.0,
    0.0
   ],
-  "rnd": "6437d0dc8cf4f2cf",
+  "rnd": "69ab754d8246e794",
   "verts": 40
  },
  "OG_Fenster_Tueren": {
@@ -2405,7 +2428,7 @@
    0.0,
    0.0
   ],
-  "rnd": "4871163bcead6aee",
+  "rnd": "238b6fa33af5a4af",
   "verts": 2352
  },
  "OG_Fliesen": {
@@ -2448,7 +2471,7 @@
    0.0,
    0.0
   ],
-  "rnd": "14552d548f31fc62",
+  "rnd": "e400d90de04b4aa1",
   "verts": 3672
  },
  "OG_Innentueren": {
@@ -2469,7 +2492,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f53808bf7e09eb9b",
+  "rnd": "539294575db1eb72",
   "verts": 1624
  },
  "OG_Laeden": {
@@ -2490,7 +2513,7 @@
    0.0,
    0.0
   ],
-  "rnd": "2f9963745cd96107",
+  "rnd": "6c69f69934be794d",
   "verts": 208
  },
  "OG_Laeden_Querbretter": {
@@ -2511,7 +2534,7 @@
    0.0,
    0.0
   ],
-  "rnd": "24ab103d46d0c701",
+  "rnd": "72f365f0543f0fbe",
   "verts": 832
  },
  "OG_Moebel": {
@@ -2543,7 +2566,7 @@
    0.0,
    0.0
   ],
-  "rnd": "a4ab167f222edab7",
+  "rnd": "b2730ca3f34416ee",
   "verts": 59328
  },
  "OG_Raumnamen": {
@@ -2590,7 +2613,7 @@
    0.0,
    0.0
   ],
-  "rnd": "cf51dcb5bc51a0b4",
+  "rnd": "6b76f04f5fc4b449",
   "verts": 1612
  },
  "OG_Waende": {
@@ -2611,7 +2634,7 @@
    0.0,
    0.0
   ],
-  "rnd": "61abde0f49fbf552",
+  "rnd": "6fead0a45e5f0a8a",
   "verts": 672
  },
  "OG_Werkstattofen": {
@@ -2633,7 +2656,7 @@
    0.0,
    0.0
   ],
-  "rnd": "0ea8db76965531f2",
+  "rnd": "168ae3c6e0810a84",
   "verts": 88
  },
  "Ref_Grundriss_EG": {
@@ -2687,7 +2710,7 @@
    12.887,
    -0.01
   ],
-  "faces": 1308,
+  "faces": 1326,
   "materials": [
    "FL_Fuge",
    "FL_Granit"
@@ -2697,8 +2720,8 @@
    0.0,
    0.0
   ],
-  "rnd": "113481ce27e07301",
-  "verts": 1744
+  "rnd": "2ef93cf9808e7091",
+  "verts": 1768
  },
  "Verschalung_Ost": {
   "bbox": [
@@ -2718,7 +2741,7 @@
    0.0,
    0.0
   ],
-  "rnd": "cc607af1ab87f0c5",
+  "rnd": "1201256c7848ad6b",
   "verts": 1096
  },
  "Verschalung_West": {
@@ -2740,7 +2763,7 @@
    0.0,
    0.0
   ],
-  "rnd": "d070c9f00fecb27c",
+  "rnd": "ac0a9dd707f9f01c",
   "verts": 2136
  },
  "WR_N": {
@@ -2796,7 +2819,7 @@
  "_fire_lights": [
   [
    7.514,
-   5.595,
+   4.955,
    0.665
   ],
   [

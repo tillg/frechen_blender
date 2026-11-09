@@ -7,7 +7,7 @@ Run inside Blender: exec(open(".../code/film.py").read())
 import bpy, importlib, math, sys
 
 sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
-import ofen, desk, bad, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(house_core)  # pick up core edits
+import ofen, desk, bad, kueche, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(house_core)  # pick up core edits
 import tour; importlib.reload(tour)                    # the route (after the core it imports)
 from house_core import ROOM_LIGHT_H, ROOM_LIGHTS
 

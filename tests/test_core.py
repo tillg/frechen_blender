@@ -618,12 +618,12 @@ def test_kueche_wamsler_herd_at_the_north_end_of_the_east_run():
     body = [p for p in herd if p[0] == "Herd"]
     lo = [min(p[1][k] for p in body) for k in range(3)]; hi = [max(p[2][k] for p in body) for k in range(3)]
     assert 0.75 <= hi[1] - lo[1] <= 0.85 and 0.55 <= hi[0] - lo[0] <= 0.62 and 0.80 <= hi[2] <= 0.92
-    assert KUECHE_EAST - 0.01 < hi[0] < KUECHE_EAST and hi[1] < 5.847 and lo[1] > 4.7   # NE corner of the run
+    assert KUECHE_EAST - 0.01 < hi[0] < KUECHE_EAST and hi[1] < 5.2 and lo[1] > 4.25    # north end of the run (v6)
     assert {"Herd", "Metall", "Eisen", "Ofenglas"} <= {p[0] for p in herd}
     front = min(p[1][0] for p in herd if p[2][2] < 0.9)                       # doors, handles
     assert 7.90 < front < 7.96
     kueche = list(part_list(("EG", "EG_Kueche")))
-    run = [p for p in kueche if p[2][2] <= 0.901 and p[2][0] > 7.9 and p[2][1] > 3.7]
+    run = [p for p in kueche if p[2][2] <= 0.901 and p[2][0] > 7.9 and p[2][1] > 3.7 and p[1][1] < 5.2]   # not the sink run (v6)
     assert run and max(p[2][1] for p in run) < lo[1]                          # carcass, doors, granite
     fire = [f for f in BP.fires if abs(f["base"][0] - lo[0]) < 0.03 and lo[1] < f["base"][1] < hi[1]]
     assert len(fire) == 1 and fire[0]["base"][1] > (lo[1] + hi[1]) / 2       # fire door: top left, north
@@ -659,7 +659,7 @@ def test_kueche_wall_cabinets_over_the_rest_of_the_run():
     north = [p for p in upper if p[1][1] > 5.4]
     east = [p for p in upper if p[1][0] > 8.1]
     assert len(north) + len(east) == len(upper)
-    for side, ax, wall, (a, b) in ((north, 0, 5.849, (5.49, 6.70)), (east, 1, KUECHE_EAST, (3.03, hy0))):
+    for side, ax, wall, (a, b) in ((north, 0, 5.849, (7.05, 8.227)), (east, 1, KUECHE_EAST, (3.03, hy0))):   # v6
         lo = [min(p[1][k] for p in side) for k in range(3)]; hi = [max(p[2][k] for p in side) for k in range(3)]
         assert abs(lo[ax] - a) < 0.03 and b - 0.06 < hi[ax] <= b                 # along the run, clear of the hood
         assert 1.40 <= lo[2] <= 1.55 and 2.0 <= hi[2] <= 2.30
@@ -976,3 +976,95 @@ def test_wcs_have_limestone_floors():
     for c, z, (x0, x1, y0, y1), _ in WCS:                                   # incl. the WC Großeltern
         assert _floor_at(c, (x0 + x1) / 2 + 0.02, (y0 + y1) / 2 + 0.03) == "Kalkstein", (c, x0, y0)
     assert _floor_at("EG", 1.6, 9.3) == "Eiche"                           # its Schrank
+
+
+def _solids(bp, key, dx=0.0, dy=0.0):
+    g = bp.geo[key]
+    return {tuple(sorted({(round(g["v"][i][0] + dx, 6), round(g["v"][i][1] + dy, 6), round(g["v"][i][2], 6))
+                          for f in g["f"][a:a + n] for i in f})) for a, n in bp.parts[key]}
+
+
+def test_kueche_submodel():
+    """code/kueche.py: the Küche after the agreed drawing input/2026-11-09 input/speis_kueche_v6.svg,
+    at its own origin (the room's inner NW corner: Speis wall x Flur wall, so y <= 0): the sink run
+    from the kitchen door's frame into the NE corner, under the flue box (from 1.80 m up); the east
+    run 60 from the peninsula's front, the Wamsler right south of it; the Besenschrank 51 x 55 x
+    2.20 in the NW corner behind the open kitchen door; peninsula unchanged. In the house it stands
+    at KUECHE_AT, every part the same."""
+    import kueche
+    sub = house_core.build_kueche()
+    house_core.build()                                                    # restore the registries
+    assert kueche.KUECHE_AT == (5.49, 5.849)
+    x0, y0 = kueche.KUECHE_AT
+    assert {c for c, _ in sub.geo} == {"Kueche"} and sub.garden is None
+    assert {n for _, n in sub.geo} == {"Kueche_Kueche", "Kueche_Herd", "Kueche_Haube", "Kueche_Waende"}
+    assert all(-1e-9 <= x <= 3.067 + 1e-9 and -2.83 <= y <= 1e-9 for (_, n), g in sub.geo.items() for x, y, z in g["v"]
+               if n != "Kueche_Herd")                                # (the Wamsler's pipe runs into the wall)
+    for n in ("Kueche", "Herd", "Haube", "Waende"):
+        assert _solids(sub, ("Kueche", "Kueche_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
+    k = list(part_list(("EG", "EG_Kueche")))
+    base = [p for p in k if p[2][2] <= 0.901 and p[1][2] < 0.2]
+    sink = [p for p in base if p[1][1] > 5.2 and p[1][0] > 6.5]                # sink run: carcass, fronts, plinth
+    assert abs(min(p[1][0] for p in sink) - 7.05) < 0.005 and max(p[2][0] for p in sink) > 8.55
+    top = [p for p in k if p[0] == "Granit" and p[1][1] > 5.2]
+    assert top and abs(min(p[1][0] for p in top) - 7.05) < 0.005 and max(p[2][0] for p in top) > 8.55
+    east = [p for p in base if p[1][0] > 7.9 and 3.6 < p[1][1] and p[2][1] < 4.3]
+    fronts = [p for p in k if p[0] == "FichteZ" and 7.95 < p[1][0] < 7.96 and p[2][2] < 0.9]
+    assert east and abs(max(p[2][1] for p in fronts) - min(p[1][1] for p in fronts) - 0.60) < 0.01
+    herd = [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Herd"]
+    assert abs(min(p[1][1] for p in herd) - 4.30) < 0.005 and abs(max(p[2][1] for p in herd) - 5.10) < 0.005
+    besen = [p for p in k if p[1][0] < 5.5 and p[1][1] > 5.2]
+    lo = [min(p[1][i] for p in besen) for i in range(3)]; hi = [max(p[2][i] for p in besen) for i in range(3)]
+    assert abs(lo[0] - 5.492) < 0.003 and abs(hi[0] - 6.002) < 0.003 and abs(lo[1] - 5.297) < 0.003
+    assert hi[1] <= 5.849 and abs(hi[2] - 2.20) < 0.01
+    flue = [p for p in part_list(("EG", "EG_Waende")) if p[1][0] > 8.2 and p[1][1] > 5.5 and p[2][0] < 8.56 and p[2][1] < 5.85]
+    assert len(flue) == 1 and abs(flue[0][1][2] - 1.80) < 0.005 and flue[0][0] == "Putz"
+    assert not any(p[2][2] > flue[0][1][2] and p[1][2] < 2.4 and p[2][0] > flue[0][1][0] and p[2][1] > flue[0][1][1]
+                   for p in k)                                                # nothing in the flue box
+    labels = {t for _, _, t in sub.dims}
+    assert {"Spülzeile 150.5", "Ostzeile 60", "Herd 80", "Besenschrank 51", "55 tief", "Abzug ab 180",
+            "Halbinsel 198.5"} <= labels
+
+
+def test_kuechentuer_as_built():
+    """The kitchen door to the Flur where it really is (photo 2026-11-09, speis_kueche_v6.svg):
+    architraves 6.03-7.03, clear 81 cm; hinged west, the leaf opened 90 deg into the Küche, east of
+    the Besenschrank; the plan's opening further east is wall."""
+    w = ("EG", "EG_Waende")
+    assert _mat_at(BP, w, 6.5, 6.1, 1.0) is None and _mat_at(BP, w, 7.5, 6.1, 1.0) == "Putz"
+    assert _mat_at(BP, w, 6.05, 6.1, 1.0) == "Putz" and _mat_at(BP, w, 7.0, 6.1, 1.0) == "Putz"
+    leaf = [l for c, l in house_core.LEAVES if c == "EG" and 6.0 < min(l[0][0], l[1][0]) < 6.3
+            and max(l[0][1], l[1][1]) < 5.86 and min(l[0][1], l[1][1]) < 5.2]
+    assert len(leaf) == 1
+    (a, b), = leaf
+    assert min(a[0], b[0]) > 6.002 + 0.05 and max(a[0], b[0]) < 6.25                     # clear of the Besenschrank
+    trim = [p for p in part_list(("EG", "EG_Innentueren")) if 5.8 < p[1][1] < 5.86 and 5.9 < p[1][0] < 7.1]
+    assert abs(min(p[1][0] for p in trim) - 6.03) < 0.005 and abs(max(p[2][0] for p in trim) - 7.03) < 0.005
+
+
+def test_speis_v6():
+    """Speis after speis_kueche_v6.svg: from the Flur wall south shelf A (60, open), the aisle 91.9
+    (west end free), shelf B (60, open to the aisle) and back to back with it cabinet C (60, doors
+    to the Essen) in place of the Speis/Essen wall, all to the ceiling; the Speis/Küche wall ends at
+    C's front (y 3.13) and is open over the aisle; a sliding leaf on the kitchen side, slid open to
+    the south (left as seen from the Küche)."""
+    w = ("EG", "EG_Waende")
+    assert _mat_at(BP, w, 4.0, 3.2, 1.0) is None                                          # Speis/Essen wall gone
+    assert _mat_at(BP, w, 5.36, 3.5, 1.0) == "Putz" and _mat_at(BP, w, 5.36, 4.2, 1.0) == "Putz"
+    assert _mat_at(BP, w, 5.36, 4.8, 1.0) is None and _mat_at(BP, w, 5.36, 3.05, 1.0) is None
+    sp = list(part_list(("EG", "EG_Speis")))
+    assert sp and "EG_Speis" not in BP.furniture
+    for ya, yb in ((5.249, 5.847), (3.732, 4.33), (3.13, 3.728)):                         # A, B, C
+        band = [p for p in sp if p[1][1] >= ya - 1e-6 and p[2][1] <= yb + 1e-6]
+        assert band and abs(min(p[1][1] for p in band) - ya) < 0.003 and abs(max(p[2][1] for p in band) - yb) < 0.003
+        assert min(p[1][0] for p in band) < 2.78 and max(p[2][0] for p in band) > 5.23
+        assert 2.39 <= max(p[2][2] for p in band) < 2.40
+    assert not any(p[2][1] > 4.34 and p[1][1] < 5.24 for p in sp)                          # the aisle is free
+    doors = [p for p in sp if p[1][1] >= 3.13 - 1e-6 and p[2][1] <= 3.15 + 1e-6 and p[0] != "Metall"]
+    assert len(doors) >= 4
+    assert not any(p[2][0] > 2.78 and p[1][0] < 5.24 and p[2][1] > 3.13 and p[1][1] < 5.85
+                   for p in part_list(("EG", "EG_Moebel")))                                # old shelves gone
+    leaf = [l for c, l in house_core.LEAVES if c == "EG" and 5.49 < min(l[0][0], l[1][0]) < 5.6]
+    assert len(leaf) == 1
+    (a, b), = leaf
+    assert abs(min(a[1], b[1]) - 3.28) < 0.01 and abs(max(a[1], b[1]) - 4.28) < 0.01

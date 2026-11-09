@@ -40,13 +40,13 @@ test('Ofen page is part of the build', async ({ page }) => {
   });
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(BASE);
-  await page.getByRole('link', { name: 'Ofen' }).click();          // the house links to it
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Ofen' });          // the house links to it
   await page.waitForURL(/\/frechen_blender\/ofen\.html$/);
   await expect(page.locator('.dim', { hasText: 'Tür 65' })).toBeVisible({ timeout: 30_000 });
   expect(failed).toEqual([]);
   expect(errors).toEqual([]);
   expect(glb).toBe(1);
-  await page.getByRole('link', { name: '← Haus' }).click();         // and back
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });         // and back
   await page.waitForURL(/\/frechen_blender\/$/);
 });
 
@@ -60,14 +60,14 @@ test('desk page is part of the build, with its screen textures', async ({ page }
   });
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(BASE);
-  await page.getByRole('link', { name: 'Schreibtisch' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Schreibtisch' });
   await page.waitForURL(/\/frechen_blender\/desk\.html$/);
   await expect(page.locator('.dim', { hasText: 'Tisch 194.8' })).toBeVisible({ timeout: 30_000 });
   await expect.poll(() => tex).toBe(2);
   expect(failed).toEqual([]);
   expect(errors).toEqual([]);
   expect(glb).toBe(1);
-  await page.getByRole('link', { name: '← Haus' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
   await page.waitForURL(/\/frechen_blender\/$/);
 });
 
@@ -80,12 +80,31 @@ test('bad page is part of the build', async ({ page }) => {
   });
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(BASE);
-  await page.getByRole('link', { name: 'Bad Oma & Opa' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Bad Oma & Opa' });
   await page.waitForURL(/\/frechen_blender\/bad\.html$/);
   await expect(page.locator('.dim', { hasText: 'Waschtrog 100' })).toBeVisible({ timeout: 30_000 });
   expect(failed).toEqual([]);
   expect(errors).toEqual([]);
   expect(glb).toBe(1);
-  await page.getByRole('link', { name: '← Haus' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
+  await page.waitForURL(/\/frechen_blender\/$/);
+});
+
+test('kueche page is part of the build', async ({ page }) => {
+  const failed = [], errors = [];
+  let glb = 0;
+  page.on('response', (r) => {
+    if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);
+    if (r.url().endsWith('/frechen_blender/kueche.glb') && r.ok()) glb++;
+  });
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(BASE);
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Küche' });
+  await page.waitForURL(/\/frechen_blender\/kueche\.html$/);
+  await expect(page.locator('.dim', { hasText: 'Herd 80' })).toBeVisible({ timeout: 30_000 });
+  expect(failed).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(glb).toBe(1);
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
   await page.waitForURL(/\/frechen_blender\/$/);
 });

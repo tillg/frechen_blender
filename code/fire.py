@@ -122,8 +122,8 @@ def burn(coll, f, i, outer, core):
 
 def main():
     sys.path.insert(0, "/Users/tgartner/git/frechen_blender/code")
-    import ofen, desk, bad, house_core
-    importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(house_core)    # pick up core edits in a long session
+    import ofen, desk, bad, kueche, house_core
+    importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(house_core)    # pick up core edits in a long session
     bp = house_core.build()
     coll = _collection("Feuer")
     outer = _flame_material("Flamme", house_core.MAT_DEF["Feuer"])

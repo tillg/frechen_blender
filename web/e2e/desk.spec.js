@@ -44,10 +44,10 @@ test('in Gerendert the monitors show the two screenshots', async ({ page }) => {
 test('the house links to the desk page and back', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__fl?.ready === true);
-  await page.getByRole('link', { name: 'Schreibtisch' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Schreibtisch' });
   await page.waitForFunction(() => window.__desk?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/desk.html');
-  await page.getByRole('link', { name: '← Haus' }).click();
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/');
 });

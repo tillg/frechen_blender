@@ -1,7 +1,8 @@
 // German UI: title, timeline bar (play/pause, scrubber 0…4, the five stage names), cutaway
-// buttons, the sun toggle and the link to the Ofen sub-model. body.dataset.stage / .cutaway
+// buttons, the sun toggle and the sub-model drop-down (nav.js). body.dataset.stage / .cutaway
 // reflect the state (for tests).
 import { STAGES, stageAt } from './stages.js';
+import { navSelect } from './nav.js';
 import './ui.css';
 
 const LABELS = { sketch: 'Skizze', massing: 'Massenmodell', detail: 'Detailmodell', built: 'Gebaut', furnished: 'Eingerichtet' };
@@ -28,10 +29,7 @@ export function createUI(api) {
   });
   const sun = el('button', { type: 'button', className: 'fl-sun' });
   sun.onclick = () => { api.toggleSun(); refresh(); };
-  const ofen = el('a', { href: 'ofen.html', title: 'Teilmodell Ofen mit Maßen' }, 'Ofen');   // relative: works under the Pages base too
-  const desk = el('a', { href: 'desk.html', title: 'Teilmodell Schreibtisch mit Maßen' }, 'Schreibtisch');
-  const bad = el('a', { href: 'bad.html', title: 'Teilmodell Bad Großeltern mit Maßen' }, 'Bad Oma & Opa');
-  tools.append(...cutButtons.map(([, b]) => b), el('span', { className: 'fl-sep' }), sun, el('span', { className: 'fl-sep' }), ofen, desk, bad);
+  tools.append(...cutButtons.map(([, b]) => b), el('span', { className: 'fl-sep' }), sun, el('span', { className: 'fl-sep' }), navSelect());
 
   const bar = el('div', { className: 'fl-bar' });
   const play = el('button', { type: 'button', className: 'fl-play' });

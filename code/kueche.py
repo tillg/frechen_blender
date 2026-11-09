@@ -1,0 +1,118 @@
+"""Frechenlehen – the Küche (EG) as a sub-model (web/kueche.html), after the agreed drawing
+input/2026-11-09 input/speis_kueche_v6.svg (the kitchen door measured from a photo of 2026-11-09).
+On the north wall the sink run from the kitchen door's frame into the NE corner, under the flue box
+(Abzug, from 1.80 m up); on the east wall a 60 cm run from the peninsula's front, then the Wamsler
+wood cooker under its old steel hood; the peninsula with the cooktop towards the dining table; wall
+cabinets over the sink run and over the east run; the Besenschrank in the NW corner, behind the
+kitchen door opened into the room.
+
+Pure Python like house_core.py, which imports this module: build_eg() calls kueche_neu() at
+KUECHE_AT; house_core.build_kueche() wraps it at the origin as the Blueprint of web/kueche.html.
+Positions are written in house coordinates (those of the drawing) and shifted by (x0, y0) -
+KUECHE_AT, so the house and the sub-model are the same parts, only translated. The room's walls and
+doors stay in build_eg().
+"""
+import math, random
+import house_core as hc
+import ofen
+
+KUECHE_AT = (5.49, 5.849)                    # house: the room's inner NW corner (Speis wall x Flur wall)
+ZP, ZC, ZT = 0.10, 0.86, 0.90                # plinth / carcass / worktop top
+XW, YN, XE = 5.492, 5.847, 8.555             # wall faces (2 mm clear): Speis wall, Flur wall, east wall
+SINK_X0 = 7.05                               # sink run: from the kitchen door's frame (7.03) ...
+HY0, HY1 = 4.30, 5.10                        # the Herd (80) along the east wall, right after the east run
+RUN = (3.66, 4.26)                           # east run's door: 60 from the peninsula's front
+ABZUG = (8.227, 5.55, 1.80)                  # flue box: x from, y from, underside (depth assumed)
+BESEN = (6.002, 5.297, 2.20)                 # Besenschrank: x to, y from (incl. door), height
+
+
+def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
+    """The Küche built into collection c with the room's inner NW corner at (x0, y0). The parts draw
+    their rnd from their own generator. Returns the dimension lines (sub-model coordinates)."""
+    dx, dy = x0 - KUECHE_AT[0], y0 - KUECHE_AT[1]
+    rng = random.Random(14)
+    o, zp, zc, zt = c + "_Kueche", ZP, ZC, ZT
+    B = lambda ob, m, xa, xb, ya, yb, za, zb, r=None: hc.box(c, ob, m, xa + dx, xb + dx, ya + dy, yb + dy, za, zb,
+                                                         rng.random() if r is None else r)
+    PR = lambda ob, m, pts, za, zb, r=None: hc.xy_prism(c, ob, m, [(x + dx, y + dy) for x, y in pts], za, zb,
+                                                     rng.random() if r is None else r)
+
+    def L(ob, m, ax, ua, ub, ta, tb, za, zb, r=None):                # lbox in house coordinates
+        sh = (dx, dy) if ax == "x" else (dy, dx)
+        hc.lbox(c, ob, m, hc.frame(ax), ua + sh[0], ub + sh[0], ta + sh[1], tb + sh[1], za, zb,
+                rng.random() if r is None else r)
+
+    # carcasses (x0, x1, y0, y1, plinth inset W/E/S/N)
+    for xa, xb, ya, yb, pl in ((SINK_X0, XE, 5.269, YN, (0, 0, 0.04, 0)),                # sink run
+                               (6.57, XE, 3.05, 3.64, (0.06, 0, 0.06, 0.06)),             # peninsula
+                               (7.977, XE, 3.64, HY0 - 0.04, (0.06, 0, 0, 0.06))):        # east run
+        B(o, "FichteZ", xa, xb, ya, yb, zp, zc)
+        B(o, "Fuge", xa + pl[0], xb - pl[1], ya + pl[2], yb - pl[3], 0.005, zp)
+    fronts = [("x", 5.249, +1, (SINK_X0, 7.45, 7.85, 8.20, XE)),   # (frame axis, room face, side, door cuts)
+              ("x", 3.66, -1, (6.57, 7.165, 7.957)),
+              ("y", 7.957, +1, RUN)]
+    for ax, f, s, cuts in fronts:
+        for a, b in zip(cuts[:-1], cuts[1:]):
+            L(o, "FichteZ", ax, a + 0.003, b - 0.003, f, f + s * 0.02, zp + 0.005, zc - 0.005)
+            m = (a + b) / 2
+            L(o, "Metall", ax, m - 0.07, m + 0.07, f - s * 0.025, f, zc - 0.07, zc - 0.055)
+    PR(o, "Granit", [(SINK_X0, 5.229), (XE, 5.229), (XE, YN), (SINK_X0, YN)], zc, zt)
+    PR(o, "Granit", [(6.55, 3.03), (XE, 3.03), (XE, HY0 - 0.02), (7.937, HY0 - 0.02),
+                     (7.937, 3.68), (6.55, 3.68)], zc, zt)
+    sx = 7.46                                                       # sink at today's water connection
+    B(o, "Metall", sx - 0.23, sx + 0.23, 5.30, 5.76, zt, zt + 0.003)
+    B(o, "Eisen", sx - 0.20, sx + 0.20, 5.33, 5.70, zt + 0.003, zt + 0.004)
+    B(o, "Metall", sx - 0.015, sx + 0.015, 5.77, 5.80, zt, zt + 0.26)                 # tap
+    B(o, "Metall", sx - 0.01, sx + 0.01, 5.60, 5.77, zt + 0.235, zt + 0.255)
+    B(o, "Eisen", 7.18, 7.95, 3.12, 3.58, zt, zt + 0.005)                            # cooktop
+    for cx, cy, rr in ((7.36, 3.24, 0.08), (7.36, 3.46, 0.06), (7.76, 3.24, 0.06), (7.76, 3.46, 0.09)):
+        PR(o, "Metall", [(cx + rr * math.cos(math.pi * i / 8), cy + rr * math.sin(math.pi * i / 8))
+                         for i in range(16)], zt + 0.005, zt + 0.006)
+    ofen.wamsler(c, 7.972 + dx, HY0 + dy, rng)
+
+    # hood of the old form: rolled lip, straight skirt with a rail, canopy narrowing to the stack
+    h, xf, ym = c + "_Haube", XE - 0.55, (HY0 + HY1) / 2
+    ya, yb, rh = ym - 0.43, ym + 0.43, rng.random()
+    B(h, "Metall", xf - 0.01, XE, ya - 0.01, yb + 0.01, 1.62, 1.64, rh)
+    B(h, "Metall", xf, XE, ya, yb, 1.64, 1.76, rh)
+    v = [(xf, ya, 1.76), (XE, ya, 1.76), (XE, yb, 1.76), (xf, yb, 1.76),
+         (XE - 0.22, ym - 0.15, 2.04), (XE, ym - 0.15, 2.04), (XE, ym + 0.15, 2.04), (XE - 0.22, ym + 0.15, 2.04)]
+    hc.add(c, h, "Metall", [(x + dx, y + dy, z) for x, y, z in v],
+           [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], rh)
+    B(h, "Metall", XE - 0.20, XE, ym - 0.135, ym + 0.135, 2.04, hc.Z_EG_TOP + 0.02, rh)   # into the ceiling
+    hc.prism(c, h, "Metall", hc.frame("x"), [(xf - 0.04 + dx + 0.01 * math.cos(math.pi * i / 4),
+                                              1.70 + 0.01 * math.sin(math.pi * i / 4)) for i in range(8)],
+             ya + 0.02 + dy, yb - 0.02 + dy, rng.random())                            # rail
+    for y in (ya + 0.05, yb - 0.05):
+        B(h, "Metall", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705)
+    # wall cabinets: north wall over the sink run up to the flue box, east wall from the peninsula
+    # to the hood
+    zu0, zu1, du = 1.45, 2.20, 0.35
+    for ax, wf, cuts in (("x", YN, (SINK_X0, 7.63, ABZUG[0] - 0.02)), ("y", XE, (3.05, 3.66, ya - 0.03))):
+        f = wf - du - 0.02
+        L(o, "FichteZ", ax, cuts[0], cuts[-1], wf - du, wf, zu0, zu1)
+        for a, b in zip(cuts[:-1], cuts[1:]):
+            L(o, "FichteZ", ax, a + 0.003, b - 0.003, f, f + 0.02, zu0 + 0.005, zu1 - 0.005)
+            m = (a + b) / 2
+            L(o, "Metall", ax, m - 0.07, m + 0.07, f - 0.025, f, zu0 + 0.055, zu0 + 0.07)
+
+    # Besenschrank in the NW corner, door to the south, on a plinth like the base units
+    bx, by, bh = BESEN
+    B(o, "FichteZ", XW, bx, by + 0.02, YN, zp, bh)
+    B(o, "Fuge", XW, bx, by + 0.06, YN, 0.005, zp)
+    B(o, "FichteZ", XW + 0.003, bx - 0.003, by, by + 0.02, zp + 0.005, bh - 0.005)
+    B(o, "Metall", bx - 0.06, bx - 0.045, by - 0.025, by, 0.95, 1.10)
+
+    # flue box (Abzug) in the NE corner, plastered, from 1.80 m to the ceiling
+    ax0, ay0, az = ABZUG
+    B(c + "_Waende", "Putz", ax0, XE, ay0, YN, az, hc.Z_EG_TOP)
+
+    f = 0.06                                                        # dimension lines
+    P = lambda x, y, z: (x - KUECHE_AT[0], y - KUECHE_AT[1], z)
+    return [(P(SINK_X0, 5.229 - f, zt), P(XE, 5.229 - f, zt), "Spülzeile 150.5"),
+            (P(7.957 - f, RUN[0], zt), P(7.957 - f, RUN[1], zt), "Ostzeile 60"),
+            (P(7.957 - f, HY0, zt), P(7.957 - f, HY1, zt), "Herd 80"),
+            (P(XW, by - f, bh), P(bx, by - f, bh), "Besenschrank 51"),
+            (P(bx + f, by, bh), P(bx + f, YN, bh), "55 tief"),
+            (P(ax0 - f, ay0, 0.0), P(ax0 - f, ay0, az), "Abzug ab 180"),
+            (P(6.57, 3.03 - f, zt), P(XE, 3.03 - f, zt), "Halbinsel 198.5")]
