@@ -1,13 +1,14 @@
 """Frechenlehen – releasing the Rundgang film (used by `just film`, pure Python + git, no bpy).
 
 - to_delete(names): the films (YYYY-MM-DD_frechen_rundgang_threejs.mp4) older than the newest two.
+- latest(names): the newest film (GitHub Pages serves it as rundgang.mp4, see pages.yml).
 - video_kbps(seconds): the H.264 bitrate for a two-pass encode that ends near TARGET_MB, safely
   under GitHub's 100 MB file limit, whatever the film's length (25 fps stays).
 - purge_history(repo, branch): rewrites branch so that no commit holds a .mp4 blob other than the
   ones in its tip, then drops the old objects locally (refs/original, reflog, gc). Pushing the
   rewritten branch (force) is the caller's job.
 
-CLI:  film_release.py kbps <frames>  |  prune <dir>  |  purge <branch>  |  index-filter (internal)
+CLI:  film_release.py kbps <frames>  |  prune <dir>  |  latest <dir>  |  purge <branch>  |  index-filter (internal)
 """
 import os, re, subprocess, sys
 from pathlib import Path
@@ -20,6 +21,11 @@ def to_delete(names, keep=KEEP):
     """Film file names to delete: all but the newest `keep` by the date in the name."""
     films = sorted((n for n in names if FILM.match(n)), reverse=True)
     return sorted(films[keep:])
+
+
+def latest(names):
+    """The newest film's file name, by the date in the name."""
+    return max(n for n in names if FILM.match(n))
 
 
 def video_kbps(seconds, target_mb=TARGET_MB):
@@ -67,6 +73,8 @@ if __name__ == "__main__":
         print(video_kbps(int(rest[0]) / FPS))
     elif cmd == "prune":
         print("\n".join(to_delete(os.listdir(rest[0]))))
+    elif cmd == "latest":
+        print(latest(os.listdir(rest[0])))
     elif cmd == "purge":
         print(f"{purge_history('.', rest[0])} old film blob(s) removed from {rest[0]}")
     elif cmd == "index-filter":
