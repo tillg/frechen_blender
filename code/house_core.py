@@ -82,6 +82,12 @@ MAT_DEF = {
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
     "Fliese":     dict(speck=((0.107, 0.176, 0.262), (0.142, 0.234, 0.348), 8), hue=0.03, rough=0.12),   # WC tiles, RAL 5014 (linear)
+    "Kiste":      dict(rgba=(0.30, 0.31, 0.32, 1), rough=0.55),              # grey plastic crates (Speis)
+    "PackRot":    dict(rgba=(0.55, 0.06, 0.04, 1), rough=0.5),               # food packs: tomato red
+    "PackBlau":   dict(rgba=(0.04, 0.10, 0.38, 1), rough=0.5),               # pasta blue
+    "PackGelb":   dict(rgba=(0.80, 0.55, 0.08, 1), rough=0.6),               # cereal yellow
+    "PackWeiss":  dict(rgba=(0.82, 0.80, 0.74, 1), rough=0.8),               # flour bags, labels
+    "Gurken":     dict(rgba=(0.16, 0.26, 0.06, 1), rough=0.2),               # pickles in their jar
     "Fugengrau":  dict(rgba=(0.42, 0.42, 0.40, 1)),                         # their grout
     "Spiegel":    dict(rgba=(0.92, 0.92, 0.92, 1), metal=1.0, rough=0.02),
     "Eisen":      dict(rgba=(0.018, 0.018, 0.02, 1), metal=0.4, rough=0.45),
@@ -593,6 +599,7 @@ def build_eg():
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
     interior(c, 5.240, 5.490, 3.13, 5.849, [(4.33, 5.249)])  # Speis / Küche: ends at the cabinet C, open
     speis()                                                 # over the aisle (sliding leaf on the Küche side)
+    vorrat()                                                # its shelves stocked (illustration)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
@@ -938,9 +945,10 @@ def mallnitz_front(coll, obj, P, a, b, f, s, za, zb, r, grips=()):
 def speis():
     """Speis after the agreed drawing input/2026-11-09 input/speis_kueche_v6.svg, from the Flur wall
     south: shelf A (60, open), the aisle (91.9, west end free), shelf B (60, open to the aisle) and,
-    back to back with it, cabinet C (60, doors to the Essen) in place of the former Speis/Essen
-    wall; all to the ceiling; the shelves spruce, C painted like the kitchen (Mallnitz fronts). The
-    Speis door: a sliding leaf on the Küche side of the wall, slid open to the south (left as seen
+    back to back with it, cabinet C (60, towards the Essen four leaf columns, each a top door, a
+    door over the upper half and three drawers below) in place of the former Speis/Essen wall;
+    all to the ceiling; the shelves spruce, C painted like the kitchen (Mallnitz fronts). The Speis
+    door: a sliding leaf on the Küche side of the wall, slid open to the south (left as seen
     from the Küche), under its rail. Own random stream, like the sub-models."""
     c, o, rng = "EG", "EG_Speis", random.Random(9)
     x0, x1, top = 2.774, 5.238, Z_EG_TOP - 0.003
@@ -962,8 +970,11 @@ def speis():
     for k in range(n):                       # painted Mallnitz fronts (kueche.py), cup pulls where pairs meet
         a, b = x0 + (x1 - x0) * k / n, x0 + (x1 - x0) * (k + 1) / n
         hx = b - 0.08 if k % 2 == 0 else a + 0.08
-        for za, zb, zk in ((0.105, 1.995, 1.00), (2.005, top - 0.003, 2.07)):   # tall door, top door
+        for za, zb, zk in ((1.0515, 1.995, 1.13), (2.005, top - 0.003, 2.07)):   # door over the upper half, top door
             mallnitz_front(c, o, P, a + 0.003, b - 0.003, yd, 1, za, zb, rng.random(), [(hx, zk)])
+        for j in range(3):                                                  # the lower half: three drawers
+            za, zb = 0.105 + 0.315 * j + 0.0015, 0.105 + 0.315 * (j + 1) - 0.0015
+            mallnitz_front(c, o, P, a + 0.003, b - 0.003, yd, 1, za, zb, rng.random(), [((a + b) / 2, zb - 0.07)])
     # sliding leaf on the Küche face (x 5.49), 1.00 wide, open over the wall south of the opening
     ys, tc, LT, zl, LH = 3.28, 5.52, 0.04, 0.005, DOOR_H + 0.025
     rl = 0.8 + 0.2 * rng.random()
@@ -974,6 +985,75 @@ def speis():
     six_panel_leaf(part, 1.00, LH)
     LEAVES.append((c, [(tc - LT / 2, ys, zl), (tc + LT / 2, ys + 1.00, zl + LH)]))
     box(c, "EG_Innentueren", "Metall", 5.495, 5.56, 3.26, 5.29, zl + LH + 0.005, zl + LH + 0.045, rng.random())   # rail
+
+
+def vorrat():
+    """The Speis's open shelves A and B stocked, for illustration (request 2026-11-10): rows of food
+    near the aisle side (spaghetti and cereal cartons, flour bags, jars of tomato sauce and of
+    pickles, cans, stacked two high) and now and then a bigger grey plastic crate with a lid for
+    odds and ends (more often on the lowest and the highest board). Bays between the uprights of
+    speis(), six boards each; loose things (FURNITURE), own random stream."""
+    c, o, rng = "EG", "EG_Vorrat", random.Random(23)
+    x0, x1, n = 2.774, 5.238, round((5.238 - 2.774) / 0.9)
+    bays = [(x0 + (x1 - x0 - 0.02) * k / n + 0.025, x0 + (x1 - x0 - 0.02) * (k + 1) / n - 0.005) for k in range(n)]
+    tops = (0.10, 0.48, 0.86, 1.24, 1.62, 2.00)
+    ring = lambda cx, cy, r: [(cx + r * math.cos(2 * math.pi * (i + 0.5) / 12), cy + r * math.sin(2 * math.pi * (i + 0.5) / 12))
+                              for i in range(12)]
+    # kind: (width along the shelf, depth, height, how many in a row)
+    kinds = {"spaghetti": (0.075, 0.045, 0.26, (3, 6)), "muesli": (0.19, 0.07, 0.28, (2, 3)),
+             "reis": (0.12, 0.06, 0.19, (2, 4)), "mehl": (0.11, 0.075, 0.18, (2, 4)),
+             "tomaten": (0.07, 0.07, 0.13, (3, 6)), "gurken": (0.10, 0.10, 0.18, (2, 4)),
+             "dosen": (0.074, 0.074, 0.21, (2, 4))}
+
+    def item(kind, u, f, s, z):                      # u: left end along x, f: aisle face, s: inwards
+        w, d, h, _ = kinds[kind]
+        r = rng.random()
+        ya, yb = sorted((f + s * 0.03, f + s * (0.03 + d)))
+        z += 0.001
+        if kind in ("spaghetti", "muesli", "reis", "mehl"):
+            m = {"spaghetti": "PackBlau", "muesli": rng.choice(("PackRot", "PackGelb")), "reis": "PackGelb",
+                 "mehl": "PackWeiss"}[kind]
+            box(c, o, m, u, u + w, ya, yb, z, z + h, r)
+            if kind != "mehl":                           # a white label on the aisle face, 1 mm proud
+                yl = f + s * 0.03
+                box(c, o, "PackWeiss", u + 0.012, u + w - 0.012, yl - s * 0.001, yl + s * 0.002, z + h * 0.45,
+                    z + h * 0.7, r)
+            return
+        cx, cy, rad = u + w / 2, (ya + yb) / 2, w / 2 - 0.002
+        if kind == "dosen":                              # two cans, one on the other, with a label band
+            for k in range(2):
+                zc = z + k * 0.106
+                xy_prism(c, o, "Metall", ring(cx, cy, rad), zc, zc + 0.105, r)
+                xy_prism(c, o, rng.choice(("PackRot", "PackGelb")), ring(cx, cy, rad + 0.001), zc + 0.012, zc + 0.093, r)
+            return
+        body = "PackRot" if kind == "tomaten" else "Gurken"
+        xy_prism(c, o, body, ring(cx, cy, rad), z, z + h - 0.015, r)                 # the jar with its content
+        xy_prism(c, o, "Metall", ring(cx, cy, rad - 0.004), z + h - 0.015, z + h, r)   # lid
+
+    for f, s in ((5.249, 1), (4.33, -1)):           # A (open to the south), B (open to the north)
+        for zi, z in enumerate(tops):
+            for ua, ub in bays:
+                u = ua + rng.uniform(0.0, 0.06)
+                while u < ub - 0.08:
+                    if rng.random() < (0.4 if zi in (0, 5) else 0.12) and u + 0.40 <= ub:   # a crate with a lid
+                        ya, yb = sorted((f + s * 0.03, f + s * 0.33))
+                        h, r = rng.uniform(0.20, 0.26), rng.random()
+                        box(c, o, "Kiste", u, u + 0.40, ya, yb, z + 0.001, z + 0.001 + h, r)
+                        box(c, o, "Kiste", u - 0.004, u + 0.404, ya - 0.004, yb + 0.004, z + 0.001 + h,
+                            z + 0.013 + h, r)
+                        u += 0.41 + rng.uniform(0.01, 0.05)
+                        continue
+                    if rng.random() < 0.12:                                          # a gap
+                        u += rng.uniform(0.05, 0.15)
+                        continue
+                    kind = rng.choice(list(kinds))
+                    w, cnt = kinds[kind][0], rng.randint(*kinds[kind][3])
+                    for _ in range(cnt):
+                        if u + w > ub:
+                            break
+                        item(kind, u, f, s, z)
+                        u += w + 0.006
+                    u += rng.uniform(0.01, 0.04)
 
 
 # ---------------------------------------------------------------- stairs
@@ -1167,7 +1247,8 @@ def slab(coll, obj, mat, z0, z1, inset=0.0, hole=None):
             box(coll, obj, mat, x0, x1, y0, y1, z0, z1)
 
 
-CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.358, 6.723, 8.506)]   # Flur/Windfang, back hall
+CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.657, 6.723, 8.506)]   # Flur/Windfang, back hall
+# (the back hall's stone runs through the door to the Flur, no threshold: request 2026-11-10)
 BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
                                          # lays its own floor (code/bad.py): left out of the EG's
 # OG Bad NW (with the shower alcove) and Bad S
@@ -1549,7 +1630,7 @@ def build_annex():
 # Loose furniture appears in the viewer's last stage "Eingerichtet" (Blueprint.furniture); the
 # built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
-FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R"}
+FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R"}
 
 
 def _grain(ax):

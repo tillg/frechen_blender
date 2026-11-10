@@ -366,6 +366,11 @@ def test_fires_are_recorded_where_the_stoves_burn():
     assert sum(inside(f, ("EG", "EG_Herd")) for f in BP.fires) == 1
     og = next(f for f in BP.fires if f["base"][2] > house_core.Z_OG)
     assert abs(og["u"][0] - math.cos(math.radians(-135))) < 1e-9                     # turned with its stove
+    # each fire knows the collection of its stove, so the viewer's cutaway hides it with the storey
+    assert [f["collection"] for f in BP.fires].count("OG") == 1 and og["collection"] == "OG"
+    assert all(f["collection"] == ("OG" if f is og else "EG") for f in BP.fires)
+    assert [f["collection"] for f in house_core.build_ofen().fires] == ["Ofen", "Ofen"]
+    house_core.build()                                                    # restore the registries
 
 
 def test_ofen_back_door_to_the_flur():
@@ -716,10 +721,22 @@ def test_kueche_and_speis_fronts_after_mallnitz():
     sp = list(part_list(("EG", "EG_Speis")))
     c = [p for p in sp if p[1][1] >= 3.09 and p[2][1] <= 3.728 + 1e-6]
     assert {p[0] for p in c} == {"Front", "Metall", "Fuge"}
-    assert len([p for p in c if hood(p)]) == 8 and len([p for p in c if p[0] == "Metall"]) == 16
+    assert len([p for p in c if hood(p)]) == 4 * 5 and len([p for p in c if p[0] == "Metall"]) == 4 * 5 * 2
     assert all(p[1][1] < 3.13 for p in c if p[0] == "Metall")
     panels = [p for p in c if p[0] == "Front" and p[1][1] > 3.135 and p[2][1] <= 3.15 + 1e-6]
-    assert len(panels) == 8                                                   # 4 tall + 4 top doors
+    assert len(panels) == 4 * 5                  # per leaf column (request 2026-11-10): top door, a door
+    for i in range(4):                           # over the upper half, three drawers in the lower half
+        col = sorted((p for p in panels if 2.774 + 0.616 * i < (p[1][0] + p[2][0]) / 2 < 2.774 + 0.616 * (i + 1)),
+                     key=lambda p: p[1][2])
+        assert len(col) == 5
+        top = max(p[2][2] for p in col)
+        assert col[4][1][2] > 2.0 and top > 2.25                              # top door as before (its panel)
+        door, drawers = col[3], col[:3]
+        assert 1.05 < door[1][2] - 0.06 < 1.06 and 1.99 < door[2][2] + 0.06 < 2.0         # panel + 6 cm frame
+        hs = [p[2][2] - p[1][2] for p in drawers]
+        assert max(hs) - min(hs) < 1e-6 and drawers[2][2][2] < door[1][2]
+    cups = sorted((p for p in c if hood(p)), key=lambda p: (p[1][0], p[1][2]))
+    assert len([p for p in cups if p[1][2] < 1.0]) == 12                     # one per drawer
     besen = [p for p in k if p[2][0] < 6.01 and p[1][1] > 5.2 and p[0] == "Metall"]
     assert len(besen) == 2 and len([p for p in besen if hood(p)]) == 1        # its cup pull
 
@@ -1179,3 +1196,41 @@ def test_wc_tiles_in_ral_5014():
     mid = [(a + b) / 2 for a, b in zip(c1, c2)]
     assert all(abs(m - r) < 0.01 for m, r in zip(mid, ral)), mid
     assert all(c[2] > c[1] > c[0] for c in (c1, c2))                        # blue, not green
+
+
+def test_stone_floor_runs_through_the_back_windfang_door():
+    """Request 2026-11-10: in the doorway from the Flur to the back Windfang (glazed door in the
+    wall x 2.358 .. 2.657) the limestone runs through, no oak threshold."""
+    for x in (2.40, 2.50, 2.62):
+        for y in (7.5, 7.95, 8.45):
+            assert _floor_at("EG", x, y) == "Kalkstein", (x, y)
+
+
+def test_speis_shelves_stocked():
+    """Request 2026-11-10, for illustration: the Speis's open shelves A and B stocked with food
+    (spaghetti and cereal cartons, jars of tomato sauce and pickles, cans, flour bags) and now and
+    then a bigger grey plastic crate for odds and ends; standing on the boards, clear of the
+    uprights and the board above, near the aisle side; loose things of the "Eingerichtet" stage."""
+    key = ("EG", "EG_Vorrat")
+    assert key in BP.geo and "EG_Vorrat" in BP.furniture
+    parts = list(part_list(key))
+    tops = [0.10, 0.48, 0.86, 1.24, 1.62, 2.00]
+    x0, x1, n = 2.774, 5.238, 3
+    posts = [(x0 + (x1 - x0 - 0.02) * k / n, x0 + (x1 - x0 - 0.02) * k / n + 0.02) for k in range(n + 1)]
+    for m, lo, hi, _ in parts:
+        assert x0 + 0.02 < lo[0] and hi[0] < x1 - 0.02, (m, lo)
+        assert 5.254 < lo[1] and hi[1] < 5.842 or 3.737 < lo[1] and hi[1] < 4.325, (m, lo)
+        assert not any(a < hi[0] and lo[0] < b for a, b in posts), (m, lo)          # clear of the uprights
+        z = max(t for t in tops if t <= lo[2] + 1e-9)
+        assert lo[2] - z < 0.30 and hi[2] < z + 0.38 - 0.025 - 0.01, (m, lo, hi)   # under the board above
+    feet = [lo for m, lo, hi, _ in parts if any(abs(lo[2] - t - 0.001) < 1e-6 for t in tops)]
+    assert len(feet) > 80                                                         # well stocked
+    mats = {m for m, _, _, _ in parts}
+    assert {"Kiste", "Metall", "Gurken", "PackRot", "PackBlau", "PackGelb", "PackWeiss"} <= mats
+    crates = [p for p in parts if p[0] == "Kiste" and p[2][0] - p[1][0] > 0.35]
+    assert 4 <= len(crates) // 2 <= 16                                            # body + lid each, now and then
+    for _, lo, hi, _ in crates:
+        assert 0.18 < hi[2] - lo[2] < 0.30 or hi[2] - lo[2] < 0.02                 # body or its lid
+    for side, face in (("A", 5.249), ("B", 4.33)):                                # near the aisle
+        sp = [p for p in parts if (p[1][1] > 5.0) == (side == "A")]
+        assert sp and min(abs(p[1][1] - face) if side == "A" else abs(p[2][1] - face) for p in sp) < 0.06
