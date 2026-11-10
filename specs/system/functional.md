@@ -17,7 +17,7 @@ edited: 2026-11-10
   - eaves and gable overhangs
 - **Exterior details from photos:**
   - round-arched entrance door, back door with an oval window and black lever handles inside and
-    outside
+    outside (hinged north, opening into the back hall; part of the Gäste-WC sub-model)
   - windows with larch frames and glazing bars
   - blue shutters with white cross boards
   - larch terrace doors; tall OG west windows (Yoga, Bad): wall below up to a 0.75 m sill, glazed up to the ceiling
@@ -27,12 +27,13 @@ edited: 2026-11-10
   - outside lamps
 - **Interior:**
   - panelled interior doors (opened)
-  - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf)
+  - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf,
+    hinged north, opened 90° into the back hall, so it lies along the back hall's north wall)
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
     threshold), the Bäder (OG Bad NW with its shower alcove, Bad S) and
-    all four WCs; in the Bad Großeltern a limestone strip as wide as its WC along the west wall
+    all four WCs (and the Garderobe beside the Gäste-WC); in the Bad Großeltern a limestone strip as wide as its WC along the west wall
     (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip and in its
     niche's Schrank)
   - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
@@ -85,8 +86,22 @@ edited: 2026-11-10
     oak elsewhere, part of the sub-model. The sliding doors show how they work: every 4 s one
     leaf, picked at random, rolls to the other end of its track in 2 s, on the sub-model page
     and in the house in stage Eingerichtet; the Rundgang sees them as built (WC leaf open)
+  - Gäste-WC by the back hall after `input/2026-11-10 input/gaeste_wc_v3.svg` (also a sub-model
+    page): a 10 cm partition splits the old WC into the WC (101 cm, west) and the Garderobe (94 cm,
+    east). The WC has a new 76 cm door in the north wall, its leaf opening outward into the back
+    hall, hinged at the partition, standing open at 90°; the toilet centred on the south wall,
+    40 cm free in front of it; Taubenblau tiles in the WC only. The Garderobe is open through the
+    old 80 cm opening: a spruce bench 35 × 110 cm at 45 cm from wall to wall with scrolled arms,
+    a hook board with six iron hooks at 1.65 m and a hat shelf at 1.85 m on three brackets, after
+    `garderobe mallnitz.jpeg`. The WC's hand basin 40/28 hangs outside, centred on the back
+    hall's east wall between the WC wall and the Windfang door (top 85 cm), Taubenblau tiles
+    behind it up to the door's architrave and a mirror 40 × 60 cm in a 7 cm pine frame from
+    1.20 m. Back door, WC door and Windfang door swing to show where they get in each other's
+    way: every 3 s one, picked at random, opens or closes in 3 s, on the sub-model page and in
+    the house in stage Eingerichtet; the film and the Rundgang see them as built (WC and Windfang
+    door open, back door closed)
   - OG bathrooms: shower, basin with mirror
-  - the four WCs (also the WC in the Bad Großeltern's niche), after
+  - the four WCs (also the WC in the Bad Großeltern's niche and the Gäste-WC), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
     row, floor-standing toilet with a close-coupled cistern; where the plan draws a hand basin
     (WC 2,30) a basin on chrome console legs under a mirror in a black frame
@@ -138,7 +153,7 @@ edited: 2026-11-10
 - **Cutaway:** "Ganzes Haus", "Ohne Dach", "Nur EG".
 - **Sun toggle:** day or dusk, from Detailmodell on.
 - **"Teilmodell" drop-down** (house toolbar and every sub-model page): Haus, Ofen, Schreibtisch,
-  Bad Oma & Opa, Küche; the current page is preselected, choosing another opens it.
+  Bad Oma & Opa, Küche, Gäste-WC; the current page is preselected, choosing another opens it.
 - **Rundgang** (button in the tools panel): plays the film's route live from the camera keys in
   the `.glb`, at 0.75× the film speed, in stage Eingerichtet with the whole house and the entrance
   door open. Play/pause, a scrubber, "Endlos" (loop; the route ends where it starts) and
@@ -173,7 +188,7 @@ edited: 2026-11-10
 - **Show**: `.venv/bin/python code/show.py <object…>` opens the user's browser on the dev server
   at a view URL that frames the named objects (prefix match) — outside objects from the nearest
   facade, 20° up, whole house; inside objects from the SE diagonal, 55° up, with the storeys above
-  cut away; sub-model pages (`--page ofen|desk|bad|kueche`) from the SE (Küche from the open south), 30° up, Gerendert. Options:
+  cut away; sub-model pages (`--page ofen|desk|bad|kueche|gaeste_wc`) from the SE (Küche from the open south, Gäste-WC from the back hall in the north), 30° up, Gerendert. Options:
   `--from n|e|s|w|top`, `--at x,y,z`, `--p 0…4` (house only), `--print` (only print the URL). It
   refuses (exit 2) when the server on 5377 runs from another clone.
 - `cd web && node shot.js '<url>' <png>`: one headless 1280×720 screenshot of a view URL after the
@@ -226,7 +241,8 @@ sequenceDiagram
 
 The model has no runtime state. In Blender the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
-the state is the timeline progress `p` (0–4), the cutaway (all / noroof / eg), a forced
+the Bad's sliding leaves and the back hall's three doors move on their own clock (each one at its
+built or its other state, or on the way); otherwise the state is the timeline progress `p` (0–4), the cutaway (all / noroof / eg), a forced
 dusk value from the sun toggle (cleared by any timeline move), the Rundgang
 (off / playing / paused, its time and the loop flag; `body.dataset.tour`) and the `hires` mode
 (fixed per page load).

@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-09
+edited: 2026-11-10
 ---
 
 # Domain: Frechenlehen house model
@@ -33,7 +33,7 @@ the team uses them:
 | **Windfang** | Entrance lobby behind the east front door, with a glazed double door. |
 | **Stube** | Living room with the **Ofenbett**: a plastered stove with a bed above it and an **Ofenbank** (stove bench). The plans still label it "Kachelofen". |
 | **Opening** | A hole in a wall: `W` window, `FD` french door, `WF` tall window with a fixed light below, `GD` glazed larch door, `D` solid door, `I` bare opening filled by a dedicated builder. |
-| **Leaf** | An interior door leaf, normally opened flat against the wall. |
+| **Leaf** | An interior door leaf, normally opened flat against the wall. A **swinging leaf** is an object of its own with its origin at the hinge (`PIVOT`) and `SWING`, the yaw to its other state. |
 | **Component** | A named building part (e.g. entrance door). The name of a reference photo in `input/` is the component it shows. |
 | **Route** | The camera path of the walkthrough, in `tour.py`, shared by the film and the viewer's Rundgang: orbit / path / turn / stair / hold segments; turning speed `TURN` and pause length `PAUSE` are one variable each. The route is closed: it ends at its start pose. |
 | **Camera key** | One smoothed frame of the route at 25 fps: position (x, y, z), yaw, pitch (radians, model z-up) and lens (mm, 36 mm sensor width). `tour.build_tour()` bakes the route into them; the film and the viewer both play them. |
@@ -41,12 +41,13 @@ the team uses them:
 | **Collection** | Blender grouping. The house lives in `Haus` with sub-collections `FL_EG`, `FL_OG`, `FL_Dach`, `FL_Balkone`, `FL_Umgebung`, `FL_Referenz`. In the `.glb` it is `extras.collection` per node. |
 | **rnd** | A random value per Part, stored per face, that varies the shade of boards and slabs. |
 | **Core** (`house_core`) | The pure-Python description of the house: constants, materials as data, primitives, builders. It knows nothing about Blender or three.js. |
-| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `MAT_DEF`, paint colours, room lights and the garden layout. Not to be confused with "model", the whole 3D house. |
+| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `SLIDE`, `SWING`, `MAT_DEF`, paint colours, room lights and the garden layout. Not to be confused with "model", the whole 3D house. |
 | **Backend** | Turns a Blueprint into output. **Blender backend** (`build_house.py`): the `.blend` scene. **glTF backend** (`export_gltf.py`): the `.glb` file. |
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
 | **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
 | **Viewer** | The three.js web page in `web/`. |
-| **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page reached through the viewer's "Teilmodell" drop-down: the **Ofen** (`ofen.py`, `ofen.html`), the **Schreibtisch** (`desk.py`, `desk.html`), the **Bad Großeltern** (`bad.py`, `bad.html`; it brings walls of its own) and the **Küche** (`kueche.py`, `kueche.html`). The house places the same parts, only translated. |
+| **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page reached through the viewer's "Teilmodell" drop-down: the **Ofen** (`ofen.py`, `ofen.html`), the **Schreibtisch** (`desk.py`, `desk.html`), the **Bad Großeltern** (`bad.py`, `bad.html`; it brings walls of its own), the **Küche** (`kueche.py`, `kueche.html`) and the **Gäste-WC** (`gaeste_wc.py`, `gaeste_wc.html`; with its partition, the WC's north wall and the back hall's three doors). The house places the same parts, only translated. |
+| **Gäste-WC terms** | **WC** (west of the **Trennwand**, the new 10 cm partition; door to the back hall, leaf opening outward), **Garderobe** (east of it, open through the old 80 opening: Bank, Hakenbrett, Hutablage), **Handwaschbecken** (the WC's 40/28 basin outside it, on the back hall's east wall, with tiles and a wood-framed mirror), **schwenkende Türen** (Hintertür, WC-Tür, Windfangtür: in the viewer one of them swings to its other state now and then, to show where they get in each other's way). |
 | **Küche terms** | **Spülzeile** (sink run on the north wall, door frame → NE corner), **Ostzeile** (60 cm base unit on the east wall), **Halbinsel** (peninsula with the cooktop), **Abzug** (flue box in the NE corner from 1.80 m up), **Besenschrank** (broom cupboard behind the open kitchen door). |
 | **Bad Großeltern terms** | **Nische** (the 1.20 m WC + Schrank strip in the south, split by a 12 cm wall), **verschränkte Schiebetüren** (two sliding leaves on offset tracks closing the Nische; at most one half open), **Raumteiler** (1 m wall and one L-shaped glass pane: above the wall to the ceiling, 35 cm from the north wall down to the floor; between shower and basin), **Waschtrog** (one 1.00 m trough basin, two mixers), **Durchgang** (the passage between the front sliding leaf and the Raumteiler's end). |
 | **Speis A / B / C** | The pantry's built-ins: open shelf A on the Flur wall, open shelf B on the aisle, cabinet C back to back with B with doors to the Essen; all to the ceiling. |
@@ -107,7 +108,8 @@ erDiagram
     BLUEPRINT ||--o{ PAINT : "RAL overrides"
     BLUEPRINT ||--o{ ROOM_LIGHT : ROOM_LIGHTS
     BLUEPRINT ||--|| GARDEN_LAYOUT : garden
-    OBJECT_ENTRY ||--o| PIVOT : "origin (EG_Haustuer)"
+    OBJECT_ENTRY ||--o| PIVOT : "origin (EG_Haustuer, screens, swinging leaves)"
+    OBJECT_ENTRY ||--o| SWING : "yaw to the other state (back hall doors)"
     BLUEPRINT ||--|| BLENDER_SCENE : "Blender backend"
     BLUEPRINT ||--|| GLB : "glTF backend"
     GLB ||--|| VIEWER : "loaded by"
@@ -117,7 +119,7 @@ erDiagram
 - **Storeys:** EG and OG. They are joined by an open stair with 15 risers (18.0/25.5 cm) and
   a stairwell in the OG slab.
 - **Rooms:** EG has Stube, Küche/Essen, Bibliothek, Speis, Oma & Opa (bedroom open to its Bad,
-  WC in the Bad's niche) and the Windfang. OG has
+  WC in the Bad's niche), the Windfang and, by the back hall, the Gäste-WC with its Garderobe. OG has
   Nadine & Till, Waschküche, Saschi, Bichlach, Jugend and Yoga, plus bathrooms and WCs.
   Their names are written on the floor (Blender only).
 - **Materials:** about 35 named materials (`FL_*`). Kinds:
