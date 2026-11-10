@@ -75,10 +75,10 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
     PR(o, "Granit", [(6.55, 3.03), (XE, 3.03), (XE, HY0 - 0.007), (7.937, HY0 - 0.007),
                      (7.937, 3.68), (6.55, 3.68)], zc, zt)
     sx = 7.46                                                       # sink at today's water connection
-    B(o, "Metall", sx - 0.23, sx + 0.23, 5.30, 5.76, zt, zt + 0.003)
-    B(o, "Eisen", sx - 0.20, sx + 0.20, 5.33, 5.70, zt + 0.003, zt + 0.004)
-    B(o, "Metall", sx - 0.015, sx + 0.015, 5.77, 5.80, zt, zt + 0.26)                 # tap
-    B(o, "Metall", sx - 0.01, sx + 0.01, 5.60, 5.77, zt + 0.235, zt + 0.255)
+    B(o, "Stahl", sx - 0.23, sx + 0.23, 5.30, 5.76, zt, zt + 0.003)
+    B(o, "Stahl", sx - 0.20, sx + 0.20, 5.33, 5.70, zt + 0.003, zt + 0.004)
+    B(o, "Stahl", sx - 0.015, sx + 0.015, 5.77, 5.80, zt, zt + 0.26)                  # tap
+    B(o, "Stahl", sx - 0.01, sx + 0.01, 5.60, 5.77, zt + 0.235, zt + 0.255)
     B(o, "Eisen", 7.18, 7.95, 3.12, 3.58, zt, zt + 0.005)                            # cooktop
     for cx, cy, rr in ((7.36, 3.24, 0.08), (7.36, 3.46, 0.06), (7.76, 3.24, 0.06), (7.76, 3.46, 0.09)):
         PR(o, "Metall", [(cx + rr * math.cos(math.pi * i / 8), cy + rr * math.sin(math.pi * i / 8))
@@ -88,18 +88,18 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
     # hood of the old form: rolled lip, straight skirt with a rail, canopy narrowing to the stack
     h, xf, ym = c + "_Haube", XE - 0.55, (HY0 + HY1) / 2
     ya, yb, rh = ym - 0.43, ym + 0.43, rng.random()
-    B(h, "Metall", xf - 0.01, XE, ya - 0.01, yb + 0.01, 1.62, 1.64, rh)
-    B(h, "Metall", xf, XE, ya, yb, 1.64, 1.76, rh)
+    B(h, "Stahl", xf - 0.01, XE, ya - 0.01, yb + 0.01, 1.62, 1.64, rh)
+    B(h, "Stahl", xf, XE, ya, yb, 1.64, 1.76, rh)
     v = [(xf, ya, 1.76), (XE, ya, 1.76), (XE, yb, 1.76), (xf, yb, 1.76),
          (XE - 0.22, ym - 0.15, 2.04), (XE, ym - 0.15, 2.04), (XE, ym + 0.15, 2.04), (XE - 0.22, ym + 0.15, 2.04)]
-    hc.add(c, h, "Metall", [(x + dx, y + dy, z) for x, y, z in v],
+    hc.add(c, h, "Stahl", [(x + dx, y + dy, z) for x, y, z in v],
            [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], rh)
-    B(h, "Metall", XE - 0.20, XE, ym - 0.135, ym + 0.135, 2.04, hc.Z_EG_TOP + 0.02, rh)   # into the ceiling
-    hc.prism(c, h, "Metall", hc.frame("x"), [(xf - 0.04 + dx + 0.01 * math.cos(math.pi * i / 4),
-                                              1.70 + 0.01 * math.sin(math.pi * i / 4)) for i in range(8)],
+    B(h, "Stahl", XE - 0.20, XE, ym - 0.135, ym + 0.135, 2.04, hc.Z_EG_TOP + 0.02, rh)    # into the ceiling
+    hc.prism(c, h, "Stahl", hc.frame("x"), [(xf - 0.04 + dx + 0.01 * math.cos(math.pi * i / 4),
+                                             1.70 + 0.01 * math.sin(math.pi * i / 4)) for i in range(8)],
              ya + 0.02 + dy, yb - 0.02 + dy, rng.random())                            # rail
     for y in (ya + 0.05, yb - 0.05):
-        B(h, "Metall", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705)
+        B(h, "Stahl", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705)
     # Besenschrank in the NW corner, door to the south, on a plinth like the base units
     bx, by, bh = BESEN
     B(o, "Front", XW, bx, by + 0.02, YN, zp, bh)

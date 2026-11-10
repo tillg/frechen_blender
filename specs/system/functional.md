@@ -41,10 +41,10 @@ edited: 2026-11-10
     a fire window in the Flur wall shows the fire from the corridor too
   - Küche after `input/2026-11-09 input/speis_kueche_v6.svg` (also a sub-model page): the door
     to the Flur where it really is (clear 81 cm, hinged west, opened 90° into the Küche); behind
-    it a Besenschrank 51 × 55 × 2.20 m; the Spülzeile (~150 cm, sink at the water connection)
+    it a Besenschrank 51 × 55 × 2.20 m; the Spülzeile (~150 cm, steel sink and tap at the water connection)
     from the door frame into the NE corner, under the Abzug (plastered flue box from 1.80 m, depth
     assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
-    after wamsler.jpeg (grey enamel, fire burning behind the glass, flue pipe into the east wall)
+    after wamsler.jpeg (stainless steel, fire burning behind the glass, flue pipe into the east wall)
     under an old-form steel hood (skirt with rail, canopy, stack to the ceiling); the Halbinsel
     with the induction cooktop towards the dining table; no wall cabinets; east of the sink,
     where the Herd stands in front of the Spülzeile, a blind cabinet (no drawers) and the granite

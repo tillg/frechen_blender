@@ -522,7 +522,7 @@
   ],
   "faces": 46,
   "materials": [
-   "FL_Metall"
+   "FL_Stahl"
   ],
   "origin": [
    0.0,
@@ -568,9 +568,8 @@
   "faces": 280,
   "materials": [
    "FL_Eisen",
-   "FL_Herd",
-   "FL_Metall",
-   "FL_Ofenglas"
+   "FL_Ofenglas",
+   "FL_Stahl"
   ],
   "origin": [
    0.0,
@@ -644,7 +643,8 @@
    "FL_Front",
    "FL_Fuge",
    "FL_Granit",
-   "FL_Metall"
+   "FL_Metall",
+   "FL_Stahl"
   ],
   "origin": [
    0.0,

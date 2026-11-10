@@ -625,17 +625,17 @@ KUECHE_EAST = 8.557                                                           # 
 
 
 def test_kueche_wamsler_herd_at_the_north_end_of_the_east_run():
-    """Küche: a wood-fired Wamsler cooker after input/2026-11-05 input/wamsler.jpeg (grey enamelled
-    steel, steel top with a rail, fire door with glass top left, ash door below, oven door with a
+    """Küche: a wood-fired Wamsler cooker after input/2026-11-05 input/wamsler.jpeg (stainless
+    steel since 2026-11-10, steel top with a rail, fire door with glass top left, ash door below, oven door with a
     window on the right, full-width drawer, flue on top) stands at the north end of the east run
     (where the plan draws the flue), front facing west, flush with the run's fronts; the run and
     its granite top end south of it. Its fire burns behind the glass (FIRES)."""
     herd = list(part_list(("EG", "EG_Herd")))
-    body = [p for p in herd if p[0] == "Herd"]
+    body = _herd_body()
     lo = [min(p[1][k] for p in body) for k in range(3)]; hi = [max(p[2][k] for p in body) for k in range(3)]
     assert 0.75 <= hi[1] - lo[1] <= 0.85 and 0.55 <= hi[0] - lo[0] <= 0.62 and 0.80 <= hi[2] <= 0.92
     assert KUECHE_EAST - 0.01 < hi[0] < KUECHE_EAST and hi[1] < 5.2 and lo[1] > 4.25    # north end of the run (v6)
-    assert {"Herd", "Metall", "Eisen", "Ofenglas"} <= {p[0] for p in herd}
+    assert {"Stahl", "Eisen", "Ofenglas"} <= {p[0] for p in herd}
     front = min(p[1][0] for p in herd if p[2][2] < 0.9)                       # doors, handles
     assert 7.90 < front < 7.96
     kueche = list(part_list(("EG", "EG_Kueche")))
@@ -649,10 +649,10 @@ def test_kueche_wamsler_herd_at_the_north_end_of_the_east_run():
 def test_kueche_old_steel_hood_above_the_herd():
     """Küche: above the Herd a steel hood of the old form: a straight skirt with a rail in front,
     a sloping canopy narrowing to a flue stack that runs up to the ceiling."""
-    herd = [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Herd"]
+    herd = _herd_body()
     hy0, hy1 = min(p[1][1] for p in herd), max(p[2][1] for p in herd)
     hood = list(part_list(("EG", "EG_Haube")))
-    assert {p[0] for p in hood} == {"Metall"}
+    assert {p[0] for p in hood} == {"Stahl"}
     lo = [min(p[1][k] for p in hood) for k in range(3)]; hi = [max(p[2][k] for p in hood) for k in range(3)]
     assert lo[1] < hy0 + 0.01 and hi[1] > hy1 - 0.01 and abs((lo[1] + hi[1]) / 2 - (hy0 + hy1) / 2) < 0.01
     assert 1.55 <= lo[2] <= 1.75 and hi[2] > house_core.Z_EG_TOP              # up into the ceiling
@@ -664,6 +664,27 @@ def test_kueche_old_steel_hood_above_the_herd():
     assert len(taper) == 1                                                    # narrows upwards
 
 
+def _herd_body():
+    """The Wamsler's body: its one Stahl part taller than 0.5 m."""
+    return [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Stahl" and p[2][2] - p[1][2] > 0.5]
+
+
+def test_kueche_hood_sink_tap_and_wamsler_in_steel():
+    """Request 2026-11-10: hood, sink, tap and the Wamsler in steel, metal-coloured. Stahl is light
+    and less than half metallic, so the viewer (no environment map, where metal=1 renders black)
+    shows it as bright steel; the Wamsler keeps its black plinth, flue, firebox and oven window."""
+    d = house_core.MAT_DEF["Stahl"]
+    assert min(d["rgba"][:3]) >= 0.5 and d["metal"] < 0.5
+    assert "Herd" not in house_core.MAT_DEF
+    assert {p[0] for p in part_list(("EG", "EG_Haube"))} == {"Stahl"}
+    assert {p[0] for p in part_list(("EG", "EG_Herd"))} == {"Stahl", "Eisen", "Ofenglas"}
+    assert len(_herd_body()) == 1
+    zt = max(p[2][2] for p in part_list(("EG", "EG_Kueche")) if p[0] == "Granit")
+    sink = [p for p in part_list(("EG", "EG_Kueche")) if 7.2 < p[1][0] and p[2][0] < 7.7 and 5.29 < p[1][1]
+            and p[2][1] < 5.81 and p[1][2] >= zt - 1e-6]                      # basin, rim, tap
+    assert len(sink) == 4 and {p[0] for p in sink} == {"Stahl"}
+
+
 def test_kueche_without_wall_cabinets_and_sealed_against_the_herd():
     """Request 2026-11-10: no wall cabinets; east of the sink, where the Herd stands in front of the
     sink run, a blind cabinet (no drawers, no grips) and the granite top runs right up to the Herd;
@@ -672,7 +693,7 @@ def test_kueche_without_wall_cabinets_and_sealed_against_the_herd():
     assert not [p for p in k if p[1][2] > 1.3 and p[1][0] > 6.01]              # nothing on the walls (Besenschrank aside)
     herd = [p for p in part_list(("EG", "EG_Herd"))]
     hy0, hy1 = min(p[1][1] for p in herd), max(p[2][1] for p in herd)       # incl. its top's rim
-    hx0 = min(p[1][0] for p in herd if p[0] == "Herd")
+    hx0 = min(p[1][0] for p in _herd_body())
     assert not [p for p in k if p[0] == "Metall" and p[2][0] > 7.85 and p[1][1] > hy1 - 0.01 and p[2][2] < 0.9]
     for y in (hy1 + 0.003, (hy1 + 5.249) / 2):                               # north of the Herd: top + filler
         assert _mat_at(BP, ("EG", "EG_Kueche"), 8.3, y, 0.88) == "Granit", y
@@ -692,7 +713,7 @@ def test_kueche_and_speis_fronts_after_mallnitz():
     the kitchen and towards the dining table."""
     assert house_core.PAINT["Front"] == house_core.RAL_5014 and "rgba" in house_core.MAT_DEF["Front"]
     k = list(part_list(("EG", "EG_Kueche")))
-    assert {p[0] for p in k} <= {"Front", "Metall", "Granit", "Fuge", "Eisen"}
+    assert {p[0] for p in k} <= {"Front", "Metall", "Granit", "Fuge", "Eisen", "Stahl"}
     hood = lambda p: p[0] == "Metall" and len(set(map(tuple, p[3]))) > 8
     # Ostzeile (front face x 7.957, y 3.66 .. 4.26): three drawers, each a frame round a recessed
     # panel, each with a cup pull
@@ -1111,7 +1132,7 @@ def test_kueche_submodel():
     east = [p for p in base if p[1][0] > 7.9 and 3.6 < p[1][1] and p[2][1] < 4.3]
     fronts = [p for p in k if p[0] == "Front" and 7.95 < p[1][0] < 7.96 and p[2][2] < 0.9 and p[2][1] < 4.5]
     assert east and abs(max(p[2][1] for p in fronts) - min(p[1][1] for p in fronts) - 0.60) < 0.01
-    herd = [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Herd"]
+    herd = _herd_body()
     assert abs(min(p[1][1] for p in herd) - 4.30) < 0.005 and abs(max(p[2][1] for p in herd) - 5.10) < 0.005
     besen = [p for p in k if p[1][0] < 5.5 and p[1][1] > 5.2]
     lo = [min(p[1][i] for p in besen) for i in range(3)]; hi = [max(p[2][i] for p in besen) for i in range(3)]
