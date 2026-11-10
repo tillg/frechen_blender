@@ -10,6 +10,7 @@ web/public/ofen.glb
 web/public/desk.glb
 web/public/bad.glb
 web/public/kueche.glb
+web/public/gaeste_wc.glb
 web/test-results/
 web/playwright-report/
 .venv/
