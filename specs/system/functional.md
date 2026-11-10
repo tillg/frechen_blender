@@ -30,7 +30,8 @@ edited: 2026-11-10
   - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf)
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
-  - floors: limestone in the EG corridor, the Bäder (OG Bad NW with its shower alcove, Bad S) and
+  - floors: limestone in the EG corridor (running through the door to the back Windfang, no
+    threshold), the Bäder (OG Bad NW with its shower alcove, Bad S) and
     all four WCs; in the Bad Großeltern a limestone strip as wide as its WC along the west wall
     (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip and in its
     niche's Schrank)
@@ -51,9 +52,12 @@ edited: 2026-11-10
     pull on every drawer and door), painted RAL 5014 Taubenblau; under the cooktop drawers towards
     the kitchen and towards the dining table
   - Speis (no wall to the Essen): from the Flur wall open shelf A (60 cm), the aisle (91.9 cm,
-    west end free), open shelf B (60 cm) and, back to back with it, cabinet C with doors to the
-    Essen (60 cm), all to the ceiling; the shelves spruce, C with the kitchen's painted Mallnitz
-    fronts and cup pulls; the wall to the Küche ends at C's front and is open
+    west end free), open shelf B (60 cm) and, back to back with it, cabinet C towards the Essen
+    (60 cm), all to the ceiling; the shelves spruce, stocked for illustration (food cartons,
+    flour, jars of tomato sauce and pickles, cans, now and then a grey plastic crate with a lid);
+    C with the kitchen's painted Mallnitz fronts and cup pulls, four leaf columns, each a top
+    door, a door over the upper half and three drawers below; the wall to the Küche ends at C's
+    front and is open
     over the aisle, where a sliding door on the Küche side stands slid open to the south
   - dining table after tisch-briol.png, one table 2.00 m long: board top, legs splayed on a flat
     foot frame with corner blocks; 8 chairs (3 per long side, one at each end)
