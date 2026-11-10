@@ -1,6 +1,6 @@
 // The drop-down that switches between the house and its sub-models (house toolbar and every sub-model page).
 // Relative URLs: they work under the Pages base (/frechen_blender/) too.
-const PAGES = [['Haus', './'], ['Ofen', 'ofen.html'], ['Schreibtisch', 'desk.html'], ['Bad Oma & Opa', 'bad.html'], ['Küche', 'kueche.html']];
+const PAGES = [['Haus', './'], ['Ofen', 'ofen.html'], ['Schreibtisch', 'desk.html'], ['Bad Oma & Opa', 'bad.html'], ['Küche', 'kueche.html'], ['Gäste-WC', 'gaeste_wc.html']];
 
 export function navSelect() {
   const here = location.pathname.split('/').pop() || './';

@@ -10,7 +10,7 @@ import bpy, bmesh, importlib, math, os, random, sys
 from mathutils import Vector, noise
 
 sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
-import ofen, desk, bad, kueche, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(house_core)  # pick up core edits in a long session
+import ofen, desk, bad, kueche, gaeste_wc, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(gaeste_wc); importlib.reload(house_core)  # pick up core edits in a long session
 from house_core import CELL, DENSITY, density
 
 

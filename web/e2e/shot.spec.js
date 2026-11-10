@@ -9,6 +9,7 @@ const ROOT = new URL('../../', import.meta.url).pathname;
 for (const [name, args, start] of [
   ['haustuer', ['EG_Haustuer'], /^http:\/\/localhost:5377\/\?cam=/],
   ['kueche', ['Kueche_Herd', '--page', 'kueche'], /^http:\/\/localhost:5377\/kueche\.html\?cam=/],
+  ['gaeste_wc', ['GaesteWC_Garderobe', '--page', 'gaeste_wc'], /^http:\/\/localhost:5377\/gaeste_wc\.html\?cam=/],
 ]) test(`shot.js writes a screenshot of the URL (${name})`, async ({ page }) => {
   const url = execFileSync(ROOT + '.venv/bin/python', [ROOT + 'code/show.py', ...args, '--print'],
     { encoding: 'utf8' }).trim();

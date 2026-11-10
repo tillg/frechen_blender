@@ -8,7 +8,7 @@ import { inkLines } from './ink.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
-import { slidingNodes } from './slides.js';
+import { slidingNodes, swingingNodes } from './slides.js';
 import { createTour, drawDue } from './tour.js';
 import { createUI } from './ui.js';
 
@@ -62,6 +62,18 @@ const fire = createFire(bp.extras);                       // the stoves' fires (
 const slides = slidingNodes(bp.objects);
 const slideBoxes = slides.nodes.map((n) => new THREE.Box3().setFromObject(n.obj)
   .union(new THREE.Box3().setFromObject(n.obj).translate(n.by)));
+// the doors by the back hall (code/gaeste_wc.py) swing open and shut the same way; their boxes cover
+// both states plus the arc between
+const swings = swingingNodes(bp.objects);
+const swingBoxes = swings.nodes.map((n) => {
+  const b = new THREE.Box3().setFromObject(n.obj);
+  n.obj.quaternion.multiplyQuaternions(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), n.by), n.home);
+  n.obj.updateMatrixWorld(true);
+  b.union(new THREE.Box3().setFromObject(n.obj)).expandByScalar(0.3);
+  n.obj.quaternion.copy(n.home);
+  n.obj.updateMatrixWorld(true);
+  return b;
+});
 scene.add(bp.root, ink.group, garden.group, fire.group);
 
 let progress = 0, cut = 'all', sun = null;               // sun: null = follow the stage, else forced dusk 0/1
@@ -167,9 +179,12 @@ renderer.setAnimationLoop((now) => {
   if (!tour.update(now)) controls.update();
   const p = camera.position, inside = indoors(bp.extras, [p.x, -p.z, p.y]);
   if (garden.setIndoors(!hires && inside)) dirty = true;            // hires (film capture) keeps the grass
-  const rolling = slides.update(now / 1000 - (t0 ??= now / 1000), stageAt(progress) === 'furnished' && !touring);
-  // tour, fire and rolling leaves: ≤ 30 fps, less GPU load; otherwise only after a change
-  if (touring || (!dirty && (fireInView() || (rolling && inView(slideBoxes))))) { if (!drawDue(now, lastDraw)) return; }
+  const t = now / 1000 - (t0 ??= now / 1000), moving = stageAt(progress) === 'furnished' && !touring;
+  const rolling = slides.update(t, moving), swinging = swings.update(t, moving);
+  // tour, fire, rolling leaves and swinging doors: ≤ 30 fps, less GPU load; otherwise only after a change
+  if (touring || (!dirty && (fireInView() || (rolling && inView(slideBoxes)) || (swinging && inView(swingBoxes))))) {
+    if (!drawDue(now, lastDraw)) return;
+  }
   else if (!dirty) return;
   dirty = touring;                                                  // the first frame after the tour draws too
   lastDraw = now;
@@ -197,6 +212,7 @@ if (import.meta.env.MODE !== 'production') {
     fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y,   // a flame's height (0: off)
     fires: () => fire.group.children.filter((g) => g.visible).map((g) => g.userData.collection),   // shown fires' collections
     slides: slides.state,                                                       // the Bad's sliding leaves
+    doors: swings.state,                                                        // the doors by the back hall
     setProgress,
     setCutaway,
     visible: (name) => bp.byName[name].visible,

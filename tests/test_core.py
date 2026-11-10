@@ -613,7 +613,8 @@ def test_back_windfang_door_glazed_like_the_front_one():
     8.506) is glazed like the front Windfang door (door_windfang.jpg): frosted glass above,
     raised panels below; one leaf, opened 90° into the Windfang."""
     glass = [p for p in part_list(("EG", "EG_Innentueren")) if p[0] == "Milchglas"]
-    back = [p for p in glass if p[2][0] < 2.358 + 0.01 and 7.3 < p[1][1] and p[2][1] < 8.6]
+    back = [p for p in part_list(("EG", "EG_Windfangtuer")) if p[0] == "Milchglas"     # own object: it swings
+            and p[2][0] < 2.358 + 0.01 and 7.3 < p[1][1] and p[2][1] < 8.6]
     front = [p for p in glass if p[1][0] > 12.0]
     assert len(back) == 1 and len(front) == 2
     _, lo, hi, _ = back[0]
@@ -838,7 +839,8 @@ def test_desk_built_into_the_bibliothek():
 
 def test_back_door_has_lever_handles_inside_and_outside():
     """Back door (west wall): a black lever handle outside (on the lock plate) and inside (on its
-    own backplate), at the lock (south side), levers pointing towards the hinge (north)."""
+    own backplate), at the lock (south side), levers pointing towards the hinge (north): open, the
+    leaf lies along the back hall's north wall (request 2026-11-10)."""
     levers = [(lo, hi) for m, lo, hi, _ in part_list(("EG", "EG_Hintertuer"))
               if m == "Eisen" and 1.0 < lo[2] and hi[2] < 1.15 and hi[1] - lo[1] > 0.12]
     assert any(hi[0] < -0.04 for lo, hi in levers)                           # outside the leaf
@@ -879,7 +881,7 @@ def _part_at(key, x, y, z):
 
 
 # the four WCs: (collection, floor z, interior rectangle, door span on the north wall)
-WCS = [("EG", 0.0, (0.31, 2.358, 5.475, 6.574), (1.349, 2.288)),                 # by the back hall
+WCS = [("EG", 0.0, (0.31, 1.319, 5.475, 6.574), (0.48, 1.24)),                   # Gäste-WC by the back hall
        ("EG", 0.0, (0.31, 1.274, 8.656, 9.856), (0.31, 1.274)),                  # WC Großeltern: niche, north open
        ("OG", house_core.Z_OG, (0.31, 1.57, 5.46, 6.44), (0.48, 1.42)),          # WC 2,26
        ("OG", house_core.Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]          # WC 2,30
@@ -911,7 +913,7 @@ def test_wc_fixtures_after_the_photo():
     basins on chrome console legs, a black frame round their mirror. The Bäder keep theirs."""
     zo = house_core.Z_OG
     at = lambda wx, wy, fx, fy: lambda u, v: (wx + fx * v - fy * u, wy + fy * v + fx * u)
-    for c, z, *w in [("EG", 0.0, 0.31 + 0.482, 8.656, 0, 1), ("EG", 0.0, 1.325, 5.475, 0, 1),
+    for c, z, *w in [("EG", 0.0, 0.31 + 0.482, 8.656, 0, 1), ("EG", 0.0, 0.8145, 5.475, 0, 1),
                      ("OG", zo, 0.31, 6.0, 1, 0), ("OG", zo, 9.26, 3.98, 0, 1)]:
         M, key = at(*w), (c, c + "_Sanitaer")
         assert _part_at(key, *M(0, 0.10), z + 0.60) == "Keramik", w            # cistern
@@ -1234,3 +1236,150 @@ def test_speis_shelves_stocked():
     for side, face in (("A", 5.249), ("B", 4.33)):                                # near the aisle
         sp = [p for p in parts if (p[1][1] > 5.0) == (side == "A")]
         assert sp and min(abs(p[1][1] - face) if side == "A" else abs(p[2][1] - face) for p in sp) < 0.06
+
+
+def test_gaeste_wc_submodel():
+    """code/gaeste_wc.py: the back hall's WC after the agreed drawing input/2026-11-10 input/gaeste_wc_v3.svg,
+    at its own origin (the old WC room's inner SW corner): a new 10 cm partition splits it into WC
+    (west, 101) and Garderobe (east, 94); the WC gets a new 76 opening in the north wall (17 from
+    the west wall), its leaf opened outward into the Flur, 90 deg, hinged at the partition side;
+    the toilet centred (50/50), 40 free in front of it (drawing: 41, its toilet 1 cm shorter); Taubenblau tiles in the WC only. The
+    Garderobe keeps the old 80 opening without a door: bench 35 x 110 at 45, wall to wall, 59 free
+    beside it, hook board, six hooks at 165, hat shelf at 185. On the Flur east wall a hand basin
+    40/28 at 85, 14/40/14 on the 69 wall piece, 83 from the WC door's hinge jamb; tiles behind it to
+    about 112, up to the Windfang door's architrave; a mirror 40 x 60 in a 7 cm wooden frame from 120."""
+    import gaeste_wc as g
+    bp = house_core.build_gaeste_wc()
+    leaves = [pts for c, pts in house_core.LEAVES if c == "GaesteWC"]
+    house_core.build()                                                    # restore the registries
+    assert g.WC_AT == (0.31, 5.475) and bp.garden is None
+    assert {c for c, _ in bp.geo} == {"GaesteWC"}
+    assert {n for _, n in bp.geo} == {"GaesteWC_Waende", "GaesteWC_Innentueren", "GaesteWC_Sanitaer",
+                                      "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_WC_Tuer",
+                                      "GaesteWC_Windfangtuer", "GaesteWC_Hintertuer", "GaesteWC_Fenster_Tueren"}
+    x0, y0 = g.WC_AT
+    cm = lambda a, b: round(abs(b - a) * 100)
+    K = lambda n: ("GaesteWC", "GaesteWC_" + n)
+    H = (lambda p: [m for m, lo, hi in _parts(bp, K("Waende"))
+                    if lo[0] - 1e-6 <= p[0] - x0 <= hi[0] + 1e-6 and lo[1] - 1e-6 <= p[1] - y0 <= hi[1] + 1e-6
+                    and lo[2] < p[2] < hi[2]])                              # wall material at a house point
+    # partition 10 cm, full height; WC 101, Garderobe 94
+    walls = [[m, [round(a, 3) for a in lo], [round(a, 3) for a in hi]] for m, lo, hi in _parts(bp, K("Waende"))]
+    assert ["Putz", [1.009, 0, 0], [1.109, 1.099, 2.4]] in walls
+    assert (cm(0.31, g.PA), cm(g.PA, g.PB), cm(g.PB, 2.358)) == (101, 10, 94)
+    # north wall: new WC opening 76 (17 from the west wall), the old 80 opening stays, both 2.00 high
+    for x in (0.86, 1.81):
+        assert H((x, 6.65, 1.0)) == [] and H((x, 6.65, 2.2)) == ["Putz"]
+    for x in (0.40, 1.33, 2.30):
+        assert H((x, 6.65, 1.0)) == ["Putz"]
+    assert (cm(0.31, g.DA), cm(g.DA, g.DB), cm(g.GA, g.GB)) == (17, 76, 80)
+    # the WC leaf (the other one: the Windfang door's), opened 90 deg into the Flur, at the partition-side jamb
+    assert len(leaves) == 2
+    lo, hi = ([f(a, b) for a, b in zip(*leaves[0])] for f in (min, max))
+    assert hi[0] - lo[0] < 0.05 and g.DB - 0.10 < lo[0] + x0 and hi[0] + x0 <= g.DB
+    assert lo[1] + y0 >= 6.723 - 1e-6 and hi[1] + y0 > 6.723 + 0.65
+    # toilet centred between west wall and partition, 41 free in front of it
+    san = list(_parts(bp, K("Sanitaer")))
+    toilet = [(lo, hi) for m, lo, hi in san if m == "Keramik" and hi[1] < 1.0]
+    cis = [(lo, hi) for lo, hi in toilet if abs(hi[2] - 0.78) < 1e-6]        # cistern
+    assert len(cis) == 1 and abs((cis[0][0][0] + cis[0][1][0]) / 2 - (g.PA - x0) / 2) < 1e-6
+    assert (cm(0.31, g.TX), cm(g.TX, g.PA)) == (50, 50)
+    assert cm(max(hi[1] for lo, hi in toilet), g.YN - y0) == 40           # drawing 41: the model's seat is 1 cm deeper
+    # tiles: in the WC (west of the partition) and on the Flur wall piece only, to about 112
+    til = [(lo, hi) for m, lo, hi in _parts(bp, K("Fliesen")) if m == "Fliese"]
+    assert til and all(hi[0] <= g.PA - x0 + 1e-6 or lo[0] >= 2.358 - x0 - 0.02 for lo, hi in til)
+    flur = [(lo, hi) for lo, hi in til if lo[0] >= 2.358 - x0 - 0.02]
+    assert min(lo[1] for lo, hi in flur) + y0 > 6.723 - 1e-6 and max(hi[1] for lo, hi in flur) + y0 <= 7.408 - 0.07 + 1e-6
+    assert cm(0, max(hi[2] for lo, hi in flur)) == 112 and cm(0, max(hi[2] for lo, hi in til)) == 112
+    # hand basin on the Flur east wall: 14 / 40 / 14, top 85, 83 from the WC door's hinge jamb
+    bas = [(lo, hi) for m, lo, hi in san if m == "Keramik" and lo[1] + y0 > 6.723]
+    ya, yb = min(lo[1] for lo, hi in bas) + y0, max(hi[1] for lo, hi in bas) + y0
+    assert (cm(6.723, ya), cm(ya, yb), cm(yb, 7.408)) == (14, 40, 14)
+    assert cm(0, max(hi[2] for lo, hi in bas)) == 85
+    assert cm(g.DB, min(lo[0] for lo, hi in bas) + x0) == 83
+    # mirror: glass 40 x 60 in a 7 cm wooden frame, outside 54 x 74 from 120, centred over the basin
+    gl = [(lo, hi) for m, lo, hi in san if m == "Spiegel"]
+    fr = [(lo, hi) for m, lo, hi in san if m == "Kiefer"]
+    assert len(gl) == 1 and fr
+    (glo, ghi) = gl[0]
+    assert (cm(glo[1], ghi[1]), cm(glo[2], ghi[2])) == (40, 60)
+    flo = [min(lo[k] for lo, hi in fr) for k in range(3)]
+    fhi = [max(hi[k] for lo, hi in fr) for k in range(3)]
+    assert (cm(flo[1], fhi[1]), cm(flo[2], fhi[2]), cm(0, flo[2])) == (54, 74, 120)
+    assert abs((flo[1] + fhi[1]) / 2 - (ya + yb) / 2 + y0) < 1e-6
+    assert fhi[1] + y0 < 7.408 - 0.07                                      # clear of the Windfang architrave
+    # Garderobe: bench 35 x 110 at 45, wall to wall, 59 free beside it; hooks at 165; hat shelf at 185
+    gar = list(_parts(bp, K("Garderobe")))
+    assert all(lo[0] >= g.PB - x0 - 1e-6 and hi[0] <= 2.358 - x0 + 1e-6 for m, lo, hi in gar)
+    seat = [(lo, hi) for m, lo, hi in gar if abs(hi[2] - 0.45) < 1e-6]
+    assert len(seat) == 1
+    lo, hi = seat[0]
+    assert (cm(lo[0], hi[0]), cm(lo[1], hi[1])) == (35, 110) and abs(hi[0] - (2.358 - x0)) < 1e-6
+    assert cm(g.PB, lo[0] + x0) == 59 and cm(lo[0] + x0, g.GB) == 21
+    hooks = [(lo, hi) for m, lo, hi in gar if m == "Eisen" and abs(lo[2] - 1.65) < 0.03]
+    assert len({round((lo[1] + hi[1]) / 2, 3) for lo, hi in hooks}) == 6
+    shelf = [(lo, hi) for m, lo, hi in gar if abs(lo[2] - 1.85) < 1e-6]
+    assert len(shelf) == 1 and cm(shelf[0][0][0], shelf[0][1][0]) == 28
+    # everything below the ceiling; dimension lines from the core
+    assert all(-1e-9 <= z <= 2.40 + 1e-9 for gg in bp.geo.values() for x, y, z in gg["v"])
+    labels = [d[2] for d in bp.dims]
+    for t in ("WC 101", "10", "Garderobe 94", "Tür 76", "17", "40 frei", "59 frei", "83 frei", "Bank 35 × 110",
+              "HWB 40", "Spiegel 54 × 74"):
+        assert t in labels, t
+
+
+def test_gaeste_wc_built_into_the_house():
+    """The Gäste-WC sub-model stands in the house at WC_AT, unrotated, every part the same; the old
+    WC door (into the WC) and its toilet are gone; limestone in WC and Garderobe, none under the
+    partition."""
+    import gaeste_wc as g
+    sub = house_core.build_gaeste_wc()
+    house_core.build()                                                    # restore the registries
+    x0, y0 = g.WC_AT
+    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Garderobe", "WC_Tuer", "Windfangtuer", "Hintertuer",
+              "Fenster_Tueren"):
+        assert _solids(sub, ("GaesteWC", "GaesteWC_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
+    eg = [pts for c, pts in house_core.LEAVES if c == "EG"]
+    assert not any(min(a[0], b[0]) > 1.3 and max(a[0], b[0]) < 2.3 and min(a[1], b[1]) < 6.6 and max(a[1], b[1]) > 5.5
+                   for a, b in eg)                                                                 # old leaf
+    assert any(abs(max(a[0], b[0]) - 1.215) < 0.01 and max(a[1], b[1]) > 7.3 for a, b in eg)       # WC leaf
+    cist = [lo for m, lo, hi in _parts(BP, ("EG", "EG_Sanitaer")) if m == "Keramik" and abs(hi[2] - 0.78) < 1e-6
+            and 5.4 < lo[1] < 6.6 and lo[0] < 2.4]
+    assert len(cist) == 1 and abs(cist[0][0] + 0.20 - g.TX) < 1e-6
+    assert _floor_at("EG", 0.8, 6.0) == "Kalkstein" and _floor_at("EG", 1.9, 6.0) == "Kalkstein"
+    assert not any(lo[0] < g.PB - 1e-6 and hi[0] > g.PA + 1e-6 and lo[1] < 6.5 and hi[1] > 5.5
+                   for m, lo, hi in _parts(BP, ("EG", "EG_Bodenbelag")))
+
+
+def test_gaeste_wc_doors_swing():
+    """Request 2026-11-10: the three doors by the back hall (Hintertür, WC door, Windfang door) open
+    and close at random in the viewer to show where they get in each other's way. Each leaf is its
+    own object with its origin at the hinge (PIVOT) and SWING = the yaw (degrees, about z) from as
+    built to its other state: the back door (closed) opens 90 deg into the Flur, the WC and Windfang
+    doors (open 90 deg) close into their linings. The same in the sub-model, shifted by WC_AT."""
+    import gaeste_wc as g
+    sub = house_core.build_gaeste_wc()
+    house_core.build()                                                    # restore the registries
+    x0, y0 = g.WC_AT
+    assert BP.swing == {"EG_Hintertuer": 90.0, "EG_WC_Tuer": 90.0, "EG_Windfangtuer": 90.0}   # back door, Windfang: hinged north
+    assert sub.swing == {"GaesteWC_Hintertuer": 90.0, "GaesteWC_WC_Tuer": 90.0, "GaesteWC_Windfangtuer": 90.0}
+    for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):
+        px, py, pz = sub.pivot["GaesteWC_" + n]
+        assert math.dist(BP.pivot["EG_" + n], (px + x0, py + y0, pz)) < 1e-9, n
+
+    def turned(n, pts=False):                                             # the leaf at its other state
+        (px, py, _), a = BP.pivot[n], math.radians(BP.swing[n])
+        vs = [(px + (x - px) * math.cos(a) - (y - py) * math.sin(a), py + (x - px) * math.sin(a) + (y - py) * math.cos(a))
+              for x, y, z in BP.geo[("EG", n)]["v"]]
+        return vs if pts else ([min(v[k] for v in vs) for k in (0, 1)], [max(v[k] for v in vs) for k in (0, 1)])
+
+    lo, hi = turned("EG_WC_Tuer")                                         # closed: in the WC door's lining
+    assert g.DA < lo[0] and hi[0] < g.DB and 6.574 < lo[1] and hi[1] <= 6.723 + 1e-6
+    lo, hi = turned("EG_Windfangtuer")                                    # closed: in the Windfang door's lining
+    assert 2.358 - 0.03 < lo[0] and hi[0] < 2.657                          # (its lever 2.5 cm proud) and 7.408 < lo[1] and hi[1] < 8.506
+    lo, hi = turned("EG_Hintertuer")                                      # open: in the Flur, clear of its frame
+    assert lo[0] > 0.0 and hi[0] > 0.8 and lo[1] > 7.408 and hi[1] > 8.1                  # at the north jamb
+    assert all(y < 8.377 - 0.09 for x, y in turned("EG_Hintertuer", True) if x < 0.31)   # in the wall: clear of the jamb
+    # as built (open): the Windfang leaf lies along the back hall's north wall (8.506), in front of it
+    wl = [v for v in BP.geo[("EG", "EG_Windfangtuer")]["v"]]
+    assert 8.506 - 0.10 < min(v[1] for v in wl) and max(v[1] for v in wl) <= 8.506 + 1e-6 and max(v[0] for v in wl) <= 2.358 + 1e-6

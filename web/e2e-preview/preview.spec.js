@@ -108,3 +108,22 @@ test('kueche page is part of the build', async ({ page }) => {
   await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
   await page.waitForURL(/\/frechen_blender\/$/);
 });
+
+test('gaeste_wc page is part of the build', async ({ page }) => {
+  const failed = [], errors = [];
+  let glb = 0;
+  page.on('response', (r) => {
+    if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);
+    if (r.url().endsWith('/frechen_blender/gaeste_wc.glb') && r.ok()) glb++;
+  });
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(BASE);
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Gäste-WC' });
+  await page.waitForURL(/\/frechen_blender\/gaeste_wc\.html$/);
+  await expect(page.locator('.dim', { hasText: 'HWB 40' })).toBeVisible({ timeout: 30_000 });
+  expect(failed).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(glb).toBe(1);
+  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
+  await page.waitForURL(/\/frechen_blender\/$/);
+});

@@ -96,3 +96,13 @@ def test_kueche_page(capsys):
     assert link.startswith("http://localhost:5377/kueche.html?cam=") and link.endswith("&look=full")
     cam, at = (tuple(map(float, q.split("=")[1].split(","))) for q in link.split("?")[1].split("&")[:2])
     assert cam[1] < at[1] and cam[0] == at[0]      # from the open south, not through the east wall (SE)
+
+
+def test_gaeste_wc_page(capsys):
+    """The Gäste-WC sub-model page (gaeste_wc.html) is a --page, seen from the Flur (north) like the
+    drawing's section, not through the south wall (SE)."""
+    assert show.main(["GaesteWC_Garderobe", "--page", "gaeste_wc", "--print"]) == 0
+    link = capsys.readouterr().out.strip()
+    assert link.startswith("http://localhost:5377/gaeste_wc.html?cam=") and link.endswith("&look=full")
+    cam, at = (tuple(map(float, q.split("=")[1].split(","))) for q in link.split("?")[1].split("&")[:2])
+    assert cam[1] > at[1] and cam[0] == at[0]

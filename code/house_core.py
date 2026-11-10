@@ -13,6 +13,7 @@ import ofen  # the stoves (code/ofen.py); it uses the primitives below via house
 import desk  # the Büro desk sub-model (code/desk.py), the same way
 import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
 import kueche  # the Küche sub-model (code/kueche.py), the same way
+import gaeste_wc  # the Gäste-WC by the back hall (code/gaeste_wc.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -122,6 +123,8 @@ TURN = {}     # object -> its rotation about the vertical through its PIVOT, deg
               # object, so object space runs along it (the desk's angled screen panes)
 SLIDE = {}    # object -> (dx, dy, dz) to its other end of travel (the Bad's sliding leaves): the
               # sub-model viewer rolls it there and back
+SWING = {}    # object -> degrees about the vertical through its PIVOT (counter-clockwise from above)
+              # from as built to its other state (the doors by the back hall): the viewer swings it
 
 
 def local(p, piv, turn=0.0):
@@ -372,13 +375,15 @@ def interior(coll, x0, x1, y0, y1, doors=(), z0=0.0, z1=Z_EG_TOP, head=DOOR_H, o
 
 
 # ---------------------------------------------------------------- doors
-def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style="panel", mat="Innentuer"):
+def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style="panel", mat="Innentuer", leaf=None):
     """Interior door after door_inside_1st_floor.jpg: pine, six panels (2 small on top,
     2 tall, 2 lower), lining + architraves. The leaf is opened fully and lies flat against
     the room-side wall face next to the hinge jamb, so the walkthrough camera passes freely;
     flat=False (a room corner is too close for that): opened 90 deg into the room.
     hinge "ab" = double door (one leaf on each jamb). style "glazed" = Windfang door after
-    door_windfang.jpg: frosted 2 x 2 panes above, two raised panels below, heavy head casing."""
+    door_windfang.jpg: frosted 2 x 2 panes above, two raised panels below, heavy head casing.
+    leaf: an object of its own for the (single, flat=False) leaf, its origin at the hinge (PIVOT) and
+    SWING the turn that closes it into the lining (the viewer opens and closes it)."""
     P, o, lin, arc, LT = frame(ax), coll + "_Innentueren", 0.025, 0.07, 0.04
     # thick walls keep a plaster reveal; the frame only lines the room-side 12 cm
     d = min(t1 - t0, 0.12)
@@ -409,9 +414,16 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style=
             uh, su = (a + lin, 1) if hg == "a" else (b - lin, -1)
             L = lambda w, d, uh=uh, su=su: (uh + su * (d + LT / 2), tf + swing * w)
 
-        def part(w0, w1, d0, d1, za, zb, r=rl, m=mat, L=L):     # leaf-local: w from hinge, d across
+        ol = o
+        if leaf:                                                  # own object, hinged at the lining's corner
+            assert not flat and hinge != "ab"
+            ol, wo, wc = leaf, P(0, swing, 0), P(su, 0, 0)        # open / closed direction of the leaf
+            PIVOT[leaf] = P(uh, tf, z0)
+            SWING[leaf] = math.degrees(math.atan2(wo[0] * wc[1] - wo[1] * wc[0], wo[0] * wc[0] + wo[1] * wc[1]))
+
+        def part(w0, w1, d0, d1, za, zb, r=rl, m=mat, L=L, ol=ol):   # leaf-local: w from hinge, d across
             (ua, ta), (ub, tb) = L(w0, d0), L(w1, d1)
-            lbox(coll, o, m, P, ua, ub, ta, tb, zl + za, zl + zb, r)
+            lbox(coll, ol, m, P, ua, ub, ta, tb, zl + za, zl + zb, r)
 
         LEAVES.append((coll, [P(*L(0, -LT / 2), zl), P(*L(LW, LT / 2), zl + LH)]))
         (glazed_leaf if style == "glazed" else six_panel_leaf)(part, LW, LH)
@@ -509,17 +521,21 @@ def entrance_door():
     PIVOT[o] = P(a + fw, tm, 0)
 
 
-def back_door():
+def back_door(c="EG", dx=0.0, dy=0.0):
     """Back door (west wall) after back_door_of_the_house.jpg: heavy dark frame, weathered
-    plank leaf with an oval window behind four cream iron bars."""
-    c, P = "EG", frame("y")
+    plank leaf with an oval window behind four cream iron bars; built into collection c, shifted
+    by (dx, dy) (code/gaeste_wc.py builds it). The leaf is its own object, hinged on the north jamb
+    at the frame's inner face (PIVOT); SWING opens it 90 deg into the Flur, along the back hall's
+    north wall (request 2026-11-10)."""
+    P = lambda u, t, z: (t + dx, u + dy, z)                      # frame("y"), shifted
     a, b, head = 7.408, 8.377, 2.3
-    fw, o = 0.09, "EG_Fenster_Tueren"
+    fw, o = 0.09, c + "_Fenster_Tueren"
     lbox(c, o, "Holz", P, a, a + fw, -0.05, 0.08, 0, head)
     lbox(c, o, "Holz", P, b - fw, b, -0.05, 0.08, 0, head)
     lbox(c, o, "Holz", P, a, b, -0.05, 0.08, head - fw, head)
-    o = "EG_Hintertuer"
+    o = c + "_Hintertuer"
     la, lb, lt = a + fw + 0.004, b - fw - 0.004, head - fw - 0.004
+    PIVOT[o], SWING[o] = P(lb, 0.08, 0.0), 90.0
     uc, zc, ea, eb = (la + lb) / 2, 0.82 * lt, 0.19, 0.28
     half = lambda u: eb * math.sqrt(max(1 - ((u - uc) / ea) ** 2, 0))
     boards(c, o, "Holz", P, la, lb, const(0.01), const(lt), 0.0, 0.05, 0.135,
@@ -581,16 +597,16 @@ def build_eg():
         (9.12, 9.69, 1.57, 2.17, "W")], out=-1)      # WC Großeltern ("Fenster wird verschoben")
     wall(c, 0.31, 2.358, 5.145, 5.475, z0, z1)              # WC south (towards the annex)
     wall(c, 2.358, 2.772, 0.415, 5.849, z0, z1)             # west wall Speis/Essen
-    entrance_door(); back_door()
+    entrance_door()                                         # the back door: code/gaeste_wc.py
     # interior walls; doors: (a, b, swing, hinge) get an opened leaf, (a, b) stay open passages
     interior(c, 6.024, 6.174, 8.876, 12.473)
     interior(c, 2.657, 14.575, 8.576, 8.876,
              [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (13.517, 14.575, 1, "b", False)])   # Büro: hinge as in the plan, leaf along the east wall (bookcase)
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
-    interior(c, 0.31, 2.358, 6.574, 6.723, [(1.419, 2.218, -1, "a")])
+    gaeste_wc.gaeste_wc_neu(c, *gaeste_wc.WC_AT)           # Gäste-WC + Garderobe with the WC's north wall
     # Großeltern: the Bad is open to the bedroom from its niche front (code/bad.py) to the shaft
-    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506, -1, "a", False, "glazed"), (9.856, 12.33)])   # back Windfang
+    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506), (9.856, 12.33)])   # back Windfang (its door: code/gaeste_wc.py)
     interior(c, 2.358, 10.804, 5.849, 6.349, [(6.10, 6.96, -1, "a", False)],   # Küche door as built (photo,
              # speis_kueche_v6.svg): hinged west, opened 90 deg into the Küche beside the Besenschrank
              ops=[ofen.back_opening()])                                   # the Ofen's back door (Flur)
@@ -672,7 +688,7 @@ def basin(coll, wx, wy, fx, fy, w=0.60, d=0.46, z=0.0, mirror=True):
         box(coll, o, "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
 
 
-def wc_basin(coll, wx, wy, fx, fy, w=0.40, d=0.28, z=0.0):
+def wc_basin(coll, wx, wy, fx, fy, w=0.40, d=0.28, z=0.0, mirror=True):
     """Hand basin of the WCs after bad_mallnitz.jpeg (input/2026-11-08 input/): open ceramic bowl on two
     chrome console legs with a towel rail, pillar mixer, chrome trap; above the tiles a mirror
     in a stepped black frame."""
@@ -700,6 +716,8 @@ def wc_basin(coll, wx, wy, fx, fy, w=0.40, d=0.28, z=0.0):
     turned(coll, o, "Metall", P(-lu, lv + 0.02, 0.62), P(lu, lv + 0.02, 0.62), [(0.008, 0), (0.008, 1)])  # rail
     for s in (-1, 1):
         turned(coll, o, "Metall", P(s * lu, lv, 0.62), P(s * lu, lv + 0.02, 0.62), [(0.008, 0), (0.008, 1)])
+    if not mirror:
+        return
     M = at_wall(wx, wy, fx, fy)                                                   # mirror on the plaster
     z0, z1, mw, fw = z + 1.22, z + 2.05, 0.30, 0.07
     F = lambda u0, u1, v1, za, zb: box(coll, o, "Eisen", *[c for p in zip(M(u0, 0.0), M(u1, v1)) for c in sorted(p)], za, zb)
@@ -755,21 +773,22 @@ def flur_sink(coll, wx, wy, z):
 
 
 WC_TILE_T = 0.010            # tile face in front of the plaster (WC fixtures stand on it)
-WCS = [  # (collection, floor z, interior rectangle, door span left free on the north wall)
-    ("EG", 0.0, (0.31, 2.358, 5.475, 6.574), (1.349, 2.288)),     # WC by the back hall (architraves)
+WCS = [  # (collection, floor z, interior rectangle, door span left free on the north wall); the
+         # Gäste-WC by the back hall tiles itself (code/gaeste_wc.py)
     ("OG", Z_OG, (0.31, 1.57, 5.46, 6.44), (0.48, 1.42)),         # WC 2,26
     ("OG", Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]         # WC 2,30
 
 
-def wainscot(coll, z, x0, x1, y0, y1, door):
+def wainscot(coll, z, x0, x1, y0, y1, door, sides="snwe"):
     """Subway tiles (7.5 x 15 cm, running bond, 14 rows, RAL 5014 Taubenblau) with a stepped cap row
     on all four walls of a WC, after input/2026-11-08 input/bad_mallnitz.jpeg.
     Grout backing 2 mm off the plaster; the y walls stop short of the x walls' tiles in the
-    corners; the north wall leaves `door` free. Own random stream, so later parts don't shift."""
+    corners; the north wall leaves `door` free. sides: the walls to tile (a y wall runs into a
+    corner only where its x wall is tiled). Own random stream, so later parts don't shift."""
     o, rng, TL, TH, J = coll + "_Fliesen", random.Random(11), 0.15, 0.075, 0.003
     zb, zt = z + 0.015, z + 0.015 + 14 * TH                       # above the oak floor
     T = WC_TILE_T
-    for side in "snwe":
+    for side in sides:
         along_x = side in "sn"
         face, n = {"s": (y0, 1), "n": (y1, -1), "w": (x0, 1), "e": (x1, -1)}[side]
         ua, ub = (x0, x1) if along_x else (y0, y1)
@@ -777,7 +796,7 @@ def wainscot(coll, z, x0, x1, y0, y1, door):
 
         def B(m, a, b, t0, t1, za, zc, r, cut=0.0):              # u in [a, b], t in front of the face
             if not along_x:                                       # y walls: clear of the x walls
-                a, b = max(a, y0 + cut), min(b, y1 - cut)
+                a, b = max(a, y0 + cut * ("s" in sides)), min(b, y1 - cut * ("n" in sides))
             if b - a < 0.005:
                 return
             ta, tb = face + n * t0, face + n * t1
@@ -812,8 +831,6 @@ def build_sanitary():
     zo = Z_OG + 0.0
     for c, z, rect, door in WCS:
         wainscot(c, z, *rect, door)
-    # EG WC by the back hall
-    toilet("EG", 1.325, 5.475, 0, 1)
     # OG Bad NW: basin on the north wall, shower in the south alcove
     basin("OG", 0.885, 8.57, 0, -1, w=0.62, d=0.48, z=zo)
     shower("OG", 1.67, 2.57, 5.46, 6.44, [(2.10, 6.44, 2.57, 6.44)], (2.12, 5.46, 0, 1), z=zo)
@@ -1249,6 +1266,8 @@ def slab(coll, obj, mat, z0, z1, inset=0.0, hole=None):
 
 CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.657, 6.723, 8.506)]   # Flur/Windfang, back hall
 # (the back hall's stone runs through the door to the Flur, no threshold: request 2026-11-10)
+GAESTE_WC_EG = (gaeste_wc.WI, gaeste_wc.WO, gaeste_wc.YS, gaeste_wc.YN)    # WC + Garderobe: limestone,
+TRENNWAND_EG = (gaeste_wc.PA, gaeste_wc.PB, gaeste_wc.YS, gaeste_wc.YN)    # none under their partition
 BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
                                          # lays its own floor (code/bad.py): left out of the EG's
 # OG Bad NW (with the shower alcove) and Bad S
@@ -1283,11 +1302,11 @@ def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(
                             rng.random())
 
 
-def floor_cover(coll, z, corridors, hole=None):
+def floor_cover(coll, z, corridors, holes=()):
     """Floors after inside_floor_rooms.jpg (oak planks in all rooms) and
     stone_floor_corridor.jpg (limestone slabs in the EG corridors, the bathrooms and the WCs);
     dark base shows in the joints."""
-    o, ex = coll + "_Bodenbelag", [hole] if hole else []
+    o, ex = coll + "_Bodenbelag", list(holes)
     for x0, x1, y0, y1 in FOOT:
         tiles(coll, o, "Eiche", x0, x1, y0, y1, z + 0.002, z + 0.014, [0.2], (1.2, 2.4), 0.003,
               corridors + ex)
@@ -1302,8 +1321,8 @@ def build_slabs():
     slab("OG", "OG_Decke_EG", "Decke", Z_EG_TOP, Z_OG, hole=STAIR_HOLE)
     slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
     wcs = lambda c: [r for k, _, r, _ in WCS if k == c]     # all toilets: stone floors
-    floor_cover("EG", 0.0, CORRIDOR_EG + wcs("EG"), BAD_EG)
-    floor_cover("OG", Z_OG, BATHS_OG + wcs("OG"), STAIR_HOLE)   # OG corridor: oak like the rooms
+    floor_cover("EG", 0.0, CORRIDOR_EG + wcs("EG") + [GAESTE_WC_EG], [BAD_EG, TRENNWAND_EG])
+    floor_cover("OG", Z_OG, BATHS_OG + wcs("OG"), [STAIR_HOLE])   # OG corridor: oak like the rooms
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 
 
@@ -2157,13 +2176,14 @@ class Blueprint:
                        # the width, normal = (-u_y, u_x) towards the viewer), w, h, d
     turn: dict = None  # TURN: object -> degrees about its pivot (None: no turned object)
     slide: dict = None  # SLIDE: object -> (dx, dy, dz) to its other end of travel (None: none)
+    swing: dict = None  # SWING: object -> degrees about its pivot to its other state (None: none)
 
 
 def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
-    OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SMOOTH.clear(); LEAVES.clear()
-    OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
+    OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
+    LEAVES.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
@@ -2172,7 +2192,7 @@ def build():
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
-                     turn=dict(TURN), slide=dict(SLIDE))
+                     turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING))
 
 
 def build_ofen():
@@ -2215,3 +2235,14 @@ def build_bad():
     dims = bad.bad_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
                      [], None, set(), dims, slide=dict(SLIDE))
+
+
+def build_gaeste_wc():
+    """The Gäste-WC sub-model alone (web/gaeste_wc.html): WC, Garderobe, the Flur basin and their
+    walls at the origin (the old WC room's inner SW corner), plus its dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
+    LEAVES.clear(); SWING.clear()
+    random.seed(22)
+    dims = gaeste_wc.gaeste_wc_neu()
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
+                     [], None, set(), dims, swing=dict(SWING))

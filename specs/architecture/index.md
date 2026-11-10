@@ -4,6 +4,6 @@
 
 ## Live
 
-* [ADR-001-XEWL: One pure-Python core with a Blender and a glTF backend](adr-001-xewl-shared-python-core.md) - The house is described once in code/house_core.py plus its sub-model modules (code/ofen.py stoves, code/desk.py desk, code/bad.py Bad Großeltern, code/kueche.py Küche; no bpy); build_house.py (Blender) and export_gltf.py (glTF for the web viewer) are backends that only turn its Blueprint into output. (accepted, 2026-11-03)
+* [ADR-001-XEWL: One pure-Python core with a Blender and a glTF backend](adr-001-xewl-shared-python-core.md) - The house is described once in code/house_core.py plus its sub-model modules (code/ofen.py stoves, code/desk.py desk, code/bad.py Bad Großeltern, code/kueche.py Küche, code/gaeste_wc.py Gäste-WC; no bpy); build_house.py (Blender) and export_gltf.py (glTF for the web viewer) are backends that only turn its Blueprint into output. (accepted, 2026-11-03)
 * [ADR-002-MLQS: Own stdlib glTF writer with procedural material parameters in extras](adr-002-mlqs-gltf-own-writer.md) - The viewer's .glb is written by our own standard-library Python (triangulation, outward orientation, _RND attribute, MAT_DEF in material extras), generated at build time and never committed. (accepted, 2026-11-03)
 * [ADR-003-SKGB: WebGPURenderer with TSL node materials for the viewer](adr-003-skgb-webgpu-tsl.md) - The viewer renders with three.js WebGPURenderer and builds its procedural materials and stage blending as TSL node graphs, relying on the automatic WebGL2 fallback. (accepted, 2026-11-03)

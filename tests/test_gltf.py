@@ -222,3 +222,24 @@ def test_kueche_export(tmp_path):
     house_core.build()
     ex = g["scenes"][0]["extras"]
     assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex and len(ex["fires"]) == 1
+
+
+def test_gaeste_wc_export(tmp_path):
+    """--gaeste-wc: the Gäste-WC sub-model with its dimension lines, no Rundgang, nothing sliding."""
+    out = tmp_path / "gaeste_wc.glb"
+    subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--gaeste-wc"], check=True)
+    data = out.read_bytes()
+    jlen = struct.unpack_from("<I", data, 12)[0]
+    g = json.loads(data[20:20 + jlen])
+    assert {n["name"] for n in g["nodes"]} == {"GaesteWC_Waende", "GaesteWC_Innentueren", "GaesteWC_Sanitaer",
+                                              "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_WC_Tuer",
+                                              "GaesteWC_Windfangtuer", "GaesteWC_Hintertuer", "GaesteWC_Fenster_Tueren"}
+    assert not any("slide" in n["extras"] for n in g["nodes"])
+    swing = {n["name"]: round(n["extras"]["swing"], 6) for n in g["nodes"] if "swing" in n["extras"]}   # radians about glTF y
+    assert swing == {"GaesteWC_Hintertuer": round(math.pi / 2, 6), "GaesteWC_WC_Tuer": round(math.pi / 2, 6),
+                     "GaesteWC_Windfangtuer": round(math.pi / 2, 6)}
+    assert all("translation" in n for n in g["nodes"] if n["name"] in swing)       # origin at the hinge
+    bp = house_core.build_gaeste_wc()
+    house_core.build()
+    ex = g["scenes"][0]["extras"]
+    assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex
