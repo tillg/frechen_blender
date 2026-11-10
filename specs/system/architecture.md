@@ -9,8 +9,8 @@ edited: 2026-11-10
 ## Overview
 
 The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
-`code/ofen.py` (stoves), `code/desk.py` (Büro desk), `code/bad.py` (Bad Großeltern) and
-`code/kueche.py` (Küche), no `bpy`). Two
+`code/ofen.py` (stoves), `code/desk.py` (Büro desk), `code/bad.py` (Bad Großeltern),
+`code/kueche.py` (Küche) and `code/gaeste_wc.py` (Gäste-WC), no `bpy`). Two
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -118,9 +118,24 @@ flowchart LR
   and shifted; own `random.Random(14)`. The room's walls, the kitchen door and the Speis
   (`speis()`: shelves A/B, cabinet C, sliding leaf on the kitchen side, own `random.Random(9)`)
   stay in `house_core`.
-- **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` return a
-  Blueprint of the sub-model alone (`garden=None`, its dimension lines in `dims`) for
-  `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html`. A dimension label containing "angenommen" is an assumed
+- **Gäste-WC.** `code/gaeste_wc.py` the same way: `gaeste_wc_neu(c, x0, y0)` builds WC and
+  Garderobe by the back hall into collection `c` with the old WC room's inner SW corner at
+  (x0, y0) (`EG` at `WC_AT`, or `GaesteWC` at the origin), after
+  `input/2026-11-10 input/gaeste_wc_v3.svg`; positions in house coordinates and shifted, as the
+  hand basin hangs outside the room. Its walls: the partition and the WC's north wall
+  (`interior()` with the WC door and the open Garderobe passage). Toilet and WC tiles
+  (`toilet()`, `wainscot()`), the basin (`wc_basin(mirror=False)`) with tiles on the back hall's
+  east wall (`wainscot(sides="e")`) and a pine-framed mirror, the Garderobe (`_Garderobe`: bench,
+  hook board, hooks, hat shelf); own `random.Random(12)`, the north wall and the toilet from the
+  global stream. It also builds the back hall's other two doors: `back_door(c, dx, dy)` and the
+  glazed Windfang door (`panel_door(…, leaf=)`; the long wall keeps an open passage there). The
+  three leaves are objects of their own (`_Hintertuer`, `_WC_Tuer`, `_Windfangtuer`) with a
+  `PIVOT` at the hinge and a `SWING`. The floor stays the core's limestone (`GAESTE_WC_EG`;
+  `TRENNWAND_EG` is left out of `floor_cover()`'s slabs).
+- **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
+  `build_gaeste_wc()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
+  in `dims`) for `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html` /
+  `web/gaeste_wc.html`. A dimension label containing "angenommen" is an assumed
   measure (shown in italics).
 - **Geometry accumulator.** Builders append vertices, faces, material names and an `rnd`
   value per face to `GEO[(collection, object)]`. Faces are polygons (quads or n-gons, may be
@@ -146,7 +161,10 @@ flowchart LR
 `room_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
 `dims` (sub-models only), `turn` (`TURN`: object → yaw in degrees about its pivot), `slide`
 (`SLIDE`: object → (dx, dy, dz) to its other end of travel; the Bad's two sliding leaves, one
-object each; glTF node `extras.slide`).
+object each; glTF node `extras.slide`), `swing` (`SWING`: object → degrees about its pivot from
+as built to its other state; the back hall's three door leaves; glTF node `extras.swing` in
+radians about y). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
+hinged at the lining's corner, with the `SWING` that closes it.
 
 ### `build_house.py` — Blender backend
 
@@ -160,7 +178,7 @@ from `TURN`; image materials map the picture through Texture Coordinate › Obje
 ### `mesh_ops.py` and `export_gltf.py` — glTF backend
 
 Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writer.md)):
-`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk` / `--bad` / `--kueche`: the sub-model's
+`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk` / `--bad` / `--kueche` / `--gaeste-wc`: the sub-model's
 `.glb` instead).
 
 - `mesh_ops` does what bmesh does in Blender:
@@ -278,11 +296,13 @@ sequenceDiagram
   camera, target and fov restored. `drawDue` caps drawing at 30 fps while the tour is on; the
   sun stays anchored to a fixed copy of the start target.
 - **Sub-model pages.** `submodel.js` draws a sub-model page (views, looks Drahtmodell / Masse /
-  Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js`, `desk.js`, `bad.js` and
-  `kueche.js` only configure it. Nodes with `extras.slide` roll there and back, edge lines
-  included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); `main.js` rolls
-  them too, in stage Eingerichtet outside the Rundgang (else as built), and draws while they
-  move and their travel is in view, throttled like a fire. `nav.js` builds the "Teilmodell" drop-down (one list of pages, relative URLs,
+  Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js`, `desk.js`, `bad.js`,
+  `kueche.js` and `gaeste_wc.js` only configure it. Nodes with `extras.slide` roll there and back,
+  edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
+  `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
+  lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s). `main.js`
+  moves both too, in stage Eingerichtet outside the Rundgang (else as built), and draws while
+  they move and their travel is in view, throttled like a fire. `nav.js` builds the "Teilmodell" drop-down (one list of pages, relative URLs,
   the current page preselected); `ui.js` puts it into the house toolbar, `submodel.js` into every
   sub-model page.
 - **View in the URL.** `main.js` and `submodel.js` read `?cam=&at=` (model coordinates) plus
@@ -297,8 +317,8 @@ sequenceDiagram
   under `/frechen_blender/`, the GitHub Pages path, so the one dev server shows source and build.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters incl. `lights` (visible room / outside lights), `hires`, `pixelRatio`,
-  `tour`, `tourKey`), only outside production builds; `window.__ofen`
-  / `window.__desk` / `window.__bad` / `window.__kueche` on the sub-model pages.
+  `tour`, `tourKey`, `slides`, `doors`), only outside production builds; `window.__ofen`
+  / `window.__desk` / `window.__bad` / `window.__kueche` / `window.__gaeste_wc` on the sub-model pages.
 
 ### Checks and Show — `scripts/check.sh`, `code/show.py`, `web/shot.js`
 
@@ -318,7 +338,7 @@ flowchart LR
   each, prints a table, tees to `tmp/check-<ts>.log`, warns when quick exceeds 60 s, exits 1 when
   any part failed (2 on a wrong argument).
 - **`code/show.py`** (pure Python, no bpy) reads the Blueprint (`build()`, or `build_ofen()` /
-  `build_desk()` / `build_bad()` for `--page`), so the view comes from the geometry the viewer
+  `build_desk()` / `build_bad()` / `build_kueche()` / `build_gaeste_wc()` for `--page`), so the view comes from the geometry the viewer
   draws:
   - `bbox(bp, names)`: min/max over the GEO vertices of the objects whose name starts with a
     given prefix (all objects without names; `--at` frames a 1 m box around a point).
@@ -326,7 +346,7 @@ flowchart LR
     sphere × 1.15 fits the vertical field of view (28° house, 35° sub-model). A box within
     `EDGE` = 0.2 m of the footprint `W_OUT × D_OUT` or beyond it is outside: nearest facade, 20° up,
     `cut=all`. Otherwise inside: SE diagonal, 55° up, `cut=eg` below `Z_EG_TOP`, `noroof` below
-    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; `FACING`).
+    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; Gäste-WC: N, from the back hall; `FACING`).
     `side` (`--from`) picks n/e/s/w (or `top`, 85° up from the south). `p = 4` unless `--p`
     (house only).
   - `url()` writes the viewer's format (`+n.toFixed(3)`, ties away from zero); `server_is_ours()`
@@ -348,10 +368,12 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | The core's output is called **Blueprint** | "Model" | "Model" means the whole 3D house (scene, `.blend`). |
 | The **parity test** pins the Blender build to `tests/golden/blender_snapshot.json` (per object: counts, bbox, materials, `rnd` hash) and checks the saved `.blend` | Visual checks only | Moving code between core and backends can change the output silently. Deliberate changes regenerate the golden. |
 | Stages change by **crossfade** | Construction build-up | Smaller scope; build-up is a later candidate. |
-| A sub-model may bring **its own walls** (`bad.py`: niche wall, lintel, low wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
+| A sub-model may bring **its own walls** (`bad.py`: niche wall, lintel, low wall; `gaeste_wc.py`: partition, the WC's north wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
 | Speis shelves and cabinet are **built-ins** (`EG_Speis`, stage Gebaut) | Furniture (`EG_Moebel`, Eingerichtet) | Cabinet C replaces a wall; floor-to-ceiling joinery belongs to the house like the kitchen. |
-| Sub-model navigation is **one drop-down** built by `nav.js` | A link per sub-model on each page | With four sub-models the links no longer fit; one page list in one place. |
+| Sub-model navigation is **one drop-down** built by `nav.js` | A link per sub-model on each page | With five sub-models the links no longer fit; one page list in one place. |
 | Leaves are modelled **open** (kitchen door 90° into the Küche, Speis sliding leaf slid south) | Closed | The Rundgang walks through the kitchen door and looks into the Speis aisle. |
+| The back hall's three doors **swing in the viewer** (`SWING`), the film keeps them as built | Static doors; animate in the film too | They show where the doors get in each other's way; the film camera and its clearance stay fixed. Moving only in Eingerichtet, as the Bad's leaves: the Skizze lines don't follow. |
+| Back door and Windfang door are **built by the Gäste-WC sub-model** | Only the WC door in the module | The page shows all three swinging doors; one builder for house and page. |
 | **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public; the viewer shows no room names. |
 | **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. |
 | Look: **same palette, recognisably the same house** as the Blender renders | Pixel parity | A starting point, tuned in later iterations. |
