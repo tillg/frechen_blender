@@ -15,6 +15,12 @@ def test_keeps_the_newest_two_films():
     assert film_release.to_delete(names[:2]) == []
 
 
+def test_latest_is_the_newest_film():                                    # Pages serves it as rundgang.mp4
+    names = ["2026-11-08_frechen_rundgang_threejs.mp4", "2026-11-09_frechen_rundgang_threejs.mp4",
+             "2026-11-10_frechen_rundgang_blender.mp4", "README.md"]
+    assert film_release.latest(names) == "2026-11-09_frechen_rundgang_threejs.mp4"
+
+
 def test_bitrate_fits_the_target_size():
     kbps = film_release.video_kbps(305.28)
     size_mb = kbps * 1000 / 8 * 305.28 / 1e6

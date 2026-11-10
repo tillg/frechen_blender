@@ -32,6 +32,7 @@ jobs:
         working-directory: web
       - run: npm run build          # prebuild: python3 ../code/export_gltf.py public/frechenlehen.glb
         working-directory: web
+      - run: cp "$(python3 code/film_release.py latest .)" web/dist/rundgang.mp4   # the newest film, playable in the browser
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist
