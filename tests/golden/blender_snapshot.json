@@ -506,7 +506,7 @@
    0.0,
    0.0
   ],
-  "rnd": "a7e20d65560ca950",
+  "rnd": "7ea95d9b388d7d5b",
   "verts": 64
  },
  "EG_Haustuer": {
@@ -554,7 +554,7 @@
    0.0,
    0.0
   ],
-  "rnd": "5d47d1a8e049cc5e",
+  "rnd": "549036d4e72102bb",
   "verts": 416
  },
  "EG_Hintertuer": {
@@ -603,22 +603,22 @@
    0.0,
    0.0
   ],
-  "rnd": "f096e23c1897094f",
+  "rnd": "0cf9017a6387ef47",
   "verts": 1768
  },
  "EG_Kueche": {
   "bbox": [
    5.492,
-   3.03,
+   3.00829,
    0.005,
    8.555,
    5.847,
    2.2
   ],
-  "faces": 320,
+  "faces": 936,
   "materials": [
    "FL_Eisen",
-   "FL_FichteZ",
+   "FL_Front",
    "FL_Fuge",
    "FL_Granit",
    "FL_Metall"
@@ -628,8 +628,8 @@
    0.0,
    0.0
   ],
-  "rnd": "570eb9a0c2dca390",
-  "verts": 460
+  "rnd": "80e621163b3246fb",
+  "verts": 1404
  },
  "EG_Laeden": {
   "bbox": [
@@ -974,16 +974,17 @@
  "EG_Speis": {
   "bbox": [
    2.774,
-   3.105,
+   3.10829,
    0.005,
    5.238,
    5.847,
    2.397
   ],
-  "faces": 216,
+  "faces": 592,
   "materials": [
    "FL_FichteX",
    "FL_FichteZ",
+   "FL_Front",
    "FL_Fuge",
    "FL_Metall"
   ],
@@ -992,19 +993,19 @@
    0.0,
    0.0
   ],
-  "rnd": "8af0349e6a1840e3",
-  "verts": 288
+  "rnd": "1c5a752239a0d476",
+  "verts": 864
  },
  "EG_Stuehle": {
   "bbox": [
-   3.78604,
+   4.58104,
    0.70604,
    0.0,
    12.103,
    11.4625,
    0.94907
   ],
-  "faces": 1155,
+  "faces": 693,
   "materials": [
    "FL_FichteX",
    "FL_FichteY",
@@ -1015,19 +1016,19 @@
    0.0,
    0.0
   ],
-  "rnd": "7347cbdb50a00e4a",
-  "verts": 1590
+  "rnd": "8afb1f2f6f9b2f13",
+  "verts": 954
  },
  "EG_Tisch": {
   "bbox": [
-   4.262,
+   5.055,
    1.18,
    0.012,
-   7.848,
+   7.055,
    1.91,
    0.76
   ],
-  "faces": 228,
+  "faces": 114,
   "materials": [
    "FL_FichteX",
    "FL_FichteY",
@@ -1038,8 +1039,8 @@
    0.0,
    0.0
   ],
-  "rnd": "17f99a69cc3fdabd",
-  "verts": 304
+  "rnd": "75a804a50af3d882",
+  "verts": 152
  },
  "EG_Treppe": {
   "bbox": [
@@ -1081,7 +1082,7 @@
    0.0,
    0.0
   ],
-  "rnd": "b68426845019154c",
+  "rnd": "86504e5bfd1e04f2",
   "verts": 1068
  },
  "EG_Werkstattofen": {

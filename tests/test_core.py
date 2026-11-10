@@ -23,7 +23,7 @@ CODE = Path(__file__).resolve().parent.parent / "code"
 
 def test_paint_and_room_lights_live_in_the_core():
     ral9010, ral5014 = (241, 236, 225), (99, 125, 150)
-    assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014}
+    assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014, "Front": ral5014}
     assert len(house_core.ROOM_LIGHTS) == 23
     assert BP.paint == house_core.PAINT and BP.room_lights == house_core.ROOM_LIGHTS
     assert "RAL =" not in (CODE / "paint.py").read_text()
@@ -436,27 +436,37 @@ def part_list(key):
 
 
 def test_esstisch_after_tisch_briol():
-    """Dining table (two joined, as in the plan) after input/2026-11-05 input/tisch-briol.png: a top
-    of three boards on an apron set back from its edge, legs splayed out mainly along the length,
-    standing on a flat foot frame that rests on corner blocks; all inside the top's footprint,
-    since the chairs stand right at its edge."""
+    """Dining table after input/2026-11-05 input/tisch-briol.png: one table 2.00 m long (request
+    2026-11-10, before two joined), in the middle of the former two, 8 chairs (3 per long side, one
+    at each end); a top of three boards on an apron set back from its edge, legs splayed out mainly
+    along the length, standing on a flat foot frame that rests on corner blocks; all inside the
+    top's footprint, since the chairs stand right at its edge."""
     parts = list(part_list(("EG", "EG_Tisch")))
-    assert all(lo[0] >= 4.262 - 1e-9 and hi[0] <= 7.848 + 1e-9 and lo[1] >= 1.18 - 1e-9 and hi[1] <= 1.91 + 1e-9
+    x0, x1, cx = 5.055, 7.055, 6.055
+    assert all(lo[0] >= x0 - 1e-9 and hi[0] <= x1 + 1e-9 and lo[1] >= 1.18 - 1e-9 and hi[1] <= 1.91 + 1e-9
                for _, lo, hi, _ in parts)
     boards = [p for p in parts if abs(p[2][2] - 0.76) < 1e-9]
-    assert len(boards) == 6 and all(0.04 <= hi[2] - lo[2] <= 0.05 for _, lo, hi, _ in boards)
+    assert len(boards) == 3 and all(0.04 <= hi[2] - lo[2] <= 0.05 for _, lo, hi, _ in boards)
+    assert {(round(lo[0], 6), round(hi[0], 6)) for _, lo, hi, _ in boards} == {(x0, x1)}       # 2.00 long
     blocks = [p for p in parts if abs(p[1][2] - 0.012) < 1e-9]
-    assert len(blocks) == 8 and all(hi[2] < 0.08 for _, _, hi, _ in blocks)
+    assert len(blocks) == 4 and all(hi[2] < 0.08 for _, _, hi, _ in blocks)
     rails = [p for p in parts if p[1][2] > 0.05 and p[2][2] < 0.1 and p[2][2] - p[1][2] <= 0.03]
-    assert len(rails) == 8 and all(min(hi[0] - lo[0], hi[1] - lo[1]) >= 0.08 for _, lo, hi, _ in rails)   # flat boards
+    assert len(rails) == 4 and all(min(hi[0] - lo[0], hi[1] - lo[1]) >= 0.08 for _, lo, hi, _ in rails)   # flat boards
     legs = [p for p in parts if p[0] == "FichteZ" and p[2][2] - p[1][2] > 0.5]
-    assert len(legs) == 8
+    assert len(legs) == 4
     for _, lo, hi, vs in legs:
-        cx = 5.155 if hi[0] < 6.05 else 6.95                                       # its table's centre
         foot = [p for p in vs if p[2] < 0.2]; head = [p for p in vs if p[2] > 0.5]
         mean = lambda ps, k: sum(p[k] for p in ps) / len(ps)
         assert abs(mean(foot, 0) - cx) - abs(mean(head, 0) - cx) >= 0.08           # splayed along x
         assert 0 <= abs(mean(foot, 1) - 1.545) - abs(mean(head, 1) - 1.545) <= 0.05  # a little across
+    seats = [p for p in part_list(("EG", "EG_Stuehle")) if abs(p[2][2] - 0.46) < 0.005 and p[2][2] - p[1][2] >= 0.04
+             and p[2][1] < 2.5 and p[2][0] < 8.5]                                   # at the dining table
+    assert len(seats) == 8
+    centres = sorted((round((lo[0] + hi[0]) / 2, 3), round((lo[1] + hi[1]) / 2, 3)) for _, lo, hi, _ in seats)
+    assert sum(abs(y - 1.545) < 0.01 for _, y in centres) == 2                  # one at each end
+    assert min(x for x, _ in centres) < x0 and max(x for x, _ in centres) > x1
+    sides = [x for x, y in centres if abs(y - 1.545) > 0.3]
+    assert len(sides) == 6 and all(x0 + 0.2 < x < x1 - 0.2 for x in sides)
 
 
 def test_stube_sitzecke_in_the_se_corner():
@@ -623,7 +633,7 @@ def test_kueche_wamsler_herd_at_the_north_end_of_the_east_run():
     front = min(p[1][0] for p in herd if p[2][2] < 0.9)                       # doors, handles
     assert 7.90 < front < 7.96
     kueche = list(part_list(("EG", "EG_Kueche")))
-    run = [p for p in kueche if p[2][2] <= 0.901 and p[2][0] > 7.9 and p[2][1] > 3.7 and p[1][1] < 5.2]   # not the sink run (v6)
+    run = [p for p in kueche if p[2][2] <= 0.901 and p[2][0] > 7.9 and p[2][1] > 3.7 and p[1][1] < lo[1]]   # not the sink run (v6)
     assert run and max(p[2][1] for p in run) < lo[1]                          # carcass, doors, granite
     fire = [f for f in BP.fires if abs(f["base"][0] - lo[0]) < 0.03 and lo[1] < f["base"][1] < hi[1]]
     assert len(fire) == 1 and fire[0]["base"][1] > (lo[1] + hi[1]) / 2       # fire door: top left, north
@@ -648,39 +658,84 @@ def test_kueche_old_steel_hood_above_the_herd():
     assert len(taper) == 1                                                    # narrows upwards
 
 
-def test_kueche_wall_cabinets_over_the_rest_of_the_run():
-    """Küche: wall cabinets (spruce like the base units) over the sink run on the north wall and
-    over the east run beside the hood; none over the peninsula and none in the hood's way."""
+def test_kueche_without_wall_cabinets_and_sealed_against_the_herd():
+    """Request 2026-11-10: no wall cabinets; east of the sink, where the Herd stands in front of the
+    sink run, a blind cabinet (no drawers, no grips) and the granite top runs right up to the Herd;
+    south of the Herd the Ostzeile's top ends at it too (2 mm joint, no overlap with its rim)."""
     k = list(part_list(("EG", "EG_Kueche")))
-    upper = [p for p in k if p[1][2] > 1.3]
-    assert upper and {p[0] for p in upper} <= {"FichteZ", "Metall"}
-    hood = list(part_list(("EG", "EG_Haube")))
-    hy0 = min(p[1][1] for p in hood)
-    north = [p for p in upper if p[1][1] > 5.4]
-    east = [p for p in upper if p[1][0] > 8.1]
-    assert len(north) + len(east) == len(upper)
-    for side, ax, wall, (a, b) in ((north, 0, 5.849, (7.05, 8.227)), (east, 1, KUECHE_EAST, (3.03, hy0))):   # v6
-        lo = [min(p[1][k] for p in side) for k in range(3)]; hi = [max(p[2][k] for p in side) for k in range(3)]
-        assert abs(lo[ax] - a) < 0.03 and b - 0.06 < hi[ax] <= b                 # along the run, clear of the hood
-        assert 1.40 <= lo[2] <= 1.55 and 2.0 <= hi[2] <= 2.30
-        assert wall - 0.01 < hi[1 - ax] < wall and 0.30 <= hi[1 - ax] - lo[1 - ax] <= 0.42   # shallow, on the wall
-        doors = [p for p in side if p[0] == "FichteZ" and p[2][1 - ax] - p[1][1 - ax] < 0.03]
-        handles = [p for p in side if p[0] == "Metall"]
-        assert len(doors) >= 2 and len(handles) == len(doors)
+    assert not [p for p in k if p[1][2] > 1.3 and p[1][0] > 6.01]              # nothing on the walls (Besenschrank aside)
+    herd = [p for p in part_list(("EG", "EG_Herd"))]
+    hy0, hy1 = min(p[1][1] for p in herd), max(p[2][1] for p in herd)       # incl. its top's rim
+    hx0 = min(p[1][0] for p in herd if p[0] == "Herd")
+    assert not [p for p in k if p[0] == "Metall" and p[2][0] > 7.85 and p[1][1] > hy1 - 0.01 and p[2][2] < 0.9]
+    for y in (hy1 + 0.003, (hy1 + 5.249) / 2):                               # north of the Herd: top + filler
+        assert _mat_at(BP, ("EG", "EG_Kueche"), 8.3, y, 0.88) == "Granit", y
+        assert _mat_at(BP, ("EG", "EG_Kueche"), 7.967, y, 0.5) == "Front", y
+    assert _mat_at(BP, ("EG", "EG_Kueche"), 8.3, hy0 - 0.003, 0.88) == "Granit"
+    granit = [p for p in k if p[0] == "Granit"]
+    assert all(p[2][1] <= hy0 - 0.001 or p[1][1] >= hy1 + 0.001 for p in granit if p[2][0] > hx0)
+    assert any(abs(p[2][1] - (hy0 - 0.002)) < 1e-6 for p in granit) and any(abs(p[1][1] - (hy1 + 0.002)) < 1e-6 for p in granit)
+
+
+def test_kueche_and_speis_fronts_after_mallnitz():
+    """Request 2026-11-10: the kitchen's cabinets and the big cabinet C beside the dining table in
+    the style of input/2026-11-10 input/kueche_mallnitz.png, but in the house's RAL 5014: frame
+    fronts (a recessed panel in a frame), on every blue front (drawers and doors) a chrome cup pull
+    as in Mallnitz (a plate and a hood open at the bottom); carcasses painted alike (FL_Front), no
+    spruce left in the kitchen. The cabinet under the cooktop has drawers on both sides: towards
+    the kitchen and towards the dining table."""
+    assert house_core.PAINT["Front"] == house_core.RAL_5014 and "rgba" in house_core.MAT_DEF["Front"]
+    k = list(part_list(("EG", "EG_Kueche")))
+    assert {p[0] for p in k} <= {"Front", "Metall", "Granit", "Fuge", "Eisen"}
+    hood = lambda p: p[0] == "Metall" and len(set(map(tuple, p[3]))) > 8
+    # Ostzeile (front face x 7.957, y 3.66 .. 4.26): three drawers, each a frame round a recessed
+    # panel, each with a cup pull
+    ost = [p for p in k if p[0] == "Front" and 3.66 - 1e-6 <= p[1][1] and p[2][1] <= 4.26 + 1e-6 and p[1][0] < 7.98]
+    frame = [p for p in ost if abs(p[1][0] - 7.957) < 1e-6]
+    panel = [p for p in ost if p[1][0] > 7.962]
+    assert len(frame) == 3 * 4 and len(panel) == 3
+    assert all(abs(p[2][0] - 7.977) < 1e-6 for p in ost)
+    grips = [p for p in k if p[0] == "Metall" and 7.9 < p[1][0] and p[2][0] <= 7.957 + 1e-6 and 3.66 < p[1][1] and p[2][1] < 4.26]
+    hoods = [p for p in grips if hood(p)]
+    assert len(hoods) == 3 and len(grips) == 6
+    for _, lo, hi, vs in hoods:                                               # open at the bottom: a shell
+        assert 0.015 <= 7.957 - lo[0] <= 0.03 and not any(abs(v[0] - lo[0]) < 1e-6 and v[2] < lo[2] + 0.002 for v in vs)
+    # Halbinsel: towards the kitchen (front face y 3.66) a door and three drawers under the
+    # cooktop, towards the dining table (y 3.03) three drawers under the cooktop
+    north = [p for p in k if hood(p) and p[1][1] >= 3.66 - 1e-6 and p[2][1] < 3.72 and p[2][2] < 0.86]
+    assert len([p for p in north if p[2][0] < 7.165]) == 1 and len([p for p in north if p[1][0] > 7.165]) == 3
+    south = [p for p in k if hood(p) and p[2][1] <= 3.03 + 1e-6 and p[1][1] > 2.98 and p[2][2] < 0.86]
+    assert len(south) == 3 and all(7.165 < p[1][0] and p[2][0] < 7.957 for p in south)
+    sfr = [p for p in k if p[0] == "Front" and abs(p[1][1] - 3.03) < 1e-6 and p[2][2] < 0.86]
+    assert len(sfr) == 3 * 4 and all(7.165 < p[1][0] and p[2][0] < 7.957 for p in sfr)
+    # every door has a cup pull too, no knobs anywhere
+    assert not [p for p in k if p[0] == "Metall" and len(set(map(tuple, p[3]))) >= 48]
+    sink = [p for p in k if hood(p) and p[1][1] > 5.2 and p[2][2] < 0.86]
+    assert len(sink) == 2 and all(p[2][0] < 7.85 for p in sink)               # the blind corner has none
+    # cabinet C of the Speis (doors at y 3.13 .. 3.15 towards the dining table)
+    sp = list(part_list(("EG", "EG_Speis")))
+    c = [p for p in sp if p[1][1] >= 3.09 and p[2][1] <= 3.728 + 1e-6]
+    assert {p[0] for p in c} == {"Front", "Metall", "Fuge"}
+    assert len([p for p in c if hood(p)]) == 8 and len([p for p in c if p[0] == "Metall"]) == 16
+    assert all(p[1][1] < 3.13 for p in c if p[0] == "Metall")
+    panels = [p for p in c if p[0] == "Front" and p[1][1] > 3.135 and p[2][1] <= 3.15 + 1e-6]
+    assert len(panels) == 8                                                   # 4 tall + 4 top doors
+    besen = [p for p in k if p[2][0] < 6.01 and p[1][1] > 5.2 and p[0] == "Metall"]
+    assert len(besen) == 2 and len([p for p in besen if hood(p)]) == 1        # its cup pull
 
 
 def test_chairs_are_board_chairs_after_stuhl_png():
-    """All chairs (14 at the dining table, one at the Bibliothek desk) after input/2026-11-05
+    """All chairs (8 at the dining table, one at the Bibliothek desk) after input/2026-11-05
     input/stuhl.png: a thick plank seat on two battens, four splayed tapering stick legs without
     stretchers, one tall backrest board leaning back with a pointed heart cut out near its top, its
     tenon wedged under the seat."""
     parts = list(part_list(("EG", "EG_Stuehle")))
     seats = [p for p in parts if abs(p[2][2] - 0.46) < 0.005 and p[2][2] - p[1][2] >= 0.04]
-    assert len(seats) == 15
+    assert len(seats) == 9
     centre = lambda p: ((p[1][0] + p[2][0]) / 2, (p[1][1] + p[2][1]) / 2)
     mean = lambda vs, k: sum(v[k] for v in vs) / len(vs)
     legs = [p for p in parts if p[1][2] < 0.01]
-    assert len(legs) == 4 * 15
+    assert len(legs) == 4 * 9
     for _, _, hi, vs in legs:
         foot = [v for v in vs if v[2] < 0.01]; head = [v for v in vs if v[2] > hi[2] - 0.001]
         c = min((centre(s) for s in seats), key=lambda q: math.dist(q, (mean(foot, 0), mean(foot, 1))))
@@ -688,14 +743,14 @@ def test_chairs_are_board_chairs_after_stuhl_png():
         assert max(v[0] for v in foot) - min(v[0] for v in foot) < max(v[0] for v in head) - min(v[0] for v in head) + 0.02   # tapering
     assert not [p for p in parts if p[1][2] > 0.02 and p[2][2] < 0.35]                       # no stretchers
     board = [p for p in parts if p[2][2] > 0.85]
-    assert len(board) == 4 * 15                                                # two sides, above and below the heart
-    assert sum(len(set(p[3])) == 10 for p in board) == 15                      # the piece notched by the heart's point
+    assert len(board) == 4 * 9                                                # two sides, above and below the heart
+    assert sum(len(set(p[3])) == 10 for p in board) == 9                      # the piece notched by the heart's point
     for _, _, hi, vs in board:
         c = min((centre(s) for s in seats), key=lambda q: math.dist(q, (vs[0][0], vs[0][1])))
         top = [v for v in vs if v[2] > hi[2] - 0.001]; low = [v for v in vs if v[2] < min(w[2] for w in vs) + 0.001]
         lean = math.dist(c, (mean(top, 0), mean(top, 1))) - math.dist(c, (mean(low, 0), mean(low, 1)))
         assert lean > 0.12 * (top[0][2] - low[0][2])                         # leans back
-    assert sum(0.90 <= p[2][2] <= 1.0 for p in board) == 3 * 15                # tall: about 0.95
+    assert sum(0.90 <= p[2][2] <= 1.0 for p in board) == 3 * 9                # tall: about 0.95
 
 
 def test_desk_submodel():
@@ -894,7 +949,7 @@ def test_bad_submodel():
     panes = [{tuple(round(c, 3) for c in g["v"][i]) for f in g["f"][a:a + n] for i in f}
              for a, n in bp.parts[san] if g["m"][a] == "Glas"]
     assert len(panes) == 1
-    assert {round(x, 3) for x, _, _ in panes[0]} == {0.854, 0.866}            # 12 mm, centred on the wall
+    assert {round(x, 3) for x, _, _ in panes[0]} == {0.787, 0.799}            # 12 mm, flush with the FD jamb (2026-11-10)
     assert {(y, z) for _, y, z in panes[0]} == {(2.267, 1.0), (3.467, 1.0), (3.467, 0.0), (3.817, 0.0),
                                                 (3.817, 2.4), (2.267, 2.4)}
     # the passage between the low wall's south end and the front sliding leaf
@@ -1023,18 +1078,19 @@ def test_kueche_submodel():
     x0, y0 = kueche.KUECHE_AT
     assert {c for c, _ in sub.geo} == {"Kueche"} and sub.garden is None
     assert {n for _, n in sub.geo} == {"Kueche_Kueche", "Kueche_Herd", "Kueche_Haube", "Kueche_Waende"}
-    assert all(-1e-9 <= x <= 3.067 + 1e-9 and -2.83 <= y <= 1e-9 for (_, n), g in sub.geo.items() for x, y, z in g["v"]
-               if n != "Kueche_Herd")                                # (the Wamsler's pipe runs into the wall)
+    assert all(-1e-9 <= x <= 3.067 + 1e-9 and -2.845 <= y <= 1e-9 for (_, n), g in sub.geo.items() for x, y, z in g["v"]
+               if n != "Kueche_Herd")                                # (the Wamsler's pipe runs into the wall;
+                                                                     # y: the cup pulls towards the dining table)
     for n in ("Kueche", "Herd", "Haube", "Waende"):
         assert _solids(sub, ("Kueche", "Kueche_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
     k = list(part_list(("EG", "EG_Kueche")))
     base = [p for p in k if p[2][2] <= 0.901 and p[1][2] < 0.2]
     sink = [p for p in base if p[1][1] > 5.2 and p[1][0] > 6.5]                # sink run: carcass, fronts, plinth
     assert abs(min(p[1][0] for p in sink) - 7.05) < 0.005 and max(p[2][0] for p in sink) > 8.55
-    top = [p for p in k if p[0] == "Granit" and p[1][1] > 5.2]
+    top = [p for p in k if p[0] == "Granit" and p[1][1] > 5.0]                 # (to the Herd since 2026-11-10)
     assert top and abs(min(p[1][0] for p in top) - 7.05) < 0.005 and max(p[2][0] for p in top) > 8.55
     east = [p for p in base if p[1][0] > 7.9 and 3.6 < p[1][1] and p[2][1] < 4.3]
-    fronts = [p for p in k if p[0] == "FichteZ" and 7.95 < p[1][0] < 7.96 and p[2][2] < 0.9]
+    fronts = [p for p in k if p[0] == "Front" and 7.95 < p[1][0] < 7.96 and p[2][2] < 0.9 and p[2][1] < 4.5]
     assert east and abs(max(p[2][1] for p in fronts) - min(p[1][1] for p in fronts) - 0.60) < 0.01
     herd = [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Herd"]
     assert abs(min(p[1][1] for p in herd) - 4.30) < 0.005 and abs(max(p[2][1] for p in herd) - 5.10) < 0.005
@@ -1093,3 +1149,33 @@ def test_speis_v6():
     assert len(leaf) == 1
     (a, b), = leaf
     assert abs(min(a[1], b[1]) - 3.28) < 0.01 and abs(max(a[1], b[1]) - 4.28) < 0.01
+
+
+def test_bad_glass_ends_at_the_french_door_jamb():
+    """Request 2026-11-10: the glass pane on the 1 m low wall is moved towards the shower so that,
+    towards the north french door, it ends flush with the door's jamb (the wall edge) instead of
+    standing in front of the opening; it still stands on the low wall (on its limestone edge), and
+    the shower's north cladding stops at the glass."""
+    import bad
+    fd = [op for op in house_core.OPENINGS if op["kind"] == "FD" and op["ax"] == "x"
+          and abs(op["face"] - house_core.D_OUT) < 0.4 and op["a"] < 2.0]
+    assert len(fd) == 1 and bad.FD_JAMB == fd[0]["a"]
+    glass = [p for p in part_list(("EG", "EG_Sanitaer")) if p[0] == "Glas"]
+    assert len(glass) == 1
+    _, lo, hi, _ = glass[0]
+    low = bad.BAD_AT[0] + bad.SHOWER                                           # low wall's west face
+    assert abs(hi[0] - fd[0]["a"]) < 1e-9 and 0.008 <= hi[0] - lo[0] <= 0.015
+    assert lo[0] >= low - 0.014 and hi[0] <= low                              # on the wall's cladding edge
+    north = [p for p in part_list(("EG", "EG_Fliesen")) if p[1][1] > bad.BAD_AT[1] + bad.D - 0.02]
+    assert north and max(p[2][0] for p in north) <= lo[0] + 1e-9
+
+
+def test_wc_tiles_in_ral_5014():
+    """Request 2026-11-10: the formerly green WC / Bad tiles in the house's RAL 5014 Taubenblau:
+    their speckle's two colours lie around RAL 5014 (linear), no longer green; no green tiles left."""
+    lin = lambda c: c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    ral = [lin(v / 255) for v in house_core.RAL_5014]
+    c1, c2, _ = house_core.MAT_DEF["Fliese"]["speck"]
+    mid = [(a + b) / 2 for a, b in zip(c1, c2)]
+    assert all(abs(m - r) < 0.01 for m, r in zip(mid, ral)), mid
+    assert all(c[2] > c[1] > c[0] for c in (c1, c2))                        # blue, not green

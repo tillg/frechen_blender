@@ -111,7 +111,7 @@ flowchart LR
   `_Boden`, laid with `tiles(…, rng)`); the house leaves the room (`BAD_EG`) out of the EG's
   `floor_cover()`. The outer walls and the shortened bedroom wall stay in `build_eg()`.
 - **Küche.** `code/kueche.py` the same way: `kueche_neu(c, x0, y0)` builds Spülzeile, Ostzeile,
-  Halbinsel, the Wamsler (`ofen.wamsler()`) with its hood, wall cabinets, Besenschrank and the
+  Halbinsel, the Wamsler (`ofen.wamsler()`) with its hood, Besenschrank and the
   Abzug (`c + "_Waende"`) straight into collection `c` with the room's inner NW corner at
   (x0, y0) (`EG` at `KUECHE_AT`, or `Kueche` at the origin, so the sub-model lies at y ≤ 0).
   Positions are written in house coordinates (those of `input/2026-11-09 input/speis_kueche_v6.svg`)
@@ -129,7 +129,8 @@ flowchart LR
 - **Local wall frames.** `frame(ax)` returns `P(u, t, z)`, so wall, door and cladding code
   works for walls along x and along y.
 - **`MAT_DEF`** is a pure data table of the `FL_*` materials: `rgba`, `wood`, `speck`,
-  `bump`, `alpha`, `emit`. **`PAINT`** holds the RAL overrides for the plain materials.
+  `bump`, `alpha`, `emit`. **`PAINT`** holds the RAL overrides for the plain materials (`FL_Front`:
+  the painted kitchen and Speis cabinet fronts, built by `mallnitz_front()` in the core).
 - **Shutter cross boards** (`build_cross_boards()`) are computed from the shutter Parts, per
   storey (`Laeden_Querbretter`, `OG_Laeden_Querbretter`). Each board keeps its shutter's
   `rnd`.

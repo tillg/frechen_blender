@@ -2,11 +2,11 @@
 sketch input/2026-11-08 input/plan_grosseltern_bad.jpeg and the agreed drawing
 input/2026-11-08 input/grosseltern_v4.svg. From north to south: a walk-in shower 0.80 wide in the NW corner
 (clear of the north french door), east of it a wall 1.20 m long, 1.00 m high, 12 cm thick and one
-L-shaped clear glass pane in its centre plane (above it to the ceiling, 35 cm from the north wall
-down to the floor); the Waschtrog (one 1.00 m trough, two deck mixers) on that wall's east face; in
-the south a niche 1.20 m deep over the full width, split by a 12 cm wall into WC (west) and Schrank
-(east), closed by two interlocking sliding leaves on two offset tracks (the WC leaf open, slid
-behind the Schrank leaf). The floor: a limestone strip as wide as the WC along the west wall, oak
+L-shaped clear glass pane on its shower edge, flush with the north french door's jamb (above it to
+the ceiling, 35 cm from the north wall down to the floor); the Waschtrog (one 1.00 m trough, two
+deck mixers) on that wall's east face; in the south a niche 1.20 m deep over the full width, split
+by a 12 cm wall into WC (west) and Schrank (east), closed by two interlocking sliding leaves on two
+offset tracks (the WC leaf open, slid behind the Schrank leaf). The floor: a limestone strip as wide as the WC along the west wall, oak
 elsewhere.
 
 Pure Python like house_core.py, which imports this module: build_eg() calls bad_neu() at BAD_AT;
@@ -23,6 +23,7 @@ W, D = 2.048, 3.817                          # room (x, y); ceiling hc.Z_EG_TOP
 NICHE, NW, HALF = 1.20, 0.12, 0.964          # niche depth, its middle wall, WC / Schrank width
 SHOWER = 0.80                                # walk-in shower width (west)
 GLASS = 0.35                                 # thin glass from the north wall
+FD_JAMB = 1.109                              # house x: west jamb of the north french door (build_eg)
 LOW = (2.267, 3.467, 1.00, 0.12)             # low wall: v from, v to, height, thickness
 TROG = (0.50, 1.00, 0.85)                    # Waschtrog: depth, width, top
 LIN = 2.05                                   # lintel underside / rail top
@@ -50,9 +51,9 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     lv0, lv1, lh, lt = LOW
     B("_Waende", "Putz", SHOWER, SHOWER + lt, lv0, lv1, 0, lh, rng.random())
 
-    # glass: one L-shaped pane in the low wall's centre plane, on the wall up to the ceiling and
-    # 35 cm from the north wall down to the floor
-    um = SHOWER + lt / 2
+    # glass: one L-shaped pane on the low wall's shower edge, up to the ceiling and 35 cm from the
+    # north wall down to the floor; towards the north french door flush with its jamb
+    um = FD_JAMB - BAD_AT[0] - 0.006
     hc.prism(c, c + "_Sanitaer", "Glas", lambda u, t, z: (x0 + t, y0 + u, z),
              [(lv0, lh), (lv1, lh), (lv1, 0.0), (D, 0.0), (D, H), (lv0, H)], um - 0.006, um + 0.006, rng.random())
     rng.random()                                 # the second pane's draw: later parts keep their rnd
@@ -72,7 +73,7 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
         hc.LEAVES.append((c, [(x0 + HALF, y0 + tc - LT / 2, zl), (x0 + HALF + LW, y0 + tc + LT / 2, zl + LH)]))
     B("_Innentueren", "Metall", 0, W, NICHE, NICHE + 0.11, LIN - 0.05, LIN - 0.005, rng.random())   # rail
 
-    # WC half: the toilet in its middle on the south wall, green tiles (north side open)
+    # WC half: the toilet in its middle on the south wall, Taubenblau tiles (north side open)
     hc.toilet(c, x0 + HALF / 2, y0, 0, 1)
     hc.wainscot(c, 0.0, x0, x0 + HALF, y0, y0 + NICHE, (x0, x0 + HALF))
 
@@ -150,10 +151,11 @@ def floor(c, x0, y0):
 def stone(c, x0, y0, side, rng):
     """Limestone cladding of the shower: "w" west wall, "n" north wall (both to CLAD), "l" the low
     wall's west face (to its top). Dark backing 2 mm off the wall, slabs 6 mm proud of it, rows of
-    about 0.5 m, joints 4 mm; the west wall stops short of the north wall's slabs."""
+    about 0.5 m, joints 4 mm; the west wall stops short of the north wall's slabs, the north wall's
+    at the glass."""
     lv0, lv1, lh, _ = LOW
     T, J = 0.012, 0.004
-    face, n, ua, ub, top = {"w": (0.0, 1, lv0, D - T, CLAD), "n": (D, -1, 0.0, SHOWER, CLAD),
+    face, n, ua, ub, top = {"w": (0.0, 1, lv0, D - T, CLAD), "n": (D, -1, 0.0, FD_JAMB - BAD_AT[0] - 0.012, CLAD),
                             "l": (SHOWER, -1, lv0, lv1, lh)}[side]
     along_v = side != "n"
     o = c + "_Fliesen"
