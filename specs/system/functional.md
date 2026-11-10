@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-09
+edited: 2026-11-10
 ---
 
 # Functional: Frechenlehen house model
@@ -44,14 +44,19 @@ edited: 2026-11-09
     assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
     after wamsler.jpeg (grey enamel, fire burning behind the glass, flue pipe into the east wall)
     under an old-form steel hood (skirt with rail, canopy, stack to the ceiling); the Halbinsel
-    with the induction cooktop towards the dining table; spruce wall cabinets over the Spülzeile
-    (up to the Abzug) and over the Ostzeile (up to the hood)
+    with the induction cooktop towards the dining table; no wall cabinets; east of the sink,
+    where the Herd stands in front of the Spülzeile, a blind cabinet (no drawers) and the granite
+    top runs up to the Herd, as the Ostzeile's does south of it; all cabinets in the style of
+    `input/2026-11-10 input/kueche_mallnitz.png` (frame fronts with a recessed panel, a chrome cup
+    pull on every drawer and door), painted RAL 5014 Taubenblau; under the cooktop drawers towards
+    the kitchen and towards the dining table
   - Speis (no wall to the Essen): from the Flur wall open shelf A (60 cm), the aisle (91.9 cm,
     west end free), open shelf B (60 cm) and, back to back with it, cabinet C with doors to the
-    Essen (60 cm); all spruce, to the ceiling; the wall to the Küche ends at C's front and is open
+    Essen (60 cm), all to the ceiling; the shelves spruce, C with the kitchen's painted Mallnitz
+    fronts and cup pulls; the wall to the Küche ends at C's front and is open
     over the aisle, where a sliding door on the Küche side stands slid open to the south
-  - big dining table (two joined) after tisch-briol.png: board top, legs splayed on a flat foot
-    frame with corner blocks; 14 chairs
+  - dining table after tisch-briol.png, one table 2.00 m long: board top, legs splayed on a flat
+    foot frame with corner blocks; 8 chairs (3 per long side, one at each end)
   - Büro desk in the Bibliothek between the two north french doors: two LG UltraFine 6K 32"
     monitors at 170° showing the screenshots `screen_a12` (left) and `screen_pilcrow` (right),
     a closed MacBook Pro partly under the left one with a softly lit logo, white Magic Keyboard
@@ -65,8 +70,9 @@ edited: 2026-11-09
     the big windows to the Ofen, facing the pier
   - Bad Großeltern after `input/2026-11-08 input/grosseltern_v4.svg` (also a sub-model page),
     open to the bedroom: walk-in shower 0.80 m in the NW corner with limestone cladding to 2.0 m
-    and a rain head; east of it a 1.20 m wall 1.00 m high and one L-shaped clear glass pane in
-    its centre plane, on the wall to the ceiling and 35 cm from the north wall down to the floor;
+    and a rain head; east of it a 1.20 m wall 1.00 m high and one L-shaped clear glass pane on
+    its shower edge, flush with the north french door's jamb, on the wall to the ceiling and 35 cm
+    from the north wall down to the floor;
     on the wall's east face one 1.00 m Waschtrog with two mixers; in the south a 1.20 m niche
     split by a 12 cm wall into WC and an open white Schrank (cabinet 60 cm deep over the full
     width, nothing in front of it), closed by two interlocking sliding doors (the WC leaf open,
@@ -77,7 +83,7 @@ edited: 2026-11-09
     and in the house in stage Eingerichtet; the Rundgang sees them as built (WC leaf open)
   - OG bathrooms: shower, basin with mirror
   - the four WCs (also the WC in the Bad Großeltern's niche), after
-    `input/2026-11-08 input/bad_mallnitz.jpeg`: green subway tiles about 1.1 m high with a cap
+    `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
     row, floor-standing toilet with a close-coupled cistern; where the plan draws a hand basin
     (WC 2,30) a basin on chrome console legs under a mirror in a black frame
   - OG Flur, right of the Waschküche door: deep ceramic sink on a dark stone panel, one mixer tap

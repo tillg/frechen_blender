@@ -67,6 +67,7 @@ MAT_DEF = {
     "FeuerKern":  dict(rgba=(1.0, 0.70, 0.12, 1), emit=2.6),               # inner, brighter core
     "Kies":       dict(speck=((0.30, 0.28, 0.25), (0.62, 0.60, 0.56), 150), bump=(150, 0.5)),
     "Erde":       dict(speck=((0.025, 0.014, 0.008), (0.07, 0.04, 0.022), 60), bump=(60, 0.6)),
+    "Front":      dict(rgba=(0.12, 0.20, 0.30, 1), rough=0.45),              # painted cabinets (PAINT: RAL 5014)
     "Granit":     dict(speck=((0.30, 0.29, 0.26), (0.62, 0.58, 0.50), 220), hue=0.06),
     "Fuge":       dict(rgba=(0.16, 0.16, 0.15, 1)),
     "Kiesel":     dict(rgba=(0.52, 0.50, 0.46, 1), rough=0.5),
@@ -80,7 +81,7 @@ MAT_DEF = {
     "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
-    "Fliese":     dict(speck=((0.018, 0.075, 0.032), (0.030, 0.115, 0.050), 8), hue=0.03, rough=0.12),   # WC tiles
+    "Fliese":     dict(speck=((0.107, 0.176, 0.262), (0.142, 0.234, 0.348), 8), hue=0.03, rough=0.12),   # WC tiles, RAL 5014 (linear)
     "Fugengrau":  dict(rgba=(0.42, 0.42, 0.40, 1)),                         # their grout
     "Spiegel":    dict(rgba=(0.92, 0.92, 0.92, 1), metal=1.0, rough=0.02),
     "Eisen":      dict(rgba=(0.018, 0.018, 0.02, 1), metal=0.4, rough=0.45),
@@ -105,7 +106,7 @@ MAT_DEF = {
 # RAL colours (sRGB 0-255) that override the base colour of plain materials (paint.py, viewer):
 # facade and windows RAL 9010 Reinweiß, shutters RAL 5014 Taubenblau
 RAL_9010, RAL_5014 = (241, 236, 225), (99, 125, 150)
-PAINT = {"Putz": RAL_9010, "Rahmen": RAL_9010, "Laden": RAL_5014}
+PAINT = {"Putz": RAL_9010, "Rahmen": RAL_9010, "Laden": RAL_5014, "Front": RAL_5014}   # Front: kitchen, Speis C
 
 GEO = {}      # (collection, object) -> {"v": [...], "f": [...], "m": [...], "r": [...]}
 SMOOTH = set()  # objects shaded smooth
@@ -600,13 +601,14 @@ def build_eg():
     ofen.werkstattofen("EG", 9.351 + 0.10 + 0.21 * 2 ** 0.5, 8.876 + 0.10 + 0.21 * 2 ** 0.5, 0.0, -45)   # Bibliothek:
     # corner of the Flur wall and the wall stub, turned 45° to face the room (request 2026-11-08)
     build_stairs()
-    for x0, x1 in ((4.26, 6.05), (6.05, 7.85)):             # dining table (plan: two joined tables)
-        table("EG", x0 + 0.002, x1 - 0.002, 1.18, 1.91)
-    for x in (4.58, 5.15, 5.73, 6.39, 6.95, 7.53):          # 14 chairs as in the plan
+    table("EG", 5.055, 7.055, 1.18, 1.91)                   # dining table: one, 2.00 m (request 2026-11-10)
+    for x in (5.455, 6.055, 6.655):                         # 8 chairs: 3 per long side, one at each end
         chair("EG", x, 2.12, 0, -1)
         chair("EG", x, 0.97, 0, 1)
-    chair("EG", 4.05, 1.545, 1, 0)
-    chair("EG", 8.06, 1.545, -1, 0)
+    chair("EG", 4.845, 1.545, 1, 0)
+    chair("EG", 7.265, 1.545, -1, 0)
+    for _ in range(16 + 6):                                 # the draws of the former second table and six
+        random.random()                                     # more chairs: later parts keep their rnd
     kueche.kueche_neu("EG", *kueche.KUECHE_AT)               # sink run, Herd, peninsula, Besenschrank
     box(c, "EG_Waende", "Putz", 2.04, 2.358, 12.12, 12.471, z0, z1)   # shaft in the Bad Großeltern (plan 2026-10)
 
@@ -753,8 +755,8 @@ WCS = [  # (collection, floor z, interior rectangle, door span left free on the 
 
 
 def wainscot(coll, z, x0, x1, y0, y1, door):
-    """Green subway tiles (7.5 x 15 cm, running bond, 14 rows) with a stepped cap row on all four
-    walls of a WC, after input/2026-11-08 input/bad_mallnitz.jpeg.
+    """Subway tiles (7.5 x 15 cm, running bond, 14 rows, RAL 5014 Taubenblau) with a stepped cap row
+    on all four walls of a WC, after input/2026-11-08 input/bad_mallnitz.jpeg.
     Grout backing 2 mm off the plaster; the y walls stop short of the x walls' tiles in the
     corners; the north wall leaves `door` free. Own random stream, so later parts don't shift."""
     o, rng, TL, TH, J = coll + "_Fliesen", random.Random(11), 0.15, 0.075, 0.003
@@ -913,13 +915,33 @@ def chair(coll, cx, cy, fx, fy):
         prism(coll, o, "FichteZ", PB, pts, 0, 0.035, r)
 
 
+def mallnitz_front(coll, obj, P, a, b, f, s, za, zb, r, grips=()):
+    """Cabinet front after input/2026-11-10 input/kueche_mallnitz.png, painted (FL_Front): a frame
+    (stiles over the full height, rails between them) round a panel recessed 8 mm; u from a to b
+    along the frame P, the front face at t = f, s the direction into the carcass, 2 cm thick.
+    grips: (u, z) per chrome cup pull (a plate and a hood open at the bottom, centred at (u, z)),
+    as on every front in Mallnitz. One rnd for the whole front and its grips."""
+    w = min(0.06, (b - a) / 4, (zb - za) / 4)
+    for ua, ub in ((a, a + w), (b - w, b)):                                     # stiles
+        lbox(coll, obj, "Front", P, ua, ub, f, f + s * 0.02, za, zb, r)
+    for zc, zd in ((za, za + w), (zb - w, zb)):                                 # rails
+        lbox(coll, obj, "Front", P, a + w, b - w, f, f + s * 0.02, zc, zd, r)
+    lbox(coll, obj, "Front", P, a + w, b - w, f + s * 0.008, f + s * 0.02, za + w, zb - w, r)   # panel
+    for u, z in grips:
+        lbox(coll, obj, "Metall", P, u - 0.045, u + 0.045, f, f - s * 0.003, z - 0.012, z + 0.022, r)   # plate
+        arc = lambda rad, th: (f - s * (0.003 + rad * math.cos(th)), z + rad * math.sin(th))
+        ths = [math.radians(90 - 160 * i / 8) for i in range(9)]
+        hood = [arc(0.019, th) for th in ths] + [arc(0.015, th) for th in reversed(ths)]
+        prism(coll, obj, "Metall", lambda t, uu, zz: P(uu, t, zz), hood, u - 0.04, u + 0.04, r)   # (t, z) along u
+
+
 def speis():
     """Speis after the agreed drawing input/2026-11-09 input/speis_kueche_v6.svg, from the Flur wall
     south: shelf A (60, open), the aisle (91.9, west end free), shelf B (60, open to the aisle) and,
     back to back with it, cabinet C (60, doors to the Essen) in place of the former Speis/Essen
-    wall; all to the ceiling, spruce like the kitchen. The Speis door: a sliding leaf on the Küche
-    side of the wall, slid open to the south (left as seen from the Küche), under its rail. Own
-    random stream, like the sub-models."""
+    wall; all to the ceiling; the shelves spruce, C painted like the kitchen (Mallnitz fronts). The
+    Speis door: a sliding leaf on the Küche side of the wall, slid open to the south (left as seen
+    from the Küche), under its rail. Own random stream, like the sub-models."""
     c, o, rng = "EG", "EG_Speis", random.Random(9)
     x0, x1, top = 2.774, 5.238, Z_EG_TOP - 0.003
 
@@ -934,15 +956,14 @@ def speis():
     shelves(5.249, 5.847)                                                     # A
     shelves(3.732, 4.33)                                                      # B
     yd, yc = 3.13, 3.15                                                       # C: doors / carcass front
-    box(c, o, "FichteZ", x0, x1, yc, 3.728, 0.10, top, rng.random())
+    box(c, o, "Front", x0, x1, yc, 3.728, 0.10, top, rng.random())
     box(c, o, "Fuge", x0, x1, yc + 0.06, 3.728, 0.005, 0.10, rng.random())
-    n = 4
-    for k in range(n):
+    n, P = 4, frame("x")
+    for k in range(n):                       # painted Mallnitz fronts (kueche.py), cup pulls where pairs meet
         a, b = x0 + (x1 - x0) * k / n, x0 + (x1 - x0) * (k + 1) / n
-        for za, zb in ((0.105, 1.995), (2.005, top - 0.003)):               # tall door, top door
-            box(c, o, "FichteZ", a + 0.003, b - 0.003, yd, yc, za, zb, rng.random())
-        hx = b - 0.06 if k % 2 == 0 else a + 0.045
-        box(c, o, "Metall", hx, hx + 0.015, yd - 0.025, yd, 0.95, 1.10, rng.random())
+        hx = b - 0.08 if k % 2 == 0 else a + 0.08
+        for za, zb, zk in ((0.105, 1.995, 1.00), (2.005, top - 0.003, 2.07)):   # tall door, top door
+            mallnitz_front(c, o, P, a + 0.003, b - 0.003, yd, 1, za, zb, rng.random(), [(hx, zk)])
     # sliding leaf on the Küche face (x 5.49), 1.00 wide, open over the wall south of the opening
     ys, tc, LT, zl, LH = 3.28, 5.52, 0.04, 0.005, DOOR_H + 0.025
     rl = 0.8 + 0.2 * rng.random()
