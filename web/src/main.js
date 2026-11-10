@@ -92,6 +92,7 @@ function applyVisibility() {
   for (const o of bp.objects) {
     if (!o.userData.hidden) o.visible = !HIDE[cut].includes(cutLevel(o)) && (!o.userData.furniture || furnished);
   }
+  for (const g of fire.group.children) g.visible = !HIDE[cut].includes(cutLevel(g));   // the OG stove's fire goes with the OG
 }
 function setCutaway(c) {
   cut = c;
@@ -148,7 +149,7 @@ function inView(boxes) {
   frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse), camera.coordinateSystem);
   return boxes.some((b) => frustum.intersectsBox(b));
 }
-const fireInView = () => fire.group.visible && inView(fireBoxes);
+const fireInView = () => fire.group.visible && inView(fireBoxes.filter((b, i) => fire.group.children[i].visible));
 
 window.addEventListener('resize', () => {                             // before the awaits: no resize lost while compiling
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -194,6 +195,7 @@ if (import.meta.env.MODE !== 'production') {
     },
     cameraAt: () => [camera.position.x, -camera.position.z, camera.position.y].map((v) => +v.toFixed(3)),
     fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y,   // a flame's height (0: off)
+    fires: () => fire.group.children.filter((g) => g.visible).map((g) => g.userData.collection),   // shown fires' collections
     slides: slides.state,                                                       // the Bad's sliding leaves
     setProgress,
     setCutaway,

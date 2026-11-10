@@ -27,6 +27,7 @@ export function createFire(extras) {
       const g = new THREE.Group();
       g.position.copy(yup(f.base));
       g.rotation.y = Math.atan2(f.u[1], f.u[0]);
+      g.userData.collection = f.collection;           // its stove's collection: the cutaway hides it with it
       for (const t of f.tongues) {
         for (const [mat, sw, sh, dz, dp] of [[outer, 1, 1, 0, 0], [inner, cw, ch, -0.3 * f.d, 1.7]]) {
           const m = new THREE.Mesh(geo, mat);

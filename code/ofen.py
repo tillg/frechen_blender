@@ -107,7 +107,8 @@ def ofen_neu():
     for k in range(2):                                                             # two logs
         hc.prism("Ofen", o, "Holz", PD, rect(ia + 0.06 + 0.03 * k, ib - 0.08 + 0.03 * k, iz0 + 0.01 + 0.06 * k,
                                           iz0 + 0.07 + 0.06 * k), 0.006 + 0.004 * k, 0.012 + 0.004 * k)
-    hc.FIRES.append(dict(base=PD(0, 0.011, iz0 + 0.07), u=(d, -d), w=ib - ia - 0.04, h=0.45, d=0.008))  # flames: fire.py
+    hc.FIRES.append(dict(base=PD(0, 0.011, iz0 + 0.07), u=(d, -d), w=ib - ia - 0.04, h=0.45, d=0.008,
+                         collection="Ofen"))  # flames: fire.py
     hc.prism("Ofen", o, "Ofenglas", PD, rect(ia, ib, iz0, iz1), 0.018, 0.022)
     # back door on the wall side (x = 0, t outward = -x): the same iron frame, glass and a fire;
     # in the house it sits in the Flur face of the wall (ofen_im_haus)
@@ -119,7 +120,7 @@ def ofen_neu():
     gb = rect(bc - bw / 2 + 0.04, bc + bw / 2 - 0.04, za + 0.04, bt - 0.04)
     hc.prism("Ofen", ob, "Eisen", PB, gb, 0.0, 0.004)
     hc.FIRES.append(dict(base=PB(bc, 0.011, za + 0.06), u=(0.0, 1.0), w=bw - 0.12, h=bt - za - 0.14, d=0.008,
-                         back=True))
+                         back=True, collection="Ofen"))
     hc.prism("Ofen", ob, "Ofenglas", PB, gb, 0.018, 0.022)
     # benches after bank-schlicht.png: plank seat with a rounded free corner, at each leg station
     # two plain square legs (front, back) joined by a stretcher across the depth
@@ -212,7 +213,7 @@ def ofen_im_haus():
     hc.LAMP_LIGHTS[nl:] = [(x0 + y, y0 - x, z) for x, y, z in hc.LAMP_LIGHTS[nl:]]
     for f in hc.FIRES[n0:]:
         (x, y, z), (ux, uy) = f["base"], f["u"]
-        f.update(base=(x0 + y, y0 - x + (sh if f.get("back") else 0), z), u=(uy, -ux))
+        f.update(base=(x0 + y, y0 - x + (sh if f.get("back") else 0), z), u=(uy, -ux), collection="EG")
     for key in [k for k in hc.GEO if k[0] == "Ofen"]:
         g = hc.GEO.pop(key)
         dy = sh if key[1] == "Ofen_Hintertuer" else 0
@@ -246,7 +247,8 @@ def werkstattofen(c, cx, cy, z, turn=0):
     g, ca, sa = hc.GEO[(c, o)], math.cos(math.radians(turn)), math.sin(math.radians(turn))
     rot = lambda x, y: (cx + (x - cx) * ca - (y - cy) * sa, cy + (x - cx) * sa + (y - cy) * ca)
     g["v"][n0:] = [(*rot(x, y), zz) for x, y, zz in g["v"][n0:]]
-    hc.FIRES.append(dict(base=(*rot(xm, y1 + 0.009), z + 0.66), u=(ca, sa), w=0.14, h=0.24, d=0.006))  # fire.py
+    hc.FIRES.append(dict(base=(*rot(xm, y1 + 0.009), z + 0.66), u=(ca, sa), w=0.14, h=0.24, d=0.006,
+                         collection=c))  # fire.py
 
 
 def wamsler(c, x0, y0, rng):
@@ -290,7 +292,8 @@ def wamsler(c, x0, y0, rng):
         B("Herd", s0, s1, -0.015, 0, z0, z1, rf)
     B("Eisen", 0.06, 0.23, -0.004, 0, 0.585, 0.755)                              # firebox back
     B("Ofenglas", 0.06, 0.23, -0.014, -0.011, 0.585, 0.755)
-    hc.FIRES.append(dict(base=(x0 - 0.008, y1 - 0.145, 0.595), u=(0.0, 1.0), w=0.13, h=0.14, d=0.005))  # fire.py
+    hc.FIRES.append(dict(base=(x0 - 0.008, y1 - 0.145, 0.595), u=(0.0, 1.0), w=0.13, h=0.14, d=0.005,
+                         collection=c))  # fire.py
     grip(0.25, 0.61, 0.73)
     B("Herd", 0.285, W - 0.02, -0.015, 0, 0.30, 0.43)                            # small door
     B("Herd", 0.285, W - 0.02, -0.015, 0, 0.445, 0.795)                          # oven door
