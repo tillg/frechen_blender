@@ -17,6 +17,7 @@ test('one flame group per fire bed, at its base (z-up -> y-up), outer + core per
     const [x, y, z] = house.fires[i].base;
     expect(g.position.toArray().map((v) => +v.toFixed(6))).toEqual([x, z, -y].map((v) => +v.toFixed(6)));
     expect(g.children.length).toBe(2 * house.fires[i].tongues.length);
+    expect(g.userData.collection).toBe(house.fires[i].collection);   // the cutaway hides it with its storey
   });
 });
 

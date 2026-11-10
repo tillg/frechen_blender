@@ -55,11 +55,14 @@ test('"Nur EG" also hides the OG and its balconies', async ({ page }) => {
   for (const n of ['Dach', 'OG_Waende', 'OG_Decke_EG', 'OG_Laeden_Querbretter', 'Balkon_OG_Nord', 'Balkon_OG_Ost', 'Balkon_OG_Sued'])
     expect(await vis(page, n)).toBe(false);
   for (const n of ['Gelaende', 'EG_Waende', 'Balkon_EG_Nord']) expect(await vis(page, n)).toBe(true);
+  // the OG workshop stove's fire goes with the OG (it floated over the EG), the EG fires stay
+  expect(await page.evaluate(() => window.__fl.fires())).toEqual(['EG', 'EG', 'EG', 'EG']);
   await page.getByRole('button', { name: 'Detailmodell' }).click();
   await page.waitForTimeout(500);
   await shot(page, 'cutaway_eg.png');                                       // for the eye
   await page.getByRole('button', { name: 'Ganzes Haus' }).click();
   expect(await vis(page, 'Dach')).toBe(true);
+  expect((await page.evaluate(() => window.__fl.fires())).sort()).toEqual(['EG', 'EG', 'EG', 'EG', 'OG']);
 });
 
 for (const [w, h] of [[1280, 720], [1920, 1080]])
