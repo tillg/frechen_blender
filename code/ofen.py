@@ -253,7 +253,7 @@ def werkstattofen(c, cx, cy, z, turn=0):
 
 def wamsler(c, x0, y0, rng):
     """Wood-fired kitchen cooker after wamsler.jpeg (80 x 58 x 90 cm, sizes estimated from the
-    photo), front at x = x0 facing west, south side at y0: grey enamelled body on a black plinth,
+    photo), front at x = x0 facing west, south side at y0: stainless steel body on a black plinth,
     steel top with a rail; seen from the front, the fire door with glass top left (north) and the
     ash door below it, the oven door with a window and a small door on the right, a full-width
     drawer; the flue on top at the back right, a pipe into the east wall. All parts take their
@@ -264,41 +264,41 @@ def wamsler(c, x0, y0, rng):
     disc = lambda r, n=12: [(r * math.cos(2 * math.pi * (i + 0.5) / n), r * math.sin(2 * math.pi * (i + 0.5) / n))
                             for i in range(n)]
 
-    def bar(s0, s1, z, t=-0.04):                                  # chrome bar along y on two posts
-        hc.prism(c, o, "Metall", hc.frame("x"), [(x0 + t + a, z + b) for a, b in disc(0.008, 8)], y1 - s1, y1 - s0,
+    def bar(s0, s1, z, t=-0.04):                                  # steel bar along y on two posts
+        hc.prism(c, o, "Stahl", hc.frame("x"), [(x0 + t + a, z + b) for a, b in disc(0.008, 8)], y1 - s1, y1 - s0,
                  rng.random())
         for s in (s0 + 0.02, s1 - 0.02):
-            B("Metall", s - 0.005, s + 0.005, t, -0.015, z - 0.005, z + 0.005)
+            B("Stahl", s - 0.005, s + 0.005, t, -0.015, z - 0.005, z + 0.005)
 
-    def grip(s, z0, z1, t=-0.035):                                # vertical chrome handle on two posts
-        hc.xy_prism(c, o, "Metall", [(x0 + t + a, y1 - s + b) for a, b in disc(0.008, 8)], z0, z1, rng.random())
+    def grip(s, z0, z1, t=-0.035):                                # vertical steel handle on two posts
+        hc.xy_prism(c, o, "Stahl", [(x0 + t + a, y1 - s + b) for a, b in disc(0.008, 8)], z0, z1, rng.random())
         for z in (z0 + 0.015, z1 - 0.015):
-            B("Metall", s - 0.005, s + 0.005, t, -0.015, z - 0.005, z + 0.005)
+            B("Stahl", s - 0.005, s + 0.005, t, -0.015, z - 0.005, z + 0.005)
 
     B("Eisen", 0.02, W - 0.02, 0.04, D - 0.03, 0.005, 0.09)                      # plinth
-    B("Herd", 0, W, 0, D, 0.09, 0.865)                                            # body
+    B("Stahl", 0, W, 0, D, 0.09, 0.865)                                           # body
     rt = rng.random()
-    B("Metall", -0.005, W + 0.005, -0.02, D, 0.865, 0.885, rt)                    # top plate, raised rim
+    B("Stahl", -0.005, W + 0.005, -0.02, D, 0.865, 0.885, rt)                     # top plate, raised rim
     for s0, s1, t0 in ((-0.005, W + 0.005, -0.02), (-0.005, 0.025, -0.02), (W - 0.025, W + 0.005, -0.02)):
-        B("Metall", s0, s1, t0, D if s1 - s0 < 0.1 else 0.01, 0.885, 0.90, rt)
+        B("Stahl", s0, s1, t0, D if s1 - s0 < 0.1 else 0.01, 0.885, 0.90, rt)
     bar(0.03, W - 0.03, 0.835, -0.045)                                           # rail under the top
-    B("Herd", 0.02, W - 0.02, -0.015, 0, 0.10, 0.285)                            # drawer
+    B("Stahl", 0.02, W - 0.02, -0.015, 0, 0.10, 0.285)                           # drawer
     bar(0.07, W - 0.07, 0.255)
-    B("Herd", 0.02, 0.27, -0.015, 0, 0.30, 0.53)                                 # ash door
+    B("Stahl", 0.02, 0.27, -0.015, 0, 0.30, 0.53)                                # ash door
     grip(0.25, 0.37, 0.47)
     rf = rng.random()                                                            # fire door: frame round the glass
     for s0, s1, z0, z1 in ((0.02, 0.06, 0.545, 0.795), (0.23, 0.27, 0.545, 0.795),
                            (0.02, 0.27, 0.545, 0.585), (0.02, 0.27, 0.755, 0.795)):
-        B("Herd", s0, s1, -0.015, 0, z0, z1, rf)
+        B("Stahl", s0, s1, -0.015, 0, z0, z1, rf)
     B("Eisen", 0.06, 0.23, -0.004, 0, 0.585, 0.755)                              # firebox back
     B("Ofenglas", 0.06, 0.23, -0.014, -0.011, 0.585, 0.755)
     hc.FIRES.append(dict(base=(x0 - 0.008, y1 - 0.145, 0.595), u=(0.0, 1.0), w=0.13, h=0.14, d=0.005,
                          collection=c))  # fire.py
     grip(0.25, 0.61, 0.73)
-    B("Herd", 0.285, W - 0.02, -0.015, 0, 0.30, 0.43)                            # small door
-    B("Herd", 0.285, W - 0.02, -0.015, 0, 0.445, 0.795)                          # oven door
+    B("Stahl", 0.285, W - 0.02, -0.015, 0, 0.30, 0.43)                           # small door
+    B("Stahl", 0.285, W - 0.02, -0.015, 0, 0.445, 0.795)                         # oven door
     B("Eisen", 0.33, W - 0.065, -0.018, -0.015, 0.50, 0.71)                      # its window
-    hc.prism(c, o, "Metall", hc.frame("y"), [(y1 - 0.53 + a, 0.67 + b) for a, b in disc(0.025)],
+    hc.prism(c, o, "Stahl", hc.frame("y"), [(y1 - 0.53 + a, 0.67 + b) for a, b in disc(0.025)],
              x0 - 0.020, x0 - 0.018, rng.random())                               # thermometer
     bar(0.31, W - 0.045, 0.765)
     fx, fy, zc = x0 + 0.45, y0 + 0.14, 1.30                                       # flue (back right), pipe

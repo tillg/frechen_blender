@@ -95,7 +95,7 @@ MAT_DEF = {
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
     "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
-"Herd":       dict(rgba=(0.15, 0.16, 0.15, 1), metal=0.5, rough=0.35),   # Wamsler: grey enamelled steel
+"Stahl":      dict(rgba=(0.55, 0.56, 0.57, 1), metal=0.45, rough=0.25),   # Küche: hood, sink, Wamsler (metal < 0.5: the viewer has no env map)
     "Weide":      dict(speck=((0.30, 0.19, 0.08), (0.62, 0.45, 0.22), 150)),     # wicker laundry baskets
     "Jeans":      dict(rgba=(0.12, 0.18, 0.30, 1), rough=0.9),               # folded clothes
     "Wolle":      dict(rgba=(0.45, 0.14, 0.10, 1), rough=0.95),
