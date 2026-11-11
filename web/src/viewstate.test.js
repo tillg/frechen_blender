@@ -38,6 +38,18 @@ describe('viewstate (the saved view per model entry)', () => {
     expect(initialQuery('', localStorage, key)).toBe('');
   });
 
+  it('malformed view keys are dropped', () => {
+    expect(initialQuery('?cam=abc&at=1,2&p=x&fov=abc&hires=on', localStorage, key)).toBe('?hires=on');
+    write(localStorage, key, '?cam=1,2&p=x');
+    expect(initialQuery('', localStorage, key)).toBe('');
+    expect(initialQuery('?cam=1,2,3&at=0,0,0&p=2&fov=200', null, key)).toBe('?cam=1,2,3&at=0,0,0&p=2');
+  });
+
+  it('a malformed URL view falls back to the stored one', () => {
+    write(localStorage, key, '?cam=1,2,3&at=0,0,0&look=mass');
+    expect(initialQuery('?cam=abc', localStorage, key)).toBe('?cam=1,2,3&at=0,0,0&look=mass');
+  });
+
   it('no storage (blocked in a private window) falls back to the default', () => {
     expect(() => write(null, key, '?look=mass')).not.toThrow();
     expect(() => remove(null, key)).not.toThrow();

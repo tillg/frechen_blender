@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-10
+edited: 2026-11-11
 ---
 
 # Domain: Frechenlehen house model
@@ -35,9 +35,10 @@ the team uses them:
 | **Opening** | A hole in a wall: `W` window, `FD` french door, `WF` tall window with a fixed light below, `GD` glazed larch door, `D` solid door, `I` bare opening filled by a dedicated builder. |
 | **Leaf** | An interior door leaf, normally opened flat against the wall. A **swinging leaf** is an object of its own with its origin at the hinge (`PIVOT`) and `SWING`, the yaw to its other state. |
 | **Component** | A named building part (e.g. entrance door). The name of a reference photo in `input/` is the component it shows. |
-| **Route** | The camera path of the walkthrough, in `tour.py`, shared by the film and the viewer's Rundgang: orbit / path / turn / stair / hold segments; turning speed `TURN` and pause length `PAUSE` are one variable each. The route is closed: it ends at its start pose. |
-| **Camera key** | One smoothed frame of the route at 25 fps: position (x, y, z), yaw, pitch (radians, model z-up) and lens (mm, 36 mm sensor width). `tour.build_tour()` bakes the route into them; the film and the viewer both play them. |
-| **Rundgang** (viewer) | Live playback of the camera keys in the viewer, in stage Eingerichtet with the whole house and the entrance door open; it can pause (then the user looks around), be scrubbed, loop ("Endlos") and be left ("Beenden"). |
+| **Route** | A camera path in `tour.py` (`ROUTES`): orbit / path / turn / stair / hold segments; turning speed `TURN` and pause length `PAUSE` are one variable each. Each route is closed: it ends at its start pose. "Um und durch das Haus" (`ROUTE`) is the film's and the viewer's first; "Durch die Stube & Küche" is a shorter walk only the viewer plays. |
+| **Camera key** | One smoothed frame of a route at 25 fps: position (x, y, z), yaw, pitch (radians, model z-up) and lens (mm, 36 mm sensor width). `tour.build_tour(route)` bakes a route into them; the film (first route) and the viewer (all routes) play them. |
+| **Rundgang** (viewer) | Live playback of the chosen route's camera keys in the viewer, in stage Eingerichtet with the whole house and the entrance door open; it can pause (then the user looks around), be scrubbed, loop ("Endlos") and be left ("Beenden"). It is started from the Routen group of the Standpunkt drop-down. A playing route is neither saved nor written to the URL; when it ends, the Darstellung it started from returns unless the user changed it meanwhile. |
+| **Standpunkt** | A named camera pose of a model entry in `tour.py` (`SPOTS`: name, group, entries, camera, look-at point, vertical field of view). Outside Standpunkte (groups Außen, Übersicht) are orbited around their look-at point; inside ones (groups Erdgeschoss, 1. Stock) stand at eye height `EYE` in a room corner and the mouse looks around in place (no orbit, zoom or pan). The first Standpunkt of an entry is its standard (house: Von Südosten). Sub-models list their own views (Schräg, Von oben, …) from their page config. After the user moves the camera, the drop-down shows **Eigene Ansicht**. |
 | **Collection** | Blender grouping. The house lives in `Haus` with sub-collections `FL_EG`, `FL_OG`, `FL_Dach`, `FL_Balkone`, `FL_Umgebung`, `FL_Referenz`. In the `.glb` it is `extras.collection` per node. |
 | **rnd** | A random value per Part, stored per face, that varies the shade of boards and slabs. |
 | **Core** (`house_core`) | The pure-Python description of the house: constants, materials as data, primitives, builders. It knows nothing about Blender or three.js. |
@@ -46,15 +47,17 @@ the team uses them:
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
 | **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
 | **Viewer** | The three.js web page in `web/`. |
-| **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page reached through the viewer's "Teilmodell" drop-down: the **Ofen** (`ofen.py`, `ofen.html`), the **Schreibtisch** (`desk.py`, `desk.html`), the **Bad Großeltern** (`bad.py`, `bad.html`; it brings walls of its own), the **Küche** (`kueche.py`, `kueche.html`) and the **Gäste-WC** (`gaeste_wc.py`, `gaeste_wc.html`; with its partition, the WC's north wall and the back hall's three doors). The house places the same parts, only translated. |
+| **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page reached through the viewer's "Modell" drop-down: the **Ofen** (`ofen.py`, `ofen.html`), the **Schreibtisch** (`desk.py`, `desk.html`), the **Bad Großeltern** (`bad.py`, `bad.html`; it brings walls of its own), the **Küche** (`kueche.py`, `kueche.html`) and the **Gäste-WC** (`gaeste_wc.py`, `gaeste_wc.html`; with its partition, the WC's north wall and the back hall's three doors). The house places the same parts, only translated. |
 | **Gäste-WC terms** | **WC** (west of the **Trennwand**, the new 10 cm partition; door to the back hall, leaf opening outward), **Garderobe** (east of it, open through the old 80 opening: Bank, Hakenbrett, Hutablage), **Handwaschbecken** (the WC's 40/28 basin outside it, on the back hall's east wall, with tiles and a wood-framed mirror), **schwenkende Türen** (Hintertür, WC-Tür, Windfangtür: in the viewer one of them swings to its other state now and then, to show where they get in each other's way). |
 | **Küche terms** | **Spülzeile** (sink run on the north wall, door frame → NE corner), **Ostzeile** (60 cm base unit on the east wall), **Halbinsel** (peninsula with the cooktop), **Abzug** (flue box in the NE corner from 1.80 m up), **Besenschrank** (broom cupboard behind the open kitchen door). |
 | **Bad Großeltern terms** | **Nische** (the 1.20 m WC + Schrank strip in the south, split by a 12 cm wall), **verschränkte Schiebetüren** (two sliding leaves on offset tracks closing the Nische; at most one half open), **Raumteiler** (1 m wall and one L-shaped glass pane: above the wall to the ceiling, 35 cm from the north wall down to the floor; between shower and basin), **Waschtrog** (one 1.00 m trough basin, two mixers), **Durchgang** (the passage between the front sliding leaf and the Raumteiler's end). |
 | **Speis A / B / C** | The pantry's built-ins: open shelf A on the Flur wall, open shelf B on the aisle, cabinet C back to back with B with doors to the Essen; all to the ceiling. |
 | **Bildschirm** | A monitor pane of the Schreibtisch whose material shows a screen image (a screenshot) instead of a colour or procedural texture. |
-| **Stage** | One of five looks in the viewer: **Skizze** (sketch), **Massenmodell** (massing model), **Detailmodell** (detailed model), **Gebaut** (built reality), **Eingerichtet** (furnished: Gebaut plus furniture). |
-| **Timeline** | The bar that moves between stages. Its progress `p` runs from 0 to 3; integer values are the pure stages, values in between blend two neighbours. |
-| **Cutaway** | Viewer setting that hides the roof ("Ohne Dach") or the roof and the OG ("Nur EG"). |
+| **Stage** | One of five looks of the house in the viewer: **Skizze** (sketch), **Massenmodell** (massing model), **Detailmodell** (detailed model), **Gebaut** (built reality), **Eingerichtet** (furnished: Gebaut plus furniture). The Darstellung drop-down chooses it; the internal progress `p` is 0…4 (the URL value), and the stages blend only in the code. |
+| **Modell** (drop-down) | The model-entry chooser at the top right of every viewer page: **Ganzes Haus**, **Erdgeschoss**, **1. Stock** │ the sub-models Ofen, Schreibtisch, Bad Oma & Opa, Küche, Gäste-WC. The three house entries are the **cutaway**: roof and OG hidden or not (`cut=` `all` / `eg` / `noroof`), the ground never hidden. |
+| **Darstellung** | The level of rendering of a model entry, chosen in its drop-down: the five stages for the house, Drahtmodell / Masse / Gerendert for a sub-model. Skizze / Drahtmodell is the lowest. |
+| **Reset** | The button beside the drop-downs: forgets the current entry's saved view and returns it to its lowest Darstellung and its standard Standpunkt. |
+| **Saved view** | Per model entry, the browser (`localStorage`, key `frechenlehen:<page>:<entry>`) keeps the last Darstellung and camera pose as the same query string the URL uses. The URL wins over it; a bare house URL opens the last-used house entry. An entry's default view is never stored. A view key that is malformed (cam/at not three finite numbers, p not finite, fov outside 10…90) is dropped before use and before saving. |
 | **Clay / Ink / Paper** | The off-white Massenmodell material / the dark Skizze line colour / the Skizze background and surface colour. Surfaces drawn in paper hide the lines behind them (**hidden-line**). |
 | **Garden layout** | The shared description of the garden: ground area, no-grass areas, grass density, clump shape and shrub placements. Each backend plants from it in its own way. |
 | **No-grass area** | A rectangle where no grass grows: around house walls, terrace, gravel strip, beds, annex and the EG balcony (`no_grass`). The **windrose area** (`windrose`: star square plus four letter squares) is separate: Blender keeps grass off it, the viewer ignores it. |
@@ -94,6 +97,9 @@ erDiagram
     SURROUNDINGS ||--o{ GARDEN : "terrace, beds, meadow"
     ROUTE ||--|{ ROUTE_SEGMENT : has
     ROUTE ||--|{ CAMERA_KEY : "baked into"
+    MODEL_ENTRY ||--|{ STANDPUNKT : lists
+    MODEL_ENTRY ||--o{ ROUTE : "lists (Ganzes Haus only)"
+    MODEL_ENTRY ||--o| SAVED_VIEW : remembers
     FILM ||--|{ CAMERA_KEY : keys
     VIEWER_RUNDGANG ||--|{ CAMERA_KEY : plays
 ```
@@ -139,7 +145,6 @@ stateDiagram-v2
     Massenmodell --> Detailmodell: p 1 → 2
     Detailmodell --> Gebaut: p 2 → 3
     Gebaut --> Eingerichtet: p 3 → 4
-    Eingerichtet --> Skizze: replay
     note right of Skizze: visible ink lines on paper (hidden-line)
     note right of Massenmodell: clay surfaces, soft shadows, lines fade out
     note right of Detailmodell: real materials, daylight
@@ -147,10 +152,9 @@ stateDiagram-v2
     note right of Eingerichtet: like Gebaut, with furniture
 ```
 
-- **Play** runs `p` from its current value to 3 at 4 s per stage. It stops at 3; Play at 3
-  restarts from 0. **Clicking a stage name** jumps there; **dragging the scrubber** sets `p`.
-- **The sun toggle** switches between day and dusk lighting from p 1.5 on. Any timeline move
-  resets it.
+- **The Darstellung drop-down** jumps to a stage; there is no timeline bar and no Play.
+- **The sun toggle** (beside Reset, house only) switches between day and dusk lighting from
+  Detailmodell on. Any stage change resets it.
 - **Garden per stage.** In Skizze, each shrub is one ink circle and there is no grass. In
   Massenmodell, shrubs are clay blobs and there is no grass. In Detailmodell and Gebaut,
   grass and leaves grow in with the detail blend.
@@ -211,8 +215,8 @@ flowchart LR
   blades and leaves land in different spots, and the browser uses 25 % of the grass density.
 - **Skizze is hidden-line.** Only the visible edges are drawn. `SMOOTH` objects (pebbles,
   outside lamps) get no lines.
-- **The cutaway never hides the ground.** "Ohne Dach" hides `Dach` (with `Verschalung_West` and the annex roof `Dach_Anbau`).
-  "Nur EG" also hides `OG` and the OG balconies (`Balkon_OG_*`).
+- **The cutaway never hides the ground.** Entry 1. Stock (`noroof`) hides `Dach` (with `Verschalung_West` and the annex roof `Dach_Anbau`).
+  Entry Erdgeschoss (`eg`) also hides `OG` and the OG balconies (`Balkon_OG_*`).
 - **Coordinates:** metres. The origin is the outer SW corner, +X east, +Y north, Z up. The
   `.glb` stores `(x, z, -y)`.
 - **Accuracy:** plan measurements are about ±5 cm. Pink-hatched walls are walls. Lighter
@@ -221,5 +225,5 @@ flowchart LR
   millimetres, or they z-fight.
 - **Colours:** facade and windows RAL 9010, shutters RAL 5014. Doors stay
   natural wood.
-- **The route camera** (film and viewer Rundgang) stays ≥ 0.25 m from all geometry and never
+- **Every route camera** (film and viewer Rundgang, all routes) and every inside Standpunkt stay ≥ 0.25 m from all geometry and never
   passes through a wall.

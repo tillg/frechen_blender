@@ -159,6 +159,27 @@ test('Durch die Stube & Küche: starts at its first key, plays, and with Endlos 
   expect(await tourTime(page)).toBeLessThan(1.5);
 });
 
+test('a playing route leaves the URL alone', async ({ page }) => {
+  await open(page);
+  await choose(page, 'Darstellung', 'Gebaut');
+  await page.waitForFunction(() => location.search.includes('p=3'));      // the view is saved after 300 ms
+  const before = await page.evaluate(() => location.search);
+  await choose(page, 'Standpunkt', 'Um und durch das Haus');
+  await page.waitForTimeout(1000);
+  expect(await tourState(page)).toBe('playing');
+  expect(await page.evaluate(() => location.search)).toBe(before);
+});
+
+test('Beenden returns to the Darstellung the route started from', async ({ page }) => {
+  await open(page);
+  await choose(page, 'Darstellung', 'Gebaut');
+  await choose(page, 'Standpunkt', 'Um und durch das Haus');
+  expect(await page.evaluate(() => document.body.dataset.stage)).toBe('furnished');
+  await page.getByRole('button', { name: 'Beenden' }).click();
+  expect(await page.evaluate(() => document.body.dataset.stage)).toBe('built');
+  await expect(page.getByRole('button', { name: 'Darstellung', exact: true })).toHaveText('Gebaut');
+});
+
 test('choosing a Standpunkt ends the route and keeps that Standpunkt', async ({ page }) => {
   await open(page);
   await choose(page, 'Standpunkt', 'Um und durch das Haus');

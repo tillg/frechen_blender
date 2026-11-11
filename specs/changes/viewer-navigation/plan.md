@@ -156,6 +156,38 @@ away. **Re-pointed** means the same assertions, but the interaction goes through
   - Test first: none, final check
   - Verify: `bash scripts/check.sh full` exits 0
 
+## Review fixes (review.md, 2026-11-11)
+
+- [x] [web] Malformed view keys are dropped, never applied or saved (review HIGH)
+  - Scope: `viewstate.js` `cleanView()` drops `cam`/`at` unless 3 finite numbers, `p` unless finite,
+    `fov` unless finite in 10…90; `initialQuery` cleans the URL and the stored view; `main.js`
+    `switchModel` reads the saved view through it.
+  - Test first: `web/src/viewstate.test.js` › "malformed view keys are dropped" (`?cam=abc&at=1,2&p=x&fov=abc&hires=on`
+    → `?hires=on`; a stored `?cam=1,2&p=x` → nothing) and "a malformed URL view falls back to the
+    stored one" — fail today: the keys pass through.
+  - Verify: `cd web && npx vitest run src/viewstate.test.js` → green
+
+- [x] [web] A playing route writes nothing to the URL (review MEDIUM)
+  - Scope: `main.js` `saveView`: the route guard before `history.replaceState`.
+  - Test first: `web/e2e/tour.spec.js` › "a playing route leaves the URL alone" (route started, 1 s
+    later `location.search` is what it was before) — fails today: the route pose with `p=4` lands
+    in the URL.
+  - Verify: `cd web && npx playwright test e2e/tour.spec.js -g "leaves the URL alone"` → green
+
+- [x] [web] Ending a route restores the Darstellung it started from (review MEDIUM)
+  - Scope: `main.js` `onStart` remembers the progress; `onEnd` puts it back unless the Darstellung
+    was changed during the route. The entry part of the finding is unreachable from the UI (routes
+    are listed only under Ganzes Haus), so the entry is not restored.
+  - Test first: `web/e2e/tour.spec.js` › "Beenden returns to the Darstellung the route started
+    from" (Gebaut → route → Beenden → `built`) — fails today: it stays `furnished`.
+  - Verify: `cd web && npx playwright test e2e/tour.spec.js -g "returns to the Darstellung"` → green
+
+- [x] Final check again: `bash scripts/check.sh full` → green (2026-11-11: pytest + Vitest green,
+      Playwright 79/82; the 3 frame-rate tests fail as often on the unchanged code under load ~60;
+      archived anyway on the user's decision)
+  - Test first: none, final check
+  - Verify: `bash scripts/check.sh full` exits 0
+
 System docs are updated at `/spec:archive`. These go then:
 
 - the "no room names" statements in `functional.md` (twice) and `architecture.md:377`;

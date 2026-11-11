@@ -11,7 +11,7 @@ import { weights, stageAt } from './stages.js';
 import { slidingNodes, swingingNodes } from './slides.js';
 import { createTour, drawDue, LOOK } from './tour.js';
 import { createUI } from './ui.js';
-import { initialQuery, read, remove, safeStorage, storageKey, write } from './viewstate.js';
+import { cleanView, hasView, initialQuery, read, remove, safeStorage, storageKey, write } from './viewstate.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 // ?hires=on: full quality for the film capture, no speed shortcut that changes the picture
@@ -140,8 +140,8 @@ function saveView() {
     // the entry's default (Reset) is kept as no saved view and a bare URL
     const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
     const q = (home ? '' : view) + (hires ? `${home ? '?' : '&'}hires=on` : '');
+    if (tour.state !== 'off') return;                               // a route is not saved, not even in the URL
     if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
-    if (tour.state !== 'off') return;                               // a route is not saved
     if (home) remove(storage, key(model)); else write(storage, key(model), view);
     write(storage, LAST, model);
   }, 300);
@@ -212,8 +212,8 @@ function switchModel(m) {
   tour.leave();
   model = m;
   ui.spot.setItems(spotItems(m));
-  const saved = read(storage, key(m));
-  if (saved) { applyView(new URLSearchParams(saved)); ui.refresh(); showSpot(); }
+  const saved = cleanView(read(storage, key(m)));
+  if (hasView(saved)) { applyView(new URLSearchParams(saved)); ui.refresh(); showSpot(); }
   else goSpot(standard(m).name);
 }
 const ui = createUI({
@@ -229,16 +229,22 @@ const ui = createUI({
   toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); dirty = true; },
 });
 showSpot();
-// Rundgang (a route's camera keys): furnished, whole house, entrance door open
+// Rundgang (a route's camera keys): furnished, whole house, entrance door open; at its end the
+// Darstellung it started from comes back, unless it was changed during the route
+let routeFrom = 4;
 const tour = createTour({
   camera, controls, routes: ROUTES, door: bp.byName.EG_Haustuer,
   onStart: (i) => {
+    routeFrom = progress;
     setProgress(4);
     if (model !== 'haus') { model = 'haus'; ui.spot.setItems(spotItems('haus')); ui.setModel('haus'); }
     ui.refresh();
     ui.spot.set(`route:${i}`);
   },
-  onEnd: showSpot,
+  onEnd: () => {
+    if (progress === 4 && routeFrom !== 4) { setProgress(routeFrom); ui.refresh(); }
+    showSpot();
+  },
 });
 
 // a fire counts as in view when its box (tongues at full height) meets the camera frustum
