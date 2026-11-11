@@ -16,6 +16,7 @@ Blender-Modell und die interaktive Web-Ansicht im Browser.
 | `input/` | Eingangsdaten: die aktuellen Pläne in `2026-11-03 input/` (3 PDFs, daraus gerenderte Grundriss-Bilder `grundriss_eg/og.png`, im Modell als ausgeblendete Referenz), in `processed/` ältere Pläne, Farbvorlagen (`farben_*.png`) und Detailfotos (Dateiname = Bauteil, z. B. `entrance_door_from_outside.png`); was sich zwischen den Planständen geändert hat, steht in `LOG.md` |
 | `code/` | Python: der Kern `house_core.py` (ohne Blender), die Blender-Skripte (laufen in Blender, z. B. über den Blender-MCP-Server) und der glTF-Export |
 | `web/` | Web-Ansicht mit three.js (Vite); `web/public/frechenlehen.glb` wird aus dem Kern erzeugt, nicht eingecheckt |
+| `plans/` | Pläne für den Architekten, aus dem Modell erzeugt und eingecheckt (siehe Pläne): `eg.svg`, `og.svg`, `nord.svg`, `ost.svg`, `sued.svg`, `west.svg` |
 | `tests/` | Python-Tests (`pytest`), u. a. Vergleich des Blender-Neubaus mit einem gespeicherten Fingerabdruck |
 | `frechenlehen.blend` | das Modell (erzeugt; nach Änderungen neu bauen und speichern) |
 | `JJJJ-MM-TT_frechen_rundgang_blender.mp4`, `…_threejs.mp4` | Film: Rundgang außen, dann EG und OG (Blender-Render bzw. Web-Ansicht); der neueste `…_threejs.mp4` liegt auch auf GitHub Pages als [`rundgang.mp4`](https://tillg.github.io/frechen_blender/rundgang.mp4) und läuft dort im Browser |
@@ -36,6 +37,7 @@ Blender-Modell und die interaktive Web-Ansicht im Browser.
 | `build_house.py` | Blender-Seite: baut aus dem Kern das Haus komplett neu (Collection „Haus“), mit Materialien, Raumnamen und ausgeblendeten Referenzplänen. **Achtung:** überschreibt Handänderungen im Modell |
 | `mesh_ops.py` | Dreieckszerlegung und Ausrichtung der Flächen für den glTF-Export (das macht in Blender bmesh) |
 | `export_gltf.py` | schreibt den Kern als `.glb` für die Web-Ansicht: `python3 code/export_gltf.py web/public/frechenlehen.glb` (nur Standardbibliothek); mit `--ofen`, `--desk`, `--bad`, `--kueche` bzw. `--gaeste-wc` nur das Ofen-, Schreibtisch-, Bad-, Küchen- bzw. Gäste-WC-Teilmodell |
+| `export_plans.py` | schreibt den Kern als sechs Planblätter (SVG, A3 quer, M 1:100) nach `plans/`: `python3 code/export_plans.py plans/` (nur Standardbibliothek, ohne Blender; siehe Pläne) |
 | `paint.py` | Farben aus dem Kern (Putz/Fenster RAL 9010, Läden RAL 5014; Türen bleiben Naturholz) – nach `build_house.py` erneut ausführen |
 | `fire.py` | loderndes Feuer als Komponente (eigene Collection `Feuer`): Flammenzungen pro Feuerstelle, skaliert auf deren Breite und Höhe, bewegt über F-Curve-Rauschen, dazu ein flackerndes Licht; dieselben Zungen zeigt die Web-Ansicht (`fire.js`). Brennt im Eck-Ofen (vorn und hinten zum Flur), in beiden Werkstattöfen und im Küchenherd |
 | `windrose.py` | Windrose (eigene Collection, bleibt bei Neubau erhalten) |
@@ -49,6 +51,14 @@ Ausführen in Blender: `exec(open("/Users/tgartner/git/frechen_blender/code/<skr
 Reihenfolge beim Neubau: `build_house` → `fire` → `paint` → `windrose` → `garden` → `film`.
 
 Koordinaten: Ursprung = äußere SW-Ecke, +X = Osten, +Y = Norden, Meter.
+
+## Pläne (`plans/`)
+
+`python3 code/export_plans.py plans/` zeichnet aus dem Kern sechs Planblätter für den Architekten: Grundriss EG und OG, Ansicht Nord, Ost, Süd und West. Jedes Blatt ist ein SVG in A3 quer, im Maßstab 1:100 und in Millimetern angelegt: bei 100 % gedruckt misst 1 m im Modell 10 mm (der Maßstabsbalken prüft es). Im Schriftfeld stehen Projekt, Blatt, Maßstab und der Modellstand (ein Hash der Geometrie statt eines Datums). Dasselbe Modell ergibt immer dieselben Dateien, so zeigt `git diff plans/`, was eine Änderung an den Plänen bewirkt hat.
+
+- **Grundrisse:** Schnitt in 1,80 m (EG) bzw. 1,55 m über dem Boden (OG), also über jeder Brüstung und unter jedem Sturz. Geschnittene Wände schraffiert mit einer durchgehenden kräftigen Umrisslinie, dünn die Lärchenschalung der Westseite, darunter in dünnen Linien die Einbauten (Treppe, Küche, Bäder, Öfen, Speis, Schränke); lose Möbel fehlen. Türen mit dem üblichen Aufschlag (Blatt 90° geöffnet und Viertelkreis), egal wie weit die Tür im Modell offen steht, jeder Raum mit dem Namen aus dem Architektenplan und der aus dem Modell berechneten Fläche (Musikraum und Büro sind im Modell ein offener Raum, „Bibliothek“; die WC-Nische des Bads der Großeltern ist „WC Großeltern“). Maßketten auf allen vier Seiten wie beim Architekten (Schrägstriche, unter 1 m in cm, halbe Zentimeter als hochgestellte 5): Öffnungen, Wände und Räume, Gesamtmaß.
+- **Ansichten:** die Fassade senkrecht von außen, verdeckte Kanten entfernt, unter ±0,00 ein grauer Geländestreifen; Höhenkoten (±0,00 OK FFB EG, OK FFB OG, Traufe, First) und die Gesamtbreite.
+- Die Pläne sind eingecheckt; ein Test meldet, wenn sie nicht mehr zum Modell passen. Nach einer Änderung am Kern also `python3 code/export_plans.py plans/` ausführen.
 
 ## Web-Ansicht (three.js)
 
