@@ -1,5 +1,7 @@
 """house_core: the pure-Python description of the house (no bpy)."""
 import json, math, sys
+
+import pytest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "code"))
@@ -305,26 +307,83 @@ def test_outside_lights_at_the_lamp_bulbs():
     assert house_core.MAT_DEF["Gluehfaden"].get("night") is True
 
 
-def test_bibliothek_bookcase_on_the_flur_wall():
-    """Old-style dark wooden bookcase, floor to ceiling, on the Flur wall opposite the desk: from
-    the Büro door (architrave at 13.447) to 1 m from the workshop stove (east edge 9.861), with
-    books in it; the Büro door now opens against the east wall (hinge side as in the plan)."""
-    key = ("EG", "EG_Moebel")
-    g = BP.geo[key]
-    boxes = []
-    for first, n in BP.parts[key]:
-        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
-        boxes.append((g["m"][first], [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]))
-    case = [(m, lo, hi) for m, lo, hi in boxes if lo[1] < 9.4 and hi[1] > 8.87 and lo[0] > 9.9 and hi[0] < 13.5]
-    xs = [lo[0] for _, lo, _ in case] + [hi[0] for _, _, hi in case]
-    assert abs(min(xs) - 10.861) < 0.03 and 13.40 < max(xs) <= 13.447
-    assert max(hi[2] for _, _, hi in case) > 2.38 and min(lo[2] for _, lo, _ in case) < 0.02    # floor to ceiling
-    assert max(hi[2] for _, _, hi in case) < house_core.Z_EG_TOP
-    assert min(lo[1] for _, lo, _ in case) > 8.876                                            # off the wall
-    assert {"NussX", "NussZ", "Buecher"} <= {m for m, _, _ in case}
-    assert sum(m == "Buecher" for m, _, _ in case) >= 200
-    leaf = [pts for c, pts in house_core.LEAVES if c == "EG" and abs(pts[0][0] - 14.575) < 0.05]
-    assert leaf and all(x > 14.4 for x, _, _ in leaf[0])                                       # along the east wall
+def test_regal_submodel():
+    """code/regal.py ("Schrank im Büro") after the agreed drawing input/2026-11-11 input/buero_regal_v2.svg,
+    at its own origin (the Bibliothek's inner SE corner): the Tegernsee bookcase (2.38 high) around the
+    east window: 94 column (north), the middle 94 centred on the 90 window (base below, top 5 under
+    the sill; bridge from 2.02 above the 2.00 head), 94 column (south); 30 / 48 free to the walls;
+    depth 42, middle base 48; books in it. With the three wall pieces: east wall with the window, north
+    wall with the balcony door, Flur wall with the Büro door (106, moved 50 west), whose leaf opened
+    90 deg stands 10.5 in front of the south column, its levers 8."""
+    import regal as r
+    bp = house_core.build_regal()
+    leaves = [pts for c, pts in house_core.LEAVES if c == "Regal"]
+    doors = [d for d in house_core.DOORS if d["c"] == "Regal"]
+    house_core.build()                                                    # restore the registries
+    assert r.REGAL_AT == (14.575, 8.876) and bp.garden is None
+    assert {c for c, _ in bp.geo} == {"Regal"}
+    assert {n for _, n in bp.geo} == {"Regal_Moebel", "Regal_Waende", "Regal_Fenster_Tueren", "Regal_Innentueren",
+                                      "Regal_Laeden"}
+    x0, y0 = r.REGAL_AT
+    cm = lambda a, b: round(abs(b - a) * 100)
+    case = [(m, [lo[0] + x0, lo[1] + y0, lo[2]], [hi[0] + x0, hi[1] + y0, hi[2]])
+            for m, lo, hi in _parts(bp, ("Regal", "Regal_Moebel"))]
+    wa, wb, sill, head = r.FENSTER[:4]
+    assert (cm(wa, wb), cm(r.S0, r.M0), cm(r.M0, r.M1), cm(r.M1, r.N1)) == (90, 94, 94, 94)
+    assert abs((r.M0 + r.M1) / 2 - (wa + wb) / 2) < 1e-9 and r.M0 < wa and r.M1 > wb
+    assert (cm(r.FS, r.S0), cm(r.N1, r.FN)) == (48, 30)
+    assert max(hi[2] for _, _, hi in case) == pytest.approx(2.38) and min(lo[2] for _, lo, _ in case) == 0.0
+    cols = [lo[0] for _, lo, hi in case if hi[1] <= r.M0 + 1e-6 or lo[1] >= r.M1 - 1e-6 or lo[2] >= r.CORN - 1e-6]
+    assert max(hi[0] for _, _, hi in case) < 14.575 and min(cols) == pytest.approx(14.575 - 0.42 - 0.045)   # knobs
+    assert min(lo[1] for _, lo, _ in case) == pytest.approx(r.S0 - 0.03) and max(hi[1] for _, _, hi in case) == pytest.approx(r.N1 + 0.03)
+    win = [(lo, hi) for _, lo, hi in case if lo[1] < wb and hi[1] > wa]
+    assert not any(lo[2] < head and hi[2] > sill for lo, hi in win)       # the window stays free
+    assert max(hi[2] for lo, hi in win if hi[2] < sill) == pytest.approx(0.95)
+    assert min(lo[2] for lo, hi in win if lo[2] > head) == pytest.approx(2.02)
+    base = [lo[0] for lo, hi in win if hi[2] < sill]
+    assert min(base) == pytest.approx(14.575 - 0.48 - 0.045)               # 48 deep, its knobs in front
+    assert {"NussX", "NussZ", "Buecher", "Eisen"} == {m for m, _, _ in case}
+    assert sum(m == "Buecher" for m, _, _ in case) >= 150
+    # walls: window, balcony door, the Büro door 106 at 13.017 .. 14.075, the old opening's east part closed
+    H = (lambda p: [m for m, lo, hi in _parts(bp, ("Regal", "Regal_Waende"))
+                    if lo[0] - 1e-6 <= p[0] - x0 <= hi[0] + 1e-6 and lo[1] - 1e-6 <= p[1] - y0 <= hi[1] + 1e-6
+                    and lo[2] < p[2] < hi[2]])
+    assert H((14.7, 10.76, 1.5)) == [] and H((14.7, 10.76, 0.5)) == ["Putz"] and H((14.7, 9.5, 1.5)) == ["Putz"]
+    assert H((13.3, 12.6, 1.0)) == [] and H((14.2, 12.6, 1.0)) == ["Putz"]
+    assert r.TUER[:2] == pytest.approx((13.017, 14.075)) and cm(*r.TUER[:2]) == 106
+    assert H((13.5, 8.7, 1.0)) == [] and H((14.3, 8.7, 1.0)) == ["Putz"] and H((12.8, 8.7, 1.0)) == ["Putz"]
+    # the leaf, opened 90 deg, reaches past the column's start and stays clear of it, levers too
+    assert len(leaves) == 1 and len(doors) == 1
+    xs = [p[0] + x0 for p in leaves[0]]
+    assert max(p[1] + y0 for p in leaves[0]) > r.S0
+    assert r.XF - max(xs) == pytest.approx(0.105)
+    assert r.XF - (doors[0]["leaf"][1][0] + x0) == pytest.approx(0.08)                   # its levers
+    texts = [t for *_, t in bp.dims]
+    for t in ("48 frei", "Säule 94", "Mitte 94", "30 frei", "Fenster 90", "Unterteil 95", "Brücke 36", "Höhe 238",
+              "Tiefe 42", "Tür 106", "10,5 Luft", "39 frei"):
+        assert t in texts, t
+
+
+def test_regal_built_into_the_house():
+    """The bookcase stands in the house at REGAL_AT, every part the same (furniture: EG_Moebel, stage
+    Eingerichtet); the window, the balcony door and the Büro door are the sub-model's; the old
+    bookcase on the Flur wall is gone; no furniture in the moved door's swing."""
+    import regal as r
+    sub = house_core.build_regal()
+    house_core.build()                                                    # restore the registries
+    x0, y0 = r.REGAL_AT
+    assert _solids(sub, ("Regal", "Regal_Moebel"), x0, y0) <= _solids(BP, ("EG", "EG_Moebel"))
+    for n in ("Fenster_Tueren", "Innentueren", "Laeden"):
+        assert _solids(sub, ("Regal", "Regal_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
+    assert "EG_Moebel" in BP.furniture
+    assert not any(m == "Buecher" and lo[1] < 9.3 and hi[0] < 13.6 and lo[0] > 10.5
+                   for m, lo, hi in _parts(BP, ("EG", "EG_Moebel")))                               # old bookcase
+    leaf = [pts for c, pts in house_core.LEAVES if c == "EG" and abs(max(p[0] for p in pts) - (r.TUER[1] - 0.025)) < 0.01]
+    assert len(leaf) == 1
+    a, b = r.TUER[:2]
+    for o in sorted(n for n in BP.furniture if n.startswith("EG_")):     # the swing's quarter circle
+        for m, lo, hi in _parts(BP, ("EG", o)):
+            assert not (lo[0] < b and hi[0] > b - (b - a) and lo[1] < r.FS + (b - a) and hi[1] > r.FS and lo[2] < 2.0), (o, lo)
 
 
 def test_west_og_windows_wall_below_up_to_the_ceiling():

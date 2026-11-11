@@ -10,7 +10,7 @@ edited: 2026-11-11
 
 The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
 `code/ofen.py` (stoves), `code/desk.py` (Büro desk), `code/bad.py` (Bad Großeltern),
-`code/kueche.py` (Küche) and `code/gaeste_wc.py` (Gäste-WC), no `bpy`). Two
+`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC) and `code/regal.py` (Schrank im Büro), no `bpy`). Two
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -132,10 +132,19 @@ flowchart LR
   three leaves are objects of their own (`_Hintertuer`, `_WC_Tuer`, `_Windfangtuer`) with a
   `PIVOT` at the hinge and a `SWING`. The floor stays the core's limestone (`GAESTE_WC_EG`;
   `TRENNWAND_EG` is left out of `floor_cover()`'s slabs).
+- **Schrank im Büro.** `code/regal.py` the same way: `regal_neu(c, x0, y0, walls=False)` builds the
+  Tegernsee bookcase around the Bibliothek's east window into collection `c` with the room's inner
+  SE corner at (x0, y0) (`EG` at `REGAL_AT` into `EG_Moebel`, i.e. furniture; or `Regal` at the
+  origin), after `input/2026-11-11 input/buero_regal_v2.svg`: two 94 columns, the middle 94 split
+  into a base under the window and a bridge over it, one stepped cornice, books; own
+  `random.Random(14)`. The openings around it are defined once there (`FENSTER`, `BALKONTUER`,
+  `TUER`, the Büro door moved `SHIFT` = 0.50 m west) and `build_eg()` passes them to its
+  `wall()` / `interior()` calls; `walls=True` (the sub-model) adds the pieces of those three walls
+  (`waende()`, global random stream).
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
-  `build_gaeste_wc()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
+  `build_gaeste_wc()` / `build_regal()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
   in `dims`) for `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html` /
-  `web/gaeste_wc.html`. A dimension label containing "angenommen" is an assumed
+  `web/gaeste_wc.html` / `web/regal.html`. A dimension label containing "angenommen" is an assumed
   measure (shown in italics).
 - **Geometry accumulator.** Builders append vertices, faces, material names and an `rnd`
   value per face to `GEO[(collection, object)]`. Faces are polygons (quads or n-gons, may be
@@ -178,7 +187,7 @@ from `TURN`; image materials map the picture through Texture Coordinate › Obje
 ### `mesh_ops.py` and `export_gltf.py` — glTF backend
 
 Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writer.md)):
-`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk` / `--bad` / `--kueche` / `--gaeste-wc`: the sub-model's
+`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk` / `--bad` / `--kueche` / `--gaeste-wc` / `--regal`: the sub-model's
 `.glb` instead).
 
 - `mesh_ops` does what bmesh does in Blender:
@@ -324,7 +333,7 @@ sequenceDiagram
   sun stays anchored to a fixed copy of the start target.
 - **Sub-model pages.** `submodel.js` draws a sub-model page (views, looks Drahtmodell / Masse /
   Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js`, `desk.js`, `bad.js`,
-  `kueche.js` and `gaeste_wc.js` only configure it. Nodes with `extras.slide` roll there and back,
+  `kueche.js`, `gaeste_wc.js` and `regal.js` only configure it. Nodes with `extras.slide` roll there and back,
   edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
   lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s). `main.js`
@@ -346,7 +355,7 @@ sequenceDiagram
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters incl. `lights` (visible room / outside lights), `hires`, `pixelRatio`,
   `tour`, `tourKey`, `slides`, `doors`), only outside production builds; `window.__ofen`
-  / `window.__desk` / `window.__bad` / `window.__kueche` / `window.__gaeste_wc` on the sub-model pages.
+  / `window.__desk` / `window.__bad` / `window.__kueche` / `window.__gaeste_wc` / `window.__regal` on the sub-model pages.
 
 ### Checks and Show — `scripts/check.sh`, `code/show.py`, `web/shot.js`
 
@@ -366,7 +375,7 @@ flowchart LR
   each, prints a table, tees to `tmp/check-<ts>.log`, warns when quick exceeds 60 s, exits 1 when
   any part failed (2 on a wrong argument).
 - **`code/show.py`** (pure Python, no bpy) reads the Blueprint (`build()`, or `build_ofen()` /
-  `build_desk()` / `build_bad()` / `build_kueche()` / `build_gaeste_wc()` for `--page`), so the view comes from the geometry the viewer
+  `build_desk()` / `build_bad()` / `build_kueche()` / `build_gaeste_wc()` / `build_regal()` for `--page`), so the view comes from the geometry the viewer
   draws:
   - `bbox(bp, names)`: min/max over the GEO vertices of the objects whose name starts with a
     given prefix (all objects without names; `--at` frames a 1 m box around a point).
@@ -374,7 +383,7 @@ flowchart LR
     sphere × 1.15 fits the vertical field of view (28° house, 35° sub-model). A box within
     `EDGE` = 0.2 m of the footprint `W_OUT × D_OUT` or beyond it is outside: nearest facade, 20° up,
     `cut=all`. Otherwise inside: SE diagonal, 55° up, `cut=eg` below `Z_EG_TOP`, `noroof` below
-    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; Gäste-WC: N, from the back hall; `FACING`).
+    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; Gäste-WC: N, from the back hall; Schrank im Büro: W, from the room; `FACING`).
     `side` (`--from`) picks n/e/s/w (or `top`, 85° up from the south). `p = 4` unless `--p`
     (house only).
   - `url()` writes the viewer's format (`+n.toFixed(3)`, ties away from zero); `server_is_ours()`

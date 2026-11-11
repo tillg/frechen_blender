@@ -245,6 +245,23 @@ def test_gaeste_wc_export(tmp_path):
     assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex
 
 
+
+def test_regal_export(tmp_path):
+    """--regal: the "Schrank im Büro" sub-model with its wall pieces and dimension lines, no Rundgang,
+    nothing sliding or swinging."""
+    out = tmp_path / "regal.glb"
+    subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--regal"], check=True)
+    data = out.read_bytes()
+    jlen = struct.unpack_from("<I", data, 12)[0]
+    g = json.loads(data[20:20 + jlen])
+    assert {n["name"] for n in g["nodes"]} == {"Regal_Moebel", "Regal_Waende", "Regal_Fenster_Tueren",
+                                              "Regal_Innentueren", "Regal_Laeden"}
+    assert not any("slide" in n["extras"] or "swing" in n["extras"] for n in g["nodes"])
+    bp = house_core.build_regal()
+    house_core.build()
+    ex = g["scenes"][0]["extras"]
+    assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex
+
 def test_routes_and_spots_in_scene_extras(glb):
     """The viewer's extra routes (all but the film's, which stays extras.tour) and its Standpunkte."""
     import tour

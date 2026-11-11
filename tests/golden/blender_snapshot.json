@@ -609,7 +609,7 @@
    -1.21,
    2.533,
    0.0,
-   14.645,
+   14.145,
    9.966,
    2.17
   ],
@@ -679,16 +679,17 @@
   "bbox": [
    3.98,
    0.49474,
-   0.012,
-   14.27126,
+   0.0,
+   14.57,
    12.471,
-   2.396
+   2.38
   ],
-  "faces": 3106,
+  "faces": 2386,
   "materials": [
    "FL_Bettwaesche",
    "FL_Boucle",
    "FL_Buecher",
+   "FL_Eisen",
    "FL_FichteX",
    "FL_FichteZ",
    "FL_Keramik",
@@ -705,8 +706,8 @@
    0.0,
    0.0
   ],
-  "rnd": "54f0efb07d2622d9",
-  "verts": 4168
+  "rnd": "544e34054af44a84",
+  "verts": 3208
  },
  "EG_Ofen_Bank": {
   "bbox": [
@@ -1041,7 +1042,7 @@
    0.0,
    0.0
   ],
-  "rnd": "d69cfe83e1d737dc",
+  "rnd": "4f842b3dc10536c9",
   "verts": 954
  },
  "EG_Tisch": {
@@ -1146,7 +1147,7 @@
    12.887,
    2.4
   ],
-  "faces": 904,
+  "faces": 910,
   "materials": [
    "FL_Putz"
   ],
@@ -1155,8 +1156,8 @@
    0.0,
    0.0
   ],
-  "rnd": "3f5a89a63b4271e7",
-  "verts": 1092
+  "rnd": "a6454bda4a2a4576",
+  "verts": 1100
  },
  "EG_Werkstattofen": {
   "bbox": [
@@ -2704,7 +2705,7 @@
    0.0,
    0.0
   ],
-  "rnd": "60eb07f9a986017d",
+  "rnd": "197b539a380206f3",
   "verts": 59328
  },
  "OG_Raumnamen": {

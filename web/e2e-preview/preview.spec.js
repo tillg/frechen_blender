@@ -129,6 +129,25 @@ test('gaeste_wc page is part of the build', async ({ page }) => {
   await page.waitForURL(/\/frechen_blender\/(\?m=haus)?$/);
 });
 
+test('regal page is part of the build', async ({ page }) => {
+  const failed = [], errors = [];
+  let glb = 0;
+  page.on('response', (r) => {
+    if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);
+    if (r.url().endsWith('/frechen_blender/regal.glb') && r.ok()) glb++;
+  });
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(BASE);
+  await choose(page, 'Modell', 'Schrank im Büro');
+  await page.waitForURL(/\/frechen_blender\/regal\.html$/);
+  await expect(page.locator('.dim', { hasText: 'Mitte 94' })).toBeVisible({ timeout: 30_000 });
+  expect(failed).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(glb).toBe(1);
+  await choose(page, 'Modell', 'Ganzes Haus');
+  await page.waitForURL(/\/frechen_blender\/(\?m=haus)?$/);
+});
+
 test('plan sheets are part of the build', async ({ request }) => {
   const sheets = { eg: 'Grundriss EG', og: 'Grundriss OG', nord: 'Ansicht Nord', ost: 'Ansicht Ost',
     sued: 'Ansicht Süd', west: 'Ansicht West' };

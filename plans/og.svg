@@ -2396,7 +2396,7 @@
 <text x="293.00" y="264.00" font-size="5.00" text-anchor="start" font-weight="bold">Frechenlehen</text>
 <text x="293.00" y="274.00" font-size="4.50" text-anchor="start">Grundriss OG</text>
 <text x="293.00" y="283.50" font-size="3.50" text-anchor="start">M 1:100</text>
-<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 92ae77f64d1f</text>
+<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 16c799bf2451</text>
 <g id="scale" stroke="#000" stroke-width="0.18"><rect x="290.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="300.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="310.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="320.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="330.00" y="251.00" width="10.00" height="1.50" fill="#000"/></g><text x="290.00" y="249.80" font-size="2.00" text-anchor="middle">0</text><text x="300.00" y="249.80" font-size="2.00" text-anchor="middle">1</text><text x="310.00" y="249.80" font-size="2.00" text-anchor="middle">2</text><text x="320.00" y="249.80" font-size="2.00" text-anchor="middle">3</text><text x="330.00" y="249.80" font-size="2.00" text-anchor="middle">4</text><text x="340.00" y="249.80" font-size="2.00" text-anchor="middle">5</text><text x="342.50" y="252.40" font-size="2.00" text-anchor="start">m</text>
 <g id="north" stroke="#000" stroke-width="0.25"><circle cx="395.00" cy="32.00" r="7" fill="none"/><path d="M395.00 25.00L397.50 36.00L395.00 34.00L392.50 36.00Z" fill="#000"/></g><text x="395.00" y="23.50" font-size="3.50" text-anchor="middle" font-weight="bold">N</text>
 </svg>

@@ -100,6 +100,13 @@ edited: 2026-11-11
     way: every 3 s one, picked at random, opens or closes in 3 s, on the sub-model page and in
     the house in stage Eingerichtet; the film and the Rundgang see them as built (WC and Windfang
     door open, back door closed)
+  - Schrank im Büro after `input/2026-11-11 input/buero_regal_v2.svg` (also a sub-model page): the
+    Tegernsee bookcase (2.38 m high, dark wood, books) around the Bibliothek's east window: a 94
+    column on each side, the middle 94 split into a base up to 95 cm (5 cm under the sill, 48 deep)
+    and a bridge from 2.02 m over the window, one cornice over all three; 42 deep; 30 cm free to the
+    north wall, 48 cm to the Flur wall. It replaces the former bookcase on the Flur wall. The Büro
+    door moved 50 cm west (106 wide, hinged east, open 90°): its leaf stands 10.5 cm in front of
+    the south column. Depths and shelf heights estimated from the photo
   - OG bathrooms: shower, basin with mirror
   - the four WCs (also the WC in the Bad Großeltern's niche and the Gäste-WC), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
@@ -146,7 +153,7 @@ edited: 2026-11-11
   toggle). There is no timeline bar and no Play.
   - **Modell:** Ganzes Haus, Erdgeschoss, 1. Stock (the cutaway: the whole house, without roof,
     only the EG; the ground stays), a separator, then Ofen, Schreibtisch, Bad Oma & Opa, Küche,
-    Gäste-WC. A house entry switches in place, a sub-model entry opens its page; the current one is
+    Gäste-WC, Schrank im Büro. A house entry switches in place, a sub-model entry opens its page; the current one is
     selected.
   - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert. On
     Ganzes Haus a group **Pläne** follows the stages: the six plan sheets of `plans/` (Grundriss EG,
@@ -216,7 +223,7 @@ edited: 2026-11-11
 - **Show**: `.venv/bin/python code/show.py <object…>` opens the user's browser on the dev server
   at a view URL that frames the named objects (prefix match) — outside objects from the nearest
   facade, 20° up, whole house; inside objects from the SE diagonal, 55° up, with the storeys above
-  cut away; sub-model pages (`--page ofen|desk|bad|kueche|gaeste_wc`) from the SE (Küche from the open south, Gäste-WC from the back hall in the north), 30° up, Gerendert. Options:
+  cut away; sub-model pages (`--page ofen|desk|bad|kueche|gaeste_wc|regal`) from the SE (Küche from the open south, Gäste-WC from the back hall in the north, Schrank im Büro from the room in the west), 30° up, Gerendert. Options:
   `--from n|e|s|w|top`, `--at x,y,z`, `--p 0…4` (house only), `--print` (only print the URL). It
   refuses (exit 2) when the server on 5377 runs from another clone.
 - `cd web && node shot.js '<url>' <png>`: one headless 1280×720 screenshot of a view URL after the

@@ -14,6 +14,7 @@ import desk  # the Büro desk sub-model (code/desk.py), the same way
 import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
 import kueche  # the Küche sub-model (code/kueche.py), the same way
 import gaeste_wc  # the Gäste-WC by the back hall (code/gaeste_wc.py), the same way
+import regal  # the Büro bookcase "Schrank im Büro" (code/regal.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -601,13 +602,13 @@ def build_eg():
     wall(c, 0, W_OUT, 12.473, D_OUT, z0, z1, [
         (1.109, 2.008, 0, 2.0, "FD", 1), (3.866, 4.765, 0, 2.0, "FD", 1),
         (6.953, 7.852, 1.0, 2.0, "W", 1), (10.020, 10.919, 0, 2.0, "FD", 1),
-        (12.867, 13.766, 0, 2.0, "FD", 1)], out=+1)
+        regal.BALKONTUER], out=+1)
     wall(c, 2.358, W_OUT, 0, 0.415, z0, z1, [
         (3.831, 4.730, 1.03, 2.0, "W", 1), (6.618, 7.917, 0, 2.0, "FD", 1),
         (9.785, 13.741, 0, 2.2, "GD")], out=-1)
     wall(c, 14.575, W_OUT, 6.349, 12.473, z0, z1, [
         (6.458, 7.507, 0, 2.2, "I"), (8.007, 8.476, 1.2, 2.1, "W"),
-        (10.315, 11.214, 1.0, 2.0, "W", 1)], out=+1)
+        regal.FENSTER], out=+1)
     wall(c, 14.351, W_OUT, 0.415, 6.349, z0, z1, [(1.254, 4.880, 0, 2.2, "GD")], out=+1)
     wall(c, 0, 0.31, 5.145, 12.473, z0, z1, [
         (5.724, 6.324, 1.57, 2.17, "W"), (7.408, 8.377, 0, 2.3, "I"),
@@ -618,7 +619,7 @@ def build_eg():
     # interior walls; doors: (a, b, swing, hinge) get an opened leaf, (a, b) stay open passages
     interior(c, 6.024, 6.174, 8.876, 12.473)
     interior(c, 2.657, 14.575, 8.576, 8.876,
-             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), (13.517, 14.575, 1, "b", False)])   # Büro: hinge as in the plan, leaf along the east wall (bookcase)
+             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), regal.TUER])   # Büro: hinged east, moved west of the bookcase (code/regal.py)
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
     gaeste_wc.gaeste_wc_neu(c, *gaeste_wc.WC_AT)           # Gäste-WC + Garderobe with the WC's north wall
@@ -1871,36 +1872,6 @@ def grand_piano():
     g["v"][n0:] = [(cx - x, cy - y, z) for x, y, z in g["v"][n0:]]
 
 
-def bookcase():
-    """Old-style bookcase in the Bibliothek, floor to ceiling, on the Flur wall opposite the desk:
-    from 1 m east of the workshop stove to the Büro door; dark walnut with plinth, three bays,
-    five shelves and a stepped cornice, filled with books of random size (some gaps)."""
-    c, o, rng = "EG", "EG_Moebel", random.Random(7)
-    x0, x1, y0, y1 = 10.861, 13.42, 8.880, 9.24
-    t, levels = 0.03, [0.12 + 0.36 * k for k in range(6)]                       # shelf undersides
-    box(c, o, "NussZ", x0, x1, y0, y0 + 0.012, 0.012, 2.30)                      # back
-    box(c, o, "NussX", x0 + 0.02, x1 - 0.02, y0 + 0.012, y1 - 0.03, 0.012, 0.12)  # plinth
-    ups = [x0 + (x1 - x0 - t) * k / 3 for k in range(4)]
-    for u in ups:
-        box(c, o, "NussZ", u, u + t, y0 + 0.012, y1, 0.012, 2.30)                # sides and uprights
-    for a, b in zip(ups, ups[1:]):
-        xa, xb = a + t, b
-        for z in levels + [2.27]:
-            box(c, o, "NussX", xa, xb, y0 + 0.012, y1 - 0.005, z, z + t)          # shelves, top board
-        for z, top in zip([z + t for z in levels], levels[1:] + [2.27]):         # books, front-aligned
-            x = xa + 0.01
-            while True:
-                if rng.random() < 0.08:
-                    x += rng.uniform(0.04, 0.10)                                   # a gap
-                w, h, d = rng.uniform(0.02, 0.05), rng.uniform(0.19, min(0.30, top - z - 0.02)), rng.uniform(0.17, 0.25)
-                if x + w > xb - 0.01:
-                    break
-                box(c, o, "Buecher", x, x + w, y1 - 0.03 - d, y1 - 0.03, z + 0.001, z + h)
-                x += w + 0.002
-    box(c, o, "NussX", x0 - 0.02, x1 + 0.02, y0, y1 + 0.02, 2.30, 2.35)           # cornice
-    box(c, o, "NussX", x0 - 0.02, x1 + 0.02, y0, y1 + 0.04, 2.35, 2.396)
-
-
 def side_table(c, cx, cy, turn=0.0):
     """Round side table after tischchen.jpeg: top with a thicker rim on an apron ring, turned
     baluster column, three curved feet (the first towards `turn` degrees)."""
@@ -2010,7 +1981,7 @@ def build_furniture():
     nightstand("EG", 5.62, 6.02, 9.41, 9.87)
     grand_piano()
     desk.desk_neu("EG", *desk.DESK_AT)                      # between the two north french doors, with its devices
-    bookcase()
+    regal.regal_neu("EG", *regal.REGAL_AT)                 # Schrank im Büro around the east window
     desk.stuhl("EG", *desk.DESK_AT)
     # OG: Yoga, Jugend (two bunk beds instead of the plan's double bed), Schlafen NE, SW, SE, HWR
     bed("OG", 0.86, 2.45, 8.862, 10.85, "S", zo, n=2)
@@ -2291,3 +2262,15 @@ def build_gaeste_wc():
     dims = gaeste_wc.gaeste_wc_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
                      [], None, set(), dims, swing=dict(SWING))
+
+
+def build_regal():
+    """The "Schrank im Büro" sub-model alone (web/regal.html): the bookcase around the east window
+    and the pieces of its three walls at the origin (the Bibliothek's inner SE corner), plus its
+    dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear()
+    random.seed(22)
+    dims = regal.regal_neu(walls=True)
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
+                     [], None, set(), dims)

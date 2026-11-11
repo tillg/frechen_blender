@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 import { choose, entries } from './menu.js';
 
 const PAGES = [['/', '__fl'], ['/ofen.html', '__ofen'], ['/desk.html', '__desk'], ['/bad.html', '__bad'],
-  ['/kueche.html', '__kueche'], ['/gaeste_wc.html', '__gaeste_wc']];
+  ['/kueche.html', '__kueche'], ['/gaeste_wc.html', '__gaeste_wc'], ['/regal.html', '__regal']];
 
 async function open(page, url = '/', hook = '__fl') {
   await page.goto(url);
@@ -24,12 +24,12 @@ test('the three drop-downs and Reset sit at the same box on the house and every 
   }
 });
 
-test('Modell lists Ganzes Haus, Erdgeschoss, 1. Stock, a separator, then the five sub-models', async ({ page }) => {
+test('Modell lists Ganzes Haus, Erdgeschoss, 1. Stock, a separator, then the six sub-models', async ({ page }) => {
   for (const [url, hook] of [PAGES[0], PAGES[1]]) {
     await open(page, url, hook);
     await page.getByRole('button', { name: 'Modell', exact: true }).click();
     expect(await entries(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', '1. Stock', '—', 'Ofen', 'Schreibtisch',
-      'Bad Oma & Opa', 'Küche', 'Gäste-WC']);
+      'Bad Oma & Opa', 'Küche', 'Gäste-WC', 'Schrank im Büro']);
   }
 });
 
@@ -149,7 +149,7 @@ const distTo = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 test('Bibliothek puts the camera at its spot, looking at its target; dragging turns the view in place', async ({ page }) => {
   await open(page);
   await choose(page, 'Standpunkt', 'Bibliothek');
-  expect(distTo(await camAt(page), [14.15, 12.05, 1.6])).toBeLessThan(0.01);
+  expect(distTo(await camAt(page), [13.7, 12.05, 1.6])).toBeLessThan(0.01);
   const c = await page.evaluate(() => window.__fl.project(9.2, 9.4, 1.0));       // the target sits mid-screen
   const vp = page.viewportSize();
   expect(Math.abs(c.x - vp.width / 2)).toBeLessThan(2);
@@ -161,7 +161,7 @@ test('Bibliothek puts the camera at its spot, looking at its target; dragging tu
   await page.mouse.move(400, 380, { steps: 10 });
   await page.mouse.up();
   await page.waitForTimeout(800);
-  expect(distTo(await camAt(page), [14.15, 12.05, 1.6])).toBeLessThan(0.15);       // stays in the corner
+  expect(distTo(await camAt(page), [13.7, 12.05, 1.6])).toBeLessThan(0.15);       // stays in the corner
   const v1 = await page.evaluate(() => window.__fl.view);
   expect(v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]).toBeLessThan(0.99);        // but the view turned
   await expect(page.getByRole('button', { name: 'Standpunkt', exact: true })).toHaveText('Eigene Ansicht');
