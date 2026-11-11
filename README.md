@@ -40,7 +40,7 @@ Blender-Modell und die interaktive Web-Ansicht im Browser.
 | `fire.py` | loderndes Feuer als Komponente (eigene Collection `Feuer`): Flammenzungen pro Feuerstelle, skaliert auf deren Breite und Höhe, bewegt über F-Curve-Rauschen, dazu ein flackerndes Licht; dieselben Zungen zeigt die Web-Ansicht (`fire.js`). Brennt im Eck-Ofen (vorn und hinten zum Flur), in beiden Werkstattöfen und im Küchenherd |
 | `windrose.py` | Windrose (eigene Collection, bleibt bei Neubau erhalten) |
 | `garden.py` | Wiese (Geometry-Nodes-Streuung, im Viewport 10 %) und grüne Laubsträucher in den Erd-Beeten nach dem Gartenplan des Kerns (eigene Collection „Garten“) – nach `build_house.py` erneut ausführen. Seit der Web-Ansicht stehen die Sträucher um wenige Zentimeter anders |
-| `tour.py` | die Route des Rundgangs (ohne Blender): außen herum, durch EG und OG (langsame Drehungen und Blicke in die Räume, auch in Dusche und WC der Großeltern; Drehgeschwindigkeit `TURN`, Pausendauer `PAUSE` und Kamerahöhe `EYE` = 1,60 m über dem Boden sind je eine Variable), über Treppe und Haustür zurück zum Startpunkt; daraus die Kamera pro Bild – für den Film und den Rundgang in der Web-Ansicht |
+| `tour.py` | die Route des Rundgangs (ohne Blender): außen herum, durch EG und OG (langsame Drehungen und Blicke in die Räume, auch in Dusche und WC der Großeltern; Drehgeschwindigkeit `TURN`, Pausendauer `PAUSE` und Kamerahöhe `EYE` = 1,60 m über dem Boden sind je eine Variable), über Treppe und Haustür zurück zum Startpunkt; daraus die Kamera pro Bild – für den Film und den Rundgang in der Web-Ansicht. Dazu die kürzeren Routen der Web-Ansicht (`ROUTES`, z. B. „Durch die Stube & Küche“) und ihre Standpunkte (`SPOTS`: Name, Gruppe, Modelle, Kamera, Blickpunkt, Blickwinkel; je eine Zeile) |
 | `film.py` | Kamerafahrt nach `tour.py`, Raumlichter, geöffnete Haustür; Renderausgabe nach `tmp/film/` |
 | `show.py` | ohne Blender: berechnet aus dem Kern einen Blickpunkt auf die genannten Objekte und öffnet die Web-Ansicht dort im Browser (siehe Tests) |
 | `film_release.py` | für `just film` (ohne Blender): welche alten Filme weg können (es bleiben der neue und der davor), die Bitrate für knapp 90 MB (GitHub nimmt nur Dateien unter 100 MB), das Entfernen alter Filme aus der Git-Historie und welcher Film der neueste ist (für GitHub Pages) |
@@ -54,32 +54,46 @@ Koordinaten: Ursprung = äußere SW-Ecke, +X = Osten, +Y = Norden, Meter.
 
 Das Haus im Browser, frei drehbar, in fünf Stufen „Vom Strich zum Haus“: **Skizze** (Tuschelinien
 auf Papier), **Massenmodell** (weißes Modell mit Schatten), **Detailmodell** (echte Materialien,
-Tag), **Gebaut** (Abend; warmes Licht nur in den Räumen und Außenleuchten, die der Kamera am nächsten sind – tagsüber sind alle aus) und **Eingerichtet** (wie Gebaut, mit Möbeln nach Plan). Unten Abspielen, Zeitleiste und die
-Stufen; oben rechts „Ganzes Haus / Ohne Dach / Nur EG“, Tag/Abend und das Auswahlfeld „Teilmodell“ (Haus, Ofen,
-Schreibtisch, Bad Oma & Opa, Küche, Gäste-WC; auf jeder Seite, springt zur gewählten Seite). Für Desktop-Browser.
+Tag), **Gebaut** (Abend; warmes Licht nur in den Räumen und Außenleuchten, die der Kamera am nächsten sind – tagsüber sind alle aus) und **Eingerichtet** (wie Gebaut, mit Möbeln nach Plan). Für Desktop-Browser.
 
-**Rundgang** (oben rechts): dieselbe Kamerafahrt wie im Film, live im Browser mit 0,75-facher
-Geschwindigkeit (Stufe Eingerichtet, ganzes Haus, Haustür offen; die Schnitt-Knöpfe sind solange
-aus). Die Route endet, wo sie beginnt; mit „Endlos“ läuft sie ohne Sprung immer wieder. Unten
-Abspielen/Anhalten, Zeitleiste, „Endlos“ und „Beenden“ (zurück zur vorigen Kameraposition);
-angehalten kann man sich mit der Maus umschauen.
+**Navigation** (oben rechts, auf jeder Seite gleich): drei Auswahlfelder, die immer nach unten aufklappen,
+dazu Tag/Abend (nur Haus, ab Detailmodell) und **Reset**.
+
+- **Modell:** Ganzes Haus, Erdgeschoss (ohne Dach und 1. Stock), 1. Stock (ohne Dach) – ein Strich –
+  Ofen, Schreibtisch, Bad Oma & Opa, Küche, Gäste-WC (springt zur gewählten Seite).
+- **Darstellung:** im Haus die fünf Stufen, in den Teilmodellen Drahtmodell, Masse, Gerendert.
+- **Standpunkt:** benannte Blickpunkte aus `tour.py` – außen von den vier Ecken, im Erdgeschoss und
+  1. Stock von oben und schräg, in jedem Raum aus einer Ecke in Augenhöhe (1,60 m), z. B.
+  „Bibliothek“ im Eck hinter dem Schreibtisch; drinnen schaut man sich mit der Maus um, statt um
+  einen Punkt zu kreisen. Wer die Kamera selbst bewegt, sieht „Eigene Ansicht“. In „Ganzes Haus“
+  folgen die **Routen**: „Um und durch das Haus“ (die Kamerafahrt des Films) und „Durch die Stube &
+  Küche“.
+- Jedes Modell merkt sich im Browser seine Darstellung und seinen Standpunkt und öffnet beim
+  nächsten Mal wieder dort (ein Link mit `?cam=…` geht vor). **Reset** führt zur niedrigsten
+  Darstellung und zum Standard-Standpunkt zurück und vergisst das Gemerkte.
+
+**Routen**: live im Browser mit 0,75-facher Geschwindigkeit (Stufe Eingerichtet, ganzes Haus,
+Haustür offen). Jede Route endet, wo sie beginnt; mit „Endlos“ läuft sie ohne Sprung immer wieder.
+Unten Abspielen/Anhalten, Zeitleiste, „Endlos“ und „Beenden“ (zurück zur vorigen Kameraposition);
+angehalten kann man sich mit der Maus umschauen. Ein anderer Standpunkt oder ein anderes Modell
+beendet die Route.
 
 Teilmodell **Ofen** (`ofen.html`): der Eck-Ofen der Stube nach den Skizzen in `input/ofen/` mit
 Feuertür (Feuer hinter Glas), unten hohl auf vier Beinen mit Bögen auf allen drei Seiten, zwei
 Bänken (lange Bank 1,60 m) und Liege darüber (1,90 m; Rand nur an den freien Kanten: einzelne
 senkrechte 5-cm-Bretter mit 10 cm Luft an Wand, Ecken und Fußende; darauf eine dünne cremefarbene
 Matratze), mit Maßen (angenommene Maße kursiv).
-Ansichten schräg, von oben und auf die Feuertür; Darstellung als Drahtmodell (10-cm-Raster),
-Masse oder gerendert; das Auswahlfeld „Teilmodell“ führt zurück zum Haus. Schlichte Bankbeine (Vierkant mit Querriegel, nach bank-schlicht.png), Oberkante des Ofens gerundet. Derselbe Ofen steht im Haus (ohne Maße) in allen Stufen.
+Standpunkte schräg, von oben und auf die Feuertür; Darstellung als Drahtmodell (10-cm-Raster),
+Masse oder gerendert; das Auswahlfeld „Modell“ führt zurück zum Haus. Schlichte Bankbeine (Vierkant mit Querriegel, nach bank-schlicht.png), Oberkante des Ofens gerundet. Derselbe Ofen steht im Haus (ohne Maße) in allen Stufen.
 
 Teilmodell **Schreibtisch** (`desk.html`): der Schreibtisch der Bibliothek mit Stuhl, den zwei
 Bildschirmen (mit den Screenshots), dem geschlossenen MacBook, Tastatur und Trackpad, mit Maßen;
-Ansichten schräg, von oben und auf die Bildschirme, Darstellung wie beim Ofen. Im Haus steht er
+Standpunkte schräg, von oben und auf die Bildschirme, Darstellung wie beim Ofen. Im Haus steht er
 mit seinen Geräten in der Stufe Eingerichtet.
 
 Teilmodell **Bad Oma & Opa** (`bad.html`): das Bad der Großeltern mit Dusche, Mauer mit Glas,
 Waschtrog und der Nische mit WC, Schrank und den zwei verschränkten Schiebetüren, mit Maßen;
-Ansichten schräg, von oben und in die Nische, Darstellung wie beim Ofen. Damit man sieht, wie die
+Standpunkte schräg, von oben und in die Nische, Darstellung wie beim Ofen. Damit man sieht, wie die
 Schiebetüren funktionieren, rollt alle 4 Sekunden ein zufällig gewähltes Türblatt in 2 Sekunden
 auf die andere Seite seiner Schiene. Im Haus steht dasselbe Bad, zum Schlafzimmer offen; dort
 rollen die Türen genauso in der Stufe „Eingerichtet“, nur im Rundgang stehen sie still (WC offen).
@@ -91,7 +105,7 @@ Darstellung wie beim Ofen. Im Haus steht dieselbe Küche.
 Teilmodell **Gäste-WC** (`gaeste_wc.html`): WC und Garderobe am Hintereingang mit Trennwand, der
 nach außen geöffneten WC-Tür, Bank mit Hakenbrett und Hutablage und dem Handwaschbecken mit Spiegel
 an der Flurwand, mit den Maßen der Zeichnung v3 (vor dem WC 40 statt 41 cm frei: das WC des Modells
-ist 1 cm tiefer); Ansichten schräg, von oben und vom Flur, Darstellung wie beim Ofen. Dazu die
+ist 1 cm tiefer); Standpunkte schräg, von oben und vom Flur, Darstellung wie beim Ofen. Dazu die
 Hintertür und die Windfangtür. Damit man sieht, wo sich die drei Türen in die Quere kommen, schwenkt
 alle 3 Sekunden eine zufällig gewählte Tür in 3 Sekunden auf oder zu. Im Haus steht dasselbe; dort
 schwenken die Türen genauso in der Stufe „Eingerichtet“, nur im Rundgang und im Film stehen sie wie

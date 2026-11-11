@@ -6,9 +6,9 @@ import { startSubmodel } from './submodel.js';
 await startSubmodel({
   glb: 'kueche.glb',
   views: {
-    iso: [[-1.6, -5.6, 3.8], [1.6, -1.3, 0.9]],        // from the open south-west (Essen), above
-    top: [[1.53, -1.4, 8.0], [1.53, -1.399, 0.0]],     // plan, north at the top
-    zeile: [[1.5, -4.6, 1.6], [1.5, 0.0, 1.0]],        // from the room onto the Spülzeile at the north wall
+    iso: ['Schräg', [-1.6, -5.6, 3.8], [1.6, -1.3, 0.9]],        // from the open south-west (Essen), above
+    top: ['Von oben', [1.53, -1.4, 8.0], [1.53, -1.399, 0.0]],     // plan, north at the top
+    zeile: ['Spülzeile', [1.5, -4.6, 1.6], [1.5, 0.0, 1.0]],        // from the room onto the Spülzeile at the north wall
   },
   colors: { Kueche_Kueche: 0x8a5a2b, Kueche_Herd: 0x2b5f8e, Kueche_Haube: 0x4f7a5a, Kueche_Waende: 0x8a8a8a },
   walls: [[2.72, 2.4, [0, -1.36, 1.2], Math.PI / 2], [3.067, 2.4, [1.5335, 0, 1.2], 0],   // west, north,

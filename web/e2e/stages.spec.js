@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { choose } from './menu.js';
 import { shot } from './pixels.js';
 
 const luma = (d, i) => 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
@@ -116,7 +117,7 @@ test('no grass while the camera is indoors, except with hires=on', async ({ page
     await page.evaluate(() => window.__fl.lookFrom(33, -24, 13));       // outside again
     await page.waitForTimeout(300);
     expect(await grass(), url).toBe(true);
-    await page.getByRole('button', { name: 'Rundgang', exact: true }).click();
+    await choose(page, 'Standpunkt', 'Um und durch das Haus');
     await page.evaluate(() => {                                          // a tour frame inside the house
       const T = window.__fl.tour.duration;
       for (let i = 0; ; i++) {

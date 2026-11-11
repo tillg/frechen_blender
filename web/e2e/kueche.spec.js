@@ -1,5 +1,6 @@
 // The Küche sub-model page (kueche.html): house_core.build_kueche() (code/kueche.py) with its dimensions.
 import { test, expect } from '@playwright/test';
+import { choose, entries } from './menu.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { shot } from './pixels.js';
 
@@ -20,8 +21,8 @@ test('Küche page draws the kitchen with the core dimensions, without errors', a
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Spülzeile', 'Gerendert']]) {
-    await page.getByRole('button', { name: view }).click();
-    await page.getByRole('button', { name: look }).click();
+    await choose(page, 'Standpunkt', view);
+    await choose(page, 'Darstellung', look);
     await page.waitForTimeout(600);
     const img = await shot(page, `kueche_e2e_${look}.png`);
     let ink = 0;
@@ -35,21 +36,23 @@ test('the drop-down reaches every page, from the house and from a sub-model', as
   const pages = [['Ofen', '/ofen.html', '__ofen'], ['Schreibtisch', '/desk.html', '__desk'], ['Bad Oma & Opa', '/bad.html', '__bad'], ['Küche', '/kueche.html', '__kueche'], ['Gäste-WC', '/gaeste_wc.html', '__gaeste_wc']];
   await page.goto('/');
   await page.waitForFunction(() => window.__fl?.ready === true);
-  const sel = page.getByLabel('Teilmodell');
-  expect(await sel.locator('option').allTextContents()).toEqual(['Haus', ...pages.map((p) => p[0])]);
-  await expect(sel.locator('option:checked')).toHaveText('Haus');
+  const sel = page.getByRole('button', { name: 'Modell', exact: true });
+  await sel.click();
+  expect(await entries(page)).toEqual(['Ganzes Haus', 'Erdgeschoss', '1. Stock', '—', ...pages.map((p) => p[0])]);
+  await sel.click();
+  await expect(sel).toHaveText('Ganzes Haus');
   for (const [label, path, hook] of pages) {
-    await sel.selectOption({ label });
+    await choose(page, 'Modell', label);
     await page.waitForFunction((h) => window[h]?.ready === true, hook);
     expect(new URL(page.url()).pathname).toBe(path);
-    await expect(sel.locator('option:checked')).toHaveText(label);
-    await sel.selectOption({ label: 'Haus' });
+    await expect(sel).toHaveText(label);
+    await choose(page, 'Modell', 'Ganzes Haus');
     await page.waitForFunction(() => window.__fl?.ready === true);
     expect(new URL(page.url()).pathname).toBe('/');
   }
   await page.goto('/kueche.html');                                  // sub-model to sub-model
   await page.waitForFunction(() => window.__kueche?.ready === true);
-  await sel.selectOption({ label: 'Ofen' });
+  await choose(page, 'Modell', 'Ofen');
   await page.waitForFunction(() => window.__ofen?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/ofen.html');
 });

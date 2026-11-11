@@ -7,9 +7,9 @@ import { startSubmodel } from './submodel.js';
 await startSubmodel({
   glb: 'gaeste_wc.glb',
   views: {
-    iso: [[-1.6, 4.6, 3.4], [1.1, 0.9, 0.8]],          // from the Flur's north-west, above
-    top: [[1.1, 1.0, 9.0], [1.1, 1.001, 0.0]],         // plan, north at the top
-    flur: [[0.9, 4.4, 1.6], [1.1, 0.6, 1.0]],          // from the Flur looking south (the drawing's section)
+    iso: ['Schräg', [-1.6, 4.6, 3.4], [1.1, 0.9, 0.8]],          // from the Flur's north-west, above
+    top: ['Von oben', [1.1, 1.0, 9.0], [1.1, 1.001, 0.0]],         // plan, north at the top
+    flur: ['Vom Flur', [0.9, 4.4, 1.6], [1.1, 0.6, 1.0]],          // from the Flur looking south (the drawing's section)
   },
   colors: { GaesteWC_Sanitaer: 0x2b5f8e, GaesteWC_Innentueren: 0x8a5a2b, GaesteWC_Garderobe: 0x8a5a2b,
             GaesteWC_Fliesen: 0x4f7a5a, GaesteWC_Waende: 0x8a8a8a },
