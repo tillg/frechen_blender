@@ -9,8 +9,9 @@ import { createLighting } from './lighting.js';
 import { makeMaterials, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
 import { slidingNodes, swingingNodes } from './slides.js';
-import { createTour, drawDue } from './tour.js';
+import { createTour, drawDue, LOOK } from './tour.js';
 import { createUI } from './ui.js';
+import { initialQuery, read, remove, safeStorage, storageKey, write } from './viewstate.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 // ?hires=on: full quality for the film capture, no speed shortcut that changes the picture
@@ -25,21 +26,24 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
-// camera from the south-east, as the README view (setup_scene in build_house.py)
 const FOV = 28;                                    // default vertical field of view; ?fov= overrides it
 const camera = new THREE.PerspectiveCamera(FOV, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.copy(yup([33, -24, 13]));
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.copy(yup([7.4, 6.4, 3.2]));
+const ORBIT = { maxPolarAngle: Math.PI / 2 - 0.02, enableZoom: true, enablePan: true };
 controls.enableDamping = true;
-controls.maxPolarAngle = Math.PI / 2 - 0.02;
-controls.update();
+Object.assign(controls, ORBIT);
 
 // stage blend: uPaper 1 = Skizze surfaces in flat paper (hidden-line), uDetail 0 = clay,
 // 1 = real materials; uInk = opacity of the ink lines (fade out across Massenmodell)
 const uPaper = uniform(1), uDetail = uniform(0), uInk = uniform(1);
 
 const bp = await loadBlueprint(import.meta.env.BASE_URL + 'frechenlehen.glb');
+// the Standpunkte of code/tour.py; the first, "Von Südosten" (the README view, setup_scene in
+// build_house.py), is the opening view, and the sun is aimed at its target
+const SPOTS = bp.extras.spots;
+camera.position.copy(yup(SPOTS[0].cam));
+controls.target.copy(yup(SPOTS[0].at));
+controls.update();
 const defs = {};
 const isHouse = (o) => o.isMesh && o.material.userData.kind;       // not the grass clump
 bp.root.traverse((o) => isHouse(o) && (defs[o.material.name] = { name: o.material.name, extras: o.material.userData }));
@@ -116,41 +120,125 @@ function setCutaway(c) {
 
 // ?cam=x,y,z&at=x,y,z&p=0…4&cut=all|noroof|eg: start at a viewpoint (model coordinates, z up),
 // stage and cutaway. The URL follows the view, so a reload (e.g. after a core change) or a shared
-// link opens the same view.
-const query = new URLSearchParams(location.search), xyz = (k) => query.get(k)?.split(',').map(Number);
+// link opens the same view. Each house entry (Ganzes Haus / Erdgeschoss / 1. Stock) also keeps its
+// view in the browser (viewstate.js): a URL without a view opens the last entry at its saved view.
+const ENTRY = { all: 'haus', eg: 'eg', noroof: 'og' }, HOUSE_ENTRIES = Object.values(ENTRY);
+const storage = safeStorage(), key = (m) => storageKey('index', m), LAST = key('last');
+const url = new URLSearchParams(location.search);
+let model = [url.get('m'), ENTRY[url.get('cut')], read(storage, LAST)].find((m) => HOUSE_ENTRIES.includes(m)) ?? 'haus';
+url.delete('m');                                                    // ?m=: from a sub-model page
+const query = new URLSearchParams(initialQuery(url.size ? `?${url}`.replaceAll('%2C', ',') : '', storage, key(model)));
 const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
+const cutOf = (m) => Object.keys(ENTRY).find((c) => ENTRY[c] === m);
+const standard = (m) => SPOTS.find((s) => s.entries.includes(m));      // the entry's first Standpunkt
 let saveTimer = 0;
 function saveView() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    const q = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`
-      + (viewFov !== FOV ? `&fov=${viewFov}` : '') + (hires ? '&hires=on' : '');
-    if (q !== location.search) history.replaceState(history.state, '', q);
+    const view = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`
+      + (viewFov !== FOV ? `&fov=${viewFov}` : '');
+    // the entry's default (Reset) is kept as no saved view and a bare URL
+    const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
+    const q = (home ? '' : view) + (hires ? `${home ? '?' : '&'}hires=on` : '');
+    if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
+    if (tour.state !== 'off') return;                               // a route is not saved
+    if (home) remove(storage, key(model)); else write(storage, key(model), view);
+    write(storage, LAST, model);
   }, 300);
 }
-const viewFov = Number(query.get('fov') ?? FOV);                   // vertical, degrees
-camera.fov = viewFov;
-camera.updateProjectionMatrix();
-if (xyz('cam')) camera.position.copy(yup(xyz('cam')));
-if (xyz('at')) controls.target.copy(yup(xyz('at')));
-controls.update();
-controls.addEventListener('change', () => { dirty = true; saveView(); });
-setProgress(Number(query.get('p') ?? 0));
+
+// an inside Standpunkt (eye level inside the house) looks around in place, as in a paused route: the
+// orbit target sits LOOK ahead, no zoom or pan; so does a URL or saved view whose target is that
+// close (one saved from looking around). Every other view orbits its target.
+const { W_OUT, D_OUT, Z_OG } = bp.extras;
+const eyeLevel = ([x, y, z]) => x > 0 && x < W_OUT && y > 0 && y < D_OUT && (z < Z_OG - 0.3 || (z > Z_OG && z < Z_OG + 2));
+let viewFov = FOV, spot = null;                                     // spot: the Standpunkt's name, null = Eigene Ansicht
+function place(cam, at, fov, inside) {
+  controls.enableDamping = false; controls.update(); controls.enableDamping = true;   // spend the momentum first
+  camera.position.copy(yup(cam));
+  Object.assign(controls, inside ? { maxPolarAngle: Math.PI, enableZoom: false, enablePan: false } : ORBIT);
+  controls.target.copy(inside ? yup(at).sub(camera.position).setLength(LOOK).add(camera.position) : yup(at));
+  controls.update();
+  viewFov = camera.fov = fov;
+  camera.updateProjectionMatrix();
+  dirty = true;
+}
+// the camera stands at Standpunkt s and looks its way
+function at(s) {
+  const d = yup(s.at).sub(yup(s.cam)).normalize();
+  return camera.position.distanceTo(yup(s.cam)) < 0.01 && camera.getWorldDirection(new THREE.Vector3()).dot(d) > 0.9999;
+}
+function applyView(q) {                                             // camera and stage of a query
+  const v = (k) => q.get(k)?.split(',').map(Number), std = standard(model);
+  if (v('cam')) place(v('cam'), v('at') ?? std.at, Number(q.get('fov') ?? FOV), !!v('at') && Math.hypot(...v('cam').map((c, i) => c - v('at')[i])) < 2 * LOOK);
+  else place(std.cam, std.at, std.fov, false);
+  spot = SPOTS.find((s) => s.entries.includes(model) && at(s))?.name ?? null;
+  if (q.has('p')) setProgress(Number(q.get('p')));
+}
+applyView(query);
+controls.addEventListener('change', () => {
+  dirty = true;
+  const routing = tour.state !== 'off' || String(ui.spot.value).startsWith('route:');   // also while a route starts
+  if (!routing && spot && !at(SPOTS.find((s) => s.name === spot))) { spot = null; showSpot(); }
+  saveView();
+});
+if (!query.has('p')) setProgress(0);
 
 const isDusk = () => lights.uDusk.value >= 0.5;
+// the Standpunkt drop-down of an entry: its spots by group, then (Ganzes Haus) the routes
+const ROUTES = [{ name: 'Um und durch das Haus', ...bp.extras.tour },
+  ...bp.extras.routes.map((r) => ({ fps: bp.extras.tour.fps, ...r }))];
+function spotItems(m) {
+  const items = [];
+  let group;
+  for (const s of SPOTS.filter((x) => x.entries.includes(m))) {
+    if (s.group !== group) items.push({ group: (group = s.group) });
+    items.push({ value: `spot:${s.name}`, label: s.name });
+  }
+  if (m === 'haus') items.push({ group: 'Routen' }, ...ROUTES.map((r, i) => ({ value: `route:${i}`, label: r.name })));
+  return [...items, { value: 'custom', label: 'Eigene Ansicht', hidden: true }];
+}
+const showSpot = () => ui.spot.set(spot ? `spot:${spot}` : 'custom');
+function goSpot(name) {
+  tour.leave();
+  const s = SPOTS.find((x) => x.name === name);
+  place(s.cam, s.at, s.fov, eyeLevel(s.cam));
+  spot = name;
+  showSpot();
+  saveView();
+}
+// another house entry: its saved view, else its standard Standpunkt (the stage stays)
+function switchModel(m) {
+  tour.leave();
+  model = m;
+  ui.spot.setItems(spotItems(m));
+  const saved = read(storage, key(m));
+  if (saved) { applyView(new URLSearchParams(saved)); ui.refresh(); showSpot(); }
+  else goSpot(standard(m).name);
+}
 const ui = createUI({
+  model,
+  spots: spotItems(model),
   getProgress: () => progress,
   setProgress,
   setCutaway,
+  onModel: switchModel,
+  onSpot: (v) => (v.startsWith('route:') ? tour.enter(Number(v.slice(6))) : goSpot(v.slice(5))),
+  onReset: () => { setProgress(0); ui.refresh(); goSpot(standard(model).name); },
   isDusk,
   toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); dirty = true; },
 });
-if (Object.hasOwn(HIDE, query.get('cut') ?? '')) ui.setCut(query.get('cut'));
-// Rundgang (the film's camera path): furnished, whole house, entrance door open
+showSpot();
+// Rundgang (a route's camera keys): furnished, whole house, entrance door open
 const tour = createTour({
-  camera, controls, tour: bp.extras.tour, door: bp.byName.EG_Haustuer,
-  tools: document.querySelector('.fl-tools'),
-  onStart: () => { setProgress(4); ui.setCut('all'); ui.refresh(); },
+  camera, controls, routes: ROUTES, door: bp.byName.EG_Haustuer,
+  onStart: (i) => {
+    setProgress(4);
+    if (model !== 'haus') { model = 'haus'; ui.spot.setItems(spotItems('haus')); ui.setModel('haus'); }
+    ui.refresh();
+    ui.spot.set(`route:${i}`);
+  },
+  onEnd: showSpot,
 });
 
 // a fire counts as in view when its box (tongues at full height) meets the camera frustum
@@ -225,6 +313,7 @@ if (import.meta.env.MODE !== 'production') {
     tour,
     tourKey: (i) => bp.extras.tour.frames[i].slice(0, 3),
     project: (...p) => {                                                        // model -> CSS px
+      camera.updateMatrixWorld();                                               // also before the next frame is drawn
       const v = yup(p).project(camera);
       return { x: ((v.x + 1) / 2) * window.innerWidth, y: ((1 - v.y) / 2) * window.innerHeight };
     },

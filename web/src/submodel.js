@@ -10,19 +10,30 @@ import { loadBlueprint } from './blueprint.js';
 import { createFire } from './fire.js';
 import { INK } from './ink.js';
 import { makeMaterials, updateStage } from './materials.js';
-import { navSelect } from './nav.js';
 import { slidingNodes, swingingNodes } from './slides.js';
-import './ui.css';
+import { createToolbar } from './toolbar.js';
+import { initialQuery, remove, safeStorage, storageKey, write } from './viewstate.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 
-// cfg: glb (file under public/), views {name: [cam, target]} (model coords; the first is the
-// default), colors {object: line colour}, walls [[w, h, centre, rotation about the vertical]],
+// cfg: glb (file under public/), views {name: [label, cam, target]} (model coords; the first is
+// the default Standpunkt), colors {object: line colour}, walls [[w, h, centre, rotation about the vertical]],
 // grid [x, y] (centre of the 4 x 4 m floor), sun [position, target], hook (window.<hook>).
 // Objects with extras.slide (the Bad's sliding leaves) roll there and back, those with extras.swing
 // (the doors by the back hall) swing open and shut about their hinge (slides.js).
+const LOOKS = [['wire', 'Drahtmodell'], ['mass', 'Masse'], ['full', 'Gerendert']];   // Darstellung, lowest first
+
 export async function startSubmodel(cfg) {
-  document.querySelector('.fl-tools').append(navSelect());
+  const first = Object.keys(cfg.views)[0], page = location.pathname.split('/').pop().replace('.html', '');
+  const tb = createToolbar({
+    model: page,
+    levels: LOOKS.map(([value, label]) => ({ value, label })),
+    spots: [{ group: 'Standpunkte' }, ...Object.entries(cfg.views).map(([value, [label]]) => ({ value, label })),
+      { value: 'custom', label: 'Eigene Ansicht', hidden: true }],
+    onLevel: (name) => setLook(name),
+    onSpot: (name) => view(name),
+    onReset: () => { setLook('wire'); view(first); },
+  });
   const renderer = new THREE.WebGPURenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -41,13 +52,21 @@ export async function startSubmodel(cfg) {
   controls.enableDamping = true;
 
   const heights = [];                              // labels of vertical dimensions: hidden in the plan
+  let spot = first;                                 // the view shown; null = Eigene Ansicht (moved by the user)
   function view(name) {
-    const [pos, target] = cfg.views[name];
+    const [, pos, target] = cfg.views[name];
     for (const l of heights) l.visible = name !== 'top';
+    controls.enableDamping = false; controls.update(); controls.enableDamping = true;   // spend the momentum first
     camera.position.copy(yup(pos));
     controls.target.copy(yup(target));
     controls.update();
+    spot = name;                                     // after the updates: their change events see the old view
+    tb.spot.set(name);
   }
+  const matching = () => Object.keys(cfg.views).find((k) => {     // the view the camera is at, if any
+    const [, pos, target] = cfg.views[k];
+    return camera.position.distanceTo(yup(pos)) < 0.01 && controls.target.distanceTo(yup(target)) < 0.01;
+  }) ?? null;
   // light for massing and rendered: sun from the room side, hemisphere fill
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
   sun.position.copy(yup(cfg.sun[0]));
@@ -133,7 +152,7 @@ export async function startSubmodel(cfg) {
     fire.group.visible = name === 'full';
     floor.visible = !wire;
     for (const w of walls) w.material = wire ? wallLine : wallSolid;
-    for (const b of document.querySelectorAll('[data-look]')) b.setAttribute('aria-pressed', String(b.dataset.look === name));
+    tb.level.set(name);
     saveView();
   }
 
@@ -157,25 +176,36 @@ export async function startSubmodel(cfg) {
   scene.add(new THREE.LineSegments(dimGeo, dimMat));
 
   // ?cam=x,y,z&at=x,y,z&look=wire|mass|full: the URL follows the view, so a reload (e.g. after a
-  // core change) or a shared link opens the same view
-  const query = new URLSearchParams(location.search), xyz = (k) => query.get(k)?.split(',').map(Number);
+  // core change) or a shared link opens the same view. The page also keeps its view in the browser
+  // (viewstate.js): opened without a view in the URL, it shows the saved one.
+  const storage = safeStorage(), key = storageKey(page, page);
+  const query = new URLSearchParams(initialQuery(location.search, storage, key)), xyz = (k) => query.get(k)?.split(',').map(Number);
   const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
+  const [, homeCam, homeAt] = cfg.views[first];
   let saveTimer = 0;
   function saveView() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       const q = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&look=${look}`;
-      if (q !== location.search) history.replaceState(history.state, '', q);
+      const home = q === `?cam=${homeCam}&at=${homeAt}&look=wire`;   // the default (Reset): nothing saved, bare URL
+      if ((home ? '' : q) !== location.search) history.replaceState(history.state, '', home ? location.pathname : q);
+      if (home) remove(storage, key); else write(storage, key, q);
     }, 300);
   }
-  view(Object.keys(cfg.views)[0]);
-  setLook(['wire', 'mass', 'full'].includes(query.get('look')) ? query.get('look') : 'wire');
+  view(first);
+  setLook(LOOKS.some(([k]) => k === query.get('look')) ? query.get('look') : 'wire');
   if (xyz('cam')) camera.position.copy(yup(xyz('cam')));
   if (xyz('at')) controls.target.copy(yup(xyz('at')));
   controls.update();
-  controls.addEventListener('change', saveView);
-  for (const b of document.querySelectorAll('[data-view]')) b.onclick = () => view(b.dataset.view);
-  for (const b of document.querySelectorAll('[data-look]')) b.onclick = () => setLook(b.dataset.look);
+  if (xyz('cam')) {                                  // a saved or linked view: name it if it is one
+    spot = matching();
+    tb.spot.set(spot ?? 'custom');
+    for (const l of heights) l.visible = spot !== 'top';
+  }
+  controls.addEventListener('change', () => {
+    if (spot && matching() !== spot) { spot = null; tb.spot.set('custom'); }
+    saveView();
+  });
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();

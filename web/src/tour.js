@@ -7,7 +7,7 @@ import * as THREE from 'three/webgpu';
 import './tour.css';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);
-const LOOK = 0.05;                     // paused: orbit target this far ahead = look around in place
+export const LOOK = 0.05;                     // paused: orbit target this far ahead = look around in place
 const SPEED = 0.75;                    // playback speed relative to the film
 
 export const duration = (frames, fps) => (frames.length - 1) / fps;
@@ -42,22 +42,18 @@ function el(tag, attrs = {}, text = '') {
   return e;
 }
 
-// opts: { camera, controls, tour: {fps, frames}, door (pivot object), tools (element for the
-// start button), onStart() (stage/cutaway for the tour) }. update(now) drives the camera and
-// returns true while playing (the caller then skips controls.update()).
-export function createTour({ camera, controls, tour, door, tools, onStart }) {
-  const { fps, frames } = tour, T = duration(frames, fps);
+// opts: { camera, controls, routes [{name, fps, frames}], door (pivot object), onStart(i)
+// (stage/cutaway for the tour), onEnd() (after Beenden) }. The toolbar's Routen entries call enter(i).
+// update(now) drives the camera and returns true while playing (the caller then skips
+// controls.update()).
+export function createTour({ camera, controls, routes, door, onStart, onEnd }) {
+  let fps = routes[0].fps, frames = routes[0].frames, T = duration(frames, fps), route = 0;
   let state = 'off', t = 0, last = 0, loop = false, saved = null, dir = new THREE.Vector3(1, 0, 0);
-
-  const start = el('button', { type: 'button', className: 'fl-tour-start' }, 'Rundgang');
-  start.onclick = () => enter();
-  tools.append(el('span', { className: 'fl-sep' }), start);
-  const cutButtons = [...tools.querySelectorAll('button[aria-pressed]')];   // the cutaway buttons
 
   const bar = el('div', { className: 'fl-bar fl-tour' });
   const play = el('button', { type: 'button', className: 'fl-play' });
   play.onclick = () => (state === 'playing' ? setState('paused') : resume());
-  const scrub = el('input', { type: 'range', min: 0, max: T, step: 0.01, value: 0 });
+  const scrub = el('input', { type: 'range', min: 0, max: T, step: 0.01, value: 0 });   // max: per route
   scrub.setAttribute('aria-label', 'Rundgang-Zeit');
   scrub.oninput = () => seek(Number(scrub.value));
   const endless = el('button', { type: 'button' }, 'Endlos');
@@ -87,7 +83,6 @@ export function createTour({ camera, controls, tour, door, tools, onStart }) {
       controls.target.copy(camera.position).addScaledVector(dir, LOOK);
       controls.update();
     }
-    for (const b of [...cutButtons, start]) b.disabled = s !== 'off';
     play.textContent = s === 'playing' ? '❚❚' : '▶';
     play.setAttribute('aria-label', s === 'playing' ? 'Rundgang anhalten' : 'Rundgang abspielen');
   }
@@ -109,13 +104,17 @@ export function createTour({ camera, controls, tour, door, tools, onStart }) {
     setState('paused');
   }
 
-  function enter() {
-    if (state !== 'off') return;
+  function enter(i = 0) {
+    if (state !== 'off') leave();
+    route = i;
+    ({ fps, frames } = routes[i]);
+    T = duration(frames, fps);
+    scrub.max = T;
     saved = { pos: camera.position.clone(), target: controls.target.clone(), fov: camera.fov,
       maxPolar: controls.maxPolarAngle, zoom: controls.enableZoom, pan: controls.enablePan };
     stopSpin();
     Object.assign(controls, { maxPolarAngle: Math.PI, enableZoom: false, enablePan: false });
-    onStart();
+    onStart(i);
     door.rotation.y = Math.PI / 2;                  // as in film.py: 90° about model z
     t = 0;
     apply();
@@ -133,6 +132,7 @@ export function createTour({ camera, controls, tour, door, tools, onStart }) {
     controls.target.copy(saved.target);
     setState('off');
     controls.update();
+    onEnd();
   }
 
   function update(now) {
@@ -151,5 +151,6 @@ export function createTour({ camera, controls, tour, door, tools, onStart }) {
   }
 
   setState('off');
-  return { update, resize, enter, leave, seek, get state() { return state; }, get time() { return t; }, duration: T };
+  return { update, resize, enter, leave, seek, get state() { return state; }, get time() { return t; },
+    get duration() { return T; }, get route() { return route; }, key: (i) => frames[i].slice(0, 3) };
 }

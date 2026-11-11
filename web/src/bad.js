@@ -7,9 +7,9 @@ import { startSubmodel } from './submodel.js';
 await startSubmodel({
   glb: 'bad.glb',
   views: {
-    iso: [[6.6, -1.4, 4.4], [1.0, 1.9, 0.8]],         // from the bedroom side, above
-    top: [[1.024, 1.9, 10.5], [1.024, 1.901, 0.0]],   // plan, north at the top
-    niche: [[4.0, 3.0, 1.7], [1.0, 0.8, 0.9]],        // from the bedroom onto the sliding doors
+    iso: ['Schräg', [6.6, -1.4, 4.4], [1.0, 1.9, 0.8]],         // from the bedroom side, above
+    top: ['Von oben', [1.024, 1.9, 10.5], [1.024, 1.901, 0.0]],   // plan, north at the top
+    niche: ['In die Nische', [4.0, 3.0, 1.7], [1.0, 0.8, 0.9]],        // from the bedroom onto the sliding doors
   },
   colors: { Bad_Sanitaer: 0x2b5f8e, Bad_Innentueren: 0x8a5a2b, Bad_Schrank: 0x8a5a2b, Bad_Fliesen: 0x4f7a5a },
   walls: [[3.817, 2.4, [0, 1.9085, 1.2], Math.PI / 2], [2.048, 2.4, [1.024, 0, 1.2], 0],   // west, south,

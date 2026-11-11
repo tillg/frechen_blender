@@ -1,5 +1,6 @@
 // The Bad Großeltern sub-model page (bad.html): house_core.build_bad() (code/bad.py) with its dimensions.
 import { test, expect } from '@playwright/test';
+import { choose } from './menu.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { shot } from './pixels.js';
 
@@ -21,8 +22,8 @@ test('Bad page draws the bathroom with the core dimensions, without errors', asy
   }
   await expect(page.locator('.dim', { hasText: /^60$/ })).toHaveCount(1);                    // the cabinet's depth (the wardrobe is gone)
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['In die Nische', 'Gerendert']]) {
-    await page.getByRole('button', { name: view }).click();
-    await page.getByRole('button', { name: look }).click();
+    await choose(page, 'Standpunkt', view);
+    await choose(page, 'Darstellung', look);
     await page.waitForTimeout(600);
     const img = await shot(page, `bad_e2e_${look}.png`);
     let ink = 0;
@@ -59,7 +60,8 @@ test('in the house the leaves roll too: in Eingerichtet, drawn while they move; 
   await page.evaluate(() => window.__fl.setProgress(3));                            // Gebaut: as built
   await page.waitForTimeout(100);
   expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0]);
-  await page.getByRole('button', { name: 'Rundgang', exact: true }).click();        // Eingerichtet again,
+  await choose(page, 'Modell', 'Ganzes Haus');                      // the routes are listed there
+  await choose(page, 'Standpunkt', 'Um und durch das Haus');        // Eingerichtet again,
   await page.waitForTimeout(5000);                                                  // but the tour sees them
   expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0]);             // as built
 });
@@ -67,10 +69,10 @@ test('in the house the leaves roll too: in Eingerichtet, drawn while they move; 
 test('the house links to the Bad page and back', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__fl?.ready === true);
-  await page.getByLabel('Teilmodell').selectOption({ label: 'Bad Oma & Opa' });
+  await choose(page, 'Modell', 'Bad Oma & Opa');
   await page.waitForFunction(() => window.__bad?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/bad.html');
-  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
+  await choose(page, 'Modell', 'Ganzes Haus');
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/');
 });

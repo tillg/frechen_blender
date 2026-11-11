@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { choose } from './menu.js';
 import { utimesSync } from 'node:fs';
 import { shot } from './pixels.js';
 
@@ -12,55 +13,32 @@ const vis = (page, name) => page.evaluate((n) => window.__fl.visible(n), name);
 
 test('clicking "Detailmodell" selects the detail stage', async ({ page }) => {
   await open(page);
-  await page.getByRole('button', { name: 'Detailmodell' }).click();
+  await choose(page, 'Darstellung', 'Detailmodell');
   expect(await stage(page)).toBe('detail');
   expect(await page.evaluate(() => window.__fl.progress)).toBe(2);
 });
 
-test('dragging the scrubber to its end selects Eingerichtet', async ({ page }) => {
+test('"1. Stock" hides the roof collection, keeps the ground', async ({ page }) => {
   await open(page);
-  const s = page.getByRole('slider');
-  const box = await s.boundingBox();
-  await page.mouse.move(box.x + 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width + 20, box.y + box.height / 2, { steps: 8 });
-  await page.mouse.up();
-  expect(await stage(page)).toBe('furnished');
-});
-
-test('Play advances p and stops at 4', async ({ page }) => {
-  await open(page);
-  await page.getByRole('button', { name: 'Abspielen' }).click();
-  await page.waitForTimeout(1500);
-  const mid = await page.evaluate(() => window.__fl.progress);
-  expect(mid).toBeGreaterThan(0);
-  await page.waitForFunction(() => window.__fl.progress === 4, null, { timeout: 30_000 });
-  await page.waitForTimeout(500);
-  expect(await page.evaluate(() => window.__fl.progress)).toBe(4);
-  expect(await stage(page)).toBe('furnished');
-});
-
-test('"Ohne Dach" hides the roof collection, keeps the ground', async ({ page }) => {
-  await open(page);
-  await page.getByRole('button', { name: 'Ohne Dach' }).click();
+  await choose(page, 'Modell', '1. Stock');
   expect(await page.evaluate(() => document.body.dataset.cutaway)).toBe('noroof');
   for (const n of ['Dach', 'Dach_Sparren', 'Verschalung_West', 'Giebel']) expect(await vis(page, n)).toBe(false);
   for (const n of ['Gelaende', 'OG_Waende', 'EG_Waende']) expect(await vis(page, n)).toBe(true);
 });
 
-test('"Nur EG" also hides the OG and its balconies', async ({ page }) => {
+test('"Erdgeschoss" also hides the OG and its balconies', async ({ page }) => {
   await open(page);
-  await page.getByRole('button', { name: 'Nur EG' }).click();
+  await choose(page, 'Modell', 'Erdgeschoss');
   expect(await page.evaluate(() => document.body.dataset.cutaway)).toBe('eg');
   for (const n of ['Dach', 'OG_Waende', 'OG_Decke_EG', 'OG_Laeden_Querbretter', 'Balkon_OG_Nord', 'Balkon_OG_Ost', 'Balkon_OG_Sued'])
     expect(await vis(page, n)).toBe(false);
   for (const n of ['Gelaende', 'EG_Waende', 'Balkon_EG_Nord']) expect(await vis(page, n)).toBe(true);
   // the OG workshop stove's fire goes with the OG (it floated over the EG), the EG fires stay
   expect(await page.evaluate(() => window.__fl.fires())).toEqual(['EG', 'EG', 'EG', 'EG']);
-  await page.getByRole('button', { name: 'Detailmodell' }).click();
+  await choose(page, 'Darstellung', 'Detailmodell');
   await page.waitForTimeout(500);
   await shot(page, 'cutaway_eg.png');                                       // for the eye
-  await page.getByRole('button', { name: 'Ganzes Haus' }).click();
+  await choose(page, 'Modell', 'Ganzes Haus');
   expect(await vis(page, 'Dach')).toBe(true);
   expect((await page.evaluate(() => window.__fl.fires())).sort()).toEqual(['EG', 'EG', 'EG', 'EG', 'OG']);
 });
@@ -70,7 +48,7 @@ for (const [w, h] of [[1280, 720], [1920, 1080]])
     await page.setViewportSize({ width: w, height: h });
     await open(page);
     const boxes = await page.evaluate(() =>
-      ['.fl-title', '.fl-bar', '.fl-tools'].map((s) => document.querySelector(s).getBoundingClientRect().toJSON()));
+      ['.fl-title', '.fl-tools'].map((s) => document.querySelector(s).getBoundingClientRect().toJSON()));
     for (let i = 0; i < boxes.length; i++)
       for (let j = i + 1; j < boxes.length; j++) {
         const a = boxes[i], b = boxes[j];
@@ -80,7 +58,7 @@ for (const [w, h] of [[1280, 720], [1920, 1080]])
     for (const b of boxes) expect(b.right <= w && b.bottom <= h && b.left >= 0 && b.top >= 0).toBe(true);
     // every control group sits on its own paper panel, so it stays readable on the dusk sky
     const bgs = await page.evaluate(() =>
-      ['.fl-title', '.fl-bar', '.fl-tools'].map((s) => getComputedStyle(document.querySelector(s)).backgroundColor));
+      ['.fl-title', '.fl-tools'].map((s) => getComputedStyle(document.querySelector(s)).backgroundColor));
     for (const bg of bgs) expect(bg).not.toBe('rgba(0, 0, 0, 0)');
     await shot(page, `ui_${w}.png`);
   });
@@ -108,7 +86,7 @@ test('the built-in Ofen shows in every stage, without dimensions, and "Ofen" ope
     expect(await vis(page, 'EG_Ofen_Bett')).toBe(true);
   }
   expect(await page.locator('.dim').count()).toBe(0);
-  await page.getByLabel('Teilmodell').selectOption({ label: 'Ofen' });
+  await choose(page, 'Modell', 'Ofen');
   await page.waitForURL(/\/ofen\.html$/);
   await page.waitForFunction(() => window.__ofen?.ready === true);
   await expect(page.locator('.dim', { hasText: 'Bett 190' })).toBeVisible();
@@ -118,7 +96,7 @@ test('the built-in Ofen shows in every stage, without dimensions, and "Ofen" ope
 test('the stoves burn from the Detailmodell on, and the flames move', async ({ page }) => {
   await open(page);
   expect(await page.evaluate(() => window.__fl.fire())).toBe(false);          // Skizze: no fire
-  await page.getByRole('button', { name: 'Detailmodell' }).click();
+  await choose(page, 'Darstellung', 'Detailmodell');
   const a = await page.evaluate(() => window.__fl.fire());
   await page.waitForTimeout(300);
   const b = await page.evaluate(() => window.__fl.fire());
@@ -154,10 +132,11 @@ test('URL ?fov= sets the vertical field of view (default 28°), kept in the URL 
 
 test('the URL follows the view (camera, target, stage, cutaway); a reload restores it', async ({ page }) => {
   await open(page);
+  await choose(page, 'Modell', '1. Stock');                          // opens at its own standard Standpunkt
   await page.evaluate(() => window.__fl.lookFrom(-22, 34, 13));
-  await page.getByRole('button', { name: 'Eingerichtet' }).click();
-  await page.getByRole('button', { name: 'Ohne Dach' }).click();
-  await expect.poll(() => new URL(page.url()).searchParams.get('cut')).toBe('noroof');
+  await choose(page, 'Darstellung', 'Eingerichtet');
+  await expect.poll(() => new URL(page.url()).searchParams.get('p')).toBe('4');
+  expect(new URL(page.url()).searchParams.get('cut')).toBe('noroof');
   const q = new URL(page.url()).searchParams;
   expect(q.get('cam').split(',').map(Number)).toEqual([-22, 34, 13]);
   expect(q.get('p')).toBe('4');

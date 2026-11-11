@@ -1,6 +1,7 @@
 // The desk sub-model page (desk.html): house_core.build_desk() with its dimensions; in Gerendert the
 // two monitors show the screenshots (a12 left: its blue hero band, pilcrow right: the green meadow).
 import { test, expect } from '@playwright/test';
+import { choose } from './menu.js';
 import { readFileSync } from 'node:fs';
 import { shot } from './pixels.js';
 
@@ -26,8 +27,8 @@ test('desk page draws the desk with the core dimensions, without errors', async 
 test('in Gerendert the monitors show the two screenshots', async ({ page }) => {
   await page.goto('/desk.html');
   await page.waitForFunction(() => window.__desk?.ready === true);
-  await page.getByRole('button', { name: 'Auf die Bildschirme' }).click();
-  await page.getByRole('button', { name: 'Gerendert' }).click();
+  await choose(page, 'Standpunkt', 'Auf die Bildschirme');
+  await choose(page, 'Darstellung', 'Gerendert');
   await page.waitForFunction(() => window.__desk.textures() === 2);
   await page.waitForTimeout(800);
   const img = await shot(page, 'desk_e2e_full.png');
@@ -44,10 +45,10 @@ test('in Gerendert the monitors show the two screenshots', async ({ page }) => {
 test('the house links to the desk page and back', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__fl?.ready === true);
-  await page.getByLabel('Teilmodell').selectOption({ label: 'Schreibtisch' });
+  await choose(page, 'Modell', 'Schreibtisch');
   await page.waitForFunction(() => window.__desk?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/desk.html');
-  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
+  await choose(page, 'Modell', 'Ganzes Haus');
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/');
 });

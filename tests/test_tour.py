@@ -53,3 +53,86 @@ def test_route_looks_into_the_grosseltern_shower_and_wc():
     wc = [k for k in bad if looking_at(k, 0.79, 9.1)]
     assert len(shower) >= tour.PAUSE * tour.FPS and len(wc) >= tour.PAUSE * tour.FPS
     assert min(k[4] for k in wc) < -0.3                                   # looks down at the toilet
+
+
+# ---------------------------------------------------------------- routes and Standpunkte (viewer)
+import house_core  # noqa: E402
+
+ENTRIES = {"haus", "eg", "og"}
+ROUTES_PATH = ROOT / "tests" / "golden" / "routes.json"
+
+
+def inside(p):
+    return 0 < p[0] < house_core.W_OUT and 0 < p[1] < house_core.D_OUT
+
+
+def test_the_first_route_is_the_films():
+    assert tour.ROUTES[0] == ("Um und durch das Haus", tour.ROUTE)
+    assert tour.build_tour(tour.ROUTE) == KEYS
+
+
+def test_every_route_is_closed():
+    """Every route ends at its start pose, so the viewer's Endlos loops it without a jump."""
+    assert len(tour.ROUTES) >= 2 and len({n for n, _ in tour.ROUTES}) == len(tour.ROUTES)
+    for name, route in tour.ROUTES:
+        k = tour.build_tour(route)
+        a, b = k[0], k[-1]
+        assert math.dist(a[:3], b[:3]) < 1e-6, name
+        assert abs(math.remainder(b[3] - a[3], 2 * math.pi)) < 1e-9 and abs(a[4] - b[4]) < 1e-9, name
+
+
+def test_stube_kueche_walks_through_both_rooms_in_the_eg():
+    k = tour.build_tour(dict(tour.ROUTES)["Durch die Stube & Küche"])
+    assert all(inside(f) and abs(f[2] - tour.EYE) < 1e-9 for f in k)        # indoors, EG eye height
+    rooms = {n: (x, y) for n, _, x, y, _ in house_core.ROOM_NAMES}
+    for room in ("Stube", "Küche"):
+        assert min(math.dist(f[:2], rooms[room]) for f in k) < 1.5, room
+
+
+def test_extra_routes_match_their_golden():
+    got = {}
+    for name, route in tour.ROUTES[1:]:
+        k = tour.build_tour(route)
+        got[name] = {"n": len(k), "sha1_6dp": hashlib.sha1(";".join(",".join(f"{v:.6f}" for v in f) for f in k).encode()).hexdigest()}
+    if os.environ.get("UPDATE_TOUR_GOLDEN"):
+        ROUTES_PATH.write_text(json.dumps(got, indent=1, ensure_ascii=False) + "\n")
+    assert got == json.loads(ROUTES_PATH.read_text())
+
+
+def test_spots_have_unique_names_and_valid_entries():
+    names = [s[0] for s in tour.SPOTS]
+    assert len(names) == len(set(names))
+    for name, group, entries, cam, at, fov in tour.SPOTS:
+        assert entries and set(entries) <= ENTRIES, name
+        assert len(cam) == 3 and len(at) == 3 and 10 <= fov <= 90 and math.dist(cam, at) > 0.3, name
+        assert group, name
+    for e in ENTRIES:
+        assert any(e in s[2] for s in tour.SPOTS), e
+
+
+def test_the_standard_spots():
+    """The first spot listed for an entry is its standard; the house's is the old opening view."""
+    first = {e: next(s for s in tour.SPOTS if e in s[2]) for e in ENTRIES}
+    assert first["haus"][0] == "Von Südosten"
+    assert first["haus"][3:] == ((33, -24, 13), (7.4, 6.4, 3.2), 28)
+    assert first["eg"][0] == first["og"][0] == "Von oben"
+
+
+def test_every_room_has_an_inside_spot_at_eye_height():
+    spots = {s[0]: s for s in tour.SPOTS}
+    for room, floor, *_ in house_core.ROOM_NAMES:
+        name, group, entries, cam, at, fov = spots[room]
+        z = tour.EYE if floor == "EG" else tour.OG
+        assert inside(cam) and abs(cam[2] - z) < 1e-9, room
+        assert set(entries) == {"haus", floor.lower()}, room
+        assert group == {"EG": "Erdgeschoss", "OG": "1. Stock"}[floor], room
+
+
+def test_bibliothek_stands_in_the_corner_behind_the_desk():
+    """Request 2026-11-10: in the corner behind the desk (desk.DESK_AT, against the north wall),
+    looking across the whole room (south)."""
+    import desk
+    _, _, _, cam, at, _ = next(s for s in tour.SPOTS if s[0] == "Bibliothek")
+    dx, dy = desk.DESK_AT[0] + desk.DESK_W / 2, desk.DESK_AT[1] + desk.DESK_D / 2   # desk centre
+    assert math.dist(cam[:2], (dx, dy)) < 3.0 and cam[1] > dy - 0.5       # by the desk, at the north wall
+    assert at[1] < cam[1] - 1.0                                           # looking south into the room

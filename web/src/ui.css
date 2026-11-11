@@ -1,5 +1,5 @@
-/* Menu style of both pages (index.html via ui.js, ofen.html): title panel top left, toolbar top
-   right, timeline bar (house only). */
+/* Menu style of every page (toolbar.js): title panel top left, toolbar top right with the three
+   drop-downs, sun toggle and Reset; the Rundgang bar (tour.js) at the bottom. */
 .fl-title { position: fixed; top: 20px; left: 24px; color: #2b2926; pointer-events: none; padding: 8px 14px 10px;
   background: rgba(243, 239, 230, .86); border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.12); }
 .fl-title h1 { margin: 0; font: 400 34px/1.1 Georgia, 'Times New Roman', serif; letter-spacing: .02em; }
@@ -7,14 +7,33 @@
 .fl-tools, .fl-bar { position: fixed; display: flex; gap: 6px; align-items: center; padding: 8px;
   background: rgba(243, 239, 230, .86); border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.12);
   font: 13px system-ui, sans-serif; color: #2b2926; }
-.fl-tools { top: 20px; right: 24px; }
-.fl-title, .fl-tools, .fl-bar { z-index: 1; }             /* above the Ofen page's dimension labels */
+.fl-tools { top: 20px; right: 24px; align-items: flex-end; }
+.fl-title, .fl-tools, .fl-bar { z-index: 1; }             /* above the sub-model pages' dimension labels */
 .fl-bar { bottom: 22px; left: 50%; transform: translateX(-50%); }
 .fl-bar input { width: 240px; accent-color: #2b2926; }
-.fl-tools select { font: inherit; color: inherit; background: transparent; border: 1px solid rgba(43,41,38,.3); border-radius: 6px; padding: 4px 6px; cursor: pointer; }
 .fl-tools button, .fl-bar button { font: inherit; color: inherit; background: transparent; border: 1px solid transparent;
   border-radius: 6px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
 .fl-tools button:hover, .fl-bar button:hover { border-color: rgba(43,41,38,.3); }
-.fl-tools button[aria-pressed="true"], .fl-bar button[aria-current="true"] { background: #2b2926; color: #f3efe6; }
+.fl-tools button:disabled { opacity: .4; cursor: default; border-color: transparent; }
 .fl-play { width: 34px; font-size: 15px !important; }
-.fl-sep { width: 1px; height: 22px; background: rgba(43,41,38,.25); margin: 0 4px; }
+.fl-tools .fl-sun { width: 84px; flex: none; box-sizing: border-box; }   /* same slot on every page (empty on sub-models) */
+span.fl-sun { align-self: stretch; }
+.fl-sep { width: 1px; height: 26px; background: rgba(43,41,38,.25); margin: 0 4px; }
+
+/* the drop-downs: caption above, button with the chosen entry, list always below */
+.fl-field { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.fl-field > span { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; opacity: .75; padding-left: 2px; }
+.fl-tools .fl-dd { width: 150px; text-align: left; padding: 4px 24px 4px 8px; position: relative;
+  border-color: rgba(43,41,38,.3); overflow: hidden; text-overflow: ellipsis; }
+.fl-tools .fl-field:nth-child(3) .fl-dd { width: 200px; }                     /* Standpunkt: longer names */
+.fl-dd::after { content: '▾'; position: absolute; right: 8px; top: 50%; transform: translateY(-52%); opacity: .7; }
+.fl-tools .fl-dd[aria-expanded="true"] { background: rgba(43,41,38,.08); }
+.fl-list { position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%; max-height: calc(100vh - 110px);
+  overflow: auto; box-sizing: border-box; margin: 0; padding: 4px; list-style: none; background: #f7f3eb;
+  border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.18); z-index: 2; }
+.fl-list li { padding: 5px 10px 5px 22px; border-radius: 5px; cursor: pointer; white-space: nowrap; position: relative; }
+.fl-list li[aria-selected="true"]::before { content: '✓' / ''; position: absolute; left: 7px; }   /* not part of the entry's name */
+.fl-list li.fl-active { background: #2b2926; color: #f3efe6; }
+.fl-list li.fl-group { padding: 8px 10px 3px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  opacity: .6; cursor: default; }
+.fl-list li.fl-rule { padding: 0; margin: 4px 6px; border-top: 1px solid rgba(43,41,38,.25); cursor: default; }
