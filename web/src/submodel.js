@@ -9,7 +9,7 @@ import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer
 import { loadBlueprint } from './blueprint.js';
 import { createFire } from './fire.js';
 import { INK } from './ink.js';
-import { makeMaterials, updateStage } from './materials.js';
+import { makeMaterials, roomEnvironment, setReflections, updateStage } from './materials.js';
 import { slidingNodes, swingingNodes } from './slides.js';
 import { createToolbar } from './toolbar.js';
 import { initialQuery, remove, safeStorage, storageKey, write } from './viewstate.js';
@@ -212,6 +212,8 @@ export async function startSubmodel(cfg) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     labels.setSize(window.innerWidth, window.innerHeight);
   });
+  await renderer.init();
+  setReflections(mats, roomEnvironment(renderer));                 // metals reflect a neutral room, not black
   let t0;
   renderer.setAnimationLoop((now) => {
     controls.update();

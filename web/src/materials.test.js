@@ -2,7 +2,7 @@
 import { test, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { uniform } from 'three/tsl';
-import { makeMaterials, updateStage, srgbToLinear } from './materials.js';
+import { makeMaterials, setReflections, updateStage, srgbToLinear } from './materials.js';
 import { weights } from './stages.js';
 
 const buf = readFileSync('public/frechenlehen.glb');
@@ -51,4 +51,15 @@ test('the lamp filament glows only at dusk (night), the fire always', () => {
 test('the switched-on lamp filament glows by day too', () => {
   expect(mats.FL_GluehfadenAn.userData.night).toBeFalsy();
   expect(mats.FL_GluehfadenAn.userData.emit).toBeGreaterThan(0);
+});
+
+test('fully metallic materials (metal >= 0.5) get the environment to reflect, the rest not', () => {
+  const env = { isTexture: true };
+  const ms = makeMaterials(json.materials.map((m) => ({ name: m.name, extras: m.extras })), u);
+  const metallic = setReflections(ms, env);
+  expect(metallic).toContain('FL_Metall');                                  // cup pulls, rings, fittings: black before
+  for (const [name, m] of Object.entries(ms)) {
+    const metal = json.materials.find((j) => j.name === name).extras.metal ?? 0;
+    expect(m.envMap ?? null).toBe(metal >= 0.5 ? env : null);
+  }
 });
