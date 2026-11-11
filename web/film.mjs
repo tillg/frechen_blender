@@ -20,7 +20,8 @@ await page.goto(u.href);
 await page.waitForFunction(() => window.__fl?.ready === true, null, { timeout: 120_000 });
 const hires = await page.evaluate(() => window.__fl.hires);
 if (hires !== true) throw new Error('viewer is not in hires mode: the capture would not be full quality');
-await page.getByRole('button', { name: 'Rundgang', exact: true }).click();
+await page.getByRole('button', { name: 'Standpunkt', exact: true }).click();          // the route, from the toolbar
+await page.getByRole('option', { name: 'Um und durch das Haus', exact: true }).click();
 await page.addStyleTag({ content: '.fl-title, .fl-tools, .fl-bar { display: none !important; }' });
 const n = await page.evaluate(() => Math.round(window.__fl.tour.duration * 25) + 1);
 const end = Math.min(Number(last ?? n - 1), n - 1);

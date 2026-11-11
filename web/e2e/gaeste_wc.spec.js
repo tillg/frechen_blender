@@ -1,5 +1,6 @@
 // The Gäste-WC sub-model page (gaeste_wc.html): house_core.build_gaeste_wc() (code/gaeste_wc.py) with its dimensions.
 import { test, expect } from '@playwright/test';
+import { choose } from './menu.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { shot } from './pixels.js';
 
@@ -20,8 +21,8 @@ test('Gäste-WC page draws WC, Garderobe and basin with the core dimensions, wit
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Vom Flur', 'Gerendert']]) {
-    await page.getByRole('button', { name: view }).click();
-    await page.getByRole('button', { name: look }).click();
+    await choose(page, 'Standpunkt', view);
+    await choose(page, 'Darstellung', look);
     await page.waitForTimeout(600);
     const img = await shot(page, `gaeste_wc_e2e_${look}.png`);
     let ink = 0;
@@ -57,7 +58,8 @@ test('in the house the doors swing too: in Eingerichtet, drawn while they move; 
   await page.evaluate(() => window.__fl.setProgress(3));                            // Gebaut: as built
   await page.waitForTimeout(100);
   expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0]);
-  await page.getByRole('button', { name: 'Rundgang', exact: true }).click();        // Eingerichtet again,
+  await choose(page, 'Modell', 'Ganzes Haus');                      // the routes are listed there
+  await choose(page, 'Standpunkt', 'Um und durch das Haus');        // Eingerichtet again,
   await page.waitForTimeout(4000);                                                  // but the tour (the film)
   expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0]);          // sees them as built
 });

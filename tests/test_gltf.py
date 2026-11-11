@@ -243,3 +243,18 @@ def test_gaeste_wc_export(tmp_path):
     house_core.build()
     ex = g["scenes"][0]["extras"]
     assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex
+
+
+def test_routes_and_spots_in_scene_extras(glb):
+    """The viewer's extra routes (all but the film's, which stays extras.tour) and its Standpunkte."""
+    import tour
+    ex = glb["gltf"]["scenes"][0]["extras"]
+    assert [r["name"] for r in ex["routes"]] == [n for n, _ in tour.ROUTES[1:]]
+    for r, (_, route) in zip(ex["routes"], tour.ROUTES[1:]):
+        keys = tour.build_tour(route)
+        assert len(r["frames"]) == len(keys)
+        for got, want in zip(r["frames"][::97], keys[::97]):
+            assert len(got) == 6 and all(abs(a - b) < 1e-4 for a, b in zip(got, want))
+    assert [s["name"] for s in ex["spots"]] == [s[0] for s in tour.SPOTS]
+    assert ex["spots"][0] == {"name": "Von Südosten", "group": "Außen", "entries": ["haus"],
+                              "cam": [33, -24, 13], "at": [7.4, 6.4, 3.2], "fov": 28}

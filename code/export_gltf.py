@@ -8,7 +8,8 @@ house_core.build_ofen() / build_desk() / build_bad() / build_kueche() / build_ga
 - one primitive per material: POSITION, NORMAL, _RND (the Part's rnd), uint32 indices
 - materials FL_<name>: a pbrMetallicRoughness approximation; the full MAT_DEF entry (+ paint)
   in extras, from which the viewer builds its own procedural material
-- scene.extras: room lights, key constants, the garden layout and the Rundgang camera keys of
+- scene.extras: room lights, key constants, the garden layout, the Rundgang camera keys and the
+  viewer's shorter routes (routes) and Standpunkte (spots) of
   tour.py (in z-up model coordinates)
 - hidden node GA_Grasbuschel: the grass clump with _H (0 root .. 1 tip)
 Axes: z-up model -> y-up glTF as (x, z, -y), like Blender's exporter.
@@ -178,6 +179,10 @@ def export(path, bp=None):
                        "FAR_DENS": house_core.FAR_DENS, "HOUSE_C": jsonable(house_core.HOUSE_C),
                        "CELL": house_core.CELL},
             "tour": {"fps": tour.FPS, "frames": [[round(v, 4) for v in k] for k in tour.build_tour()]},
+            "routes": [{"name": n, "frames": [[round(v, 4) for v in k] for k in tour.build_tour(r)]}
+                       for n, r in tour.ROUTES[1:]],             # the viewer's shorter walks
+            "spots": [{"name": n, "group": g, "entries": list(e), "cam": list(c), "at": list(a), "fov": f}
+                      for n, g, e, c, a, f in tour.SPOTS],       # the viewer's Standpunkte
         })
     if bp.dims:
         extras["dims"] = jsonable(bp.dims)

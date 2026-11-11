@@ -96,6 +96,47 @@ ROUTE = [
     turn((*HOUSE_C, 3.0), L), ("hold", PAUSE),                            # face the house
 ]
 
+# ---------------------------------------------------------------- the viewer's routes and Standpunkte
+# Shorter walks for the viewer only (film.py keeps ROUTE). Every route is closed: it starts with a
+# straight stretch longer than the look-ahead and ends turning back along it, so its last pose is
+# its first and the viewer's "Endlos" loops it without a jump.
+STUBE_KUECHE = [
+    ("path", [(14.0, 7.2), (11.4, 7.2), (11.4, 6.10), (11.75, 5.2), (13.1, 4.9), (13.55, 3.6), (13.1, 2.2)],
+     EYE, WALK),                                                          # Windfang, into the Stube round the sofa
+    turn((10.0, 5.2), L), ("hold", PAUSE),                                # the sofa and the Ofen
+    ("path", [(13.1, 2.2), (11.2, 1.9), (9.6, 2.3), (8.3, 2.75), (5.95, 2.72), (6.05, 3.6), (5.95, 4.79)],
+     EYE, WALK),                                                          # past the table into the Küche
+    turn((3.0, 4.79)), ("hold", PAUSE),                                   # down the Speis aisle
+    ("path", [(5.95, 4.79), (6.55, 4.6), (6.55, 6.9), (11.0, 6.9), (12.0, 7.2), (14.0, 7.2)], EYE, WALK),
+    turn((11.4, 7.2, EYE)),                                               # Küche door, along the Flur, back
+]
+
+ROUTES = [("Um und durch das Haus", ROUTE), ("Durch die Stube & Küche", STUBE_KUECHE)]   # the film's first
+
+# Standpunkte: (name, group in the drop-down, house entries it is listed in, camera, look-at point,
+# vertical field of view in degrees). The first spot of an entry is its standard. Inside spots stand
+# at eye height in a room corner, looking across the room (the viewer lets the mouse look around).
+SEE = 60                                                                  # inside: wide, like the Rundgang
+SPOTS = [
+    ("Von Südosten", "Außen", ("haus",), (33, -24, 13), (7.4, 6.4, 3.2), 28),       # the README view
+    ("Von Südwesten", "Außen", ("haus",), (-18.2, -24, 13), (7.4, 6.4, 3.2), 28),
+    ("Von Nordosten", "Außen", ("haus",), (33, 36.8, 13), (7.4, 6.4, 3.2), 28),
+    ("Von Nordwesten", "Außen", ("haus",), (-18.2, 36.8, 13), (7.4, 6.4, 3.2), 28),
+    ("Von oben", "Übersicht", ("eg", "og"), (7.44, 6.4, 38), (7.44, 6.7, 0), 28),
+    ("Schräg von Südosten", "Übersicht", ("eg", "og"), (24, -10, 17), (7.44, 6.44, 1.0), 28),
+    ("Stube", "Erdgeschoss", ("haus", "eg"), (12.6, 0.75, EYE), (10.0, 5.0, 1.0), SEE),
+    ("Küche", "Erdgeschoss", ("haus", "eg"), (8.35, 2.7, EYE), (6.2, 5.4, 1.0), SEE),
+    ("Speis", "Erdgeschoss", ("haus", "eg"), (5.95, 4.79, EYE), (3.0, 4.79, 1.2), SEE),
+    ("Bibliothek", "Erdgeschoss", ("haus", "eg"), (14.15, 12.05, EYE), (9.2, 9.4, 1.0), SEE),  # behind the desk
+    ("Oma & Opa", "Erdgeschoss", ("haus", "eg"), (5.7, 9.45, EYE), (2.8, 11.9, 1.0), SEE),
+    ("Nadine & Till", "1. Stock", ("haus", "og"), (13.95, 0.9, OG), (9.12, 3.44, Z_OG + 1.0), SEE),
+    ("Waschküche", "1. Stock", ("haus", "og"), (8.25, 3.1, OG), (5.9, 5.2, Z_OG + 1.0), SEE),
+    ("Saschi", "1. Stock", ("haus", "og"), (3.7, 5.2, OG), (5.0, 0.8, Z_OG + 1.0), SEE),
+    ("Bichlach", "1. Stock", ("haus", "og"), (9.6, 12.1, OG), (13.8, 9.4, Z_OG + 1.0), SEE),
+    ("Jugend", "1. Stock", ("haus", "og"), (7.6, 12.2, OG), (7.6, 9.0, Z_OG + 1.0), SEE),
+    ("Yoga", "1. Stock", ("haus", "og"), (5.6, 9.25, OG), (1.5, 11.8, Z_OG + 1.0), SEE),
+]
+
 
 def polyline_samples(pts, speed):
     """Points along polyline at constant speed, one per frame."""
@@ -132,10 +173,10 @@ def turn_frames(last, yaw1, pitch1, side=None):
     return [(x, y, z, yaw0 + d * i / n, pitch0 + (pitch1 - pitch0) * i / n, lens) for i in range(1, n + 1)]
 
 
-def build_frames():
+def build_frames(route=ROUTE):
     frames = []              # (x, y, z, yaw, pitch, lens)
     lens_in, lens_out = 16.0, 24.0
-    for seg in ROUTE:
+    for seg in route:
         kind = seg[0]
         if kind == "orbit":
             _, a0, a1, secs, (cx, cy), rx, ry, z, (lx, ly, lz) = seg
@@ -200,10 +241,10 @@ def smooth(vals, w, closed=False):
             for i in range(n)]
 
 
-def build_tour():
+def build_tour(route=ROUTE):
     """Smoothed camera keys, one per frame at FPS: [(x, y, z, yaw, pitch, lens), ...]. A route
     that ends where it starts is smoothed cyclically, so it loops without a jump."""
-    fr = build_frames()
+    fr = build_frames(route)
     c = math.dist(fr[0][:3], fr[-1][:3]) < 1e-6
     xs, ys, zs = (smooth([f[k] for f in fr], 13, c) for k in range(3))
     yaws = smooth(unwrap([f[3] for f in fr]), 21, c)

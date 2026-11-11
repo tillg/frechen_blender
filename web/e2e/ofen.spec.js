@@ -1,5 +1,6 @@
 // The Ofen sub-model page (ofen.html): line drawing of house_core.build_ofen() with its dimensions.
 import { test, expect } from '@playwright/test';
+import { choose } from './menu.js';
 import { readFileSync } from 'node:fs';
 import { shot } from './pixels.js';
 
@@ -15,7 +16,7 @@ test('Ofen page draws the stove with the core dimensions, without errors', async
   expect(await page.evaluate(() => window.__ofen.edges)).toBeGreaterThan(50);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
   await expect(page.locator('.dim', { hasText: 'Tür 65' })).toBeVisible();
-  await page.getByRole('button', { name: 'Von oben' }).click();
+  await choose(page, 'Standpunkt', 'Von oben');
   await expect(page.locator('.dim', { hasText: 'Höhe' })).toBeHidden();      // heights: not in the plan
   await expect(page.locator('.dim', { hasText: 'Bett 190' })).toBeVisible();
   const img = await shot(page, 'ofen_e2e_top.png');
@@ -28,9 +29,9 @@ test('Ofen page draws the stove with the core dimensions, without errors', async
 test('Ofen looks: Drahtmodell, Masse, Gerendert (fire behind the glass)', async ({ page }) => {
   await page.goto('/ofen.html');
   await page.waitForFunction(() => window.__ofen?.ready === true);
-  await page.getByRole('button', { name: 'Auf die Feuertür' }).click();
+  await choose(page, 'Standpunkt', 'Auf die Feuertür');
   const fire = async (name) => {
-    await page.getByRole('button', { name }).click();
+    await choose(page, 'Darstellung', name);
     expect(await page.evaluate(() => window.__ofen.look())).toBe({ Drahtmodell: 'wire', Masse: 'mass', Gerendert: 'full' }[name]);
     await page.waitForTimeout(800);
     const img = await shot(page, `ofen_e2e_${name}.png`);
@@ -43,24 +44,23 @@ test('Ofen looks: Drahtmodell, Masse, Gerendert (fire behind the glass)', async 
   expect(await fire('Drahtmodell')).toBe(0);
 });
 
-test('the drop-down "Teilmodell" leads back to the house', async ({ page }) => {
+test('the drop-down "Modell" leads back to the house', async ({ page }) => {
   await page.goto('/ofen.html');
   await page.waitForFunction(() => window.__ofen?.ready === true);
-  await page.getByLabel('Teilmodell').selectOption({ label: 'Haus' });
+  await choose(page, 'Modell', 'Ganzes Haus');
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(new URL(page.url()).pathname).toBe('/');
 });
 
-test('house and Ofen page share the menu style (title panel, toolbar, drop-down, pressed button)', async ({ page }) => {
+test('house and Ofen page share the menu style (title panel, toolbar, drop-downs, Reset)', async ({ page }) => {
   const look = () => page.evaluate(() => {
     const css = (sel, keys) => { const s = getComputedStyle(document.querySelector(sel)); return keys.map((k) => s[k]); };
     return {
       title: css('.fl-title', ['top', 'left', 'backgroundColor', 'borderRadius', 'boxShadow']),
       h1: css('.fl-title h1', ['fontFamily', 'fontSize']),
       tools: css('.fl-tools', ['top', 'right', 'backgroundColor', 'borderRadius', 'padding', 'fontSize']),
-      nav: css('.fl-tools select', ['padding', 'borderRadius', 'fontSize', 'color', 'borderTopColor']),
-      button: css('.fl-tools button:not([aria-pressed="true"])', ['padding', 'borderRadius', 'backgroundColor']),
-      pressed: css('.fl-tools button[aria-pressed="true"]', ['backgroundColor', 'color']),
+      nav: css('.fl-tools .fl-dd', ['padding', 'borderRadius', 'fontSize', 'color', 'borderTopColor']),
+      button: css('.fl-tools .fl-reset', ['padding', 'borderRadius', 'backgroundColor']),
     };
   });
   await page.goto('/');
@@ -69,7 +69,7 @@ test('house and Ofen page share the menu style (title panel, toolbar, drop-down,
   await page.goto('/ofen.html');
   await page.waitForFunction(() => window.__ofen?.ready === true);
   expect(await look()).toEqual(house);
-  await page.getByRole('button', { name: 'Auf die Feuertür' }).click();       // dimension labels stay below
+  await choose(page, 'Standpunkt', 'Auf die Feuertür');                    // dimension labels stay below
   await page.waitForTimeout(800);
   await page.addStyleTag({ content: '.dim { pointer-events: auto !important; }' });   // so elementFromPoint sees them
   expect(await page.evaluate(() => [...document.querySelectorAll('.fl-tools > *')].every((e) => {
@@ -81,9 +81,9 @@ test('house and Ofen page share the menu style (title panel, toolbar, drop-down,
 test('the fire burns and moves in Gerendert only', async ({ page }) => {
   await page.goto('/ofen.html');
   await page.waitForFunction(() => window.__ofen?.ready === true);
-  await page.getByRole('button', { name: 'Masse' }).click();
+  await choose(page, 'Darstellung', 'Masse');
   expect(await page.evaluate(() => window.__ofen.fire())).toBe(false);
-  await page.getByRole('button', { name: 'Gerendert' }).click();
+  await choose(page, 'Darstellung', 'Gerendert');
   const a = await page.evaluate(() => window.__ofen.fire());
   await page.waitForTimeout(300);
   const b = await page.evaluate(() => window.__ofen.fire());
@@ -94,8 +94,8 @@ test('the fire burns and moves in Gerendert only', async ({ page }) => {
 test('the URL follows the Ofen view and look; a reload restores them', async ({ page }) => {
   await page.goto('/ofen.html');
   await page.waitForFunction(() => window.__ofen?.ready === true);
-  await page.getByRole('button', { name: 'Auf die Feuertür' }).click();
-  await page.getByRole('button', { name: 'Masse' }).click();
+  await choose(page, 'Standpunkt', 'Auf die Feuertür');
+  await choose(page, 'Darstellung', 'Masse');
   await expect.poll(() => new URL(page.url()).searchParams.get('look')).toBe('mass');
   const q = new URL(page.url()).searchParams;
   expect(q.get('cam').split(',').map(Number)).toEqual([3.6, 3.6, 1]);
@@ -105,5 +105,5 @@ test('the URL follows the Ofen view and look; a reload restores them', async ({ 
   expect(await page.evaluate(() => window.__ofen.look())).toBe('mass');
   const cam = await page.evaluate(() => window.__ofen.camera);
   [3.6, 3.6, 1].forEach((v, i) => expect(Math.abs(cam[i] - v)).toBeLessThan(0.01));
-  await expect(page.getByRole('button', { name: 'Masse' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Darstellung', exact: true })).toHaveText('Masse');
 });
