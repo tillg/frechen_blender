@@ -66,10 +66,34 @@ export function makeMaterials(defs, { uPaper, uDetail, uDusk = float(1), texture
     m.polygonOffset = true;                         // the ink lines win the depth test
     m.polygonOffsetFactor = m.polygonOffsetUnits = 1;
     m.name = name;
-    m.userData = { kind: d.kind, base, emit: d.emit, night: d.night, alpha: d.alpha, usesRnd };
+    m.userData = { kind: d.kind, base, emit: d.emit, night: d.night, alpha: d.alpha, usesRnd, metal: d.metal ?? 0 };
     out[name] = m;
   }
   return out;
+}
+
+// A metal shows only what it reflects, and the viewer has no world: fully metallic materials
+// (metal >= 0.5: Metall, Spiegel, ...) would render black. They get envMap (a PMREM of a neutral world,
+// light above, mid grey below, made by roomEnvironment() once the renderer is up); the rest stays lit by the scene's lights only.
+// Returns the names of the materials that got it.
+export function setReflections(mats, envMap) {
+  const out = [];
+  for (const [name, m] of Object.entries(mats)) {
+    if (m.userData.metal < 0.5) continue;
+    m.envMap = envMap;
+    m.needsUpdate = true;
+    out.push(name);
+  }
+  return out;
+}
+
+export function roomEnvironment(renderer) {
+  const world = new THREE.Scene();
+  for (const [col, theta] of [[0xf2f0ec, 0], [0x8c8a86, Math.PI / 2]]) {          // upper / lower half
+    world.add(new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16, 0, Math.PI * 2, theta, Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: col, side: THREE.BackSide })));
+  }
+  return new THREE.PMREMGenerator(renderer).fromScene(world, 0.04).texture;
 }
 
 // glass writes depth until the detail stage, so the Skizze keeps hiding the interior

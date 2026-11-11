@@ -7,7 +7,7 @@ import { buildGarden, indoors } from './garden.js';
 import { inkLines } from './ink.js';
 import { createPlanView, PLANS } from './plans.js';
 import { createLighting } from './lighting.js';
-import { makeMaterials, updateStage } from './materials.js';
+import { makeMaterials, roomEnvironment, setReflections, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
 import { slidingNodes, swingingNodes } from './slides.js';
 import { createTour, drawDue, LOOK } from './tour.js';
@@ -289,6 +289,7 @@ window.addEventListener('resize', () => {                             // before 
 });
 
 await renderer.init();
+setReflections(mats, roomEnvironment(renderer));                   // metals reflect a neutral room, not black
 await lights.prewarm(() => renderer.compileAsync(scene, camera));   // fast mode: no stall at the first dusk
 let draws = 0, lastDraw = -Infinity, t0;
 renderer.setAnimationLoop((now) => {
