@@ -134,20 +134,25 @@ const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
 const cutOf = (m) => Object.keys(ENTRY).find((c) => ENTRY[c] === m);
 const standard = (m) => SPOTS.find((s) => s.entries.includes(m));      // the entry's first Standpunkt
 let saveTimer = 0;
+// the view is written 300 ms after the last change; a pending write is flushed before the entry
+// changes (switchModel), so it lands under the entry it belongs to
 function saveView() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    const view = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`
-      + (viewFov !== FOV ? `&fov=${viewFov}` : '');
-    // the entry's default (Reset) is kept as no saved view and a bare URL
-    const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
-    const extra = [plan && `plan=${plan}`, hires && 'hires=on'].filter(Boolean);
-    const q = (home ? '' : view) + (extra.length ? (home ? '?' : '&') + extra.join('&') : '');
-    if (tour.state !== 'off') return;                               // a route is not saved, not even in the URL
-    if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
-    if (home) remove(storage, key(model)); else write(storage, key(model), view);
-    write(storage, LAST, model);
-  }, 300);
+  saveTimer = setTimeout(flushView, 300);
+}
+function flushView() {
+  clearTimeout(saveTimer);
+  saveTimer = 0;
+  const view = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`
+    + (viewFov !== FOV ? `&fov=${viewFov}` : '');
+  // the entry's default (Reset) is kept as no saved view and a bare URL
+  const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
+  const extra = [plan && `plan=${plan}`, hires && 'hires=on'].filter(Boolean);
+  const q = (home ? '' : view) + (extra.length ? (home ? '?' : '&') + extra.join('&') : '');
+  if (tour.state !== 'off') return;                               // a route is not saved, not even in the URL
+  if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
+  if (home) remove(storage, key(model)); else write(storage, key(model), view);
+  write(storage, LAST, model);
 }
 
 // an inside Standpunkt (eye level inside the house) looks around in place, as in a paused route: the
@@ -223,6 +228,7 @@ function setPlan(k) {
 function switchModel(m) {
   tour.leave();
   setPlan(null);
+  flushView();                                                      // the old entry's view, under its key
   model = m;
   ui.spot.setItems(spotItems(m));
   const saved = cleanView(read(storage, key(m)));
