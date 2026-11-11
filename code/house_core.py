@@ -619,7 +619,7 @@ def build_eg():
     # interior walls; doors: (a, b, swing, hinge) get an opened leaf, (a, b) stay open passages
     interior(c, 6.024, 6.174, 8.876, 12.473)
     interior(c, 2.657, 14.575, 8.576, 8.876,
-             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), regal.TUER])   # Büro: hinged east, moved west of the bookcase (code/regal.py)
+             [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), regal.tuer(c)])   # Büro: hinged east, moved west of the bookcase (code/regal.py)
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
     gaeste_wc.gaeste_wc_neu(c, *gaeste_wc.WC_AT)           # Gäste-WC + Garderobe with the WC's north wall
@@ -2272,5 +2272,5 @@ def build_regal():
     LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear()
     random.seed(22)
     dims = regal.regal_neu(walls=True)
-    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
-                     [], None, set(), dims)
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
+                     [], None, set(), dims, swing=dict(SWING))

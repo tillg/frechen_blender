@@ -106,7 +106,9 @@ edited: 2026-11-11
     and a bridge from 2.02 m over the window, one cornice over all three; 42 deep; 30 cm free to the
     north wall, 48 cm to the Flur wall. It replaces the former bookcase on the Flur wall. The Büro
     door moved 50 cm west (106 wide, hinged east, open 90°): its leaf stands 10.5 cm in front of
-    the south column. Depths and shelf heights estimated from the photo
+    the south column; it shows how: it swings shut in 2 s, rests 4 s, swings open, rests 4 s, on
+    the sub-model page and in the house in stage Eingerichtet (the film and the Rundgang see it
+    open). Depths and shelf heights estimated from the photo
   - OG bathrooms: shower, basin with mirror
   - the four WCs (also the WC in the Bad Großeltern's niche and the Gäste-WC), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap

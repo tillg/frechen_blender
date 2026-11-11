@@ -140,7 +140,8 @@ flowchart LR
   `random.Random(14)`. The openings around it are defined once there (`FENSTER`, `BALKONTUER`,
   `TUER`, the Büro door moved `SHIFT` = 0.50 m west) and `build_eg()` passes them to its
   `wall()` / `interior()` calls; `walls=True` (the sub-model) adds the pieces of those three walls
-  (`waende()`, global random stream).
+  (`waende()`, global random stream). `tuer(c)` gives the Büro door's leaf an object of its own
+  (`<c>_Buerotuer`) with a `PIVOT` at the hinge and a `SWING`.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
   `build_gaeste_wc()` / `build_regal()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
   in `dims`) for `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html` /
@@ -336,7 +337,8 @@ sequenceDiagram
   `kueche.js`, `gaeste_wc.js` and `regal.js` only configure it. Nodes with `extras.slide` roll there and back,
   edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
-  lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s). `main.js`
+  lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s; the Büro door
+  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest). `main.js`
   moves both too, in stage Eingerichtet outside the Rundgang (else as built), and draws while
   they move and their travel is in view, throttled like a fire. `submodel.js` builds the same
   `toolbar.js` panel on every sub-model page: the page config `views` (`{key: [label, cam, at]}`)

@@ -31,3 +31,17 @@ test('Schrank im Büro page draws the bookcase round the window with the core di
   }
   expect(errors).toEqual([]);
 });
+
+test('the Büro door swings shut in 2 s, rests 4 s, swings open again: to show how it clears the bookcase', async ({ page }) => {
+  await page.goto('/regal.html');
+  await page.waitForFunction(() => window.__regal?.ready === true);
+  const at = () => page.evaluate(() => window.__regal.doors());
+  expect(await at()).toEqual({ Regal_Buerotuer: { pos: 0, yaw: 0 } });                 // as built: open 90 deg
+  await page.waitForFunction(() => window.__regal.doors().Regal_Buerotuer.pos === 1, null, { timeout: 9000 });
+  const t0 = Date.now();
+  expect(Math.abs((await at()).Regal_Buerotuer.yaw)).toBeCloseTo(Math.PI / 2, 3);      // a quarter turn: shut
+  await page.waitForTimeout(3000);
+  expect((await at()).Regal_Buerotuer.pos).toBe(1);                                    // still shut (4 s rest)
+  await page.waitForFunction(() => window.__regal.doors().Regal_Buerotuer.pos === 0, null, { timeout: 5000 });
+  expect(Date.now() - t0).toBeGreaterThan(3900);                                       // rest + swing
+});

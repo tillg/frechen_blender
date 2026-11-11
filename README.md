@@ -133,6 +133,8 @@ links und rechts vom Fenster je eine Säule 94, das mittlere 94er-Element geteil
 Unterteil 48 cm (nach Foto geschätzt), mit Büchern. Dazu die Stücke der drei Wände: Ostwand mit Fenster,
 Nordwand mit Balkontür, Flurwand mit der Bürotür, die dafür 50 cm nach Westen rückt (statt 46 wie in der
 Zeichnung, damit auch die Klinke Luft hat): 90° geöffnet steht ihr Blatt 10,5 cm vor der rechten Säule.
+Damit man die Tür versteht, schwenkt sie in 2 Sekunden zu, bleibt 4 Sekunden zu, schwenkt wieder auf, bleibt
+4 Sekunden offen und so fort; im Haus genauso in der Stufe „Eingerichtet“, im Rundgang und im Film steht sie offen.
 Standpunkte schräg, von vorn und von oben, Darstellung wie beim Ofen. Im Haus steht dasselbe Regal (statt
 der früheren Bücherwand an der Flurwand); die Vitrine 52 ist nicht verbaut.
 

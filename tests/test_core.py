@@ -323,8 +323,11 @@ def test_regal_submodel():
     assert r.REGAL_AT == (14.575, 8.876) and bp.garden is None
     assert {c for c, _ in bp.geo} == {"Regal"}
     assert {n for _, n in bp.geo} == {"Regal_Moebel", "Regal_Waende", "Regal_Fenster_Tueren", "Regal_Innentueren",
-                                      "Regal_Laeden"}
+                                      "Regal_Laeden", "Regal_Buerotuer"}
+    # the leaf is an object of its own, hinged at the east jamb's lining, swinging 90 deg to shut
     x0, y0 = r.REGAL_AT
+    assert bp.swing == {"Regal_Buerotuer": 90.0}
+    assert bp.pivot["Regal_Buerotuer"] == pytest.approx((r.TUER[1] - 0.025 - x0, r.FS - y0, 0.0))
     cm = lambda a, b: round(abs(b - a) * 100)
     case = [(m, [lo[0] + x0, lo[1] + y0, lo[2]], [hi[0] + x0, hi[1] + y0, hi[2]])
             for m, lo, hi in _parts(bp, ("Regal", "Regal_Moebel"))]
@@ -373,8 +376,9 @@ def test_regal_built_into_the_house():
     house_core.build()                                                    # restore the registries
     x0, y0 = r.REGAL_AT
     assert _solids(sub, ("Regal", "Regal_Moebel"), x0, y0) <= _solids(BP, ("EG", "EG_Moebel"))
-    for n in ("Fenster_Tueren", "Innentueren", "Laeden"):
+    for n in ("Fenster_Tueren", "Innentueren", "Laeden", "Buerotuer"):
         assert _solids(sub, ("Regal", "Regal_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
+    assert BP.swing["EG_Buerotuer"] == 90.0 and BP.pivot["EG_Buerotuer"] == pytest.approx((r.TUER[1] - 0.025, r.FS, 0.0))
     assert "EG_Moebel" in BP.furniture
     assert not any(m == "Buecher" and lo[1] < 9.3 and hi[0] < 13.6 and lo[0] > 10.5
                    for m, lo, hi in _parts(BP, ("EG", "EG_Moebel")))                               # old bookcase
@@ -1441,7 +1445,8 @@ def test_gaeste_wc_doors_swing():
     sub = house_core.build_gaeste_wc()
     house_core.build()                                                    # restore the registries
     x0, y0 = g.WC_AT
-    assert BP.swing == {"EG_Hintertuer": 90.0, "EG_WC_Tuer": 90.0, "EG_Windfangtuer": 90.0}   # back door, Windfang: hinged north
+    assert BP.swing == {"EG_Hintertuer": 90.0, "EG_WC_Tuer": 90.0, "EG_Windfangtuer": 90.0,   # back door, Windfang: hinged north
+                        "EG_Buerotuer": 90.0}                                                  # (and the Büro door, code/regal.py)
     assert sub.swing == {"GaesteWC_Hintertuer": 90.0, "GaesteWC_WC_Tuer": 90.0, "GaesteWC_Windfangtuer": 90.0}
     for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):
         px, py, pz = sub.pivot["GaesteWC_" + n]

@@ -248,15 +248,18 @@ def test_gaeste_wc_export(tmp_path):
 
 def test_regal_export(tmp_path):
     """--regal: the "Schrank im Büro" sub-model with its wall pieces and dimension lines, no Rundgang,
-    nothing sliding or swinging."""
+    nothing sliding; the Büro door swings."""
     out = tmp_path / "regal.glb"
     subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--regal"], check=True)
     data = out.read_bytes()
     jlen = struct.unpack_from("<I", data, 12)[0]
     g = json.loads(data[20:20 + jlen])
     assert {n["name"] for n in g["nodes"]} == {"Regal_Moebel", "Regal_Waende", "Regal_Fenster_Tueren",
-                                              "Regal_Innentueren", "Regal_Laeden"}
-    assert not any("slide" in n["extras"] or "swing" in n["extras"] for n in g["nodes"])
+                                              "Regal_Innentueren", "Regal_Laeden", "Regal_Buerotuer"}
+    assert not any("slide" in n["extras"] for n in g["nodes"])
+    swing = {n["name"]: round(n["extras"]["swing"], 6) for n in g["nodes"] if "swing" in n["extras"]}
+    assert swing == {"Regal_Buerotuer": round(math.pi / 2, 6)}
+    assert all("translation" in n for n in g["nodes"] if n["name"] in swing)       # origin at the hinge
     bp = house_core.build_regal()
     house_core.build()
     ex = g["scenes"][0]["extras"]
