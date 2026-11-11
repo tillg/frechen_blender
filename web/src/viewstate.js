@@ -28,13 +28,33 @@ export function hasView(search) {
   return VIEW_KEYS.some((k) => q.has(k));
 }
 
+// a malformed view key (a hand-edited link, an old stored value) is dropped, so it never turns into
+// a NaN camera that is then saved: cam/at 3 finite numbers, p finite, fov finite in 10…90
+const nums = (v) => v.split(',').map((s) => (s.trim() === '' ? NaN : Number(s)));
+const VALID = {
+  cam: (v) => nums(v).length === 3 && nums(v).every(Number.isFinite),
+  at: (v) => nums(v).length === 3 && nums(v).every(Number.isFinite),
+  p: (v) => v !== '' && Number.isFinite(Number(v)),
+  fov: (v) => v !== '' && Number(v) >= 10 && Number(v) <= 90,
+};
+// raw pairs, not URLSearchParams.toString(): that would escape the commas of cam=x,y,z
+const pairs = (search) => (search ?? '').replace(/^\?/, '').split('&').filter(Boolean);
+const ok = (kv) => {
+  const [k, v = ''] = kv.split('=');
+  if (!VALID[k]) return true;
+  try { return VALID[k](decodeURIComponent(v)); } catch { return false; }   // a broken %-escape
+};
+export const cleanView = (search) => {
+  const kept = pairs(search).filter(ok);
+  return kept.length ? `?${kept.join('&')}` : '';
+};
+
 // the query the page starts from: the URL's view, else the stored one with the URL's other keys
 export function initialQuery(search, storage, key) {
-  if (hasView(search)) return search;
-  const stored = read(storage, key);
-  if (!stored) return search;
-  // raw pairs, not URLSearchParams.toString(): that would escape the commas of cam=x,y,z
-  const view = stored.replace(/^\?/, '').split('&').filter((kv) => VIEW_KEYS.includes(kv.split('=')[0]));
-  const own = search.replace(/^\?/, '').split('&').filter(Boolean);
-  return `?${[...view, ...own].join('&')}`;
+  const url = cleanView(search);
+  if (hasView(url)) return url;
+  const stored = cleanView(read(storage, key));
+  if (!hasView(stored)) return url;
+  const view = pairs(stored).filter((kv) => VIEW_KEYS.includes(kv.split('=')[0]));
+  return `?${[...view, ...pairs(url)].join('&')}`;
 }

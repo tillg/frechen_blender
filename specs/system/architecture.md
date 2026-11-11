@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-10
+edited: 2026-11-11
 ---
 
 # Architecture: Frechenlehen house model
@@ -38,7 +38,7 @@ flowchart TB
         WR["windrose.py"]
         GA["garden.py"]
         FI["film.py"]
-        TO["tour.py<br/>route → camera keys"]
+        TO["tour.py<br/>routes, Standpunkte → camera keys"]
         SH["show.py<br/>view URL on objects"]
     end
     subgraph blender["Blender 5.2"]
@@ -196,20 +196,24 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
   `kind` and paint go in `extras`. Materials of open Parts are `doubleSided`.
 - **`scene.extras`:** `room_lights`, `ROOM_LIGHT_H`, `Z_OG`, `W_OUT`, `D_OUT`, `RIDGE_Z`,
   the garden layout and (house only, not the Ofen) `tour = {fps, frames}`, the camera keys of
-  `tour.build_tour()` as JSON.
+  `tour.build_tour()` as JSON, `routes = [{name, frames}]` (the viewer's shorter routes, i.e.
+  `ROUTES[1:]`) and `spots = [{name, group, entries, cam, at, fov}]` (`SPOTS`).
 - **Hidden node `GA_Grasbuschel`:** the grass clump, with `_H` (0 at the root … 1 at the tip).
 - **Axes:** z-up model → y-up glTF as `(x, z, -y)`, so north is −Z in three.js.
 
-### `tour.py` — the route
+### `tour.py` — routes and Standpunkte
 
 A second pure-Python module beside the core (ADR-001-XEWL): it imports `HOUSE_C`, `Z_OG` from
 `house_core`; the core never imports it. It holds `ROUTE` (orbit / path / turn / stair / hold
-segments, the helpers `turn()` and `peek()`, the variables `EYE`, `TURN`, `PAUSE`) and
-`build_tour()`, which bakes the route into one smoothed camera key per frame at 25 fps
+segments, the helpers `turn()` and `peek()`, the variables `EYE`, `TURN`, `PAUSE`), `ROUTES`
+(ordered `(name, segments)`; the first is `("Um und durch das Haus", ROUTE)`, the film's, the rest
+are viewer-only closed walks), `SPOTS` (the house Standpunkte: `(name, group, entries, cam, at,
+fov)`, the first of an entry is its standard; inside spots sit at `EYE` above their floor) and
+`build_tour(route=ROUTE)`, which bakes a route into one smoothed camera key per frame at 25 fps
 `(x, y, z, yaw, pitch, lens)`. When the last raw frame equals the first, it smooths cyclically
 (the window wraps, yaw offset by the full turn), so the last key equals the first and the route
 loops without a seam. `tests/golden/tour.json` pins the keys (`UPDATE_TOUR_GOLDEN=1` after a
-deliberate route change).
+deliberate route change). The film bakes only `ROUTE`.
 
 ### Other Blender scripts
 
@@ -233,7 +237,7 @@ sequenceDiagram
     participant L as blueprint.js
     participant Ma as materials.js
     participant Li as lighting.js
-    participant U as ui.js
+    participant U as toolbar.js
     participant S as stages.js
     M->>L: load BASE_URL + frechenlehen.glb
     L-->>M: {root, objects, byName, extras}
@@ -241,7 +245,7 @@ sequenceDiagram
     M->>M: ink.js lines, garden.js grass and shrubs
     M->>Li: sun, hemisphere, sky, light pool (or per-site lights with hires)
     M->>Li: prewarm(compileAsync), before the first frame
-    U->>S: progress p (play / click / scrub)
+    U->>S: progress p (Darstellung drop-down)
     S-->>M: weights {sketch, massing, detail, built, furnished}
     M->>M: uPaper, uDetail, uInk, dusk from the weights
     M->>Li: before each draw: update(camera, indoors)
@@ -282,11 +286,34 @@ sequenceDiagram
   (`built + furnished`), so Eingerichtet looks like Gebaut. One `applyVisibility()` (on
   progress and cutaway changes) shows an object iff the cutaway does not hide it and, for
   `extras.furniture`, the stage is Eingerichtet.
-- **`ui.js`.** Title, timeline bar (play/pause, scrubber 0–4, stage names), cutaway buttons
-  and the sun toggle. `body.dataset.stage`/`cutaway` mirror the state. It returns `setCut` so
-  the tour can disable the cutaway buttons.
-- **`tour.js`.** The Rundgang: builds its own button and tour bar (play/pause, scrubber,
-  "Endlos", "Beenden"). Playback is time-based at `SPEED = 0.75`: `step(t, dt, T, loop)` advances
+- **`toolbar.js`.** The one navigation panel of every page (house and sub-models): three custom
+  drop-downs (button + `role="listbox"`, always open below; keys ↑ ↓ Enter Esc), Reset and, on
+  the house, the sun toggle. Modell (house entries Ganzes Haus / Erdgeschoss / 1. Stock, a
+  separator, the sub-model pages), Darstellung (levels) and Standpunkt (group headings; "Eigene
+  Ansicht" appears after a camera move). A page passes its entries, levels, spots, routes and
+  callbacks. The house entries switch the cutaway in place (`all` / `eg` / `noroof`, URL `cut=`
+  kept); a sub-model entry navigates to its page (relative URLs).
+- **`ui.js`.** The house page's title and its toolbar wiring (stage labels as levels, sun toggle
+  enabled from p 1.5). `body.dataset.stage`/`cutaway` mirror the state.
+- **`viewstate.js`.** Pure, no three.js. Saved views in `localStorage` under
+  `frechenlehen:<page>:<entry>` (prefix: GitHub Pages shares its origin with other repos), value =
+  the query string the URL carries; `initialQuery(search, storage, key)`: the URL's view wins, else
+  the stored one, else the default; reads and writes tolerate a missing or throwing storage.
+  `cleanView(search)` drops malformed view keys (cam/at not three finite numbers, p not finite, fov
+  outside 10…90, a broken %-escape) before use and before saving. An entry's default view is
+  never stored; Reset removes the entry's key. The house also stores the last-used entry
+  (`frechenlehen:index:last`), which a bare URL opens.
+- **Standpunkte.** On the house, `main.js` lists `extras.spots` (filtered by entry) as the
+  Standpunkte and `extras.tour` (first, labelled "Um und durch das Haus" in `main.js`) plus `extras.routes`
+  as the Routen group. An outside spot restores orbiting; an inside spot (eye level inside the house footprint
+  and below a storey's ceiling) uses the paused-route look-around: orbit target `LOOK` (5 cm)
+  ahead, `maxPolarAngle` π, zoom and pan off. A house entry with nothing saved opens at its
+  standard Standpunkt and keeps the current Darstellung.
+- **`tour.js`.** The Rundgang: `createTour` takes the list of routes and plays the chosen one (it
+  has no start button; the toolbar's Routen group calls `enter(i)`); it builds its own tour bar
+  (play/pause, scrubber, "Endlos", "Beenden"), the only bar of the page. A playing route is not
+  saved and not written to the URL; `main.js` puts the Darstellung it started from back at
+  its end unless the user changed it during the route. Playback is time-based at `SPEED = 0.75`: `step(t, dt, T, loop)` advances
   (dt clamped) and wraps or clamps, `poseAt(frames, fps, t)` lerps between keys (yaw unwrapped),
   `fovFor(lens, aspect)` turns the lens into a vertical fov (`2·atan(18/lens/aspect)` landscape,
   `2·atan(18/lens)` portrait, as Blender's sensor fit AUTO), re-applied on resize. Orientation:
@@ -302,12 +329,13 @@ sequenceDiagram
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
   lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s). `main.js`
   moves both too, in stage Eingerichtet outside the Rundgang (else as built), and draws while
-  they move and their travel is in view, throttled like a fire. `nav.js` builds the "Teilmodell" drop-down (one list of pages, relative URLs,
-  the current page preselected); `ui.js` puts it into the house toolbar, `submodel.js` into every
-  sub-model page.
+  they move and their travel is in view, throttled like a fire. `submodel.js` builds the same
+  `toolbar.js` panel on every sub-model page: the page config `views` (`{key: [label, cam, at]}`)
+  are its Standpunkte, the three looks its Darstellung (one constant in `submodel.js`).
 - **View in the URL.** `main.js` and `submodel.js` read `?cam=&at=` (model coordinates) plus
-  `p`/`cut` (house) or `look` (sub-models) on load and write them back with `history.replaceState`,
-  debounced to 300 ms, on every controls change, stage, cutaway or look change.
+  `p`/`cut` (house) or `look` (sub-models) on load (`viewstate.initialQuery`) and write them back
+  with `history.replaceState`, debounced to 300 ms, on every controls change, stage, cutaway or look
+  change, and into the saved view. Not while a route plays.
 - **`blueprint-watch.js`** (Vite plugin, dev server only, off under Vitest): watches `code/*.py`;
   a save runs `npm run blueprint` (debounced, one export at a time, again if saved meanwhile)
   and then sends a full reload; a failed export is logged and does not reload. `export_gltf.py`
@@ -370,28 +398,36 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Stages change by **crossfade** | Construction build-up | Smaller scope; build-up is a later candidate. |
 | A sub-model may bring **its own walls** (`bad.py`: niche wall, lintel, low wall; `gaeste_wc.py`: partition, the WC's north wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
 | Speis shelves and cabinet are **built-ins** (`EG_Speis`, stage Gebaut) | Furniture (`EG_Moebel`, Eingerichtet) | Cabinet C replaces a wall; floor-to-ceiling joinery belongs to the house like the kitchen. |
-| Sub-model navigation is **one drop-down** built by `nav.js` | A link per sub-model on each page | With five sub-models the links no longer fit; one page list in one place. |
+| One **navigation panel** (`toolbar.js`: Modell, Darstellung, Standpunkt, Reset) on every page | Per-page buttons; a link per sub-model | The same controls at the same place everywhere; one page list in one place. |
+| Routes are a **group inside the Standpunkt drop-down** | A 4th "Routen" drop-down | Three drop-downs everywhere. |
+| The **cutaway is the house entries** of the Modell drop-down (Ganzes Haus `all`, Erdgeschoss `eg`, 1. Stock `noroof`) | Separate cut buttons | Today's `cut=` values stay, so `show.py`, `shot.js` and every URL stay valid. |
+| **Custom drop-downs** (button + `role="listbox"`) that always open below | Native `<select>`; `appearance: base-select` | A native macOS select opens over the chosen entry, i.e. upwards far down the list; `base-select` is Chrome-only. e2e tests click `role=button`, then `role=option`. |
+| The **URL wins over `localStorage`**, which holds the same query string, one saved view per model entry | Storage wins; a JSON state; one view per page | `show.py`, `shot.js`, the blueprint-watch reload and shared links all open `?cam=…`: one format, one parser. Each house entry opens at its own view. |
+| **Standpunkte and routes live in `tour.py`**, exported in `scene.extras` | JS literals in `main.js` | ADR-001-XEWL: model facts once in the core; the golden and pytest machinery is there. Sub-model views stay in the page config (not used anywhere else). |
+| **Inside spots use the look-around of the paused route** | Plain orbit around a room point | An orbit target in the room swings the camera through walls. |
+| Starting a route sets Eingerichtet + Ganzes Haus; the Darstellung drop-down stays usable; another Standpunkt or Modell ends it; **a route is not saved** | Keep the chosen level; save the route time | Matches the film. Beenden restores the view from before; a half-played route on reopening would surprise. |
+| **Short routes must be closed** (`build_tour` smooths cyclically, `step()` wraps with `% T`) | Jump back on loop | A seamless Endlos; a pytest enforces it. |
 | Leaves are modelled **open** (kitchen door 90° into the Küche, Speis sliding leaf slid south) | Closed | The Rundgang walks through the kitchen door and looks into the Speis aisle. |
 | The back hall's three doors **swing in the viewer** (`SWING`), the film keeps them as built | Static doors; animate in the film too | They show where the doors get in each other's way; the film camera and its clearance stay fixed. Moving only in Eingerichtet, as the Bad's leaves: the Skizze lines don't follow. |
 | Back door and Windfang door are **built by the Gäste-WC sub-model** | Only the WC door in the module | The page shows all three swinging doors; one builder for house and page. |
-| **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public; the viewer shows no room names. |
+| **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public. The viewer names the rooms (Standpunkte). |
 | **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. |
 | Look: **same palette, recognisably the same house** as the Blender renders | Pixel parity | A starting point, tuned in later iterations. |
 | The core holds the **garden layout**; each backend scatters and grows plants itself | Core computes every instance; web-only garden | Shared layout without forcing Geometry Nodes or `mathutils.noise` into pure Python. Blades and leaves differ in detail, by design. |
 | Browser grass at **25 %** of Blender's density, within 30 m | Full density | ~4 M triangles is too heavy; 25 % still reads as a meadow. |
-| **Cross boards** in the core, **per storey** | In `paint.py` from mesh islands; one EG object | Both backends show them; per storey so "Nur EG" hides the OG boards. |
+| **Cross boards** in the core, **per storey** | In `paint.py` from mesh islands; one EG object | Both backends show them; per storey so the Erdgeschoss entry hides the OG boards. |
 | Windrose area = star square + four letter squares (`WR_LABEL_HALF` 0.6 m); the viewer ignores it | Blender font bounding boxes | The letters' real extent needs Blender font metrics. The viewer draws no rose, so grass grows there. |
 | **Skizze is hidden-line**; no lines for `SMOOTH` objects | X-ray lines; lines everywhere | Interior parts and ~1,600 pebbles would be ink noise. |
 | Garden per stage: circles → clay blobs → grass and leaves | Edge lines for every leaf | ~1,400 leaves per shrub would be ink noise. |
 | The **cutaway hides whole collections**; `Verschalung_West` goes with `Dach` | Section planes with caps | Simplest; section cuts are a later candidate. |
-| The page **opens at Skizze**; Play takes 4 s per stage; the sun toggle is off below p 1.5 | Autoplay | Starting from the first line is the point of "Vom Strich zum Haus". |
+| The page **opens at Skizze** (the lowest Darstellung, with no saved view); the sun toggle is off below p 1.5 | Autoplay | Starting from the first line is the point of "Vom Strich zum Haus". |
 | **Room-light height** `ROOM_LIGHT_H` is a core fact read by `film.py` and the viewer | A height per backend | One source of truth (ADR-001-XEWL). |
 | Shrub leaves grow about a **per-instance centre** attribute | `positionLocal.mul(uDetail)` | In three.js 0.187 `positionLocal` is already instance-transformed when `positionNode` runs. `instancedBufferAttribute(typedArray, 'vec3')` drops the instanced flag, so a real `InstancedBufferAttribute` is needed. |
 | e2e runs headless Chromium with `--use-angle=metal` (WebGL2 path) | SwiftShader | SwiftShader took 1.6 s per frame; headless Chromium has no WebGPU. The WebGPU path is checked by hand. |
 | **Open Parts** (lamp cones) are exported double-sided | Guess an orientation | An open surface has no well-defined outward side. |
 | The route lives in its own module **`code/tour.py`**, not in the Blueprint | `ROUTE` in `house_core.py` or `film.py` | The route can be edited apart from house and film. |
 | The `.glb` carries the **baked, smoothed camera keys** as JSON in `scene.extras.tour` | Export the segments and re-implement the baking in JS; binary accessor | One implementation of the route math (ADR-001-XEWL); JSON is small and matches room lights and garden. |
-| `tour.js` builds its own button and bar; `ui.js` only returns `setCut` | Tour controls in `ui.js` | Keeps the tour separable. |
+| `tour.js` builds its own bar; the toolbar's Routen group starts it | Tour controls in `toolbar.js` | Keeps the tour separable. |
 | The viewer plays at **0.75×**; the film keeps its pace | Lower `WALK` in `tour.py` | The slower pace was asked for the browser only. |
 | Screen images mapped in **object space around the pane's pivot** | UVs through accumulator, `mesh_ops` and writer | The project already maps textures in object space; no new vertex attribute in three code paths. |
 | Screenshots downscaled once (`sips`) and **committed as JPEG** under `web/public/textures/` | Embed the PNGs in the `.glb`; convert at build time | CI is Ubuntu + stdlib (no `sips`, no Pillow); the house page should not load 8.6 MB more. |

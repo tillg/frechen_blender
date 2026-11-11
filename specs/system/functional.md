@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-10
+edited: 2026-11-11
 ---
 
 # Functional: Frechenlehen house model
@@ -141,26 +141,48 @@ edited: 2026-11-10
 - "Frechenlehen — Vom Strich zum Haus", German UI, desktop browsers. It is live at
   `https://tillg.github.io/frechen_blender/` once `main` carries the viewer and the Pages
   source is set to "GitHub Actions".
-- **Five stages** on a timeline (play/pause, scrubber, stage names). It opens at Skizze.
+- **Navigation panel** at the top right of every page (house and the five sub-models), the same
+  place everywhere: three drop-downs that open below and a Reset button (house: plus the sun
+  toggle). There is no timeline bar and no Play.
+  - **Modell:** Ganzes Haus, Erdgeschoss, 1. Stock (the cutaway: the whole house, without roof,
+    only the EG; the ground stays), a separator, then Ofen, Schreibtisch, Bad Oma & Opa, Küche,
+    Gäste-WC. A house entry switches in place, a sub-model entry opens its page; the current one is
+    selected.
+  - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert.
+  - **Standpunkt:** named camera poses in groups. House: Außen (Von Südosten = the README view and
+    the standard, Südwesten, Nordosten, Nordwesten), Übersicht (Von oben, Schräg von Südosten; EG
+    and 1. Stock), Erdgeschoss (Stube, Küche, Speis, Bibliothek, Oma & Opa) and 1. Stock (Nadine &
+    Till, Waschküche, Saschi, Bichlach, Jugend, Yoga), each inside group at eye height (1.6 m) in
+    the room, listed in Ganzes Haus and its own storey. Sub-models list their own views (Schräg,
+    Von oben, …). A group Routen (Ganzes Haus only) lists "Um und durch das Haus" and "Durch die
+    Stube & Küche". After the user moves the camera the drop-down shows "Eigene Ansicht".
+  - **Reset:** forgets the entry's saved view; lowest Darstellung (Skizze / Drahtmodell) and the
+    entry's standard Standpunkt.
+  - **Each model entry remembers** its Darstellung and camera in the browser (`localStorage`), so
+    reopening shows the same view; a bare house URL opens the last-used house entry. A URL with a
+    view (`?cam=…`) wins over the stored one. A malformed view in a URL (cam/at not three numbers,
+    p not a number, fov outside 10…90) is ignored, never shown and never stored.
+- **Five stages** (house Darstellung). It opens at Skizze unless a view is saved.
   - **Skizze:** hidden-line ink on paper.
   - **Massenmodell:** clay with soft sun shadows.
   - **Detailmodell:** procedural materials after `MAT_DEF`, daylight, grass and leafy shrubs.
   - **Gebaut:** dusk sky, low sun, warm light in the rooms and outside lamps nearest the camera
     (6 rooms, 2 lamps; inside the house the own storey first). By day all of them are off.
   - **Eingerichtet:** like Gebaut, plus the furniture (nodes with `extras.furniture`), which no
-    other stage shows. The cutaway still applies: "Nur EG" hides the OG furniture.
-- **Orbit** with the mouse (drag, scroll). It starts from the README view in the south-east.
-- **Cutaway:** "Ganzes Haus", "Ohne Dach", "Nur EG".
+    other stage shows. The cutaway still applies: Erdgeschoss hides the OG furniture.
+- **Orbit** with the mouse (drag, scroll) around an outside Standpunkt. At an inside Standpunkt
+  the mouse looks around in place instead (no orbit, zoom or pan).
 - **Sun toggle:** day or dusk, from Detailmodell on.
-- **"Teilmodell" drop-down** (house toolbar and every sub-model page): Haus, Ofen, Schreibtisch,
-  Bad Oma & Opa, Küche, Gäste-WC; the current page is preselected, choosing another opens it.
-- **Rundgang** (button in the tools panel): plays the film's route live from the camera keys in
-  the `.glb`, at 0.75× the film speed, in stage Eingerichtet with the whole house and the entrance
-  door open. Play/pause, a scrubber, "Endlos" (loop; the route ends where it starts) and
-  "Beenden", which closes the door and restores the previous camera (stage and cutaway stay).
-  While paused, the user looks around with the mouse; while it runs, the cutaway buttons are
-  disabled and the page draws at most 30 frames per second.
-- **The view lives in the URL**, written as it changes: house `?cam=x,y,z&at=x,y,z&p=…&cut=…`
+- **Rundgang** (a route chosen in the Standpunkt drop-down): plays the route live from the camera
+  keys in the `.glb`, at 0.75× the film speed, in stage Eingerichtet with the whole house and the
+  entrance door open. "Um und durch das Haus" is the film's route; "Durch die Stube & Küche" is a
+  shorter one. Play/pause, a scrubber (the one bar left on the page), "Endlos" (loop; every route
+  ends where it starts) and "Beenden", which closes the door and restores the previous camera and
+  the Darstellung the route started from (unless it was changed during the route). Choosing
+  another Standpunkt or Modell ends the route. While paused, the user looks around with the
+  mouse; the page draws at most 30 frames per second. A playing route is neither saved nor
+  written to the URL.
+- **The view lives in the URL** (and in the saved view), written as it changes: house `?cam=x,y,z&at=x,y,z&p=…&cut=…`
   (model coordinates; optional `&fov=…`, vertical field of view in degrees, default 28, and
   `&hires=on`, full quality), sub-model
   pages `?cam=…&at=…&look=wire|mass|full`. A reload or a shared link opens the same view.
@@ -222,9 +244,9 @@ sequenceDiagram
     Visitor->>P: open the link
     P-->>V: index.html, JS, frechenlehen.glb
     V-->>Visitor: Skizze
-    Visitor->>V: Play / scrub / click a stage
+    Visitor->>V: choose Darstellung (Massenmodell … Eingerichtet)
     V-->>Visitor: Massenmodell → Detailmodell → Gebaut → Eingerichtet
-    Visitor->>V: orbit, "Nur EG", sun toggle
+    Visitor->>V: orbit, Modell "Erdgeschoss", Standpunkt "Bibliothek", a route, sun toggle
 ```
 
 ## Inputs and outputs
@@ -242,21 +264,22 @@ sequenceDiagram
 The model has no runtime state. In Blender the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
 the Bad's sliding leaves and the back hall's three doors move on their own clock (each one at its
-built or its other state, or on the way); otherwise the state is the timeline progress `p` (0–4), the cutaway (all / noroof / eg), a forced
-dusk value from the sun toggle (cleared by any timeline move), the Rundgang
+built or its other state, or on the way); otherwise the state is the model entry (cutaway all / noroof / eg or a sub-model), the Darstellung
+(house progress `p` 0–4), the Standpunkt (or Eigene Ansicht), a forced dusk value from the sun
+toggle (cleared by any stage change), the saved view per entry, the Rundgang
 (off / playing / paused, its time and the loop flag; `body.dataset.tour`) and the `hires` mode
 (fixed per page load).
 
 ## Permissions and visibility
 
 No accounts. The repo is public on GitHub (raw MP4 link in `docs/autonomous-decisions.md`).
-The viewer page is public and may be indexed. It shows no room names. The `window.__fl` test
+The viewer page is public and may be indexed. It names the rooms (the Standpunkte). The `window.__fl` test
 hook exists only in dev and test builds.
 
 ## Edge cases and known limitations
 
-- The viewer is desktop-only, has no free first-person walk (only the fixed Rundgang), and shows
-  no room names, windrose or reference plans.
+- The viewer is desktop-only, has no free first-person walk (only the fixed routes and the
+  inside Standpunkte), and shows no windrose or reference plans.
 - The garden in the viewer is like Blender's, not identical: 25 % grass density, within 30 m,
   grass where the windrose would be.
 - Headless e2e tests run the WebGL2 fallback; the WebGPU path is checked by hand.
