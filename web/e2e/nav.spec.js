@@ -33,10 +33,11 @@ test('Modell lists Ganzes Haus, Erdgeschoss, 1. Stock, a separator, then the fiv
   }
 });
 
-test('Darstellung lists the five stages on the house and the three looks on a sub-model', async ({ page }) => {
+test('Darstellung lists the five stages (Ganzes Haus: then the plan sheets) on the house and the three looks on a sub-model', async ({ page }) => {
   await open(page);
   await page.getByRole('button', { name: 'Darstellung', exact: true }).click();
-  expect(await entries(page)).toEqual(['Skizze', 'Massenmodell', 'Detailmodell', 'Gebaut', 'Eingerichtet']);
+  expect(await entries(page)).toEqual(['Skizze', 'Massenmodell', 'Detailmodell', 'Gebaut', 'Eingerichtet',
+    'Grundriss EG', 'Grundriss OG', 'Ansicht Nord', 'Ansicht Ost', 'Ansicht Süd', 'Ansicht West']);
   await open(page, '/ofen.html', '__ofen');
   await page.getByRole('button', { name: 'Darstellung', exact: true }).click();
   expect(await entries(page)).toEqual(['Drahtmodell', 'Masse', 'Gerendert']);

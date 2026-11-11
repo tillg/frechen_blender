@@ -5,6 +5,7 @@ import { cutLevel, loadBlueprint } from './blueprint.js';
 import { createFire } from './fire.js';
 import { buildGarden, indoors } from './garden.js';
 import { inkLines } from './ink.js';
+import { createPlanView, PLANS } from './plans.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
@@ -125,7 +126,8 @@ function setCutaway(c) {
 const ENTRY = { all: 'haus', eg: 'eg', noroof: 'og' }, HOUSE_ENTRIES = Object.values(ENTRY);
 const storage = safeStorage(), key = (m) => storageKey('index', m), LAST = key('last');
 const url = new URLSearchParams(location.search);
-let model = [url.get('m'), ENTRY[url.get('cut')], read(storage, LAST)].find((m) => HOUSE_ENTRIES.includes(m)) ?? 'haus';
+const urlPlan = PLANS.some(([k]) => k === url.get('plan')) ? url.get('plan') : null;   // ?plan=eg: a sheet of Ganzes Haus
+let model = (urlPlan && 'haus') ?? [url.get('m'), ENTRY[url.get('cut')], read(storage, LAST)].find((m) => HOUSE_ENTRIES.includes(m)) ?? 'haus';
 url.delete('m');                                                    // ?m=: from a sub-model page
 const query = new URLSearchParams(initialQuery(url.size ? `?${url}`.replaceAll('%2C', ',') : '', storage, key(model)));
 const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
@@ -139,7 +141,8 @@ function saveView() {
       + (viewFov !== FOV ? `&fov=${viewFov}` : '');
     // the entry's default (Reset) is kept as no saved view and a bare URL
     const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
-    const q = (home ? '' : view) + (hires ? `${home ? '?' : '&'}hires=on` : '');
+    const extra = [plan && `plan=${plan}`, hires && 'hires=on'].filter(Boolean);
+    const q = (home ? '' : view) + (extra.length ? (home ? '?' : '&') + extra.join('&') : '');
     if (tour.state !== 'off') return;                               // a route is not saved, not even in the URL
     if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
     if (home) remove(storage, key(model)); else write(storage, key(model), view);
@@ -207,9 +210,19 @@ function goSpot(name) {
   showSpot();
   saveView();
 }
+// a plan sheet of Ganzes Haus over the 3D view (plans.js), or null: back to the 3D view
+const planView = createPlanView(import.meta.env.BASE_URL);
+let plan = null;
+function setPlan(k) {
+  plan = k;
+  if (k) planView.show(k); else planView.hide();
+  dirty = true;
+  saveView();
+}
 // another house entry: its saved view, else its standard Standpunkt (the stage stays)
 function switchModel(m) {
   tour.leave();
+  setPlan(null);
   model = m;
   ui.spot.setItems(spotItems(m));
   const saved = cleanView(read(storage, key(m)));
@@ -221,20 +234,24 @@ const ui = createUI({
   spots: spotItems(model),
   getProgress: () => progress,
   setProgress,
+  getPlan: () => plan,
+  setPlan,
   setCutaway,
   onModel: switchModel,
   onSpot: (v) => (v.startsWith('route:') ? tour.enter(Number(v.slice(6))) : goSpot(v.slice(5))),
-  onReset: () => { setProgress(0); ui.refresh(); goSpot(standard(model).name); },
+  onReset: () => { setPlan(null); setProgress(0); ui.refresh(); goSpot(standard(model).name); },
   isDusk,
   toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); dirty = true; },
 });
 showSpot();
+if (urlPlan) { setPlan(urlPlan); ui.refresh(); }
 // Rundgang (a route's camera keys): furnished, whole house, entrance door open; at its end the
 // Darstellung it started from comes back, unless it was changed during the route
 let routeFrom = 4;
 const tour = createTour({
   camera, controls, routes: ROUTES, door: bp.byName.EG_Haustuer,
   onStart: (i) => {
+    setPlan(null);
     routeFrom = progress;
     setProgress(4);
     if (model !== 'haus') { model = 'haus'; ui.spot.setItems(spotItems('haus')); ui.setModel('haus'); }
@@ -269,6 +286,7 @@ await renderer.init();
 await lights.prewarm(() => renderer.compileAsync(scene, camera));   // fast mode: no stall at the first dusk
 let draws = 0, lastDraw = -Infinity, t0;
 renderer.setAnimationLoop((now) => {
+  if (plan) return;                                                 // a plan sheet covers the 3D view
   const touring = tour.state !== 'off';
   if (!tour.update(now)) controls.update();
   const p = camera.position, inside = indoors(bp.extras, [p.x, -p.z, p.y]);

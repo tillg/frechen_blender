@@ -72,6 +72,10 @@ dazu Tag/Abend (nur Haus, ab Detailmodell) und **Reset**.
 - **Modell:** Ganzes Haus, Erdgeschoss (ohne Dach und 1. Stock), 1. Stock (ohne Dach) – ein Strich –
   Ofen, Schreibtisch, Bad Oma & Opa, Küche, Gäste-WC (springt zur gewählten Seite).
 - **Darstellung:** im Haus die fünf Stufen, in den Teilmodellen Drahtmodell, Masse, Gerendert.
+  Bei Ganzes Haus folgt der Abschnitt **Pläne** mit den sechs Planblättern aus `plans/` (Grundriss
+  EG und OG, Ansicht Nord, Ost, Süd, West): das Blatt ersetzt die 3D-Ansicht, Mausrad zoomt, Ziehen
+  verschiebt, „SVG herunterladen“ speichert es; die URL hält das Blatt (`?plan=eg`). Eine Stufe,
+  ein anderes Modell, Reset oder eine Route führen zurück zur 3D-Ansicht.
 - **Standpunkt:** benannte Blickpunkte aus `tour.py` – außen von den vier Ecken, im Erdgeschoss und
   1. Stock von oben und schräg, in jedem Raum aus einer Ecke in Augenhöhe (1,60 m), z. B.
   „Bibliothek“ im Eck hinter dem Schreibtisch; drinnen schaut man sich mit der Maus um, statt um
