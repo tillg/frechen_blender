@@ -226,9 +226,45 @@ def test_no_loose_furniture_on_any_sheet(views):
         assert not {o for o, _, _ in items} & BP.furniture, k
 
 
-def test_plans_show_the_stairs_and_the_kitchen_below_the_cut(views):
+def test_plans_show_the_kitchen_below_the_cut_and_the_stair_only_as_its_symbol(views):
     eg = {o for o, _, _ in views["EG"]}
-    assert {"EG_Treppe", "EG_Kueche"} <= eg and not any(o.startswith("OG_") for o in eg)
+    assert "EG_Kueche" in eg and not any(o.startswith("OG_") for o in eg)
+    assert "EG_Treppe" not in eg and "EG_Treppe" in BP.plan["stair_objects"]       # no cut treads: the symbol
+
+
+def test_the_stair_is_drawn_as_in_the_architects_plan_with_the_arrow_up(sheets):
+    """Request 2026-11-11: the stair as in the architect's plan, in EG and OG alike: its outline, a
+    line at every riser (15 risers, 18.0/25.5), the walking line from a circle at the bottom step to
+    an arrow at the top (always pointing up the stair, i.e. west); in EG also "15 STG 18.0/25.5"."""
+    st, = BP.stairs
+    assert st["storeys"] == ("EG", "OG") and len(st["risers"]) == 15
+    assert st["risers"][0] > st["risers"][-1]                                         # rises westwards
+    T = ep.plan_to_sheet()
+    for name in ("eg", "og"):
+        root = ET.parse(sheets / f"{name}.svg").getroot()
+        g, = [e for e in root.iter() if e.get("id") == "stairs"]
+        nums = lambda d: [float(v) for v in re.findall(r"-?\d+(?:\.\d+)?", d)]
+        risers = [e for e in g if e.get("class") == "riser"]
+        assert len(risers) == 13                                                      # the 13 inner risers
+        xs = sorted(nums(e.get("d"))[0] for e in risers)
+        assert xs == pytest.approx(sorted(T((x, 0))[0] for x in st["risers"][1:-1]), abs=0.01)
+        (x0, y0), (x1, y1) = T(st["lo"]), T(st["hi"])
+        out, = [e for e in g if e.get("class") == "outline"]
+        assert sorted(nums(out.get("d"))[0::2]) [0] == pytest.approx(min(x0, x1), abs=0.01)
+        circle, = [e for e in g if e.tag.endswith("circle")]
+        cx, cy = float(circle.get("cx")), float(circle.get("cy"))
+        bx, by = T((st["risers"][0], st["y"]))
+        tx, ty = T((st["risers"][-1], st["y"]))
+        assert abs(cy - by) < 0.01 and abs(cx - bx) < 1.0                           # at the bottom step
+        arrow, = [e for e in g if e.get("class") == "arrow"]
+        p = nums(arrow.get("d"))
+        tip = (p[2], p[3])                                                           # M wing L tip L wing
+        assert tip == pytest.approx((tx, ty), abs=0.01)
+        assert p[0] > tip[0] and p[4] > tip[0]                                       # its wings trail east: up = west
+        walk, = [e for e in g if e.get("class") == "walk"]
+        assert nums(walk.get("d"))[0::2][:2] == pytest.approx([bx, tx], abs=0.01)
+        labels = ["".join(e.itertext()) for e in g if e.tag.endswith("text")]
+        assert labels == (["15 STG 18.0/25.5"] if name == "eg" else [])
 
 
 def test_no_hinged_leaf_is_drawn_in_the_section(views):

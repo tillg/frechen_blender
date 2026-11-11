@@ -42,7 +42,7 @@ def model_state(bp):
     for k in sorted(bp.geo):
         g = bp.geo[k]
         h.update(repr((k, g["v"], g["f"], g["m"])).encode())
-    h.update(repr((bp.doors, bp.plan_rooms, bp.plan, CUT, ROOM_CUT, FLOOR, CEIL)).encode())
+    h.update(repr((bp.doors, bp.plan_rooms, bp.plan, bp.stairs, CUT, ROOM_CUT, FLOOR, CEIL)).encode())
     return h.hexdigest()[:12]
 
 
@@ -192,7 +192,7 @@ def plan_objects(bp, st):
     and ceilings."""
     pl = bp.plan
     return lambda c, o: ((c == st or c in pl["extra_collections"] or o in pl["extra_objects"]) and o not in bp.furniture
-                         and not any(w in o for w in pl["skip_words"]))
+                         and o not in pl["stair_objects"] and not any(w in o for w in pl["skip_words"]))
 
 
 def in_leaf(bp, st, pts):
@@ -623,11 +623,38 @@ def plan_body(bp, faces, st):
     out += [f'<path class="c" d="{poly(T, L)}"/>' for _, L in sec["cut"]]
     out += [f'<path class="w" d="{poly(T, L)}"/>' for _, L in sec["walls"]]
     out.append(f'<path class="o" d="{segs(T, sec["outline"])}"/>')
+    out.append(stair_symbols(bp, st, T))
     out.append(door_swings(bp, st, T))
     out.append(room_labels(bp, st, T))
     out.append(dim_chains(bp, st, sec, T, bbox([p for _, uv, _ in items for p in uv] +
                                                [p for _, L in sec["walls"] + sec["cut"] for l in L for p in l])))
     return "\n".join(out)
+
+
+def stair_symbols(bp, st, T):
+    """Treppe as in the architect's plan, in every storey it serves: outline, a line at each riser,
+    the walking line from a circle at the bottom step to an arrow at the top (always up the stair),
+    and in the bottom storey the step count with rise/run in cm ("15 STG 18.0/25.5")."""
+    out = ['<g id="stairs" fill="none" stroke="#000" stroke-width="0.18">']
+    for s in bp.stairs:
+        if st not in s["storeys"]:
+            continue
+        (x0, y0), (x1, y1), rs, y = s["lo"], s["hi"], s["risers"], s["y"]
+        out.append(f'<path class="outline" fill="#fff" d="M{pt(T, (x0, y0))}L{pt(T, (x1, y0))}L{pt(T, (x1, y1))}'
+                   f'L{pt(T, (x0, y1))}Z"/>')
+        out += [f'<path class="riser" d="M{pt(T, (x, y0))}L{pt(T, (x, y1))}"/>' for x in rs[1:-1]]
+        (bx, by), (tx, ty) = T((rs[0], y)), T((rs[-1], y))
+        ux, uy = (tx - bx) / math.hypot(tx - bx, ty - by), (ty - by) / math.hypot(tx - bx, ty - by)
+        out.append(f'<path class="walk" d="M{num(bx)} {num(by)}L{num(tx)} {num(ty)}"/>')
+        out.append(f'<circle cx="{num(bx + 0.8 * ux)}" cy="{num(by + 0.8 * uy)}" r="0.6"/>')
+        a, w = 1.6, 0.8                                                    # arrowhead length, half width (mm)
+        out.append(f'<path class="arrow" d="M{num(tx - a * ux - w * uy)} {num(ty - a * uy + w * ux)}L{num(tx)} {num(ty)}'
+                   f'L{num(tx - a * ux + w * uy)} {num(ty - a * uy - w * ux)}"/>')
+        if st == s["storeys"][0]:
+            mx, my = T(((rs[0] + rs[-1]) / 2, (y + y1) / 2))
+            out.append(text(mx, my + 1.0, f'{len(rs)} STG {s["rise"] * 100:.1f}/{s["run"] * 100:.1f}', 2.5, "middle")
+                       .replace("<text ", '<text stroke="none" fill="#000" '))
+    return "".join(out) + "</g>"
 
 
 def door_swings(bp, st, T):
