@@ -148,7 +148,13 @@ edited: 2026-11-11
     only the EG; the ground stays), a separator, then Ofen, Schreibtisch, Bad Oma & Opa, Küche,
     Gäste-WC. A house entry switches in place, a sub-model entry opens its page; the current one is
     selected.
-  - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert.
+  - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert. On
+    Ganzes Haus a group **Pläne** follows the stages: the six plan sheets of `plans/` (Grundriss EG,
+    Grundriss OG, Ansicht Nord, Ost, Süd, West; `npm run blueprint` copies them to the viewer's
+    files). Choosing one shows the sheet over the 3D view on white paper, fitted below the toolbar;
+    the wheel zooms at the pointer, dragging moves it, "SVG herunterladen" downloads it; Standpunkt
+    is disabled and the 3D view is not drawn meanwhile. The URL keeps the sheet (`?plan=eg`, which
+    also opens Ganzes Haus). A stage, another Modell, Reset or a route returns to the 3D view.
   - **Standpunkt:** named camera poses in groups. House: Außen (Von Südosten = the README view and
     the standard, Südwesten, Nordosten, Nordwesten), Übersicht (Von oben, Schräg von Südosten; EG
     and 1. Stock), Erdgeschoss (Stube, Küche, Speis, Bibliothek, Oma & Opa) and 1. Stock (Nadine &

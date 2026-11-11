@@ -37,3 +37,13 @@ span.fl-sun { align-self: stretch; }
 .fl-list li.fl-group { padding: 8px 10px 3px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
   opacity: .6; cursor: default; }
 .fl-list li.fl-rule { padding: 0; margin: 4px 6px; border-top: 1px solid rgba(43,41,38,.25); cursor: default; }
+
+/* a plan sheet over the 3D view (plans.js): white paper below the title and the toolbar */
+.fl-plan { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #fff; cursor: grab; touch-action: none; }
+.fl-plan[hidden] { display: none; }
+.fl-plan:active { cursor: grabbing; }
+.fl-plan img { position: absolute; max-width: none; user-select: none; box-shadow: 0 1px 8px rgba(0,0,0,.15); }
+.fl-plan-dl { position: fixed; left: 24px; bottom: 22px; padding: 8px 14px; border-radius: 10px;
+  background: rgba(243, 239, 230, .86); box-shadow: 0 1px 6px rgba(0,0,0,.12); font: 13px system-ui, sans-serif;
+  color: #2b2926; text-decoration: none; }
+.fl-plan-dl:hover { text-decoration: underline; }

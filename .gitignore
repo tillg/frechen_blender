@@ -11,6 +11,7 @@ web/public/desk.glb
 web/public/bad.glb
 web/public/kueche.glb
 web/public/gaeste_wc.glb
+web/public/plans/
 web/test-results/
 web/playwright-report/
 .venv/

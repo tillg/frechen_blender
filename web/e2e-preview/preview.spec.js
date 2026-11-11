@@ -128,3 +128,14 @@ test('gaeste_wc page is part of the build', async ({ page }) => {
   await choose(page, 'Modell', 'Ganzes Haus');
   await page.waitForURL(/\/frechen_blender\/(\?m=haus)?$/);
 });
+
+test('plan sheets are part of the build', async ({ request }) => {
+  const sheets = { eg: 'Grundriss EG', og: 'Grundriss OG', nord: 'Ansicht Nord', ost: 'Ansicht Ost',
+    sued: 'Ansicht Süd', west: 'Ansicht West' };
+  for (const [s, title] of Object.entries(sheets)) {
+    const r = await request.get(`${BASE}plans/${s}.svg`);
+    expect(r.status(), s).toBe(200);
+    expect(r.headers()['content-type'], s).toContain('image/svg+xml');
+    expect(await r.text(), s).toContain(title);
+  }
+});
