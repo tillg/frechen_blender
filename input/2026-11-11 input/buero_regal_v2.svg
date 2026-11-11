@@ -229,10 +229,10 @@ text{font-family:Helvetica,Arial,sans-serif}
 <text x="30" y="1110" class="t">Variante v2 · symmetrisch: Säule 94 links und rechts vom Fenster</text>
 <text x="30" y="1136" class="s">Blick aufs Fenster: Säule 94 | Mitte 94 geteilt | Säule 94; zusammen 282 von 360 Wand, symmetrisch zum Fenster.</text>
 <text x="30" y="1157" class="s">Mitte genau über dem Fenster (90): unten Sockelschrank + offenes Fach bis 95, oben eine Brücke 22 + Gesims 14 (kein Fach: nur 38 über dem Sturz).</text>
-<text x="30" y="1178" class="s">Frei bleiben 30 zur Nordwand und 48 zur Flurwand. Vitrine 52 hier nicht verbaut.</text>
+<text x="30" y="1178" class="s">Frei bleiben 30 zur Nordwand und 48 zur Flurwand. Vitrine 52: Westwand, NW-Eck hinter dem Klavier.</text>
 <text x="30" y="1199" class="s">Bürotür 50 nach Westen (Band weiter östlich): 90° offen bleibt 10,5 Luft zur rechten Säule. Mit offenem Windfang-Flügel 69 frei.</text>
 <text x="30" y="1220" class="q">Die offene Bürotür steht 52 breit vor der rechten Säule: deren rechte Sockeltür geht nur bei geschlossener Bürotür auf.</text>
-<text x="30" y="1241" class="q">Geschätzt: Tiefe 42 (Mitte unten 48), Fächer und Türen nach Foto. Offen: Brücke Blende oder flaches Fach? Wohin die Vitrine 52?</text>
+<text x="30" y="1241" class="q">Geschätzt: Tiefe 42 (Mitte unten 48), Fächer und Türen nach Foto. Offen: Brücke Blende oder flaches Fach?</text>
 <rect x="1130" y="1119" width="34" height="16" class="wall"/>
 <text x="1172" y="1132" class="s">Wand Bestand</text>
 <rect x="1390" y="1119" width="34" height="16" class="new"/>

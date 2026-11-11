@@ -47,6 +47,11 @@ T = 0.025                                    # board thickness
 PLINTH, CAB, SHELVES, TOP = 0.10, 0.66, (1.03, 1.46, 1.83), 2.11   # after the photo (left bay)
 BASE, BRIDGE, CORN, CO = 0.95, 2.02, 2.24, 0.03   # base top, bridge underside, cornice bottom, overhang
 
+VITRINE_AT = (6.174, 12.473)                 # house: the Bibliothek's NW corner (west wall x north wall), behind the piano
+VW = 0.52                                    # the vitrine's width (the set's narrow element)
+GLAS = [(0.033, 0), (0.033, 0.03), (0.004, 0.07), (0.004, 0.45), (0.02, 0.5), (0.04, 0.68), (0.038, 0.95),
+        (0.035, 1)]                          # a wine glass (radius, height share), turned
+
 
 def cm(a, b):
     return "%d" % round(abs(b - a) * 100)
@@ -143,3 +148,48 @@ def regal_neu(c="Regal", x0=0.0, y0=0.0, walls=False):
             S(TUER[0], FS + 0.05, f, TUER[1], FS + 0.05, f, f"Tür {cm(TUER[0], TUER[1])}"),
             S(lf, FS + 0.9, 1.05, XF, FS + 0.9, 1.05, ("%.1f Luft" % ((XF - lf) * 100)).replace(".", ",")),
             S(BALKONTUER[1], FN - 0.10, 0.30, XF, FN - 0.10, 0.30, f"{cm(BALKONTUER[1], XF)} frei")]
+
+
+
+def vitrine(c="EG"):
+    """The set's narrow element (regal_tegernsee.jpeg, right): a 52 vitrine, 2.38 high, 42 deep, in the
+    Bibliothek's NW corner with its front to the east (request 2026-11-11: on the wall opposite the
+    bookcase, behind the piano on the right). Base cabinet with one framed door, above a glazed door
+    in a wooden frame, three glass shelves, wine glasses in two rows; frieze and the stepped cornice
+    (no overhang into the corner). Own random.Random(15)."""
+    o, rng = c + "_Moebel", random.Random(15)
+    xw, yn = VITRINE_AT
+    xb, ye = xw + 0.005, yn - 0.005                                   # back and north side, 5 mm off the walls
+    xf, ys = xb + D, ye - VW                                          # front (east), south side
+    B = lambda m, xa, xb_, ya, yb, za, zb, r=None: hc.box(c, o, m, xa, xb_, ya, yb, za, zb, rng.random() if r is None else r)
+    for a, b in ((ys, ys + T), (ye - T, ye)):                         # sides, back, plinth, bottom
+        B("NussZ", xb, xf, a, b, 0.0, CORN)
+    B("NussZ", xb, xb + 0.012, ys + T, ye - T, PLINTH, CORN)
+    B("NussX", xf - 0.03, xf - 0.01, ys + T, ye - T, 0.0, PLINTH)
+    B("NussX", xb + 0.012, xf, ys + T, ye - T, PLINTH, PLINTH + T)
+    cab, top = 0.68, TOP
+    B("NussX", xb + 0.012, xf - 0.005, ys + T, ye - T, cab - T, cab)              # base cabinet top
+    a, b = ys + T + 0.0015, ye - T - 0.0015                                        # its door
+    B("NussZ", xf, xf + 0.02, a, b, PLINTH + 0.03, cab - T)
+    B("NussX", xf + 0.02, xf + 0.028, a + 0.07, b - 0.07, PLINTH + 0.10, cab - T - 0.07)
+    B("Eisen", xf + 0.02, xf + 0.045, b - 0.048, b - 0.032, cab - T - 0.09, cab - T - 0.074, 0.5)
+    for z in (1.04, 1.44, 1.85):                                                   # glass shelves
+        B("Glas", xb + 0.012, xf - 0.03, ys + T, ye - T, z - 0.008, z)
+    B("NussX", xb + 0.012, xf - 0.005, ys + T, ye - T, top - T, top)               # top board, frieze
+    B("NussX", xf - 0.02, xf, ys + T, ye - T, top, CORN)
+    za, zb, f, r = cab + 0.02, top - T, 0.05, rng.random()                        # glazed door: frame, pane
+    B("NussZ", xf, xf + 0.02, a, a + f, za, zb, r)
+    B("NussZ", xf, xf + 0.02, b - f, b, za, zb, r)
+    B("NussX", xf, xf + 0.02, a + f, b - f, za, za + 0.06, r)
+    B("NussX", xf, xf + 0.02, a + f, b - f, zb - 0.06, zb, r)
+    B("Glas", xf + 0.008, xf + 0.012, a + f, b - f, za + 0.06, zb - 0.06)
+    B("Eisen", xf + 0.02, xf + 0.045, b - 0.035, b - 0.019, 1.30, 1.316, 0.5)
+    for z0, z1 in ((cab, 1.04 - 0.008), (1.04, 1.44 - 0.008), (1.44, 1.85 - 0.008), (1.85, top - T)):
+        h = min(0.20, z1 - z0 - 0.03)
+        for x in (xb + 0.10, xb + 0.24):                                           # two rows of wine glasses
+            for k in range(3):
+                y = ys + T + 0.08 + k * (VW - 2 * T - 0.16) / 2
+                hc.turned(c, o, "Glas", (x, y, z0 + 0.001), (x, y, z0 + 0.001 + h), GLAS, 12, rng.random())
+    r = rng.random()                                                               # cornice, flush in the corner
+    B("NussX", xb, xf + CO / 2, ys - CO / 2, ye, CORN, CORN + 0.06, r)
+    B("NussX", xb, xf + CO, ys - CO, ye, CORN + 0.06, RH, r)

@@ -705,7 +705,7 @@
    12.471,
    2.38
   ],
-  "faces": 2386,
+  "faces": 4582,
   "materials": [
    "FL_Bettwaesche",
    "FL_Boucle",
@@ -713,6 +713,7 @@
    "FL_Eisen",
    "FL_FichteX",
    "FL_FichteZ",
+   "FL_Glas",
    "FL_Keramik",
    "FL_Klavierlack",
    "FL_Leinen",
@@ -727,8 +728,8 @@
    0.0,
    0.0
   ],
-  "rnd": "544e34054af44a84",
-  "verts": 3208
+  "rnd": "81c748f5c1a9a9cf",
+  "verts": 5688
  },
  "EG_Ofen_Bank": {
   "bbox": [

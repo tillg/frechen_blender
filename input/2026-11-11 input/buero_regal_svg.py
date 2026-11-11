@@ -262,14 +262,14 @@ if V2:
              ("s", f"Blick aufs Fenster: Säule 94 | Mitte 94 geteilt | Säule 94; zusammen {cm(S0, N1)} von {cm(FS, FN)} Wand, "
                    f"symmetrisch zum Fenster."),
              notes[2],
-             ("s", f"Frei bleiben {cm(N1, FN)} zur Nordwand und {cm(FS, S0)} zur Flurwand. Vitrine 52 hier nicht verbaut."),
+             ("s", f"Frei bleiben {cm(N1, FN)} zur Nordwand und {cm(FS, S0)} zur Flurwand. Vitrine 52: Westwand, NW-Eck hinter dem Klavier."),
              ("s", f"Bürotür {cm(0, SHIFT)} nach Westen (Band weiter östlich): 90° offen bleibt "
                    + ("%.1f" % ((E - D - LX1) * 100)).replace(".", ",") + " Luft zur rechten Säule. "
                    + f"Mit offenem Windfang-Flügel {cm(WFL, LX0)} frei."),
              ("q", f"Die offene Bürotür steht {cm(S0, FS + LEAF)} breit vor der rechten Säule: deren rechte Sockeltür "
                    f"geht nur bei geschlossener Bürotür auf."),
              ("q", f"Geschätzt: Tiefe {cm(0, D)} (Mitte unten {cm(0, DM)}), Fächer und Türen nach Foto. "
-                   f"Offen: Brücke Blende oder flaches Fach? Wohin die Vitrine 52?")]
+                   f"Offen: Brücke Blende oder flaches Fach?")]
 for cls, s in notes:
     o.append(f'<text x="{LX}" y="{LY}" class="{cls}">{s}</text>')
     LY += 26 if cls == "t" else 21
