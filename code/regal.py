@@ -31,6 +31,13 @@ BALKONTUER = (12.867, 13.766, 0, 2.0, "FD", 1)    # north french door, shutters
 SHIFT = 0.50
 TUER = (13.517 - SHIFT, 14.575 - SHIFT, 1, "b", False)
 
+
+def tuer(c, dx=0.0):
+    """The Büro door's interior() entry for collection c (shifted by dx): its leaf an object of its own,
+    c + "_Buerotuer", hinged at the east jamb (PIVOT) with the SWING that closes it; the viewer swings it
+    open and shut so one sees how it clears the bookcase."""
+    return (TUER[0] + dx, TUER[1] + dx, *TUER[2:], "panel", "Innentuer", c + "_Buerotuer")
+
 RH, BW, D, DM = 2.38, 0.94, 0.42, 0.48       # height, element width, depth, middle base depth
 M0 = (FENSTER[0] + FENSTER[1]) / 2 - BW / 2  # the middle element, centred on the window
 M1, N1, S0 = M0 + BW, M0 + 2 * BW, M0 - BW   # its north edge, the north column's, the south column's start
@@ -51,7 +58,7 @@ def waende(c, dx, dy):
     hc.wall(c, E + dx, EO + dx, FSS + dy, FN + dy, 0.0, H, [(FENSTER[0] + dy, FENSTER[1] + dy, *FENSTER[2:])], out=+1)
     hc.wall(c, X0 + dx, EO + dx, FN + dy, FNO + dy, 0.0, H, [(BALKONTUER[0] + dx, BALKONTUER[1] + dx, *BALKONTUER[2:])],
             out=+1)
-    hc.interior(c, X0 + dx, E + dx, FSS + dy, FS + dy, [(TUER[0] + dx, TUER[1] + dx, *TUER[2:])])
+    hc.interior(c, X0 + dx, E + dx, FSS + dy, FS + dy, [tuer(c, dx)])
 
 
 def regal_neu(c="Regal", x0=0.0, y0=0.0, walls=False):

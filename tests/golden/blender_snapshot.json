@@ -395,6 +395,27 @@
   "rnd": "b67bbf23e5227002",
   "verts": 16
  },
+ "EG_Buerotuer": {
+  "bbox": [
+   14.01,
+   8.876,
+   0.01,
+   14.05,
+   9.878,
+   1.97
+  ],
+  "faces": 84,
+  "materials": [
+   "FL_Innentuer"
+  ],
+  "origin": [
+   14.05,
+   8.876,
+   0.0
+  ],
+  "rnd": "598995835e1f0c57",
+  "verts": 112
+ },
  "EG_Fenster_Tueren": {
   "bbox": [
    -0.05,
@@ -613,7 +634,7 @@
    9.966,
    2.17
   ],
-  "faces": 1140,
+  "faces": 1056,
   "materials": [
    "FL_Eisen",
    "FL_Innentuer",
@@ -625,8 +646,8 @@
    0.0,
    0.0
   ],
-  "rnd": "f35af5731b152f87",
-  "verts": 1520
+  "rnd": "97e6533ca0a2a38e",
+  "verts": 1408
  },
  "EG_Kueche": {
   "bbox": [

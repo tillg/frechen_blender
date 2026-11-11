@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Object3D } from 'three';
-import { createSlides, DOOR_PERIOD, DOOR_SWING, PERIOD, ROLL, slidingNodes, swingingNodes } from './slides.js';
+import { createSlides, DOOR_PERIOD, DOOR_SWING, BUERO_PERIOD, BUERO_SWING, PERIOD, ROLL, slidingNodes, swingingNodes } from './slides.js';
 
 describe('createSlides (the Bad sub-model\'s sliding leaves)', () => {
   it('every 4 s one leaf, picked at random, rolls to its other end in 2 s, and back on its next turn', () => {
@@ -70,5 +70,26 @@ describe('swingingNodes (the doors by the back hall, code/gaeste_wc.py)', () => 
     expect(a.rotation.y).toBe(0);
     expect(s.update(6)).toBe(true);
     expect(a.rotation.y).toBeCloseTo(Math.PI / 2);
+  });
+});
+
+describe('the Büro door (code/regal.py) on its own clock', () => {
+  it('it swings in 2 s, rests 4 s open, swings shut in 2 s, rests 4 s, apart from the back hall doors', () => {
+    expect([BUERO_PERIOD, BUERO_SWING]).toEqual([6, 2]);
+    const a = new Object3D(), b = new Object3D();
+    a.name = 'EG_WC_Tuer'; a.userData.swing = Math.PI / 2;
+    b.name = 'EG_Buerotuer'; b.userData.swing = Math.PI / 2;
+    const s = swingingNodes([a, b], () => 0);
+    const at = (t) => { s.update(t); return s.state().EG_Buerotuer.pos; };
+    expect(at(0)).toBe(0);
+    s.update(4.5);
+    expect(s.state().EG_WC_Tuer.pos).toBe(0.5);                         // the back hall's clock: 3 s slot, 3 s swing
+    expect(at(5.9)).toBe(0);                                            // at rest the first 6 s
+    expect(at(7)).toBe(0.5);                                            // swinging, half way after 1 s
+    expect(at(8)).toBe(1);                                              // there after 2 s
+    expect(at(11.9)).toBe(1);                                           // rests 4 s
+    expect(at(13)).toBe(0.5);                                           // and swings back
+    expect(at(14)).toBe(0);
+    expect(at(17.9)).toBe(0);                                           // rests 4 s again
   });
 });

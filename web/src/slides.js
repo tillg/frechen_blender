@@ -4,7 +4,10 @@ import { Quaternion, Vector3 } from 'three/webgpu';
 // PERIOD s one leaf, picked at random, rolls to its other end of travel in ROLL s (eased in and
 // out); on its next turn it rolls back. The doors by the back hall (node extras.swing,
 // code/gaeste_wc.py) the same way: every DOOR_PERIOD s one swings to its other state in DOOR_SWING s.
-export const PERIOD = 4, ROLL = 2, DOOR_PERIOD = 3, DOOR_SWING = 3;
+// The Büro door (code/regal.py, node name *_Buerotuer) has a clock of its own: it swings to its other
+// state in BUERO_SWING s, rests there 4 s, swings back (every BUERO_PERIOD s), so one sees how it clears
+// the bookcase.
+export const PERIOD = 4, ROLL = 2, DOOR_PERIOD = 3, DOOR_SWING = 3, BUERO_PERIOD = 6, BUERO_SWING = 2;
 
 // n leaves, rand() in [0, 1). Returns tick(t) for rising t (seconds) -> each leaf's position:
 // 0 as built, 1 at its other end.
@@ -53,7 +56,13 @@ export function slidingNodes(objects, rand = Math.random) {
 export function swingingNodes(objects, rand = Math.random) {
   const nodes = objects.filter((o) => o.userData.swing).map((obj) => ({ obj, home: obj.quaternion.clone(),
     by: obj.userData.swing }));
-  const tick = createSlides(nodes.length, rand, DOOR_PERIOD, DOOR_SWING);
+  const own = nodes.map((n) => n.obj.name.endsWith('_Buerotuer'));
+  const shared = createSlides(own.filter((o) => !o).length, rand, DOOR_PERIOD, DOOR_SWING);
+  const buero = createSlides(own.filter((o) => o).length, rand, BUERO_PERIOD, BUERO_SWING);
+  const tick = (t) => {
+    const a = shared(t), b = buero(t);
+    return own.map((o) => (o ? b : a).shift());
+  };
   const turn = new Quaternion(), up = new Vector3(0, 1, 0);
   let pos = nodes.map(() => 0);
   return {
