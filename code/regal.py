@@ -26,8 +26,8 @@ FENSTER = (10.315, 11.214, 1.0, 2.0, "W", 1)       # east window (plan: 90 wide)
 BALKONTUER = (12.867, 13.766, 0, 2.0, "FD", 1)    # north french door, shutters
 # Büro door: 106 wide, hinged east, opened 90 deg into the Bibliothek. Moved 50 cm west of the
 # plan's place (13.517 .. 14.575): its open leaf (east face 2.5 cm west of the jamb) then stands
-# 10.5 cm, its lever 8 cm in front of the right column (drawing v2: 46 cm, 6.5 cm air - too little
-# for a lever)
+# 10.5 cm, its lever 8 cm in front of the right column (46 cm, as first drawn, left 6.5 cm: too
+# little for a lever)
 SHIFT = 0.50
 TUER = (13.517 - SHIFT, 14.575 - SHIFT, 1, "b", False)
 

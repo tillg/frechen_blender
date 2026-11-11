@@ -131,8 +131,8 @@ Teilmodell **Schrank im Büro** (`regal.html`): das Regal vom Tegernsee (`input/
 links und rechts vom Fenster je eine Säule 94, das mittlere 94er-Element geteilt in ein Unterteil bis 95 cm
 (5 cm unter der Brüstung) und eine Brücke ab 2,02 m über dem Fenster, Gesims durchgehend; Tiefe 42 cm,
 Unterteil 48 cm (nach Foto geschätzt), mit Büchern. Dazu die Stücke der drei Wände: Ostwand mit Fenster,
-Nordwand mit Balkontür, Flurwand mit der Bürotür, die dafür 50 cm nach Westen rückt (statt 46 wie in der
-Zeichnung, damit auch die Klinke Luft hat): 90° geöffnet steht ihr Blatt 10,5 cm vor der rechten Säule.
+Nordwand mit Balkontür, Flurwand mit der Bürotür, die dafür 50 cm nach Westen rückt (damit auch die Klinke
+Luft hat): 90° geöffnet steht ihr Blatt 10,5 cm vor der rechten Säule.
 Damit man die Tür versteht, schwenkt sie in 2 Sekunden zu, bleibt 4 Sekunden zu, schwenkt wieder auf, bleibt
 4 Sekunden offen und so fort; im Haus genauso in der Stufe „Eingerichtet“, im Rundgang und im Film steht sie offen.
 Standpunkte schräg, von vorn und von oben, Darstellung wie beim Ofen. Im Haus steht dasselbe Regal (statt

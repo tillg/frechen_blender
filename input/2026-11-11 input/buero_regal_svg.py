@@ -71,8 +71,9 @@ M1, N1, S0 = M0 + BW, M0 + 2 * BW, M0 - (BW if V2 else NW)
 BASE = 0.95                          # middle base top, 5 under the sill
 BRIDGE = 2.02                        # bridge underside, 2 over the head
 CORN, CO = 2.24, 0.03                # cornice bottom, overhang
-# the Büro door moved west: open 90 deg its leaf stands clear of the 52 element
-SHIFT = 0.46
+# the Büro door moved west: open 90 deg its leaf and lever stand clear of the column (first drawn with 46,
+# then 50 everywhere, as code/regal.py: a lever needs more than 6.5 cm)
+SHIFT = 0.50
 DA, DB = OLD_A - SHIFT, OLD_B - SHIFT
 LX0, LX1 = DB - LT0, DB - LT1        # open leaf, x extent
 
@@ -132,7 +133,7 @@ line(13.9, 9.98, 13.9, 12.15, "axis"); line(13.65, 10.76, E, 10.76, "axis")
 vdim(15.12, [FS, S0, M0, M1, N1, FN], [cm(FS, S0), cm(S0, M0), cm(M0, M1), cm(M1, N1), cm(N1, FN)], rot=90)
 vdim(15.35, [FS, WA, WB, FN], [cm(FS, WA), cm(WA, WB), cm(WB, FN)], rot=90)
 vdim(15.58, [FS, FN], [cm(FS, FN) + " lichte Wandlänge"], rot=90)
-hdim(8.12, [DA, DB, OLD_B], [cm(DA, DB) + " Tür (46 nach W)", cm(DB, OLD_B) + " zu"])
+hdim(8.12, [DA, DB, OLD_B], [cm(DA, DB) + f" Tür ({cm(0, SHIFT)} nach W)", cm(DB, OLD_B) + " zu"])
 hdim(12.36, [FDB, E - D], [cm(FDB, E - D) + " frei"])                      # Balkontür -> column
 hdim(N1 - 0.10, [E - D, E], [cm(0, D)])
 hdim(M1 - 0.10, [E - DM, E], [cm(0, DM)])
