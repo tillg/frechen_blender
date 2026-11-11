@@ -139,6 +139,9 @@ LEAVES = []    # opened interior door leaves (collection, [corner, corner]) – 
 DOORS = []     # every hinged leaf, for the door swings of the plan sheets (export_plans.py): dict(c=collection,
                # z=floor, hinge=(x, y), w=leaf width, closed / open = unit directions from the hinge along
                # the closed leaf / the leaf opened 90 deg into its room, leaf = xy box of the leaf as built)
+STAIRS = []    # every stair, for the plan sheets' stair symbol (export_plans.py): dict(storeys=(bottom, top),
+               # lo / hi = plan box (x, y), risers = x of each riser from the bottom up (first and last = the
+               # stair's ends), y = its walking line, rise, run)
 GABLE_WIN = []
 PARTS = {}     # (collection, object) -> [(first_face, n_faces), ...]: one closed solid per add()
 
@@ -1127,6 +1130,9 @@ def build_stairs():
         box(c, o, "Stufe", xe - ST_RUN, xe + 0.03, ys1, ST_Y1, i * ST_RISE - 0.04, i * ST_RISE)
         box(c, o, "Stufe", xe - 0.02, xe, ys1, ST_Y1, (i - 1) * ST_RISE, i * ST_RISE - 0.04)
     xt = ST_X0 - (ST_N - 1) * ST_RUN                      # top: OG floor edge
+    STAIRS.append(dict(storeys=("EG", "OG"), lo=(xt, ST_Y0), hi=(ST_X0, ST_Y1),
+                       risers=[ST_X0 - k * ST_RUN for k in range(ST_N)], y=(ST_Y0 + ST_Y1) / 2,
+                       rise=ST_RISE, run=ST_RUN))
     xk = ST_X0 - (0.32 - ST_RISE) * ST_RUN / ST_RISE      # stringer bottom meets the floor
     bot = lambda x: max(stair_line(x) - 0.32, 0.0)
     for ya, yb in ((ys0, ys1), (ST_Y1, 8.57)):            # open side / wall side (up to the wall)
@@ -2094,7 +2100,8 @@ BEDS = ("Beet_Ost", "Beet_West")
 # storey's collection
 PLAN = dict(wall_suffix="_Waende", wall_objects=("EG_Anbau",), wall_mat="Putz", frame_suffix="_Fenster_Tueren",
             skip_words=("Boden", "Decke"), ground=("Gelaende", "Kiesel", "Kiesstreifen", *BEDS),
-            extra_collections=("Balkone",), extra_objects=("Verschalung_West",))
+            extra_collections=("Balkone",), extra_objects=("Verschalung_West",),
+            stair_objects=("EG_Treppe",))   # drawn as the stair symbol (STAIRS), not cut or projected
 WINDROSE_CENTER = (-3.5, -5.0, 0.02)        # compass rose south-west of the house (windrose.py)
 WINDROSE_R = 3.0                            # length of its main points
 WR_LABEL_HALF = 0.6                         # approx. half size of a letter N/O/S/W at R + 0.9
@@ -2191,13 +2198,14 @@ class Blueprint:
     doors: list = ()   # DOORS: every hinged leaf (plan sheets: door swings)
     plan_rooms: list = ()   # PLAN_ROOMS: the architect's room names with storey and anchor (plan sheets)
     plan: dict = None  # PLAN: the object classes of the plan sheets
+    stairs: list = ()  # STAIRS: the stairs (plan sheets: stair symbol)
 
 
 def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
-    LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
+    LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear(); STAIRS.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
@@ -2207,7 +2215,7 @@ def build():
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
                      turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), doors=list(DOORS),
-                     plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN))
+                     plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
 
 
 def build_ofen():
