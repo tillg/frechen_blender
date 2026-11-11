@@ -137,7 +137,8 @@ flowchart LR
   SE corner at (x0, y0) (`EG` at `REGAL_AT` into `EG_Moebel`, i.e. furniture; or `Regal` at the
   origin), after `input/2026-11-11 input/buero_regal_v2.svg`: two 94 columns, the middle 94 split
   into a base under the window and a bridge over it, one stepped cornice, books; own
-  `random.Random(14)`. The openings around it are defined once there (`FENSTER`, `BALKONTUER`,
+  `random.Random(14)`; `vitrine(c)` the set's 52 vitrine in the NW corner (`VITRINE_AT`, house only,
+  `random.Random(15)`). The openings around it are defined once there (`FENSTER`, `BALKONTUER`,
   `TUER`, the Büro door moved `SHIFT` = 0.50 m west) and `build_eg()` passes them to its
   `wall()` / `interior()` calls; `walls=True` (the sub-model) adds the pieces of those three walls
   (`waende()`, global random stream). `tuer(c)` gives the Büro door's leaf an object of its own

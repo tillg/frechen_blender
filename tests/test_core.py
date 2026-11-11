@@ -390,6 +390,29 @@ def test_regal_built_into_the_house():
             assert not (lo[0] < b and hi[0] > b - (b - a) and lo[1] < r.FS + (b - a) and hi[1] > r.FS and lo[2] < 2.0), (o, lo)
 
 
+
+def test_vitrine_52_in_the_nw_corner_behind_the_piano():
+    """Request 2026-11-11: the Tegernsee set's narrow 52 element (a vitrine: base cabinet, glass door
+    with glass shelves and wine glasses, cornice; 2.38 high, 42 deep) stands on the wall opposite the
+    bookcase, behind the piano on the right: in the Bibliothek's NW corner (west wall x north wall),
+    front to the east, clear of the piano and of the north window. Furniture (EG_Moebel)."""
+    import regal as r
+    xw, yn = r.VITRINE_AT
+    assert (xw, yn) == (6.174, 12.473)
+    box = [(m, lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Moebel"))
+           if lo[0] > xw - 1e-6 and hi[0] < 6.75 and lo[1] > 11.8 and hi[1] <= yn + 1e-6]
+    xs = [lo[0] for _, lo, _ in box] + [hi[0] for _, _, hi in box]
+    ys = [lo[1] for _, lo, _ in box] + [hi[1] for _, _, hi in box]
+    assert min(xs) == pytest.approx(xw + 0.005) and max(ys) == pytest.approx(yn - 0.005)          # 5 mm off the walls
+    case = [(m, lo, hi) for m, lo, hi in box if m.startswith("Nuss")]
+    assert min(lo[1] for _, lo, _ in case) == pytest.approx(yn - 0.005 - 0.52 - 0.03)            # 52 + cornice
+    assert max(hi[0] for _, _, hi in case) == pytest.approx(xw + 0.005 + 0.42 + 0.03)            # 42 + cornice
+    assert max(hi[2] for _, _, hi in box) == pytest.approx(2.38)
+    assert sum(m == "Glas" for m, _, _ in box) >= 12                                              # door, shelves, glasses
+    piano = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Moebel")) if m == "Klavierlack"]
+    assert max(xs) < min(lo[0] for lo, _ in piano) and max(xs) < 6.953                           # piano, north window
+
+
 def test_west_og_windows_wall_below_up_to_the_ceiling():
     """The three tall west windows in the OG (Yoga, Bad): no fixed glazing below any more but
     wall (sill 0.75 m above the floor: first 0.95, then twice 10 cm lower), and up to the ceiling."""

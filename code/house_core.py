@@ -1988,6 +1988,7 @@ def build_furniture():
     grand_piano()
     desk.desk_neu("EG", *desk.DESK_AT)                      # between the two north french doors, with its devices
     regal.regal_neu("EG", *regal.REGAL_AT)                 # Schrank im Büro around the east window
+    regal.vitrine("EG")                                     # its narrow element: NW corner, behind the piano
     desk.stuhl("EG", *desk.DESK_AT)
     # OG: Yoga, Jugend (two bunk beds instead of the plan's double bed), Schlafen NE, SW, SE, HWR
     bed("OG", 0.86, 2.45, 8.862, 10.85, "S", zo, n=2)

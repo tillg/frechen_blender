@@ -104,7 +104,9 @@ edited: 2026-11-11
     Tegernsee bookcase (2.38 m high, dark wood, books) around the Bibliothek's east window: a 94
     column on each side, the middle 94 split into a base up to 95 cm (5 cm under the sill, 48 deep)
     and a bridge from 2.02 m over the window, one cornice over all three; 42 deep; 30 cm free to the
-    north wall, 48 cm to the Flur wall. It replaces the former bookcase on the Flur wall. The Büro
+    north wall, 48 cm to the Flur wall. It replaces the former bookcase on the Flur wall. The set's
+    narrow element, a 52 vitrine (glazed door, glass shelves, wine glasses), stands opposite in the
+    NW corner behind the piano (house only). The Büro
     door moved 50 cm west (106 wide, hinged east, open 90°): its leaf stands 10.5 cm in front of
     the south column; it shows how: it swings shut in 2 s, rests 4 s, swings open, rests 4 s, on
     the sub-model page and in the house in stage Eingerichtet (the film and the Rundgang see it
