@@ -135,6 +135,9 @@ def local(p, piv, turn=0.0):
 OPENINGS = []  # exterior wall openings, used by the west cladding
 FIRES = []     # fire beds for the animated fire component (code/fire.py): dict(base, u, w, h, d)
 LEAVES = []    # opened interior door leaves (collection, [corner, corner]) – for clash checks
+DOORS = []     # every hinged leaf, for the door swings of the plan sheets (export_plans.py): dict(c=collection,
+               # z=floor, hinge=(x, y), w=leaf width, closed / open = unit directions from the hinge along
+               # the closed leaf / the leaf opened 90 deg into its room, leaf = xy box of the leaf as built)
 GABLE_WIN = []
 PARTS = {}     # (collection, object) -> [(first_face, n_faces), ...]: one closed solid per add()
 
@@ -178,6 +181,11 @@ def roof_profile(ya, yb, fb, ft):
 # Local frames: u runs along a wall, t across it, z up. P maps (u, t, z) to world.
 def frame(ax):
     return (lambda u, t, z: (u, t, z)) if ax == "x" else (lambda u, t, z: (t, u, z))
+
+
+def xy_box(*pts):
+    """The axis-aligned plan box ((x0, y0), (x1, y1)) round points (x, y[, z])."""
+    return (min(p[0] for p in pts), min(p[1] for p in pts)), (max(p[0] for p in pts), max(p[1] for p in pts))
 
 
 def lbox(coll, obj, mat, P, u0, u1, t0, t1, z0, z1, rnd=None):
@@ -426,6 +434,9 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style=
             lbox(coll, ol, m, P, ua, ub, ta, tb, zl + za, zl + zb, r)
 
         LEAVES.append((coll, [P(*L(0, -LT / 2), zl), P(*L(LW, LT / 2), zl + LH)]))
+        ua, sa = (a + lin, 1) if hg == "a" else (b - lin, -1)                 # hinge at the lining, closed along u
+        DOORS.append(dict(c=coll, z=z0, hinge=P(ua, tf, z0)[:2], w=LW, closed=P(sa, 0, 0)[:2],
+                          open=P(0, swing, 0)[:2], leaf=xy_box(P(*L(0, -0.045), 0), P(*L(LW, 0.045), 0))))  # + levers
         (glazed_leaf if style == "glazed" else six_panel_leaf)(part, LW, LH)
 
 
@@ -519,6 +530,9 @@ def entrance_door():
         lbox(c, o, "Eisen", P, hu - 0.13, hu + 0.012, ts + s * 0.04, ts + s * 0.055, 1.10, 1.125)
     lbox(c, o, "Metall", P, b - fw - 0.11, b - fw - 0.05, tm + 0.025, tm + 0.04, 1.40, 1.45)
     PIVOT[o] = P(a + fw, tm, 0)
+    DOORS.append(dict(c=c, z=0.0, hinge=P(a + fw, tm, 0)[:2], w=b - a - 2 * fw, closed=P(1, 0, 0)[:2],
+                      open=P(0, -1, 0)[:2],                                 # opens inwards (film.py: +90 deg)
+                      leaf=xy_box(P(a + fw + 0.004, tm - 0.08, 0), P(b - fw - 0.004, tm + 0.08, 0))))
 
 
 def back_door(c="EG", dx=0.0, dy=0.0):
@@ -536,6 +550,9 @@ def back_door(c="EG", dx=0.0, dy=0.0):
     o = c + "_Hintertuer"
     la, lb, lt = a + fw + 0.004, b - fw - 0.004, head - fw - 0.004
     PIVOT[o], SWING[o] = P(lb, 0.08, 0.0), 90.0
+    D = lambda u, t: tuple(p - q for p, q in zip(P(u, t, 0), P(0, 0, 0)))[:2]   # a direction in P (no shift)
+    DOORS.append(dict(c=c, z=0.0, hinge=P(lb, 0.08, 0.0)[:2], w=lb - la, closed=D(-1, 0), open=D(0, 1),
+                      leaf=xy_box(P(la, -0.075, 0), P(lb, 0.115, 0))))      # handles 7 / 11 cm off the boards
     uc, zc, ea, eb = (la + lb) / 2, 0.82 * lt, 0.19, 0.28
     half = lambda u: eb * math.sqrt(max(1 - ((u - uc) / ea) ** 2, 0))
     boards(c, o, "Holz", P, la, lb, const(0.01), const(lt), 0.0, 0.05, 0.135,
@@ -2036,6 +2053,22 @@ ROOM_NAMES = [
     ("Yoga", "OG", 3.2, 10.6, 0),
 ]
 
+# the architect's room names for the plan sheets (export_plans.py): (name, storey, anchor x, y). The
+# room is the region round its anchor in a section just below the ceiling; its area is computed there.
+# Where the model changed a room, the model's room wins: Gäste-WC + Garderobe, the Bad Großeltern's
+# niche (its WC = "WC Großeltern"), and Musikraum + Büro are one open room, "Bibliothek" (2026-11-11)
+PLAN_ROOMS = [
+    ("Großeltern", "EG", 4.3, 10.8), ("Bad Großeltern", "EG", 1.7, 10.6), ("WC Großeltern", "EG", 0.79, 9.62),
+    ("Flur", "EG", 1.75, 7.15), ("WC", "EG", 0.81, 6.45), ("Garderobe", "EG", 1.85, 6.4), ("Flur", "EG", 5.0, 7.4),
+    ("Neuer Windfang", "EG", 13.5, 7.5), ("Bibliothek", "EG", 12.9, 10.7), ("Küche", "EG", 7.0, 4.4),
+    ("Speis", "EG", 3.9, 4.79), ("Stube", "EG", 11.7, 3.2), ("Elektroraum", "EG", 0.35, 3.9),
+    ("Heizung", "EG", 0.35, 1.5),
+    ("Schlafen bzw. Yoga", "OG", 3.2, 10.6), ("Schlafen", "OG", 7.6, 10.6), ("Schlafen", "OG", 11.9, 10.6),
+    ("Flur", "OG", 6.0, 7.4), ("Bad", "OG", 1.4, 7.6), ("WC", "OG", 0.94, 5.95), ("Schlafen", "OG", 4.1, 3.2),
+    ("Bad", "OG", 7.1, 1.5), ("Hauswirtschaftsraum", "OG", 7.1, 4.4), ("WC", "OG", 9.32, 5.0),
+    ("Schlafen", "OG", 12.6, 2.5),
+]
+
 # warm fill lights inside the rooms (film.py; dusk in the viewer)
 ROOM_LIGHTS = [  # (x, y, floor z)
     (13.5, 7.5, 0), (5.0, 7.4, 0), (10.0, 7.0, 0), (11.7, 3.2, 0), (7.0, 4.5, 0), (5.5, 1.8, 0),
@@ -2084,6 +2117,13 @@ HOUSE_C = (7.44, 6.44)
 NO_GRASS = ["EG_Waende", "Terrasse", "Kiesstreifen", "Beet_Ost", "Beet_West", "Dach_Anbau",
             "Balkon_EG_Nord"]
 BEDS = ("Beet_Ost", "Beet_West")
+# what the plan sheets (export_plans.py) need to know about the objects: the masonry (Parts of the wall
+# material in these objects are hatched in the cut), the window/door frames (no room dividers), the
+# floors and ceilings (not drawn), the ground (not on any sheet) and what a Grundriss draws besides its
+# storey's collection
+PLAN = dict(wall_suffix="_Waende", wall_objects=("EG_Anbau",), wall_mat="Putz", frame_suffix="_Fenster_Tueren",
+            skip_words=("Boden", "Decke"), ground=("Gelaende", "Kiesel", "Kiesstreifen", *BEDS),
+            extra_collections=("Balkone",), extra_objects=("Verschalung_West",))
 WINDROSE_CENTER = (-3.5, -5.0, 0.02)        # compass rose south-west of the house (windrose.py)
 WINDROSE_R = 3.0                            # length of its main points
 WR_LABEL_HALF = 0.6                         # approx. half size of a letter N/O/S/W at R + 0.9
@@ -2177,13 +2217,16 @@ class Blueprint:
     turn: dict = None  # TURN: object -> degrees about its pivot (None: no turned object)
     slide: dict = None  # SLIDE: object -> (dx, dy, dz) to its other end of travel (None: none)
     swing: dict = None  # SWING: object -> degrees about its pivot to its other state (None: none)
+    doors: list = ()   # DOORS: every hinged leaf (plan sheets: door swings)
+    plan_rooms: list = ()   # PLAN_ROOMS: the architect's room names with storey and anchor (plan sheets)
+    plan: dict = None  # PLAN: the object classes of the plan sheets
 
 
 def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
-    LEAVES.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
+    LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
@@ -2192,12 +2235,13 @@ def build():
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
-                     turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING))
+                     turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), doors=list(DOORS),
+                     plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN))
 
 
 def build_ofen():
     """The Ofen sub-model alone (web/ofen.html): no house, no garden, plus its dimension lines."""
-    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); DOORS.clear()
     random.seed(22)
     dims = ofen.ofen_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
@@ -2208,6 +2252,7 @@ def build_desk():
     """The desk sub-model alone (web/desk.html): desk, devices and chair at the origin, plus its
     dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
+    DOORS.clear()
     random.seed(22)
     dims = desk.desk_neu()
     desk.stuhl("Desk", 0.0, 0.0)
@@ -2219,7 +2264,7 @@ def build_kueche():
     """The Küche sub-model alone (web/kueche.html): its furnishings and the flue box at the origin
     (the room's inner NW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
-    LEAVES.clear()
+    LEAVES.clear(); DOORS.clear()
     random.seed(22)
     dims = kueche.kueche_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
@@ -2230,7 +2275,7 @@ def build_bad():
     """The Bad Großeltern sub-model alone (web/bad.html): the room's fixtures, niche and its own
     walls at the origin (the room's inner SW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
-    LEAVES.clear()
+    LEAVES.clear(); DOORS.clear()
     random.seed(22)
     dims = bad.bad_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
@@ -2241,7 +2286,7 @@ def build_gaeste_wc():
     """The Gäste-WC sub-model alone (web/gaeste_wc.html): WC, Garderobe, the Flur basin and their
     walls at the origin (the old WC room's inner SW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
-    LEAVES.clear(); SWING.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear()
     random.seed(22)
     dims = gaeste_wc.gaeste_wc_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
