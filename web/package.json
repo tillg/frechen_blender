@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "blueprint": "python3 ../code/export_gltf.py public/frechenlehen.glb && python3 ../code/export_gltf.py public/ofen.glb --ofen && python3 ../code/export_gltf.py public/desk.glb --desk && python3 ../code/export_gltf.py public/bad.glb --bad && python3 ../code/export_gltf.py public/kueche.glb --kueche && python3 ../code/export_gltf.py public/gaeste_wc.glb --gaeste-wc && mkdir -p public/plans && cp ../plans/*.svg public/plans/",
+    "blueprint": "python3 ../code/export_gltf.py public/frechenlehen.glb && python3 ../code/export_gltf.py public/ofen.glb --ofen && python3 ../code/export_gltf.py public/desk.glb --desk && python3 ../code/export_gltf.py public/bad.glb --bad && python3 ../code/export_gltf.py public/kueche.glb --kueche && python3 ../code/export_gltf.py public/gaeste_wc.glb --gaeste-wc && python3 ../code/export_gltf.py public/regal.glb --regal && mkdir -p public/plans && cp ../plans/*.svg public/plans/",
     "predev": "npm run blueprint",
     "dev": "vite --port 5377 --strictPort",
     "prebuild": "npm run blueprint",

@@ -1,8 +1,8 @@
 """Frechenlehen – glTF backend: writes the Blueprint of house_core.py as a .glb for the web viewer.
 
 Standard library only:  python3 code/export_gltf.py web/public/frechenlehen.glb
-(`--ofen` / `--desk` / `--bad` / `--kueche`: the Ofen, desk, Bad Großeltern or Küche sub-model of
-house_core.build_ofen() / build_desk() / build_bad() / build_kueche() / build_gaeste_wc() instead, with its dimension lines in scene.extras.dims)
+(`--ofen` / `--desk` / `--bad` / `--kueche` / `--gaeste-wc` / `--regal`: a sub-model of
+house_core.build_ofen() / build_desk() / build_bad() / build_kueche() / build_gaeste_wc() / build_regal() instead, with its dimension lines in scene.extras.dims)
 - one node per GEO object (name = object name, translation = pivot, rotation = turn, extras.collection,
   extras.smooth for SMOOTH objects, extras.furniture for the furniture of the last stage)
 - one primitive per material: POSITION, NORMAL, _RND (the Part's rnd), uint32 indices
@@ -212,6 +212,6 @@ def export(path, bp=None):
 if __name__ == "__main__":
     sub = {"--ofen": house_core.build_ofen, "--desk": house_core.build_desk,
            "--bad": house_core.build_bad, "--kueche": house_core.build_kueche,
-           "--gaeste-wc": house_core.build_gaeste_wc}.get(next((a for a in sys.argv[2:] if a.startswith("--")), None))
+           "--gaeste-wc": house_core.build_gaeste_wc, "--regal": house_core.build_regal}.get(next((a for a in sys.argv[2:] if a.startswith("--")), None))
     size = export(sys.argv[1], sub and sub())
     print(f"wrote {sys.argv[1]} ({size / 1e6:.1f} MB)")

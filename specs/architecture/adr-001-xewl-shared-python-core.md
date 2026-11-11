@@ -2,7 +2,7 @@
 type: ADR
 id: ADR-001-XEWL
 title: One pure-Python core with a Blender and a glTF backend
-description: The house is described once in code/house_core.py plus its sub-model modules (code/ofen.py stoves, code/desk.py desk, code/bad.py Bad Großeltern, code/kueche.py Küche, code/gaeste_wc.py Gäste-WC; no bpy); build_house.py (Blender) and export_gltf.py (glTF for the web viewer) are backends that only turn its Blueprint into output.
+description: The house is described once in code/house_core.py plus its sub-model modules (code/ofen.py stoves, code/desk.py desk, code/bad.py Bad Großeltern, code/kueche.py Küche, code/gaeste_wc.py Gäste-WC, code/regal.py Schrank im Büro; no bpy); build_house.py (Blender) and export_gltf.py (glTF for the web viewer) are backends that only turn its Blueprint into output.
 status: accepted
 date: 2026-11-03
 supersedes: []
@@ -20,7 +20,7 @@ and every later fix to a wall or a door must reach both outputs. The geometry co
 
 - Constants, `MAT_DEF`, paint colours, room-light positions, the windrose position, cross boards,
   the garden layout, primitives and builders live in `code/house_core.py`; the sub-models' builders
-  live in their own modules (`code/ofen.py` stoves, `code/desk.py` desk, `code/bad.py` Bad Großeltern, `code/kueche.py` Küche, `code/gaeste_wc.py` Gäste-WC), which `house_core`
+  live in their own modules (`code/ofen.py` stoves, `code/desk.py` desk, `code/bad.py` Bad Großeltern, `code/kueche.py` Küche, `code/gaeste_wc.py` Gäste-WC, `code/regal.py` Schrank im Büro), which `house_core`
   imports. None imports `bpy` or `mathutils`.
 - `house_core.build()` returns a **Blueprint**: plain data.
 - Backends only translate a Blueprint into output and repeat none of its facts:
@@ -49,3 +49,4 @@ and every later fix to a wall or a door must reach both outputs. The geometry co
 - 2026-11-08: the Bad Großeltern is a sub-model in `code/bad.py` the same way (change `bad-grosseltern`).
 - 2026-11-09: the Küche is a sub-model in `code/kueche.py` the same way (change `kueche-speis`).
 - 2026-11-10: the Gäste-WC by the back hall is a sub-model in `code/gaeste_wc.py` the same way (change `gaeste-wc`).
+- 2026-11-11: the Büro bookcase ("Schrank im Büro") is a sub-model in `code/regal.py` the same way (tweak); the window, balcony door and Büro door around it are defined once there and used by `build_eg()`.

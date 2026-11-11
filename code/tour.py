@@ -63,10 +63,10 @@ ROUTE = [
      EYE, WALK),                                                          # right, to the back door
     turn((14.0, 7.92), L), ("hold", PAUSE),                               # straight down the Flur
     ("path", [(0.95, 7.92), (2.5, 7.95), (4.5, 7.9), (7.0, 7.8), (7.8, 8.3), (7.85, 9.6), (9.2, 9.95),
-              (10.5, 10.45), (12.9, 10.75), (14.0, 11.95)], EYE, WALK),   # Bibliothek: back left corner
+              (10.5, 10.45), (12.9, 10.75), (13.65, 11.95)], EYE, WALK),  # Bibliothek: back left corner (by the bookcase)
     turn((8.6, 11.2), L), ("hold", PAUSE),                                # the piano
-    turn((14.05, 8.73), L),                                               # door to the Flur/Windfang
-    ("path", [(14.0, 11.95), (14.05, 9.3), (14.0, 8.4), (13.6, 7.4), (12.3, 7.3), (11.8, 7.5),
+    turn((13.55, 8.73), L),                                               # door to the Flur/Windfang
+    ("path", [(13.65, 11.95), (13.6, 9.3), (13.6, 8.4), (13.6, 7.4), (12.3, 7.3), (11.8, 7.5),
               (11.6, 8.0), (11.19, 8.0)], EYE, WALK),
     ("stair", (11.19, 8.0, EYE), (7.62, 8.0, OG), STAIR_SPEED),
     ("path", [(7.62, 8.0), (7.62, 8.72)], OG, WALK),                      # first room on the right
@@ -127,7 +127,7 @@ SPOTS = [
     ("Stube", "Erdgeschoss", ("haus", "eg"), (12.6, 0.75, EYE), (10.0, 5.0, 1.0), SEE),
     ("Küche", "Erdgeschoss", ("haus", "eg"), (8.35, 2.7, EYE), (6.2, 5.4, 1.0), SEE),
     ("Speis", "Erdgeschoss", ("haus", "eg"), (5.95, 4.79, EYE), (3.0, 4.79, 1.2), SEE),
-    ("Bibliothek", "Erdgeschoss", ("haus", "eg"), (14.15, 12.05, EYE), (9.2, 9.4, 1.0), SEE),  # behind the desk
+    ("Bibliothek", "Erdgeschoss", ("haus", "eg"), (13.7, 12.05, EYE), (9.2, 9.4, 1.0), SEE),   # behind the desk
     ("Oma & Opa", "Erdgeschoss", ("haus", "eg"), (5.7, 9.45, EYE), (2.8, 11.9, 1.0), SEE),
     ("Nadine & Till", "1. Stock", ("haus", "og"), (13.95, 0.9, OG), (9.12, 3.44, Z_OG + 1.0), SEE),
     ("Waschküche", "1. Stock", ("haus", "og"), (8.25, 3.1, OG), (5.9, 5.2, Z_OG + 1.0), SEE),

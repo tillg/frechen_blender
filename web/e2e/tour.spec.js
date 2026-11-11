@@ -185,6 +185,6 @@ test('choosing a Standpunkt ends the route and keeps that Standpunkt', async ({ 
   await choose(page, 'Standpunkt', 'Um und durch das Haus');
   await choose(page, 'Standpunkt', 'Bibliothek');
   expect(await tourState(page)).toBe('off');
-  expect(dist(await cam(page), [14.15, 12.05, 1.6])).toBeLessThan(0.01);
+  expect(dist(await cam(page), [13.7, 12.05, 1.6])).toBeLessThan(0.01);
   await expect(page.getByRole('button', { name: 'Standpunkt', exact: true })).toHaveText('Bibliothek');
 });
