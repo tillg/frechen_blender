@@ -2713,7 +2713,7 @@
    6.438,
    3.815
   ],
-  "faces": 6420,
+  "faces": 7044,
   "materials": [
    "FL_Fliese",
    "FL_Fugengrau"
@@ -2723,8 +2723,8 @@
    0.0,
    0.0
   ],
-  "rnd": "666ecf6acc1c65be",
-  "verts": 8560
+  "rnd": "a674239e86cadc89",
+  "verts": 9392
  },
  "OG_Gelaender": {
   "bbox": [
@@ -2868,18 +2868,18 @@
   "bbox": [
    0.32,
    0.4,
-   2.712,
+   2.714,
    9.92,
    8.57,
-   4.75
+   4.82
   ],
-  "faces": 3104,
+  "faces": 3122,
   "materials": [
    "FL_Eisen",
    "FL_Glas",
    "FL_Keramik",
+   "FL_Kiefer",
    "FL_Metall",
-   "FL_Schiefer",
    "FL_Spiegel"
   ],
   "origin": [
@@ -2887,8 +2887,8 @@
    0.0,
    0.0
   ],
-  "rnd": "200637d9d2a9871a",
-  "verts": 4916
+  "rnd": "9bb1776ecdfb1739",
+  "verts": 4940
  },
  "OG_Waende": {
   "bbox": [
