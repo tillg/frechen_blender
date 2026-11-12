@@ -485,3 +485,11 @@ def test_the_title_block_names_the_generation_time_only_when_asked(tmp_path):
     assert ep.generated(utc.replace(month=7)) == "generiert: 12. Juli 2026 21:34 Uhr"    # CEST
     assert "generiert" not in ep.sheet("Ost", "", "abc")
     assert ">generiert: 12. November 2026 20:34 Uhr</text>" in ep.sheet("Ost", "", "abc", stamp=ep.generated(utc))
+
+
+def test_sheets_leave_the_variant_out(sheets):
+    """The plan sheets show the default layout (#5): drawn from house_core.default_layout(), which the
+    model state in the title block names."""
+    svg = (sheets / "eg.svg").read_text()
+    assert f"Modellstand {ep.model_state(house_core.default_layout(BP))}" in svg
+    assert ep.model_state(BP) != ep.model_state(house_core.default_layout(BP))
