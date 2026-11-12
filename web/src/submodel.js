@@ -10,7 +10,7 @@ import { loadBlueprint } from './blueprint.js';
 import { createFire } from './fire.js';
 import { INK } from './ink.js';
 import { makeMaterials, roomEnvironment, setReflections, updateStage } from './materials.js';
-import { slidingNodes, swingingNodes } from './slides.js';
+import { liftingNodes, slidingNodes, swingingNodes } from './slides.js';
 import { createToolbar } from './toolbar.js';
 import { initialQuery, remove, safeStorage, storageKey, write } from './viewstate.js';
 
@@ -123,9 +123,19 @@ export async function startSubmodel(cfg) {
     lines.add(group);
     return { ...n, lines: group, inner };
   });
+  const lifts = liftingNodes(bp.objects);                   // the desk's top and devices, its hand wheel (crank)
+  const lifters = lifts.nodes.map((n) => {                  // edge lines rise / turn about the node's origin
+    const at = n.obj.getWorldPosition(new THREE.Vector3()), group = new THREE.Group(), inner = new THREE.Group();
+    group.position.copy(at);
+    inner.position.copy(at).negate();
+    group.add(inner);
+    lines.add(group);
+    return { ...n, lines: group, inner, at };
+  });
   for (const obj of bp.objects) {
     const lineMat = new THREE.LineBasicNodeMaterial({ color: cfg.colors[obj.name] ?? INK });
-    const into = sliders.find((s) => s.obj === obj)?.lines ?? swingers.find((s) => s.obj === obj)?.inner ?? lines;
+    const into = sliders.find((s) => s.obj === obj)?.lines ?? swingers.find((s) => s.obj === obj)?.inner
+      ?? lifters.find((s) => s.obj === obj)?.inner ?? lines;
     obj.traverse((m) => {
       if (!m.isMesh) return;
       m.userData.mat = mats[m.material.name];
@@ -221,6 +231,10 @@ export async function startSubmodel(cfg) {
     const t = now / 1000 - (t0 ??= now / 1000);
     if (slides.update(t)) for (const s of sliders) s.lines.position.subVectors(s.obj.position, s.home);
     if (swings.update(t)) for (const s of swingers) s.lines.quaternion.copy(s.home).invert().premultiply(s.obj.quaternion);
+    if (lifts.update(t)) for (const s of lifters) {
+      s.lines.position.copy(s.at).add(s.obj.position).sub(s.home);
+      s.lines.quaternion.copy(s.turn).invert().premultiply(s.obj.quaternion);
+    }
     renderer.render(scene, camera);
     labels.render(scene, camera);
   });
@@ -228,6 +242,7 @@ export async function startSubmodel(cfg) {
     textures: () => textures,                                                  // image textures loaded
     slides: slides.state,
     doors: swings.state,                                                       // the swinging doors
+    lift: lifts.state,                                                         // the desk cranking up and down
     get camera() { const p = camera.position; return [p.x, -p.z, p.y]; },        // model z-up coords
     fire: () => fire.group.visible && fire.group.children[0].children[0].scale.y };   // a flame's height (0: off)
 }

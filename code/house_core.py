@@ -57,6 +57,7 @@ MAT_DEF = {
     "FichteX":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "x")),     # spruce soffit
     "FichteY":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "y")),
     "FichteZ":    dict(wood=((0.42, 0.20, 0.07), (0.70, 0.42, 0.18), "z")),
+    "Kirschbaum": dict(wood=((0.30, 0.085, 0.04), (0.55, 0.20, 0.10), "x")),    # cherry: the Büro desk top (#10)
     "NussX":      dict(wood=((0.035, 0.016, 0.007), (0.13, 0.06, 0.025), "x")),   # dark walnut (bookcase)
     "NussZ":      dict(wood=((0.035, 0.016, 0.007), (0.13, 0.06, 0.025), "z")),
     "TeakX":      dict(wood=((0.16, 0.07, 0.025), (0.40, 0.20, 0.08), "x")),     # Stube side table, armchair legs
@@ -125,6 +126,9 @@ SLIDE = {}    # object -> (dx, dy, dz) to its other end of travel (the Bad's sli
               # sub-model viewer rolls it there and back
 SWING = {}    # object -> degrees about the vertical through its PIVOT (counter-clockwise from above)
               # from as built to its other state (the doors by the back hall): the viewer swings it
+LIFT = {}     # object -> metres straight up to its other state (the desk top with its devices): the
+              # viewer lifts them together on one clock
+CRANK = {}    # object -> (axis (x, y, z), degrees) it turns about its PIVOT while the lift moves
 
 
 def local(p, piv, turn=0.0):
@@ -1728,7 +1732,8 @@ def build_annex():
 # Loose furniture appears in the viewer's last stage "Eingerichtet" (Blueprint.furniture); the
 # built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
-FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R"}
+FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
+             "EG_Schreibtisch", "EG_Handrad"}
 
 
 def _grain(ax):
@@ -2251,6 +2256,8 @@ class Blueprint:
     turn: dict = None  # TURN: object -> degrees about its pivot (None: no turned object)
     slide: dict = None  # SLIDE: object -> (dx, dy, dz) to its other end of travel (None: none)
     swing: dict = None  # SWING: object -> degrees about its pivot to its other state (None: none)
+    lift: dict = None   # LIFT: object -> metres up to its other state (None: none)
+    crank: dict = None  # CRANK: object -> (axis, degrees) about its pivot while the lift moves
     doors: list = ()   # DOORS: every hinged leaf (plan sheets: door swings)
     plan_rooms: list = ()   # PLAN_ROOMS: the architect's room names with storey and anchor (plan sheets)
     plan: dict = None  # PLAN: the object classes of the plan sheets
@@ -2261,6 +2268,7 @@ def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
+    LIFT.clear(); CRANK.clear()
     LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear(); STAIRS.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
@@ -2270,8 +2278,8 @@ def build():
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
-                     turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), doors=list(DOORS),
-                     plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
+                     turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), lift=dict(LIFT), crank=dict(CRANK),
+                     doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
 
 
 def build_ofen():
@@ -2287,12 +2295,12 @@ def build_desk():
     """The desk sub-model alone (web/desk.html): desk, devices and chair at the origin, plus its
     dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
-    DOORS.clear()
+    DOORS.clear(); LIFT.clear(); CRANK.clear()
     random.seed(22)
     dims = desk.desk_neu()
     desk.stuhl("Desk", 0.0, 0.0)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
-                     [], None, set(), dims, turn=dict(TURN))
+                     [], None, set(), dims, turn=dict(TURN), lift=dict(LIFT), crank=dict(CRANK))
 
 
 def build_kueche():
