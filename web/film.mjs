@@ -26,6 +26,10 @@ await page.addStyleTag({ content: '.fl-title, .fl-tools, .fl-bar { display: none
 const n = await page.evaluate(() => Math.round(window.__fl.tour.duration * 25) + 1);
 const end = Math.min(Number(last ?? n - 1), n - 1);
 await page.clock.pauseAt(new Date(Date.now() + 60_000));
+// the first seek of a run only takes effect a frame later: seek once without a picture, so a run
+// that starts mid-route (first > 0, e.g. after a pause) does not begin with the route's start pose
+await page.evaluate((t) => window.__fl.tour.seek(t), Number(first) / 25);
+await page.clock.runFor(40);
 const t0 = Date.now();
 for (let i = Number(first); i <= end; i++) {
   await page.evaluate((t) => window.__fl.tour.seek(t), i / 25);
