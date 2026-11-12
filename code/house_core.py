@@ -679,6 +679,9 @@ def build_eg():
     ofen.ofen_im_haus()
     ofen.werkstattofen("EG", 9.351 + 0.10 + 0.21 * 2 ** 0.5, 8.876 + 0.10 + 0.21 * 2 ** 0.5, 0.0, -45)   # Bibliothek:
     # corner of the Flur wall and the wall stub, turned 45° to face the room (request 2026-11-08)
+    ofen.werkstattofen("EG", 2.657 + 0.10 + 0.21 * 2 ** 0.5, 12.473 - 0.10 - 0.21 * 2 ** 0.5, 0.0, -135,
+                       "Werkstattofen_Grosseltern", random.Random(17))   # Oma & Opa: the same stove in
+    # the corner of the north wall and the stub north of the Bad opening, facing the room (issue #4)
     build_stairs()
     table("EG", 5.055, 7.055, 1.18, 1.91)                   # dining table: one, 2.00 m (request 2026-11-10)
     for x in (5.455, 6.055, 6.655):                         # 8 chairs: 3 per long side, one at each end
