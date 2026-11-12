@@ -119,9 +119,9 @@ def test_the_standard_spots():
 
 
 def test_every_room_has_an_inside_spot_at_eye_height():
-    spots = {s[0]: s for s in tour.SPOTS}
+    """A room's spot is the first one named after it ("Bibliothek" or "Bibliothek - …")."""
     for room, floor, *_ in house_core.ROOM_NAMES:
-        name, group, entries, cam, at, fov = spots[room]
+        name, group, entries, cam, at, fov = next(s for s in tour.SPOTS if s[0].split(" - ")[0] == room)
         z = tour.EYE if floor == "EG" else tour.OG
         assert inside(cam) and abs(cam[2] - z) < 1e-9, room
         assert set(entries) == {"haus", floor.lower()}, room
@@ -130,9 +130,40 @@ def test_every_room_has_an_inside_spot_at_eye_height():
 
 def test_bibliothek_stands_in_the_corner_behind_the_desk():
     """Request 2026-11-10: in the corner behind the desk (desk.DESK_AT, against the north wall),
-    looking across the whole room (south)."""
+    looking across the whole room (south); issue #9: named "Bibliothek - Ecke hinten rechts"."""
     import desk
-    _, _, _, cam, at, _ = next(s for s in tour.SPOTS if s[0] == "Bibliothek")
+    _, _, _, cam, at, _ = next(s for s in tour.SPOTS if s[0] == "Bibliothek - Ecke hinten rechts")
     dx, dy = desk.DESK_AT[0] + desk.DESK_W / 2, desk.DESK_AT[1] + desk.DESK_D / 2   # desk centre
     assert math.dist(cam[:2], (dx, dy)) < 3.0 and cam[1] > dy - 0.5       # by the desk, at the north wall
     assert at[1] < cam[1] - 1.0                                           # looking south into the room
+
+
+def test_klavierspieler_sits_on_the_piano_bench_looking_over_the_keys():
+    """Issue #9: the pianist's view, listed right after the Bibliothek's corner: seated eye above
+    the bench, looking along the keyboard's normal over the piano into the room."""
+    names = [s[0] for s in tour.SPOTS]
+    assert names.index("Bibliothek - Klavierspieler") == names.index("Bibliothek - Ecke hinten rechts") + 1
+    _, group, entries, cam, at, fov = next(s for s in tour.SPOTS if s[0] == "Bibliothek - Klavierspieler")
+    assert group == "Erdgeschoss" and set(entries) == {"haus", "eg"} and fov == tour.SEE
+    house_core.build()
+    g = house_core.GEO[("EG", "EG_Moebel")]
+    lack = {i for f, m in zip(g["f"], g["m"]) if m == "Klavierlack" for i in f}
+    top = lambda z: [g["v"][i] for i in lack if abs(g["v"][i][2] - z) < 1e-6]
+    bench, keys = top(0.50), top(0.70)                                   # bench top, key bed top
+    centre = lambda vs: (sum(v[0] for v in vs) / len(vs), sum(v[1] for v in vs) / len(vs))
+    (bx, by), (kx, ky) = centre(bench), centre(keys)
+    b0, (s, l, _) = bench[0], sorted(bench[1:], key=lambda v: math.dist(v[:2], bench[0][:2]))
+    for e in (s, l):                                                      # above the bench, in its own axes
+        ex, ey = e[0] - b0[0], e[1] - b0[1]
+        assert abs((cam[0] - bx) * ex + (cam[1] - by) * ey) < (ex * ex + ey * ey) / 2
+    assert 1.1 < cam[2] < 1.35                                            # seated eye height
+    k0 = keys[0]
+    k1 = sorted(keys[1:], key=lambda v: math.dist(v[:2], k0[:2]))[1]     # short edge, long edge, diagonal
+    ex, ey = k1[0] - k0[0], k1[1] - k0[1]                                 # along the key bed
+    nx, ny = -ey, ex                                                      # its normal, away from the bench
+    if nx * (kx - bx) + ny * (ky - by) < 0:
+        nx, ny = -nx, -ny
+    dx, dy = at[0] - cam[0], at[1] - cam[1]
+    cos = (dx * nx + dy * ny) / math.hypot(dx, dy) / math.hypot(nx, ny)
+    assert cos > math.cos(math.radians(5))                                # straight over the keys
+    assert at[2] < cam[2]                                                 # looking a little down
