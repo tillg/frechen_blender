@@ -58,12 +58,14 @@ export function slidingNodes(objects, rand = Math.random) {
 export function swingingNodes(objects, rand = Math.random) {
   const nodes = objects.filter((o) => o.userData.swing).map((obj) => ({ obj, home: obj.quaternion.clone(),
     by: obj.userData.swing }));
-  const own = nodes.map((n) => n.obj.name.endsWith('_Buerotuer'));
-  const shared = createSlides(own.filter((o) => !o).length, rand, DOOR_PERIOD, DOOR_SWING);
-  const buero = createSlides(own.filter((o) => o).length, rand, BUERO_PERIOD, BUERO_SWING);
+  // clocks: the Büro door its own; the leaves of a layout variant (extras.variant, #5) one of their
+  // own, so the leaves hidden in a layout take no slot of the others; the rest share one
+  const group = nodes.map((n) => (n.obj.name.endsWith('_Buerotuer') ? 'buero' : n.obj.userData.variant ?? ''));
+  const clocks = Object.fromEntries([...new Set(group)].map((g) => [g, createSlides(group.filter((x) => x === g).length,
+    rand, g === 'buero' ? BUERO_PERIOD : DOOR_PERIOD, g === 'buero' ? BUERO_SWING : DOOR_SWING)]));
   const tick = (t) => {
-    const a = shared(t), b = buero(t);
-    return own.map((o) => (o ? b : a).shift());
+    const now = Object.fromEntries(Object.entries(clocks).map(([g, c]) => [g, c(t)]));
+    return group.map((g) => now[g].shift());
   };
   const turn = new Quaternion(), up = new Vector3(0, 1, 0);
   let pos = nodes.map(() => 0);

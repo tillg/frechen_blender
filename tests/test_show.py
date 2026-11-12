@@ -116,3 +116,13 @@ def test_regal_page(capsys):
     assert link.startswith("http://localhost:5377/regal.html?cam=") and link.endswith("&look=full")
     cam, at = (tuple(map(float, q.split("=")[1].split(","))) for q in link.split("?")[1].split("&")[:2])
     assert cam[0] < at[0] and cam[1] == at[1]
+
+
+def test_variant_objects_are_shown_in_their_entry(bp):
+    """Objects of the EG variant Alternativ (#5) are hidden in Erdgeschoss: the Show uses its entry
+    Erdgeschoss - Alternativ (cut eg_alt) for them; default objects keep cut eg."""
+    names = ["EG_Alt_Schrank", "EG_Alt_Pendeltuer_S"]
+    assert show.view(bp, show.bbox(bp, names), names=names)[3] == "eg_alt"
+    assert show.view(bp, show.bbox(bp, ["EG_Speis_C"]), names=["EG_Speis_C"])[3] == "eg"
+    assert show.view(bp, show.bbox(bp, ["EG_Alt"]), names=["EG_Alt"])[3] == "eg_alt"           # prefixes
+    assert show.view(bp, show.bbox(bp, ["EG_Speis"]), names=["EG_Speis"])[3] == "eg"            # both layouts
