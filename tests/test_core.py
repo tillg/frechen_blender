@@ -391,7 +391,6 @@ def test_regal_built_into_the_house():
             assert not (lo[0] < b and hi[0] > b - (b - a) and lo[1] < r.FS + (b - a) and hi[1] > r.FS and lo[2] < 2.0), (o, lo)
 
 
-
 def test_vitrine_52_in_the_nw_corner_behind_the_piano():
     """Request 2026-11-11: the Tegernsee set's narrow 52 element (a vitrine: base cabinet, glass door
     with glass shelves and wine glasses, cornice; 2.38 high, 42 deep) stands on the wall opposite the
@@ -412,7 +411,6 @@ def test_vitrine_52_in_the_nw_corner_behind_the_piano():
     assert sum(m == "Glas" for m, _, _ in box) >= 12                                              # door, shelves, glasses
     piano = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Moebel")) if m == "Klavierlack"]
     assert max(xs) < min(lo[0] for lo, _ in piano) and max(xs) < 6.953                           # piano, north window
-
 
 
 def test_every_door_has_handles():
@@ -1749,6 +1747,26 @@ def test_desk_keeps_the_global_random_stream():
     five = random.getstate()
     house_core.build()
     assert after == five
+
+
+def test_jugend_tuer_und_stockbett():
+    """Issue #6: the Jugend door no longer opens onto the stairwell: seen from the stairwell it moves
+    left (west), its opening 10 cm from the room's west wall (6.21) and clear of the stair hole; the
+    west bunk bed moves to the middle of the west wall, clear of the leaf (open 90 deg along that wall)."""
+    zo = house_core.Z_OG
+    door = [d for d in BP.doors if d["c"] == "OG" and 8.5 < d["hinge"][1] < 8.9 and 6.21 < d["hinge"][0] < 9.08]
+    assert len(door) == 1
+    lin = 0.025                                                    # the hinge sits on the lining
+    a = door[0]["hinge"][0] - lin
+    assert abs(a - (6.21 + 0.10)) < 0.005
+    assert a + door[0]["w"] + 2 * lin < house_core.STAIR_HOLE[0]       # clear of the stair hole
+    bunks = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Moebel")) if m.startswith("Fichte")
+             and 6.21 <= lo[0] and hi[0] <= 9.08 and 8.86 <= lo[1] and hi[1] <= 12.485 and lo[2] >= zo]
+    west = [(lo, hi) for lo, hi in bunks if hi[0] < 7.4]
+    assert west
+    y0, y1 = min(lo[1] for lo, hi in west), max(hi[1] for lo, hi in west)
+    assert abs((y0 + y1) / 2 - (8.86 + 12.485) / 2) < 0.15            # middle of the west wall
+    _clear([("Fichte", lo, hi) for lo, hi in bunks], _leaf_boxes(BP, "OG", zo), "door leaf")
 
 
 def test_variant_main_objects():
