@@ -391,7 +391,6 @@ def test_regal_built_into_the_house():
             assert not (lo[0] < b and hi[0] > b - (b - a) and lo[1] < r.FS + (b - a) and hi[1] > r.FS and lo[2] < 2.0), (o, lo)
 
 
-
 def test_vitrine_52_in_the_nw_corner_behind_the_piano():
     """Request 2026-11-11: the Tegernsee set's narrow 52 element (a vitrine: base cabinet, glass door
     with glass shelves and wine glasses, cornice; 2.38 high, 42 deep) stands on the wall opposite the
@@ -412,7 +411,6 @@ def test_vitrine_52_in_the_nw_corner_behind_the_piano():
     assert sum(m == "Glas" for m, _, _ in box) >= 12                                              # door, shelves, glasses
     piano = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Moebel")) if m == "Klavierlack"]
     assert max(xs) < min(lo[0] for lo, _ in piano) and max(xs) < 6.953                           # piano, north window
-
 
 
 def test_every_door_has_handles():
@@ -893,8 +891,8 @@ def test_kueche_and_speis_fronts_after_mallnitz():
     assert not [p for p in k if p[0] == "Metall" and len(set(map(tuple, p[3]))) >= 48]
     sink = [p for p in k if hood(p) and p[1][1] > 5.2 and p[2][2] < 0.86]
     assert len(sink) == 2 and all(p[2][0] < 7.85 for p in sink)               # the blind corner has none
-    # cabinet C of the Speis (doors at y 3.13 .. 3.15 towards the dining table)
-    sp = list(part_list(("EG", "EG_Speis")))
+    # cabinet C of the Speis (doors at y 3.13 .. 3.15 towards the dining table; own object since #5)
+    sp = list(part_list(("EG", "EG_Speis_C")))
     c = [p for p in sp if p[1][1] >= 3.09 and p[2][1] <= 3.728 + 1e-6]
     assert {p[0] for p in c} == {"Front", "Metall", "Fuge"}
     assert len([p for p in c if hood(p)]) == 4 * 5 and len([p for p in c if p[0] == "Metall"]) == 4 * 5 * 2
@@ -1423,10 +1421,11 @@ def test_speis_v6():
     the south (left as seen from the Küche)."""
     w = ("EG", "EG_Waende")
     assert _mat_at(BP, w, 4.0, 3.2, 1.0) is None                                          # Speis/Essen wall gone
-    assert _mat_at(BP, w, 5.36, 3.5, 1.0) == "Putz" and _mat_at(BP, w, 5.36, 4.2, 1.0) == "Putz"
+    assert _mat_at(BP, ("EG", "EG_Speis_Waende"), 5.36, 3.5, 1.0) == "Putz"               # the stub to C (#5)
+    assert _mat_at(BP, w, 5.36, 4.2, 1.0) == "Putz"
     assert _mat_at(BP, w, 5.36, 4.8, 1.0) is None and _mat_at(BP, w, 5.36, 3.05, 1.0) is None
-    sp = list(part_list(("EG", "EG_Speis")))
-    assert sp and "EG_Speis" not in BP.furniture
+    sp = list(part_list(("EG", "EG_Speis"))) + list(part_list(("EG", "EG_Speis_C")))   # C: own object (#5)
+    assert sp and "EG_Speis" not in BP.furniture and "EG_Speis_C" not in BP.furniture
     for ya, yb in ((5.249, 5.847), (3.732, 4.33), (3.13, 3.728)):                         # A, B, C
         band = [p for p in sp if p[1][1] >= ya - 1e-6 and p[2][1] <= yb + 1e-6]
         assert band and abs(min(p[1][1] for p in band) - ya) < 0.003 and abs(max(p[2][1] for p in band) - yb) < 0.003
@@ -1649,7 +1648,8 @@ def test_gaeste_wc_doors_swing():
     house_core.build()                                                    # restore the registries
     x0, y0 = g.WC_AT
     assert BP.swing == {"EG_Hintertuer": 90.0, "EG_WC_Tuer": 90.0, "EG_Windfangtuer": 90.0,   # back door, Windfang: hinged north
-                        "EG_Buerotuer": 90.0}                                                  # (and the Büro door, code/regal.py)
+                        "EG_Buerotuer": 90.0,                                                  # (and the Büro door, code/regal.py)
+                        "EG_Alt_Pendeltuer_S": 90.0, "EG_Alt_Pendeltuer_N": -90.0}             # (and the saloon leaves, #5)
     assert sub.swing == {"GaesteWC_Hintertuer": 90.0, "GaesteWC_WC_Tuer": 90.0, "GaesteWC_Windfangtuer": 90.0}
     for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):
         px, py, pz = sub.pivot["GaesteWC_" + n]
@@ -1767,3 +1767,84 @@ def test_jugend_tuer_und_stockbett():
     y0, y1 = min(lo[1] for lo, hi in west), max(hi[1] for lo, hi in west)
     assert abs((y0 + y1) / 2 - (8.86 + 12.485) / 2) < 0.15            # middle of the west wall
     _clear([("Fichte", lo, hi) for lo, hi in bunks], _leaf_boxes(BP, "OG", zo), "door leaf")
+
+
+def test_variant_main_objects():
+    """Issue #5: what only the default layout has is in objects of its own, flagged "main" (the
+    viewer hides them in Erdgeschoss - Alternativ): cabinet C, the Speis sliding leaf with its rail,
+    and the 60 cm stub of the Speis/Küche wall (a wall for the plan sheets: suffix _Waende)."""
+    assert {o: v for o, v in BP.variant.items() if v == "main"} == {
+        "EG_Speis_C": "main", "EG_Speis_Schiebetuer": "main", "EG_Speis_Waende": "main"}
+    c = list(_parts(BP, ("EG", "EG_Speis_C")))
+    assert 3.09 < min(lo[1] for m, lo, hi in c) < 3.13 + 1e-6 and abs(max(hi[1] for m, lo, hi in c) - 3.728) < 0.005   # pulls proud
+    assert not any(lo[1] < 3.70 for m, lo, hi in _parts(BP, ("EG", "EG_Speis")))                 # A and B only
+    leaf = list(_parts(BP, ("EG", "EG_Speis_Schiebetuer")))
+    assert any(m == "Metall" and hi[1] - lo[1] > 2.0 for m, lo, hi in leaf)                      # the rail
+    assert any(m == "Innentuer" for m, lo, hi in leaf)
+    stub = list(_parts(BP, ("EG", "EG_Speis_Waende")))
+    assert [(round(lo[1], 3), round(hi[1], 3)) for m, lo, hi in stub] == [(3.13, 3.73)]
+    assert not any(lo[0] < 5.49 and hi[0] > 5.24 and lo[1] < 3.73 - 1e-6 and hi[1] > 3.13
+                   for m, lo, hi in _parts(BP, ("EG", "EG_Waende")))                             # shared wall shorter
+    w, ((first, _),) = BP.geo[("EG", "EG_Waende")], BP.parts[("EG", "EG_Speis_Waende")]
+    shared = [w["r"][f] for (f, n), (m, lo, hi) in zip(BP.parts[("EG", "EG_Waende")], _parts(BP, ("EG", "EG_Waende")))
+              if lo[0] >= 5.24 - 1e-6 and hi[0] <= 5.49 + 1e-6 and lo[1] < 3.75 and hi[1] > 3.72]
+    assert shared == [BP.geo[("EG", "EG_Speis_Waende")]["r"][first]]                 # the wall's rnd: no seam
+
+
+def test_variant_alt_objects():
+    """Issue #5, the EG variant Alternativ: cabinet C on the Essen's west wall over its full width
+    (south wall to shelf B's back), B's closed back towards the Essen, and in the opening Küche ->
+    Speis two closed half-height saloon leaves (no handles) that swing into the Speis."""
+    alt = {o for o, v in BP.variant.items() if v == "alt"}
+    assert alt == {"EG_Alt_Schrank", "EG_Alt_Speis", "EG_Alt_Pendeltuer_S", "EG_Alt_Pendeltuer_N"}
+    others = [p for o in ("EG_Waende", "EG_Fenster_Tueren", "EG_Stuehle", "EG_Moebel", "EG_Speis", "EG_Vorrat")
+              for p in _parts(BP, ("EG", o))]
+    boxes = lambda ps: [(lo, hi) for m, lo, hi in ps]
+    cab = list(_parts(BP, ("EG", "EG_Alt_Schrank")))
+    lo = [min(p[1][k] for p in cab) for k in range(3)]
+    hi = [max(p[2][k] for p in cab) for k in range(3)]
+    assert 2.772 < lo[0] < 2.78 and 3.372 - 1e-6 <= hi[0] < 3.40                     # 60 deep, pulls proud
+    assert 0.415 < lo[1] < 0.42 and 3.70 < hi[1] < 3.73 and 2.39 <= hi[2] < 2.40       # full width, to the ceiling
+    assert {m for m, a, b in cab} == {"Front", "Metall", "Fuge"}
+    panels = [p for p in cab if p[0] == "Front" and abs(p[1][0] - 3.352) < 1e-3 and abs(p[2][0] - 3.364) < 1e-3]
+    assert len(panels) == 6 * 5                                                        # six columns of five fronts
+    _clear(cab, boxes(others), "Essen")
+    back = list(_parts(BP, ("EG", "EG_Alt_Speis")))
+    assert back and all(3.70 < a[1] and b[1] < 3.732 for m, a, b in back)
+    assert min(a[0] for m, a, b in back) < 2.78 and max(b[0] for m, a, b in back) > 5.23
+    _clear(back, boxes(others) + boxes(cab), "back")
+    leaves = {}
+    for s, sw in (("S", 90.0), ("N", -90.0)):
+        o = "EG_Alt_Pendeltuer_" + s
+        assert BP.swing[o] == sw and o in BP.pivot
+        ps = list(_parts(BP, ("EG", o)))
+        assert ps and {m for m, a, b in ps} == {"Innentuer"}                         # wood only, no handle
+        assert all(5.24 < a[0] and b[0] < 5.49 and 4.33 < a[1] and b[1] < 5.249 and 0.30 <= a[2] and b[2] <= 1.70
+                   for m, a, b in ps)
+        leaves[s] = ps
+        px, py, _ = BP.pivot[o]
+        t = math.radians(sw)
+        turn = lambda x, y: (px + (x - px) * math.cos(t) - (y - py) * math.sin(t),
+                             py + (x - px) * math.sin(t) + (y - py) * math.cos(t))
+        swung = []
+        for m, a, b in ps:
+            cs = [turn(x, y) for x in (a[0], b[0]) for y in (a[1], b[1])]
+            swung.append((m, [min(c[0] for c in cs), min(c[1] for c in cs), a[2]],
+                          [max(c[0] for c in cs), max(c[1] for c in cs), b[2]]))
+        assert all(b[0] < 5.40 for m, a, b in swung)                                  # into the Speis
+        _clear(swung, boxes(others), "swung " + s)
+    yS = max(b[1] for m, a, b in leaves["S"])
+    yN = min(a[1] for m, a, b in leaves["N"])
+    assert 0 < yN - yS <= 0.01                                                         # they meet in the middle
+    assert min(a[1] for m, a, b in leaves["S"]) - 4.33 <= 0.025 and 5.249 - max(b[1] for m, a, b in leaves["N"]) <= 0.025
+
+
+def test_default_layout_leaves_the_variant_out():
+    """Blender and the plan sheets show the default layout: house_core.default_layout() drops the
+    objects of the variant Alternativ (#5) with their pivots and swings, and keeps everything else."""
+    d = house_core.default_layout(BP)
+    alt = {o for o, v in BP.variant.items() if v == "alt"}
+    assert alt and not any(o in alt for c, o in d.geo) and not any(o in alt for c, o in d.parts)
+    assert not alt & set(d.pivot) and not alt & set(d.swing)
+    assert set(BP.geo) - set(d.geo) == {("EG", o) for o in alt} and d.parts.keys() == d.geo.keys()
+    assert ("EG", "EG_Speis_C") in d.geo

@@ -258,7 +258,7 @@ def setup_scene():
 
 
 def main():
-    bp = house_core.build()
+    bp = house_core.default_layout(house_core.build())   # the variant Alternativ is the viewer's only
     make_materials(bp.mat_def)
     reset_collections()
     flush_geometry(bp)
