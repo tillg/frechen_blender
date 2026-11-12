@@ -5,9 +5,9 @@ its east face flush with the old door's west jamb: in the west the WC with a new
 north wall, its leaf opened outward into the Flur (90 deg, hinged at the partition side: laid flat it
 would cover the Garderobe's opening), the toilet centred on the south wall, Taubenblau tiles; in the
 east the Garderobe, open to the Flur through the old 80 opening, with a bench from wall to wall, a
-hook board, hooks and a hat shelf (garderobe mallnitz.jpeg). The WC's hand basin hangs outside, on
-the Flur east wall between the WC wall and the Windfang door, tiles behind it and a mirror in a
-wooden frame above.
+hook board, hooks and a hat shelf (garderobe mallnitz.jpeg). The WC's hand basin stands outside, on
+its Waschbeckenständer (input/2026-11-12 input/), at the Flur east wall between the WC wall and the
+Windfang door, tiles behind it and a mirror in a wooden frame above.
 
 Pure Python like house_core.py, which imports this module: build_eg() calls gaeste_wc_neu() at
 WC_AT; house_core.build_gaeste_wc() wraps it at the origin as the Blueprint of web/gaeste_wc.html.
@@ -27,7 +27,7 @@ GA, GB = 1.419, 2.218                        # old opening (80) to the Garderobe
 FWA, FWB = 7.408, 8.506                      # Windfang door's jambs; its architrave 7 cm
 TX = (WI + PA) / 2                           # toilet axis: centred in the WC
 TD = 0.70                                    # toilet depth incl. tiles (hc.toilet's seat; drawing: 69)
-BW, BD = 0.40, 0.28                          # hand basin (hc.wc_basin), centred on the Flur wall piece
+BW, BD = 0.40, 0.28                          # Waschbecken einzeln (hc.waschbecken), centred on the Flur wall piece
 BM = (YF + FWA) / 2
 MF, MGW, MGH, MZ = 0.07, 0.40, 0.60, 1.20    # mirror: frame width, glass width x height, frame bottom
 BK, BZ = 0.35, 0.45                          # bench depth, seat top
@@ -66,9 +66,9 @@ def gaeste_wc_neu(c="GaesteWC", x0=0.0, y0=0.0):
     hc.toilet(c, TX + dx, YS + dy, 0, 1)
     hc.wainscot(c, 0.0, WI + dx, PA + dx, YS + dy, YN + dy, (DA + dx, DB + dx))
 
-    # Flur east wall: hand basin, tiles behind it up to the Windfang door's architrave, mirror
+    # Flur east wall: hand basin on its Ständer, tiles behind it up to the Windfang door's architrave, mirror
     # 40 x 60 in a 7 cm wooden frame (2.5 cm deep), its glass set back in the frame
-    hc.wc_basin(c, WO + dx, BM + dy, -1, 0, w=BW, d=BD, mirror=False)
+    hc.waschbecken(c, WO + dx, BM + dy, -1, 0, BW, BD, 1, tile=hc.WC_TILE_T)
     hc.wainscot(c, 0.0, WO + dx - 1.0, WO + dx, YF + dy, FWA - 0.07 + dy, None, sides="e")
     o, r = "_Sanitaer", rng.random()
     ya, yb, za, zb = BM - MGW / 2 - MF, BM + MGW / 2 + MF, MZ, MZ + MGH + 2 * MF

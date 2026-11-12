@@ -79,10 +79,10 @@ MAT_DEF = {
     "Creme":      dict(rgba=(0.84, 0.72, 0.50, 1), rough=0.9),              # Ofen mattress
     "Boucle":     dict(speck=((0.93, 0.85, 0.70), (0.46, 0.23, 0.07), 55)),    # armchairs: cream with brown flecks
     "Paspel":     dict(rgba=(0.38, 0.23, 0.11, 1), rough=0.6),               # their piping
-    "Schiefer":   dict(rgba=(0.14, 0.13, 0.12, 1), rough=0.5),               # dark stone behind the Flur sink
+    "Schiefer":   dict(rgba=(0.14, 0.13, 0.12, 1), rough=0.5),               # dark stone behind the Flur basin
     "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
-    "Keramik":    dict(rgba=(0.90, 0.90, 0.88, 1), rough=0.08),
+    "Keramik":    dict(rgba=(0.95, 0.95, 0.95, 1), rough=0.08),
     "Fliese":     dict(speck=((0.107, 0.176, 0.262), (0.142, 0.234, 0.348), 8), hue=0.03, rough=0.12),   # WC tiles, RAL 5014 (linear)
     "Kiste":      dict(rgba=(0.30, 0.31, 0.32, 1), rough=0.55),              # grey plastic crates (Speis)
     "PackRot":    dict(rgba=(0.55, 0.06, 0.04, 1), rough=0.5),               # food packs: tomato red
@@ -733,48 +733,65 @@ def toilet(coll, wx, wy, fx, fy, z=0.0):
     xy_prism(coll, o, "Metall", rect(0.215, 0.27, 0.16, 0.17), z + 0.73, z + 0.745)
 
 
-def basin(coll, wx, wy, fx, fy, w=0.60, d=0.46, z=0.0, mirror=True):
-    """Washbasin (rounded front) with tap and a mirror above."""
-    o, M = coll + "_Sanitaer", at_wall(wx, wy, fx, fy)
-    xy_prism(coll, o, "Keramik", rounded(M, w * 0.7, d * 0.8), z + 0.66, z + 0.80)
-    xy_prism(coll, o, "Keramik", rounded(M, w, d), z + 0.80, z + 0.86)
-    xy_prism(coll, o, "Metall", [M(-0.02, 0.03), M(0.02, 0.03), M(0.02, 0.14), M(-0.02, 0.14)], z + 0.86, z + 0.97)
-    if mirror:
-        (xa, ya), (xb, yb) = M(-w / 2, 0.0), M(w / 2, 0.008)
-        box(coll, o, "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
+def bad_mirror(coll, wx, wy, fx, fy, w, z=0.0):
+    """Plain mirror of the Bäder, w wide, centred on (wx, wy) above the basin."""
+    (xa, ya), (xb, yb) = at_wall(wx, wy, fx, fy)(-w / 2, 0.0), at_wall(wx, wy, fx, fy)(w / 2, 0.008)
+    box(coll, coll + "_Sanitaer", "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
 
 
-def wc_basin(coll, wx, wy, fx, fy, w=0.40, d=0.28, z=0.0, mirror=True):
-    """Hand basin of the WCs after bad_mallnitz.jpeg (input/2026-11-08 input/): open ceramic bowl on two
-    chrome console legs with a towel rail, pillar mixer, chrome trap; above the tiles a mirror
-    in a stepped black frame."""
-    T = WC_TILE_T
-    o, M = coll + "_Sanitaer", at_wall(wx + fx * T, wy + fy * T, fx, fy)
+def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
+    """Waschbecken after input/2026-11-12 input/waschbecken_einzeln.jpeg / _doppelt.jpg on the
+    Waschbeckenständer of waschbecken_staender.png: a rectangular ceramic basin w x d (centred on
+    the wall point (wx, wy), facing (fx, fy), `tile` in front of the plaster), top 85, 17 high, a
+    tap deck along the wall with `taps` mixers (1: einzeln, 2: doppelt, at u = -w/4, w/4) over one
+    bowl with one drain. The Ständer in chrome tubes: two front legs with tapered feet and collars,
+    a front rail and two side rails at 52 back to balls on wall rosettes, two back posts up to the
+    basin, a bottle trap to the wall. Own random stream (rng, else a new Random(16)), so the
+    global one is not touched."""
+    rng = rng or random.Random(16)
+    r = rng.random()
+    o, M = coll + "_Sanitaer", at_wall(wx + fx * tile, wy + fy * tile, fx, fy)
     rect = lambda u0, u1, v0, v1: [M(u0, v0), M(u1, v0), M(u1, v1), M(u0, v1)]
     P = lambda u, v, h: (*M(u, v), z + h)
-    K = lambda *a: xy_prism(coll, o, "Keramik", rect(*a[:4]), z + a[4], z + a[5])
-    K(-w / 2 + 0.02, w / 2 - 0.02, 0.0, d - 0.02, 0.70, 0.76)                    # bowl bottom
-    K(-w / 2, w / 2, 0.0, 0.08, 0.70, 0.85)                                       # tap deck
-    K(-w / 2, w / 2, d - 0.03, d, 0.70, 0.85)                                     # front rim
+    K = lambda u0, u1, v0, v1, z0, z1: xy_prism(coll, o, "Keramik", rect(u0, u1, v0, v1), z + z0, z + z1, r)
+    T = lambda p0, p1, prof: turned(coll, o, "Metall", P(*p0), P(*p1), prof, rnd=r)
+    top, zb, fl, e = 0.85, 0.68, 0.71, 0.015
+    deck = 0.10 if d >= 0.35 else 0.08
+    K(-w / 2, w / 2, 0.0, d, zb, fl)                                               # bottom
+    K(-w / 2, w / 2, 0.0, deck, fl, top)                                           # tap deck
+    K(-w / 2, w / 2, d - e, d, fl, top)                                            # front rim
     for s in (-1, 1):
-        K(*sorted((s * w / 2, s * (w / 2 - 0.03))), 0.08, d - 0.03, 0.70, 0.85)  # side rims
-    turned(coll, o, "Metall", P(0, d / 2 + 0.03, 0.76), P(0, d / 2 + 0.03, 0.763), [(0.025, 0), (0.025, 1)])
-    turned(coll, o, "Metall", P(0, 0.045, 0.85), P(0, 0.045, 0.95), [(0.018, 0), (0.016, 1)])   # mixer
-    turned(coll, o, "Metall", P(0, 0.045, 0.94), P(0, 0.13, 0.92), [(0.009, 0), (0.008, 1)])    # spout
-    turned(coll, o, "Metall", P(0, 0.045, 0.95), P(0, 0.02, 1.00), [(0.006, 0), (0.005, 1)])    # lever
-    turned(coll, o, "Metall", P(0, d / 2 + 0.03, 0.70), P(0, d / 2 + 0.03, 0.46), [(0.02, 0), (0.02, 1)])
-    turned(coll, o, "Metall", P(0, d / 2 + 0.03, 0.47), P(0, 0.0, 0.47), [(0.016, 0), (0.016, 1)])
-    lu, lv = w / 2 - 0.04, d - 0.04
-    for s in (-1, 1):                                                             # console legs
-        turned(coll, o, "Metall", P(s * lu, lv, 0.014), P(s * lu, lv, 0.70), [(0.014, 0), (0.014, 1)])
-        turned(coll, o, "Metall", P(s * lu, lv, 0.014), P(s * lu, lv, 0.02), [(0.025, 0), (0.025, 1)])
-        turned(coll, o, "Metall", P(s * lu, lv, 0.25), P(s * lu, 0.0, 0.25), [(0.009, 0), (0.009, 1)])
-    turned(coll, o, "Metall", P(-lu, lv + 0.02, 0.62), P(lu, lv + 0.02, 0.62), [(0.008, 0), (0.008, 1)])  # rail
+        K(*sorted((s * w / 2, s * (w / 2 - e))), deck, d - e, fl, top)            # side rims
+    vd = (deck + d - e) / 2                                                        # bowl centre
+    T((0, vd, fl), (0, vd, fl + 0.003), [(0.025, 0), (0.025, 1)])                  # drain
+    T((0, deck, top - 0.04), (0, deck + 0.003, top - 0.04), [(0.011, 0), (0.011, 1)])   # overflow
+    vm = deck / 2
+    for u in ([0.0] if taps == 1 else [-w / 4, w / 4]):                           # mixers
+        T((u, vm, top), (u, vm, top + 0.13), [(0.018, 0), (0.016, 1)])
+        T((u, vm, top + 0.12), (u, vm + 0.13, top + 0.10), [(0.009, 0), (0.008, 1)])
+        T((u, vm, top + 0.13), (u, vm - 0.03, top + 0.18), [(0.006, 0), (0.005, 1)])
+    lu, lv, rz = w / 2 - 0.05, d - 0.05, 0.52
     for s in (-1, 1):
-        turned(coll, o, "Metall", P(s * lu, lv, 0.62), P(s * lu, lv + 0.02, 0.62), [(0.008, 0), (0.008, 1)])
-    if not mirror:
-        return
-    M = at_wall(wx, wy, fx, fy)                                                   # mirror on the plaster
+        u = s * lu
+        T((u, lv, 0.014), (u, lv, zb), [(0.006, 0), (0.014, 0.08), (0.014, 1)])  # leg with tapered foot
+        T((u, lv, 0.04), (u, lv, 0.06), [(0.017, 0), (0.017, 1)])                  # foot collar
+        T((u, lv, rz - 0.02), (u, lv, rz + 0.02), [(0.019, 0), (0.019, 1)])        # rail collar
+        T((u, lv, zb - 0.025), (u, lv, zb), [(0.018, 0), (0.018, 1)])              # top collar
+        T((u, lv, rz), (u, 0.0, rz), [(0.011, 0), (0.011, 1)])                     # side rail to the wall
+        T((u, 0.0, rz), (u, 0.008, rz), [(0.03, 0), (0.03, 1)])                    # wall rosette
+        T((u, 0.01, rz), (u, 0.07, rz), [(0.005, 0), (0.022, 0.15), (0.03, 0.5), (0.022, 0.85), (0.005, 1)])   # ball
+        T((u, 0.04, rz + 0.03), (u, 0.04, zb), [(0.011, 0), (0.011, 1)])           # back post
+    T((-lu, lv, rz), (lu, lv, rz), [(0.011, 0), (0.011, 1)])                       # front rail
+    T((0, vd, fl), (0, vd, 0.40), [(0.016, 0), (0.016, 1)])                        # trap: tail pipe,
+    T((0, vd, 0.30), (0, vd, 0.42), [(0.018, 0), (0.028, 0.15), (0.028, 1)])      # bottle,
+    T((0, vd, 0.38), (0, 0.008, 0.38), [(0.014, 0), (0.014, 1)])                   # arm to the wall
+    T((0, 0.0, 0.38), (0, 0.008, 0.38), [(0.03, 0), (0.03, 1)])                    # rosette
+
+
+def wc_mirror(coll, wx, wy, fx, fy, z=0.0):
+    """Mirror of the WCs after bad_mallnitz.jpeg (input/2026-11-08 input/): on the plaster above
+    the tiles, in a stepped black frame, centred on (wx, wy)."""
+    o, M = coll + "_Sanitaer", at_wall(wx, wy, fx, fy)
     z0, z1, mw, fw = z + 1.22, z + 2.05, 0.30, 0.07
     F = lambda u0, u1, v1, za, zb: box(coll, o, "Eisen", *[c for p in zip(M(u0, 0.0), M(u1, v1)) for c in sorted(p)], za, zb)
     F(-mw, mw, 0.035, z0, z0 + fw); F(-mw, mw, 0.035, z1 - fw, z1)
@@ -806,26 +823,13 @@ def shower(coll, x0, x1, y0, y1, glass, head, z=0.0):
                                  for i in range(k)], z + 2.00, z + 2.02)
 
 
-def flur_sink(coll, wx, wy, z):
-    """Deep ceramic sink on a dark stone panel (waschbecken-briol.jpeg) on a wall facing north at
-    (wx, wy), but one wall-mounted single-lever mixer instead of the photo's two taps."""
+def flur_panel(coll, wx, wy, z):
+    """Dark stone panel (waschbecken-briol.jpeg), 2 cm, on a wall facing north at (wx, wy), behind
+    the Flur's Waschbecken."""
     o, M = coll + "_Sanitaer", at_wall(wx, wy, 0, 1)
     rect = lambda u0, u1, v0, v1: [M(u0, v0), M(u1, v0), M(u1, v1), M(u0, v1)]
     xy_prism(coll, o, "Schiefer", rect(-0.40, 0.40, 0.0, 0.02), z + 0.50, z + 1.62)        # stone panel,
     xy_prism(coll, o, "Schiefer", rect(-0.33, 0.33, 0.0, 0.02), z + 0.012, z + 0.50)       # narrower below
-    for u0, u1, v0, v1, z0 in ((-0.30, 0.30, 0.02, 0.47, 0.58), (-0.30, 0.30, 0.44, 0.47, 0.62),   # bottom, front,
-                               (-0.30, 0.30, 0.02, 0.05, 0.62), (-0.30, -0.27, 0.05, 0.44, 0.62),  # back, sides
-                               (0.27, 0.30, 0.05, 0.44, 0.62)):
-        xy_prism(coll, o, "Keramik", rect(u0, u1, v0, v1), z + z0, z + (0.62 if z0 < 0.6 else 0.86))
-    P = lambda u, v, h: (*M(u, v), z + h)
-    turned(coll, o, "Metall", P(0, 0.245, 0.62), P(0, 0.245, 0.623), [(0.03, 0), (0.03, 1)])   # drain
-    turned(coll, o, "Metall", P(0, 0.245, 0.30), P(0, 0.245, 0.58), [(0.02, 0), (0.02, 1)])
-    turned(coll, o, "Metall", P(0, 0.02, 0.30), P(0, 0.265, 0.30), [(0.02, 0), (0.02, 1)])
-    turned(coll, o, "Metall", P(0, 0.02, 1.10), P(0, 0.03, 1.10), [(0.035, 0), (0.035, 1)])    # rosette
-    turned(coll, o, "Metall", P(0, 0.03, 1.10), P(0, 0.10, 1.10), [(0.025, 0), (0.025, 1)])    # mixer body
-    turned(coll, o, "Metall", P(0, 0.09, 1.09), P(0, 0.22, 1.06), [(0.012, 0), (0.010, 1)])    # spout
-    turned(coll, o, "Metall", P(0, 0.215, 1.065), P(0, 0.215, 1.035), [(0.011, 0), (0.011, 1)])
-    turned(coll, o, "Metall", P(0, 0.08, 1.12), P(0, 0.05, 1.20), [(0.007, 0), (0.006, 1)])    # lever
 
 
 WC_TILE_T = 0.010            # tile face in front of the plaster (WC fixtures stand on it)
@@ -887,20 +891,25 @@ def build_sanitary():
     zo = Z_OG + 0.0
     for c, z, rect, door in WCS:
         wainscot(c, z, *rect, door)
-    # OG Bad NW: basin on the north wall, shower in the south alcove
-    basin("OG", 0.885, 8.57, 0, -1, w=0.62, d=0.48, z=zo)
+    # OG Bad NW (end of the Flur): Waschbecken doppelt 120 on the north wall, shower in the south alcove
+    waschbecken("OG", 0.96, 8.57, 0, -1, 1.20, 0.47, 2, z=zo)
+    bad_mirror("OG", 0.96, 8.57, 0, -1, 1.20, z=zo)
     shower("OG", 1.67, 2.57, 5.46, 6.44, [(2.10, 6.44, 2.57, 6.44)], (2.12, 5.46, 0, 1), z=zo)
     # OG WC 2,26: toilet on the west wall below the window
     toilet("OG", 0.31, 6.0, 1, 0, z=zo)
-    # OG Bad S: corner shower NW, basin on the south wall
+    # OG Bad S (Nadine & Till): corner shower NW, Waschbecken doppelt 100 on the south wall, west of the window
     shower("OG", 5.59, 6.57, 1.64, 2.62, [(6.57, 1.64, 6.57, 2.62), (5.59, 1.64, 6.05, 1.64)],
            (6.08, 2.62, 0, -1), z=zo)
-    basin("OG", 6.11, 0.40, 0, 1, w=0.62, d=0.48, z=zo)
+    waschbecken("OG", 6.14, 0.40, 0, 1, 1.00, 0.47, 2, z=zo)
+    bad_mirror("OG", 6.14, 0.40, 0, 1, 1.00, z=zo)
     # OG WC 2,30: toilet on the south wall, hand basin on the east wall
     toilet("OG", 9.26, 3.98, 0, 1, z=zo)
-    wc_basin("OG", 9.92, 5.2, -1, 0, z=zo)
-    # OG Flur: sink right of the Waschküche door (plan: basin symbol), after waschbecken-briol.jpeg
-    flur_sink("OG", 6.45, 6.35, zo)
+    waschbecken("OG", 9.92, 4.95, -1, 0, 0.50, 0.40, 1, z=zo, tile=WC_TILE_T)   # between toilet and door leaf
+    wc_mirror("OG", 9.92, 4.95, -1, 0, z=zo)
+    # OG Flur: right of the Waschküche door (plan: basin symbol) a Waschbecken einzeln 60 on the
+    # stone panel of waschbecken-briol.jpeg
+    flur_panel("OG", 6.45, 6.35, zo)
+    waschbecken("OG", 6.45, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, tile=0.02)
 
 
 # ---------------------------------------------------------------- furniture

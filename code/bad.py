@@ -3,8 +3,8 @@ sketch input/2026-11-08 input/plan_grosseltern_bad.jpeg and the agreed drawing
 input/2026-11-08 input/grosseltern_v4.svg. From north to south: a walk-in shower 0.80 wide in the NW corner
 (clear of the north french door), east of it a wall 1.20 m long, 1.00 m high, 12 cm thick and one
 L-shaped clear glass pane on its shower edge, flush with the north french door's jamb (above it to
-the ceiling, 35 cm from the north wall down to the floor); the Waschtrog (one 1.00 m trough, two
-deck mixers) on that wall's east face; in the south a niche 1.20 m deep over the full width, split
+the ceiling, 35 cm from the north wall down to the floor); a Waschbecken doppelt 100 x 47 (two
+deck mixers, one bowl, input/2026-11-12 input/) on its chrome Ständer on that wall's east face; in the south a niche 1.20 m deep over the full width, split
 by a 12 cm wall into WC (west) and Schrank (east), closed by two interlocking sliding leaves on two
 offset tracks (the WC leaf open, slid behind the Schrank leaf). The floor: a limestone strip as wide as the WC along the west wall, oak
 elsewhere.
@@ -25,7 +25,7 @@ SHOWER = 0.80                                # walk-in shower width (west)
 GLASS = 0.35                                 # thin glass from the north wall
 FD_JAMB = 1.109                              # house x: west jamb of the north french door (build_eg)
 LOW = (2.267, 3.467, 1.00, 0.12)             # low wall: v from, v to, height, thickness
-TROG = (0.50, 1.00, 0.85)                    # Waschtrog: depth, width, top
+TROG = (0.47, 1.00, 0.85)                    # Waschbecken doppelt: depth, width, top (hc.waschbecken's)
 LIN = 2.05                                   # lintel underside / rail top
 CLAD = 2.0                                   # shower's limestone cladding height
 
@@ -101,22 +101,11 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     B("_Sanitaer", "Metall", SHOWER / 2 - 0.012, SHOWER / 2 + 0.012, 3.494, vw - 0.03, 2.18, 2.20, r)   # arm
     disc("_Sanitaer", "Metall", SHOWER / 2, 3.494, 0.15, 2.155, 2.18, r)                        # rain head 30
 
-    # Waschtrog: one ceramic trough hung on the low wall's east face, a deck along the wall with
-    # two pillar mixers, one bowl; a drain under each mixer
+    # Waschbecken doppelt (request 2026-11-12) on its Ständer, on the low wall's east face, centred
+    # on it; one draw from this module's stream, as the former Waschtrog
     td, tw, tt = TROG
     ua, ub, va, vb = SHOWER + lt, SHOWER + lt + td, (lv0 + lv1 - tw) / 2, (lv0 + lv1 + tw) / 2
-    r, deck, e = rng.random(), 0.12, 0.03
-    B("_Sanitaer", "Keramik", ua, ub, va, vb, tt - 0.15, tt - 0.12, r)                          # bottom
-    B("_Sanitaer", "Keramik", ua, ua + deck, va, vb, tt - 0.12, tt, r)                          # deck
-    B("_Sanitaer", "Keramik", ub - e, ub, va, vb, tt - 0.12, tt, r)                             # front rim
-    B("_Sanitaer", "Keramik", ua + deck, ub - e, va, va + e, tt - 0.12, tt, r)                  # sides
-    B("_Sanitaer", "Keramik", ua + deck, ub - e, vb - e, vb, tt - 0.12, tt, r)
-    for v in (va + tw / 4, vb - tw / 4):
-        um = ua + 0.05
-        T("_Sanitaer", "Metall", (um, v, tt), (um, v, tt + 0.13), [(0.018, 0), (0.016, 1)], r)       # mixer
-        T("_Sanitaer", "Metall", (um, v, tt + 0.12), (um + 0.15, v, tt + 0.10), [(0.009, 0), (0.008, 1)], r)   # spout
-        T("_Sanitaer", "Metall", (um, v, tt + 0.13), (um - 0.03, v, tt + 0.18), [(0.006, 0), (0.005, 1)], r)   # lever
-        disc("_Sanitaer", "Metall", ua + deck + (td - deck - e) / 2, v, 0.025, tt - 0.12, tt - 0.117, r)       # drain
+    hc.waschbecken(c, x0 + ua, y0 + (va + vb) / 2, 1, 0, tw, td, 2, rng=random.Random(rng.random()))
 
     floor(c, x0, y0)
     f, front = 0.06, NICHE + 0.06 + LT              # front: the front sliding leaf's room face
@@ -125,7 +114,7 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
             ((SHOWER - f, lv1, CLAD + 0.2), (SHOWER - f, D, CLAD + 0.2), "Glas 35"),
             ((SHOWER - f, lv0, lh), (SHOWER - f, lv1, lh), "Mauer 120"),
             ((SHOWER + lt / 2, lv0 - f, 0), (SHOWER + lt / 2, lv0 - f, lh), "100 hoch"),
-            ((ub + f, va, tt), (ub + f, vb, tt), "Waschtrog 100"),
+            ((ub + f, va, tt), (ub + f, vb, tt), "Waschbecken 100"),
             ((0, NICHE + 0.35, 0.02), (HALF, NICHE + 0.35, 0.02), "WC 96.4"),
             ((HALF, NICHE + 0.35, 0.02), (HALF + NW, NICHE + 0.35, 0.02), "12"),
             ((HALF + NW, 0.08, LIN + 0.05), (W, 0.08, LIN + 0.05), "Schrank 96.4"),
@@ -137,7 +126,7 @@ def floor(c, x0, y0):
     """The room's floor, last and from its own generator (the parts before keep their rnd): a
     limestone strip as wide as the WC along the west wall, from the south wall behind the toilet to
     the north wall at the shower's end (WC, shower), oak elsewhere (Schrank, the room before the
-    Waschtrog); slabs and planks as the house's floor_cover(), none under the low wall and the
+    Waschbecken); slabs and planks as the house's floor_cover(), none under the low wall and the
     niche wall. A dark base under the joints (in the house inside EG_Boden)."""
     rng = random.Random(7)
     lv0, lv1, _, lt = LOW
