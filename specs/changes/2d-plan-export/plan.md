@@ -207,7 +207,7 @@ From `review.md`, the user chose "fix now". The user's choices: the door symbol 
     - `python3 code/export_plans.py plans/ && .venv/bin/python -m pytest -q -m slow tests/test_plans.py` → green;
     - Look at all six sheets at 1×.
 
-- [ ] Final check after the review fixes: `bash scripts/check.sh full` → green
+- [x] Final check after the review fixes: `bash scripts/check.sh full` → green (2026-11-12, at archive: pytest 42 s, Vitest, Playwright all green; `tmp/check-20261112-081559.log`)
   - **Deferred (user, 2026-11-11):** not run after the fixes. The fixes are small and more changes come first; the full check runs once at the end of the whole procedure. Until then this step stays open, and so does `status: applying`.
   - **Note:** if port 5377 is served from another clone, the Playwright half tests that clone's viewer. This change touches no `web/`, so the report then says so, and the pytest half (including `slow`) is the evidence.
   - **Test first:** none, final check

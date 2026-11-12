@@ -50,3 +50,4 @@ and every later fix to a wall or a door must reach both outputs. The geometry co
 - 2026-11-09: the Küche is a sub-model in `code/kueche.py` the same way (change `kueche-speis`).
 - 2026-11-10: the Gäste-WC by the back hall is a sub-model in `code/gaeste_wc.py` the same way (change `gaeste-wc`).
 - 2026-11-11: the Büro bookcase ("Schrank im Büro") is a sub-model in `code/regal.py` the same way (tweak); the window, balcony door and Büro door around it are defined once there and used by `build_eg()`.
+- 2026-11-11: a third backend, `code/export_plans.py` (standard library), draws the Blueprint as the architect's plan sheets in `plans/`; the object classes and the door, room and stair records it draws from (`PLAN`, `DOORS`, `PLAN_ROOMS`, `STAIRS`) are core facts (change `2d-plan-export`).
