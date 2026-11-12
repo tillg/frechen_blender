@@ -224,26 +224,26 @@ def ofen_im_haus():
             hc.SMOOTH.discard(key[1]); hc.SMOOTH.add("EG_" + key[1])
 
 
-def werkstattofen(c, cx, cy, z, turn=0):
+def werkstattofen(c, cx, cy, z, turn=0, name="Werkstattofen", rng=random):
     """Small workshop stove after werkstattofen.jpeg (40 x 40 x 105 cm, sizes estimated from the
     photo), centred at (cx, cy) on floor z, front facing north turned by `turn` degrees
     (counter-clockwise): black iron body with a top plate, upper door with the fire behind glass,
-    lower ash door, handles."""
-    o, W = c + "_Werkstattofen", 0.40
+    lower ash door, handles. Object c_<name>; its rnd comes from rng."""
+    o, W = c + "_" + name, 0.40
     n0 = len(hc.GEO.get((c, o), {"v": []})["v"])
     x0, y0 = cx - W / 2, cy - W / 2
     x1, y1, xm = x0 + W, y0 + W, cx
-    hc.box(c, o, "Eisen", x0, x1, y0, y1, z + 0.012, z + 1.03)                                  # body
-    hc.box(c, o, "Eisen", x0 - 0.01, x1 + 0.01, y0 - 0.01, y1 + 0.01, z + 1.03, z + 1.05)        # top plate
-    r = random.random()
+    hc.box(c, o, "Eisen", x0, x1, y0, y1, z + 0.012, z + 1.03, rng.random())  # body
+    hc.box(c, o, "Eisen", x0 - 0.01, x1 + 0.01, y0 - 0.01, y1 + 0.01, z + 1.03, z + 1.05, rng.random())  # top plate
+    r = rng.random()
     for xa, xb, za, zb in ((xm - 0.13, xm - 0.09, 0.60, 0.98), (xm + 0.09, xm + 0.13, 0.60, 0.98),
                            (xm - 0.13, xm + 0.13, 0.60, 0.64), (xm - 0.13, xm + 0.13, 0.94, 0.98)):
         hc.box(c, o, "Eisen", xa, xb, y1, y1 + 0.02, z + za, z + zb, r)                  # upper door frame
-    hc.box(c, o, "Eisen", xm - 0.09, xm + 0.09, y1, y1 + 0.003, z + 0.64, z + 0.94)             # firebox back
-    hc.box(c, o, "Ofenglas", xm - 0.09, xm + 0.09, y1 + 0.014, y1 + 0.018, z + 0.64, z + 0.94)
-    hc.box(c, o, "Eisen", xm - 0.11, xm + 0.11, y1, y1 + 0.015, z + 0.17, z + 0.42)             # ash door
-    hc.box(c, o, "Eisen", xm + 0.135, xm + 0.15, y1 + 0.02, y1 + 0.045, z + 0.72, z + 0.84)     # handles
-    hc.box(c, o, "Eisen", xm + 0.11, xm + 0.13, y1 + 0.015, y1 + 0.05, z + 0.28, z + 0.30)
+    hc.box(c, o, "Eisen", xm - 0.09, xm + 0.09, y1, y1 + 0.003, z + 0.64, z + 0.94, rng.random())  # firebox back
+    hc.box(c, o, "Ofenglas", xm - 0.09, xm + 0.09, y1 + 0.014, y1 + 0.018, z + 0.64, z + 0.94, rng.random())
+    hc.box(c, o, "Eisen", xm - 0.11, xm + 0.11, y1, y1 + 0.015, z + 0.17, z + 0.42, rng.random())  # ash door
+    hc.box(c, o, "Eisen", xm + 0.135, xm + 0.15, y1 + 0.02, y1 + 0.045, z + 0.72, z + 0.84, rng.random())  # handles
+    hc.box(c, o, "Eisen", xm + 0.11, xm + 0.13, y1 + 0.015, y1 + 0.05, z + 0.28, z + 0.30, rng.random())
     g, ca, sa = hc.GEO[(c, o)], math.cos(math.radians(turn)), math.sin(math.radians(turn))
     rot = lambda x, y: (cx + (x - cx) * ca - (y - cy) * sa, cy + (x - cx) * sa + (y - cy) * ca)
     g["v"][n0:] = [(*rot(x, y), zz) for x, y, zz in g["v"][n0:]]
