@@ -1,5 +1,7 @@
-"""Frechenlehen – the desk: the plain table builder desk() (Büro desk, OG laundry table) and the
-desk sub-model (web/desk.html): the Büro desk in the Bibliothek with two LG UltraFine 6K 32"
+"""Frechenlehen – the desk: the plain table builder desk() (OG laundry table) and the desk
+sub-model (web/desk.html): the Büro desk in the Bibliothek, a solid cherry top on the cast-iron
+crank frame of input/2026-11-12 input/schreibtischgestell.jpg (#10; the viewer cranks it up and
+down: LIFT, CRANK), with two LG UltraFine 6K 32"
 monitors showing the screenshots of input/2026-11-06 input/ (a12 left, pilcrow right), a MacBook
 Pro left of them, a white Magic Keyboard and a white Magic Trackpad.
 
@@ -13,9 +15,18 @@ sub-model are the same parts, only translated.
 import math, random
 import house_core as hc
 
-DESK_AT = (10.919, 11.48)                                  # house: SW corner, between the two north
-DESK_W, DESK_D, DESK_H = 1.948, 0.991, 0.75                # french doors of the Bibliothek
-CHAIR = (0.974, -0.23)                                     # chair centre, facing the desk (+y)
+DESK_AT = (10.943, 11.471)                                 # house: SW corner, between the two north
+DESK_W, DESK_D, DESK_H = 1.90, 1.00, 0.75                  # french doors of the Bibliothek, centred
+                                                           # there, back edge 2 mm off the wall
+CHAIR = (DESK_W / 2, -0.23)                                # chair centre, facing the desk (+y)
+LIFT_DZ = 0.30                                             # crank travel: 75 -> 105 cm
+# The crank frame ("Wien"), sizes read off the photo (assumed): two arched cast-iron legs across the
+# depth, 10 cm thick, their west faces at LEG_X; on each two spindle housings and a gearbox between
+# them (drive rods from leg to leg), a foot tube; the spindles carry flat bars under the top.
+LEG_X, LEG_T, LEG_H = (0.20, 1.60), 0.10, 0.50
+GEAR_TOP = 0.62                                            # top of the spindle housings
+SPINDLE_Y = (0.35, 0.65)
+WHEEL = (1.74, 0.50, 0.55), 0.13                           # hand wheel: hub (east leg, outside), radius
 # LG UltraFine 6K 32" (32U990A): body and 31.5" 16:9 pane after the data sheet (assumed: the bezel
 # split, the pane's height above the desk, the stand). MacBook Pro 16", Magic Keyboard with Touch
 # ID, Magic Trackpad: Apple's dimensions.
@@ -49,6 +60,76 @@ def desk(c, x0, x1, y0, y1, z=0.0):
     for xa in (x0 + 0.03, x1 - 0.08):
         for ya in (y0 + 0.03, y1 - 0.08):
             hc.box(c, o, "FichteZ", xa, xa + 0.05, ya, ya + 0.05, z + 0.012, z + 0.72)
+
+
+def ring(cy, cz, r, n=12):
+    """(y, z) circle profile for prism_x / (x, y) outline for xy_prism."""
+    return [(cy + r * math.cos(2 * math.pi * i / n), cz + r * math.sin(2 * math.pi * i / n)) for i in range(n)]
+
+
+def leg_profile(yc):
+    """(y, z) outline of a leg about its centre yc: 40 cm block on top, flanks sweeping out in a
+    concave curve to the 14 cm feet, a 42 x 22 cm arch between them."""
+    flank = [(0.35 - 0.15 * math.cos(a), 0.30 - 0.25 * math.sin(a)) for a in (math.pi / 2 * i / 6 for i in range(7))]
+    arch = [(0.21 * math.cos(a), 0.22 * math.sin(a)) for a in (math.pi * i / 12 for i in range(13))]
+    half = [(0.20, 0.50)] + flank + [(0.35, 0.0)] + arch[:6]           # right half, from the top down and in
+    pts = half + [(0.0, 0.22)] + [(-y, z) for y, z in reversed(half)]
+    return [(yc + y, z) for y, z in pts]
+
+
+def gestell(c, x0, y0, z, rng):
+    """The static crank frame (furniture <c>_Moebel): legs, foot tube, housings, gearboxes, rods."""
+    o, yc = c + "_Moebel", y0 + DESK_D / 2
+    for lx in LEG_X:
+        r, xa = rng.random(), x0 + lx
+        hc.prism_x(c, o, "Eisen", xa, xa + LEG_T, [(y, z + h) for y, h in leg_profile(yc)], r)
+        for sy in SPINDLE_Y:
+            hc.box(c, o, "Eisen", xa + 0.005, xa + LEG_T - 0.005, y0 + sy - 0.045, y0 + sy + 0.045,
+                   z + LEG_H, z + GEAR_TOP, r)
+        hc.box(c, o, "Eisen", xa + 0.01, xa + LEG_T - 0.01, yc - 0.06, yc + 0.06, z + LEG_H, z + 0.58, r)
+    xi, xe = x0 + LEG_X[0] + LEG_T, x0 + LEG_X[1]
+    hc.prism_x(c, o, "Eisen", xi, xe, [(y, z + h) for y, h in ring(yc, 0.25, 0.04)], rng.random())   # foot tube
+    for dy in (-0.03, 0.03):                                                                          # drive rods
+        hc.prism_x(c, o, "Eisen", xi, xe, [(y, z + h) for y, h in ring(yc + dy, 0.55, 0.01, 8)], rng.random())
+
+
+def platte(c, x0, y0, z, rng):
+    """The lifted part (<c>_Schreibtisch): cherry top, a flat bar over each leg, four spindles
+    reaching into their housings (still 5 mm inside at the top of the travel). The top and the
+    spindles draw rnd globally: the five values the old table's top and legs drew."""
+    o, T = c + "_Schreibtisch", z + DESK_H
+    hc.box(c, o, "Kirschbaum", x0, x0 + DESK_W, y0, y0 + DESK_D, T - 0.04, T)
+    for lx in LEG_X:
+        xm = x0 + lx + LEG_T / 2
+        hc.box(c, o, "Eisen", xm - 0.04, xm + 0.04, y0 + 0.08, y0 + DESK_D - 0.08, T - 0.05, T - 0.04, rng.random())
+        for sy in SPINDLE_Y:
+            hc.xy_prism(c, o, "Eisen", [(x + xm, y + y0 + sy) for x, y in ring(0, 0, 0.015, 8)],
+                        z + GEAR_TOP - LIFT_DZ - 0.005, T - 0.05)
+    for o2 in (o, c + "_Geraete", c + "_Bildschirm_L", c + "_Bildschirm_R"):
+        hc.LIFT[o2] = LIFT_DZ
+
+
+def handrad(c, x0, y0, z, rng):
+    """Hand wheel on the east leg's outer face (<c>_Handrad, PIVOT at the hub): hub, five spokes,
+    rim, a knob to crank it; it turns about x, four turns per stroke (CRANK: more would alias at 30 fps)."""
+    o, r = c + "_Handrad", rng.random()
+    (hx, hy, hz), R = WHEEL
+    hx, hy, hz = x0 + hx, y0 + hy, z + hz
+    xf = x0 + LEG_X[1] + LEG_T                                              # the leg's outer face
+    hc.prism_x(c, o, "Eisen", xf, hx + 0.02, ring(hy, hz, 0.025), r)          # hub
+    n = 24
+    for i in range(n):                                                     # rim
+        a, b = 2 * math.pi * i / n, 2 * math.pi * (i + 1) / n
+        hc.prism_x(c, o, "Eisen", hx - 0.005, hx + 0.01,
+                   [(hy + rr * math.cos(t), hz + rr * math.sin(t)) for rr, t in ((R - 0.015, a), (R, a), (R, b), (R - 0.015, b))], r)
+    for k in range(5):                                                     # spokes
+        t = 2 * math.pi * k / 5 + math.pi / 2
+        u, v = (math.cos(t), math.sin(t)), (-math.sin(t) * 0.006, math.cos(t) * 0.006)
+        hc.prism_x(c, o, "Eisen", hx - 0.003, hx + 0.008,
+                   [(hy + rr * u[0] + s * v[0], hz + rr * u[1] + s * v[1]) for rr, s in ((0.02, -1), (R - 0.01, -1), (R - 0.01, 1), (0.02, 1))], r)
+    t = math.radians(200)                                                  # knob
+    hc.prism_x(c, o, "Eisen", hx + 0.01, hx + 0.08, ring(hy + (R - 0.008) * math.cos(t), hz + (R - 0.008) * math.sin(t), 0.012, 8), r)
+    hc.PIVOT[o], hc.CRANK[o] = (hx, hy, hz), ((1, 0, 0), 4 * 360)
 
 
 def stuhl(c, x0, y0):
@@ -154,11 +235,15 @@ def trackpad(c, o, x0, y0, T, rnd):
 
 
 def desk_neu(c="Desk", x0=0.0, y0=0.0, z=0.0):
-    """The Büro desk with its devices at (x0, y0) on floor z: the table as before (desk()), two
-    monitors along the back right of a MacBook Pro, keyboard and trackpad in front of the monitors.
-    The devices draw their rnd from their own generator, so the parts built after them keep their
-    random values. Returns the dimension lines (sub-model coordinates)."""
-    desk(c, x0, x0 + DESK_W, y0, y0 + DESK_D, z)
+    """The Büro desk with its devices at (x0, y0) on floor z: the cherry top on the crank frame
+    (gestell(), platte(), handrad()), two monitors along the back right of a MacBook Pro, keyboard
+    and trackpad in front of the monitors. Frame and devices draw their rnd from their own
+    generators, so the parts built after them keep their random values. Returns the dimension
+    lines (sub-model coordinates)."""
+    fr = random.Random(18)
+    gestell(c, x0, y0, z, fr)
+    platte(c, x0, y0, z, fr)
+    handrad(c, x0, y0, z, fr)
     o, T, rng = c + "_Geraete", z + DESK_H, random.Random(3)
     for side, (l0, e, turn), img in zip("LR", monitors(), ("Bildschirm_A12", "Bildschirm_Pilcrow")):
         monitor(c, o, side, (x0 + l0[0], y0 + l0[1]), e, turn, T, img, rng.random())
@@ -169,9 +254,11 @@ def desk_neu(c="Desk", x0=0.0, y0=0.0, z=0.0):
     zt = H + MON_LIFT + MON_H
     (l0, e, _), (r0, er, _) = monitors()
     re = (r0[0] + MON_W * er[0] + 0.05, r0[1] + MON_W * er[1] - 0.01)                  # right monitor's outer end
-    return [((0, -f, 0), (W, -f, 0), "Tisch 194.8"),
-            ((W + f, 0, 0), (W + f, D, 0), "99.1"),
-            ((W + f, -f, 0), (W + f, -f, H), "75"),
+    return [((0, -f, 0), (W, -f, 0), "Tisch 190"),
+            ((W + f, 0, 0), (W + f, D, 0), "100"),
+            ((W + f, -f, 0), (W + f, -f, H), "75–105"),
+            ((LEG_X[0], -f / 2, 0), (LEG_X[1] + LEG_T, -f / 2, 0), "Gestell 150 (angenommen)"),
+            ((-f, D / 2 - 0.35, 0), (-f, D / 2 + 0.35, 0), "70 (angenommen)"),
             ((l0[0], l0[1] - 0.05, zt + 0.06), (MON_J[0], MON_J[1] - 0.05, zt + 0.06), "LG 32″ 71.4"),
             ((*re, H + MON_LIFT), (*re, zt), "42"),
             ((*re, H), (*re, H + MON_LIFT), "11 (angenommen)"),
