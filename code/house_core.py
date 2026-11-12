@@ -79,7 +79,6 @@ MAT_DEF = {
     "Creme":      dict(rgba=(0.84, 0.72, 0.50, 1), rough=0.9),              # Ofen mattress
     "Boucle":     dict(speck=((0.93, 0.85, 0.70), (0.46, 0.23, 0.07), 55)),    # armchairs: cream with brown flecks
     "Paspel":     dict(rgba=(0.38, 0.23, 0.11, 1), rough=0.6),               # their piping
-    "Schiefer":   dict(rgba=(0.14, 0.13, 0.12, 1), rough=0.5),               # dark stone behind the Flur basin
     "Klavierlack": dict(rgba=(0.015, 0.015, 0.017, 1), rough=0.12),          # grand piano
     "Schrift":    dict(rgba=(0.80, 0.76, 0.66, 1), rough=0.6),               # cream, reads on oak
     "Keramik":    dict(rgba=(0.95, 0.95, 0.95, 1), rough=0.08),
@@ -826,13 +825,18 @@ def shower(coll, x0, x1, y0, y1, glass, head, z=0.0):
                                  for i in range(k)], z + 2.00, z + 2.02)
 
 
-def flur_panel(coll, wx, wy, z):
-    """Dark stone panel (waschbecken-briol.jpeg), 2 cm, on a wall facing north at (wx, wy), behind
-    the Flur's Waschbecken."""
-    o, M = coll + "_Sanitaer", at_wall(wx, wy, 0, 1)
-    rect = lambda u0, u1, v0, v1: [M(u0, v0), M(u1, v0), M(u1, v1), M(u0, v1)]
-    xy_prism(coll, o, "Schiefer", rect(-0.40, 0.40, 0.0, 0.02), z + 0.50, z + 1.62)        # stone panel,
-    xy_prism(coll, o, "Schiefer", rect(-0.33, 0.33, 0.0, 0.02), z + 0.012, z + 0.50)       # narrower below
+def wood_mirror(coll, wx, wy, fx, fy, w, h, fw, z0, rng=random):
+    """Mirror in a wooden frame (back hall in gaeste_wc.py, OG Flur): outer w x h from z0 up, frame
+    fw wide and 2.5 cm deep (Kiefer), the glass set back in it; centred on the wall point (wx, wy)
+    facing (fx, fy). Two draws from rng (default: the global stream): the frame boards share one,
+    the glass takes one."""
+    o, M, r = coll + "_Sanitaer", at_wall(wx, wy, fx, fy), rng.random()
+    F = lambda m, u0, u1, v0, v1, za, zb, rnd: box(coll, o, m, *[c for p in zip(M(u0, v0), M(u1, v1))
+                                                                 for c in sorted(p)], za, zb, rnd)
+    u, z1 = w / 2, z0 + h
+    F("Kiefer", -u, u, 0.0, 0.025, z0, z0 + fw, r); F("Kiefer", -u, u, 0.0, 0.025, z1 - fw, z1, r)   # bottom, top
+    F("Kiefer", u - fw, u, 0.0, 0.025, z0 + fw, z1 - fw, r); F("Kiefer", -u, -u + fw, 0.0, 0.025, z0 + fw, z1 - fw, r)
+    F("Spiegel", -u + fw, u - fw, 0.004, 0.012, z0 + fw, z1 - fw, rng.random())
 
 
 WC_TILE_T = 0.010            # tile face in front of the plaster (WC fixtures stand on it)
@@ -909,10 +913,13 @@ def build_sanitary():
     toilet("OG", 9.26, 3.98, 0, 1, z=zo)
     waschbecken("OG", 9.92, 4.95, -1, 0, 0.50, 0.40, 1, z=zo, tile=WC_TILE_T)   # between toilet and door leaf
     wc_mirror("OG", 9.92, 4.95, -1, 0, z=zo)
-    # OG Flur: right of the Waschküche door (plan: basin symbol) a Waschbecken einzeln 60 on the
-    # stone panel of waschbecken-briol.jpeg
-    flur_panel("OG", 6.45, 6.35, zo)
-    waschbecken("OG", 6.45, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, tile=0.02)
+    # OG Flur (plan: basin symbol): a Waschbecken einzeln 60 exactly between the doors to Saschi
+    # and Waschküche (openings 4.02 .. 4.87 and 7.15 .. 8.17 of the wall y 6.06 .. 6.35), on Taubenblau tiles
+    # 15 cm wider each side, above them a mirror 110 x 95 in a 10 cm wooden frame
+    xf = (4.87 + 7.15) / 2
+    wood_mirror("OG", xf, 6.35, 0, 1, 1.10, 0.95, 0.10, zo + 1.17)
+    wainscot("OG", zo, xf - 0.45, xf + 0.45, 6.35, 7.35, None, sides="s")
+    waschbecken("OG", xf, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, tile=WC_TILE_T)
 
 
 # ---------------------------------------------------------------- furniture
