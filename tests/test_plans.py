@@ -473,3 +473,15 @@ def test_the_walls_chain_runs_inside_the_rooms_not_inside_the_facade_wall():
     for st, sides in CHAINS.items():                      # no chain of walls is the chain of openings
         for side, (ops, walls, _) in sides.items():
             assert ops != walls, (st, side)
+
+
+# ---------------------------------------------------------------- generation date (GitHub Pages only)
+def test_the_title_block_names_the_generation_time_only_when_asked(tmp_path):
+    """export_plans.py --generated (the Pages workflow) writes the Berlin time into the title block;
+    without it the sheets stay byte-identical, so plans/ in the repo carries no date."""
+    import datetime
+    utc = datetime.datetime(2026, 11, 12, 19, 34, tzinfo=datetime.timezone.utc)
+    assert ep.generated(utc) == "generiert: 12. November 2026 20:34 Uhr"                 # CET
+    assert ep.generated(utc.replace(month=7)) == "generiert: 12. Juli 2026 21:34 Uhr"    # CEST
+    assert "generiert" not in ep.sheet("Ost", "", "abc")
+    assert ">generiert: 12. November 2026 20:34 Uhr</text>" in ep.sheet("Ost", "", "abc", stamp=ep.generated(utc))
