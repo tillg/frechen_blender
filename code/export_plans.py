@@ -3,14 +3,15 @@ Grundriss EG / OG and Ansicht Nord / Ost / Süd / West, each A3 landscape at 1:1
 at 100 %, 1 m in the model measures 10 mm).
 
     python3 code/export_plans.py plans/
+    python3 code/export_plans.py plans/ --generated     # GitHub Pages: the Berlin time in the title block
 
 Standard library only, no Blender. Like build_house.py and export_gltf.py it only draws: every fact
 about the house comes from the core (ADR-001-XEWL); this file knows cut heights, line weights, the sheet
 layout and the dimension notation. The same model always gives byte-identical files: no date (the
 title block names the model state, a hash of the geometry), numbers with fixed decimals, elements in
-a stable order.
+a stable order. Only --generated adds a date, for the sheets GitHub Pages publishes.
 """
-import bisect, hashlib, math, sys
+import bisect, datetime, hashlib, math, sys, zoneinfo
 from pathlib import Path
 from xml.sax.saxutils import escape
 
@@ -730,8 +731,19 @@ def north_arrow(x, y):
             f'fill="#000"/></g>' + text(x, y - 8.5, "N", 3.5, "middle", "bold"))
 
 
-def sheet(name, body, state, north=False):
-    """One A3 page: frame, the drawing (already in sheet mm), title block, scale bar."""
+MONTHS = ("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober",
+          "November", "Dezember")
+
+
+def generated(when):
+    """'generiert: 12. November 2026 20:34 Uhr' for an aware datetime, in Berlin time."""
+    t = when.astimezone(zoneinfo.ZoneInfo("Europe/Berlin"))
+    return f"generiert: {t.day}. {MONTHS[t.month - 1]} {t.year} {t:%H:%M} Uhr"
+
+
+def sheet(name, body, state, north=False, stamp=None):
+    """One A3 page: frame, the drawing (already in sheet mm), title block (stamp: the generation time,
+    right in its top row), scale bar."""
     tx, ty = PAGE_W - 130, PAGE_H - 40                                  # title block, lower right
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{PAGE_W}mm" height="{PAGE_H}mm" '
            f'viewBox="0 0 {PAGE_W} {PAGE_H}" font-family="{FONT}">',
@@ -745,13 +757,15 @@ def sheet(name, body, state, north=False):
            text(tx + 3, ty + 26.5, "M 1:100", 3.5),
            text(tx + 63, ty + 26.5, f"Modellstand {state}", 2.5),
            scale_bar(tx, ty - 6)]
+    if stamp:
+        out.append(text(tx + 117, ty + 6.5, stamp, 2.5, "end"))
     if north:
         out.append(north_arrow(PAGE_W - 25, 32))
     out.append('</svg>\n')
     return "\n".join(out)
 
 
-def export(outdir):
+def export(outdir, stamp=None):
     bp = house_core.build()
     state = model_state(bp)
     out = Path(outdir)
@@ -759,8 +773,10 @@ def export(outdir):
     faces = solid_faces(bp)
     for key, name in SHEETS:
         body = plan_body(bp, faces, key.upper()) if key in ("eg", "og") else elevation_body(faces, key)
-        (out / f"{key}.svg").write_text(sheet(name, body, state, north=key in ("eg", "og")), encoding="utf-8")
+        (out / f"{key}.svg").write_text(sheet(name, body, state, north=key in ("eg", "og"), stamp=stamp), encoding="utf-8")
 
 
 if __name__ == "__main__":
-    export(sys.argv[1] if len(sys.argv) > 1 else "plans")
+    args = [a for a in sys.argv[1:] if a != "--generated"]
+    export(args[0] if args else "plans",
+           generated(datetime.datetime.now(datetime.timezone.utc)) if "--generated" in sys.argv else None)

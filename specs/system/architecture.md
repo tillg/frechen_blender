@@ -258,7 +258,8 @@ and writes `eg.svg`, `og.svg` (Grundrisse) and `nord.svg`, `ost.svg`, `sued.svg`
   overall; rounded cumulatively so they sum up). Elevations: level marks (±0,00, OK FFB OG,
   eaves, ridge) and the overall width.
 - **Sheet.** A3 landscape, `viewBox="0 0 420 297"` in mm (1 m = 10 mm), frame, title block with
-  the model state (a hash of every plan input, no date), scale bar, north arrow on the floor
+  the model state (a hash of every plan input, no date; `--generated`, passed only by the Pages
+  workflow, adds "generiert: <day>. <Monat> <year> <HH:MM> Uhr" in Berlin time in its top row), scale bar, north arrow on the floor
   plans; fixed decimals and a stable element order, so the output is byte-identical across runs.
   `tests/test_plans.py` (its currency test `slow`) fails when `plans/` is older than the model.
 
@@ -548,4 +549,4 @@ Model work runs locally on the owner's Mac (arm64). A headless film render is
 `Blender -b frechenlehen.blend -a`, at about 1 s per frame, one frame per camera key. The MP4 is
 linked raw from GitHub. `.github/workflows/pages.yml` builds on `ubuntu-latest`
 (Python 3.13, Node 24) and deploys `web/dist` to `https://tillg.github.io/frechen_blender/`
-(base path `/frechen_blender/`). It runs `python3 code/export_plans.py plans/` before `npm run build`. Only the deploy job holds `pages: write`/`id-token: write`.
+(base path `/frechen_blender/`). It runs `python3 code/export_plans.py plans/ --generated` before `npm run build`. Only the deploy job holds `pages: write`/`id-token: write`.
