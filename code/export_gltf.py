@@ -145,6 +145,11 @@ def export(path, bp=None):
             node["extras"]["slide"] = list(yup(bp.slide[name]))
         if name in (bp.swing or {}):                         # the viewer swings it about its hinge (glTF y)
             node["extras"]["swing"] = math.radians(bp.swing[name])
+        if name in (bp.lift or {}):                          # the viewer lifts it (glTF y) with the others
+            node["extras"]["lift"] = bp.lift[name]
+        if name in (bp.crank or {}):                         # and turns it about its pivot meanwhile
+            axis, deg = bp.crank[name]
+            node["extras"]["crank"] = [*yup(axis), math.radians(deg)]
         if turn:                                             # about the vertical: glTF y
             node["rotation"] = [0.0, math.sin(math.radians(turn) / 2), 0.0, math.cos(math.radians(turn) / 2)]
         nodes.append(node)

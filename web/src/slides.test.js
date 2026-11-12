@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Object3D } from 'three';
-import { createSlides, DOOR_PERIOD, DOOR_SWING, BUERO_PERIOD, BUERO_SWING, PERIOD, ROLL, slidingNodes, swingingNodes } from './slides.js';
+import { Object3D, Vector3 } from 'three';
+import { createSlides, DOOR_PERIOD, DOOR_SWING, BUERO_PERIOD, BUERO_SWING, LIFT_PERIOD, LIFT_ROLL, PERIOD, ROLL, liftingNodes, slidingNodes, swingingNodes } from './slides.js';
 
 describe('createSlides (the Bad sub-model\'s sliding leaves)', () => {
   it('every 4 s one leaf, picked at random, rolls to its other end in 2 s, and back on its next turn', () => {
@@ -91,5 +91,42 @@ describe('the Büro door (code/regal.py) on its own clock', () => {
     expect(at(13)).toBe(0.5);                                           // and swings back
     expect(at(14)).toBe(0);
     expect(at(17.9)).toBe(0);                                           // rests 4 s again
+  });
+});
+
+describe('liftingNodes (the Büro desk, code/desk.py: #10)', () => {
+  it('lifts every extras.lift node together: 3 s up, 4 s rest, 3 s down; the crank turns with it', () => {
+    expect([LIFT_PERIOD, LIFT_ROLL]).toEqual([7, 3]);
+    const top = new Object3D(), pane = new Object3D(), wheel = new Object3D(), other = new Object3D();
+    top.name = 'top'; top.userData.lift = 0.3; top.position.set(1, 0.75, -2);
+    pane.name = 'pane'; pane.userData.lift = 0.3; pane.position.set(0, 1, 0);
+    wheel.name = 'wheel'; wheel.userData.crank = [1, 0, 0, 16 * Math.PI]; wheel.position.set(2, 0.5, 0);
+    const s = liftingNodes([top, other, pane, wheel]);
+    expect(s.nodes.map((n) => n.obj.name)).toEqual(['top', 'pane', 'wheel']);
+    expect(s.update(0)).toBe(false);
+    expect(s.update(6.9)).toBe(false);                    // rests low for the first 7 s
+    s.update(8.5);                                        // half way up, all at the same fraction
+    expect(top.position.y).toBeCloseTo(0.9);
+    expect(pane.position.y).toBeCloseTo(1.15);
+    expect(top.position.x).toBe(1);
+    expect(s.state().wheel.angle).toBeCloseTo(8 * Math.PI);
+    s.update(7.75);                                       // eased: 0.15625 of the stroke = 2.5π, 1.25 turns
+    const up = new Vector3(0, 1, 0).applyQuaternion(wheel.quaternion);
+    expect(up.x).toBeCloseTo(0); expect(up.y).toBeCloseTo(0); expect(up.z).toBeCloseTo(1);   // a quarter turn about x
+    expect(wheel.position.x).toBe(2);                     // turns in place
+    s.update(10);
+    expect(top.position.y).toBeCloseTo(1.05);             // 30 cm up
+    expect(s.state().wheel.angle).toBeCloseTo(16 * Math.PI);   // the crank's full angle
+    s.update(13.9);
+    expect(top.position.y).toBeCloseTo(1.05);             // rests 4 s
+    s.update(15.5);
+    expect(top.position.y).toBeCloseTo(0.9);
+    s.update(17);
+    expect(top.position.y).toBeCloseTo(0.75);             // down again
+    expect(s.state()).toEqual({ top: { pos: 0, dy: 0 }, pane: { pos: 0, dy: 0 }, wheel: { pos: 0, angle: 0 } });
+    s.update(22.5);                                       // up again ...
+    expect(s.update(22.6, false)).toBe(true);             // ... off: back to as built
+    expect(top.position.y).toBeCloseTo(0.75);
+    expect(wheel.quaternion.w).toBeCloseTo(1);
   });
 });
