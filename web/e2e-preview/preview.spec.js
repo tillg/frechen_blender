@@ -83,7 +83,7 @@ test('bad page is part of the build', async ({ page }) => {
   await page.goto(BASE);
   await choose(page, 'Modell', 'Bad Oma & Opa');
   await page.waitForURL(/\/frechen_blender\/bad\.html$/);
-  await expect(page.locator('.dim', { hasText: 'Waschtrog 100' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.dim', { hasText: 'Waschbecken 100' })).toBeVisible({ timeout: 30_000 });
   expect(failed).toEqual([]);
   expect(errors).toEqual([]);
   expect(glb).toBe(1);

@@ -615,21 +615,16 @@ def test_stube_sitzecke_in_the_se_corner():
 def test_og_flur_waschbecken_right_of_the_waschkueche_door():
     """OG Flur: a washbasin on the wall right of the Waschküche door (seen from the Flur: west of
     it, x < 7.15, wall face y 6.35; the plan draws a basin there) after input/2026-11-05 input/
-    waschbecken-briol.jpeg: a deep ceramic sink on a dark stone panel, but one mixer tap."""
+    waschbecken-briol.jpeg: the dark stone panel; on it, since 2026-11-12, a Waschbecken einzeln 60 x 47
+    on its Ständer (input/2026-11-12 input/), standing in front of the 2 cm panel."""
     zo = house_core.Z_OG
     parts = [p for p in part_list(("OG", "OG_Sanitaer")) if p[1][1] >= 6.35 - 1e-9 and 6.0 < p[1][0] and p[2][0] < 7.15]
     stone = [p for p in parts if p[0] == "Schiefer"]
     assert stone and "Schiefer" in house_core.MAT_DEF
     slo = [min(p[1][k] for p in stone) for k in range(3)]; shi = [max(p[2][k] for p in stone) for k in range(3)]
     assert shi[1] <= 6.38 and slo[2] <= zo + 0.02 and shi[2] >= zo + 1.5 and shi[0] <= 7.15 - 0.2
-    sink = [p for p in parts if p[0] == "Keramik"]
-    klo = [min(p[1][k] for p in sink) for k in range(3)]; khi = [max(p[2][k] for p in sink) for k in range(3)]
-    assert abs(khi[2] - zo - 0.86) < 0.01 and khi[2] - klo[2] >= 0.25                   # deep trough
-    assert 0.55 <= khi[0] - klo[0] <= 0.65 and khi[1] - 6.35 <= 0.5
-    assert len(sink) >= 5                                                                # hollow, not a block
-    cx = (klo[0] + khi[0]) / 2
-    tap = [p for p in parts if p[0] == "Metall" and p[1][2] > khi[2]]
-    assert tap and all(abs((lo[0] + hi[0]) / 2 - cx) < 0.05 for _, lo, hi, _ in tap)   # one mixer, centred
+    basin = _waschbecken(("OG", "OG_Sanitaer"), (6.45, 6.35, 0, 1), 0.60, 0.47, 1, zo, 0.02)
+    assert all(lo[1] >= 6.37 - 1e-6 for m, lo, hi in basin)                              # in front of the panel
 
 
 def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
@@ -1054,11 +1049,111 @@ def test_wc_fixtures_after_the_photo():
         M, key = at(*w), (c, c + "_Sanitaer")
         assert _part_at(key, *M(0, 0.10), z + 0.60) == "Keramik", w            # cistern
         assert _part_at(key, *M(0, 0.40), z + 0.03) == "Keramik", w            # pedestal on the floor
-    for c, z, *w in [("OG", zo, 9.92, 5.2, -1, 0)]:                         # the Bad Großeltern's WC has none
+    for c, z, *w in [("OG", zo, 9.92, 4.95, -1, 0)]:                        # the Bad Großeltern's WC has none
         M, key = at(*w), (c, c + "_Sanitaer")
-        assert {_part_at(key, *M(s * 0.16, 0.25), z + 0.30) for s in (-1, 1)} == {"Metall"}, w   # legs
+        assert {_part_at(key, *M(s * 0.20, 0.36), z + 0.30) for s in (-1, 1)} == {"Metall"}, w   # Ständer legs
         assert {_part_at(key, *M(s * 0.27, 0.02), z + 1.60) for s in (-1, 1)} == {"Eisen"}, w    # frame
     assert _part_at(("OG", "OG_Sanitaer"), *at(6.11, 0.40, 0, 1)(0.27, 0.02), zo + 1.6) != "Eisen"
+
+
+def _waschbecken(key, wall, w, d, taps, z, tile=0.0, bp=None):
+    """Check one Waschbecken (input/2026-11-12 input/) of object `key`: wall = (wx, wy, fx, fy), the
+    basin's centre on the wall face, facing into the room; `tile` = what stands between plaster and
+    basin. Rectangular ceramic basin w x d, top z + 0.85, 17 cm high, hollow; `taps` mixers; one
+    drain; on the Ständer: two legs to the floor at the front corners with a rail at 0.52 between
+    them, side rails back to the wall, a trap under the drain. Returns the basin's and Ständer's
+    parts (material, lo, hi) in world coordinates."""
+    bp = bp or BP
+    wx, wy, fx, fy = wall
+    ox, oy = wx + fx * tile, wy + fy * tile
+    uv = lambda x, y: (-(x - ox) * fy + (y - oy) * fx, (x - ox) * fx + (y - oy) * fy)
+
+    def span(lo, hi):                                                      # (u0, u1, v0, v1) of a box
+        us, vs = zip(*(uv(x, y) for x in (lo[0], hi[0]) for y in (lo[1], hi[1])))
+        return min(us), max(us), min(vs), max(vs)
+
+    top, zb = z + 0.85, z + 0.68
+    parts = [(m, lo, hi) for m, lo, hi in _parts(bp, key) if m in ("Keramik", "Metall") and z - 1e-6 <= lo[2]
+             and hi[2] <= top + 0.25 and (s := span(lo, hi)) and -w / 2 - 0.03 <= s[0] and s[1] <= w / 2 + 0.03
+             and -0.002 <= s[2] and s[3] <= d + 0.03]
+    ker = [(lo, hi) for m, lo, hi in parts if m == "Keramik"]
+    met = [(lo, hi) for m, lo, hi in parts if m == "Metall"]
+    assert len(ker) >= 5, key                                              # hollow, not a block
+    sp = [span(lo, hi) for lo, hi in ker]
+    assert abs(min(s[0] for s in sp) + w / 2) < 1e-6 and abs(max(s[1] for s in sp) - w / 2) < 1e-6, key
+    assert abs(min(s[2] for s in sp)) < 1e-6 and abs(max(s[3] for s in sp) - d) < 1e-6, key
+    assert abs(max(hi[2] for lo, hi in ker) - top) < 1e-6 and abs(min(lo[2] for lo, hi in ker) - zb) < 1e-6, key
+    mid = lambda lo, hi: ((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2)
+    bowl = (lambda u, v: (ox + fx * v - fy * u, oy + fy * v + fx * u))(0.0, d * 0.6)
+    assert not any(all(lo[k] < p < hi[k] for k, p in enumerate((*bowl, top - 0.05))) for lo, hi in ker), key
+    assert len([1 for lo, hi in met if abs(lo[2] - top) < 1e-6]) == taps, key           # mixer bodies on the deck
+    drains = [(lo, hi) for lo, hi in met if abs(lo[2] - (zb + 0.03)) < 1e-6 and hi[2] - lo[2] < 0.01]
+    assert len(drains) == 1, key
+    du, dv = uv(*mid(*drains[0]))
+    assert abs(du) < 1e-6, key                                                           # one drain, centred
+    legs = [uv(*mid(lo, hi)) for lo, hi in met if lo[2] <= z + 0.02 and hi[2] >= zb - 0.03]
+    assert sorted(round(u, 3) for u, v in legs) == [round(-w / 2 + 0.05, 3), round(w / 2 - 0.05, 3)], key
+    assert all(abs(v - (d - 0.05)) < 1e-6 for u, v in legs), key
+    rail = [span(lo, hi) for lo, hi in met if abs((lo[2] + hi[2]) / 2 - (z + 0.52)) < 1e-3]
+    assert any(s[1] - s[0] >= w - 0.12 for s in rail), key                                # front rail
+    assert len([s for s in rail if s[2] <= 0.002 and s[3] - s[2] >= d - 0.12]) >= 2, key  # side rails to the wall
+    assert any(abs(uv(*mid(lo, hi))[0]) < 1e-6 and lo[2] < z + 0.40 and hi[2] <= zb for lo, hi in met), key   # trap
+    return parts
+
+
+def _clear(parts, boxes, what):
+    """No part's box intersects any of the boxes ((x0, y0, z0), (x1, y1, z1))."""
+    for m, lo, hi in parts:
+        for a, b in boxes:
+            assert not all(lo[k] < b[k] - 1e-6 and hi[k] > a[k] + 1e-6 for k in range(3)), (what, m, lo, hi, a, b)
+
+
+def _leaf_boxes(bp, c, z, h=2.0):
+    """The door leaves of storey c as built (Blueprint.doors), as boxes."""
+    return [((min(a[0], b[0]), min(a[1], b[1]), z), (max(a[0], b[0]), max(a[1], b[1]), z + h))
+            for d in bp.doors if d["c"] == c for a, b in [d["leaf"]]]
+
+
+def test_waschbecken_og_wc():
+    """OG WC next to the Hauswirtschaftsraum (request 2026-11-12): a Waschbecken einzeln 50 x 40 on
+    its Ständer on the east wall, in front of the tiles, between the toilet and the door leaf (open
+    90 deg into the WC); its black-framed mirror moves with it."""
+    zo = house_core.Z_OG
+    parts = _waschbecken(("OG", "OG_Sanitaer"), (9.92, 4.95, -1, 0), 0.50, 0.40, 1, zo, house_core.WC_TILE_T)
+    _clear(parts, _leaf_boxes(BP, "OG", zo), "door leaf")
+    toilet = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Sanitaer")) if m == "Keramik"
+              and 8.9 < lo[0] and hi[0] < 9.6 and 3.98 <= lo[1] and hi[1] < 4.75]
+    assert toilet
+    _clear(parts, toilet, "toilet")
+
+
+def test_keramik_bright_white():
+    """Request 2026-11-12: the Waschbecken are bright white, not beige: Keramik is a neutral white."""
+    r, g, b, _ = house_core.MAT_DEF["Keramik"]["rgba"]
+    assert r == g == b >= 0.95
+
+
+def test_waschbecken_og_baeder():
+    """OG Bäder (request 2026-11-12): a Waschbecken doppelt on its Ständer, 120 on the north wall of
+    the Bad at the end of the Flur (NW), 100 on the south wall of Nadine & Till's Bad (S), west of
+    the window (jamb 6.84); a plain mirror above each, as wide as the basin; clear of the door
+    leaves and the showers."""
+    zo, key = house_core.Z_OG, ("OG", "OG_Sanitaer")
+    showers = [((1.67, 5.46, zo), (2.57, 6.44, zo + 2.05)), ((5.59, 1.64, zo), (6.57, 2.62, zo + 2.05))]
+    for wall, w in (((0.96, 8.57, 0, -1), 1.20), ((6.14, 0.40, 0, 1), 1.00)):
+        parts = _waschbecken(key, wall, w, 0.47, 2, zo)
+        _clear(parts, _leaf_boxes(BP, "OG", zo) + showers, wall)
+        cx, cy = wall[:2]
+        mixers = sorted(round((lo[0] + hi[0]) / 2 - cx, 3) for m, lo, hi in parts
+                        if m == "Metall" and abs(lo[2] - zo - 0.85) < 1e-6)
+        assert mixers == [round(-w / 4, 3), round(w / 4, 3)], wall
+        mir = [(lo, hi) for m, lo, hi in _parts(BP, key) if m == "Spiegel" and abs(lo[1] - cy) < 0.02
+               and lo[0] < cx < hi[0]]
+        assert len(mir) == 1 and abs(mir[0][1][0] - mir[0][0][0] - w) < 1e-6, wall
+        assert abs((mir[0][0][0] + mir[0][1][0]) / 2 - cx) < 1e-6, wall
+    assert max(hi[0] for m, lo, hi in _parts(BP, key) if lo[1] < 0.9 and 5.5 < lo[0] < 6.9 and hi[2] > zo + 0.5) \
+        <= 6.84 - 0.15 + 1e-6                                                # clear of the window reveal
+    assert not hasattr(house_core, "basin")
 
 
 def _parts(bp, key):
@@ -1077,7 +1172,7 @@ def test_bad_submodel():
     """code/bad.py: the Großeltern's bathroom after plan_grosseltern_bad.jpeg (input/2026-11-08 input/)
     and the agreed drawing grosseltern_v4.svg (same folder), at its own origin (the room's inner SW
     corner, 2.048 x 3.817 m): walk-in shower 0.80 wide in the NW corner, 35 cm glass from the north
-    wall, a 1.20 m wall 1.00 high with glass to the ceiling, the Waschtrog on its east face; in the
+    wall, a 1.20 m wall 1.00 high with glass to the ceiling, the Waschbecken doppelt on its east face; in the
     south a 1.20 m niche split by a 12 cm wall into WC and Schrank, closed by two interlocking
     sliding leaves (the WC leaf open behind the Schrank leaf)."""
     import bad
@@ -1140,16 +1235,13 @@ def test_bad_submodel():
         assert _mat_at(bp, til, x, y, z) == "Kalkstein", (x, y, z)
     assert _mat_at(bp, til, 0.009, 3.0, 2.1) is None and _mat_at(bp, til, 0.791, 2.8, 1.5) is None
     assert not any(m == "Keramik" and hi[0] < 0.8 and lo[1] > 2.2 for m, lo, hi in _parts(bp, san))   # no tray: flush
-    # Waschtrog: one 1.00 m trough on the low wall's east face, centred on it, top 0.85, two mixers
-    trog = [(lo, hi) for m, lo, hi in _parts(bp, san) if m == "Keramik" and lo[1] > 2.2]
-    lo = [min(b[0][k] for b in trog) for k in range(3)]
-    hi = [max(b[1][k] for b in trog) for k in range(3)]
-    assert [round(a, 3) for a in (lo[0], lo[1], hi[1], hi[2])] == [0.92, 2.367, 3.367, 0.85] and hi[0] <= 1.42 + 1e-9
-    assert abs((lo[1] + hi[1]) / 2 - (2.267 + 3.467) / 2) < 1e-9
-    assert _mat_at(bp, san, 1.2, 2.867, 0.80) is None                          # one open bowl
+    # Waschbecken doppelt 100 x 47 (request 2026-11-12, was the Waschtrog) on the low wall's east
+    # face, centred on it, top 0.85, two mixers, on its Ständer
+    _waschbecken(san, (0.92, (2.267 + 3.467) / 2, 1, 0), 1.00, 0.47, 2, 0.0, bp=bp)
     mix = {round((lo[1] + hi[1]) / 2, 2) for m, lo, hi in _parts(bp, san)
-           if m == "Metall" and lo[0] > 0.92 and lo[2] >= 0.85 - 1e-9 and hi[2] > 0.9}
+           if m == "Metall" and lo[0] > 0.92 and abs(lo[2] - 0.85) < 1e-9}
     assert mix == {2.62, 3.12}
+    assert "Waschbecken 100" in [t for _, _, t in bp.dims] and not [t for _, _, t in bp.dims if "Waschtrog" in t]
     assert not any("Spiegel" in g["m"] for g in bp.geo.values())
     # Schrank: back cabinet 60 deep over the full width; nothing in front of it, so it can be reached
     # (request 2026-11-09: the hanging wardrobe against the niche wall is gone)
@@ -1381,8 +1473,8 @@ def test_gaeste_wc_submodel():
     the west wall), its leaf opened outward into the Flur, 90 deg, hinged at the partition side;
     the toilet centred (50/50), 40 free in front of it (drawing: 41, its toilet 1 cm shorter); Taubenblau tiles in the WC only. The
     Garderobe keeps the old 80 opening without a door: bench 35 x 110 at 45, wall to wall, 59 free
-    beside it, hook board, six hooks at 165, hat shelf at 185. On the Flur east wall a hand basin
-    40/28 at 85, 14/40/14 on the 69 wall piece, 83 from the WC door's hinge jamb; tiles behind it to
+    beside it, hook board, six hooks at 165, hat shelf at 185. On the Flur east wall a Waschbecken
+    einzeln 40/28 at 85 on its Ständer (input/2026-11-12 input/), 14/40/14 on the 69 wall piece, 83 from the WC door's hinge jamb; tiles behind it to
     about 112, up to the Windfang door's architrave; a mirror 40 x 60 in a 7 cm wooden frame from 120."""
     import gaeste_wc as g
     bp = house_core.build_gaeste_wc()
@@ -1433,6 +1525,20 @@ def test_gaeste_wc_submodel():
     assert (cm(6.723, ya), cm(ya, yb), cm(yb, 7.408)) == (14, 40, 14)
     assert cm(0, max(hi[2] for lo, hi in bas)) == 85
     assert cm(g.DB, min(lo[0] for lo, hi in bas) + x0) == 83
+    # ... a Waschbecken einzeln on its Ständer (input/2026-11-12 input/), clear of the three leaves
+    # in both states and of the Windfang leaf's sweep; 65 free beside it from the Garderobe passage
+    wb = _waschbecken(K("Sanitaer"), (2.358 - x0, g.BM - y0, -1, 0), g.BW, g.BD, 1, 0.0, house_core.WC_TILE_T, bp=bp)
+    for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):
+        (px, py, _), vs = bp.pivot["GaesteWC_" + n], bp.geo[K(n)]["v"]
+        for a in (0.0, math.radians(bp.swing["GaesteWC_" + n])):
+            rot = [(px + (x - px) * math.cos(a) - (y - py) * math.sin(a),
+                    py + (x - px) * math.sin(a) + (y - py) * math.cos(a), z) for x, y, z in vs]
+            _clear(wb, [tuple(tuple(f(v[k] for v in rot) for k in range(3)) for f in (min, max))], n)
+    (px, py, _), vs = bp.pivot["GaesteWC_Windfangtuer"], bp.geo[K("Windfangtuer")]["v"]
+    sweep = max(math.hypot(x - px, y - py) for x, y, z in vs)
+    for m, lo, hi in wb:
+        assert math.dist((min(max(px, lo[0]), hi[0]), min(max(py, lo[1]), hi[1])), (px, py)) > sweep, (m, lo, hi)
+    assert min(lo[0] for m, lo, hi in wb) + x0 - g.GA >= 0.64
     # mirror: glass 40 x 60 in a 7 cm wooden frame, outside 54 x 74 from 120, centred over the basin
     gl = [(lo, hi) for m, lo, hi in san if m == "Spiegel"]
     fr = [(lo, hi) for m, lo, hi in san if m == "Kiefer"]
