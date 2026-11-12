@@ -1,14 +1,14 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-11
+edited: 2026-11-12
 ---
 
 # Functional: Frechenlehen house model
 
 ## Features
 
-### House model (`house_core.py`, built by both backends)
+### House model (`house_core.py`, built by every backend)
 
 - **Shell:**
   - EG and OG walls with all openings from the plans
@@ -128,6 +128,28 @@ edited: 2026-11-11
 - **Surroundings:** granite terrace with gravel strip and soil beds, ground.
 - **Garden layout:** no-grass areas, grass density, clump shape and shrub placements in the
   beds.
+
+### Plan sheets (`export_plans.py`, for the architect)
+
+`python3 code/export_plans.py plans/` writes six A3 sheets at 1:100 as SVG (true scale when
+printed at 100 %; ≤ 30 s, each ≤ 2 MB), committed in `plans/` and re-exported after every core
+change; the same model always gives byte-identical files.
+
+- **Grundriss EG / OG:** section at 1.80 m (EG) / 1.55 m (OG) above the floor, above every sill
+  and below every head. Walls hatched inside one heavy outline, the west larch cladding cut thin,
+  the built-ins below the cut in thin lines (kitchen, sanitary, stoves, Speis, cabinets); loose
+  furniture left out. Doors with the conventional swing (leaf at 90° and quarter arc). The stair
+  as in the architect's plan in both storeys: all 15 risers, walking line from a circle at the
+  bottom step to an arrow up, in EG "15 STG 18.0/25.5". Every room labelled with the architect's
+  name and its net area computed from the model (Musikraum and Büro are one room, "Bibliothek";
+  the Bad Großeltern's WC niche is "WC Großeltern"). Dimension chains on all four sides in the
+  architect's style (ticks, cm below 1 m, superscript 5 for half centimetres): openings, walls
+  and rooms, overall.
+- **Ansicht Nord / Ost / Süd / West:** hidden-line elevation of the facade (walls, windows,
+  shutters, cladding, roof, balconies, annex, terrace, lamps), grey ground band, level marks
+  ±0,00, OK FFB OG, eaves and ridge, and the overall width.
+- **Title block:** Frechenlehen, sheet name, M 1:100, the model state (hash); scale bar; north
+  arrow on the floor plans. The viewer shows the same sheets under Darstellung › Pläne.
 
 ### Blender only
 
@@ -273,7 +295,8 @@ sequenceDiagram
 | In | Out |
 |---|---|
 | `input/*.pdf`, `grundriss_*.png` (plans) | `frechenlehen.blend` |
-| `input/*.png/jpg` detail photos, named after their component | `frechenlehen_rundgang.mp4` |
+| `input/*.png/jpg` detail photos, named after their component | `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (the two newest films) |
+| | `plans/*.svg` plan sheets for the architect (committed) |
 | `input/farben_*.png` colour references | `docs/images/ansicht_*.png` (README views) |
 | | `tmp/details/*.png` check stills, `tmp/web/*.png` viewer screenshots, `tmp/check-*.log` check logs |
 | | `web/public/frechenlehen.glb` (generated), `web/dist/` → GitHub Pages |
@@ -282,7 +305,7 @@ sequenceDiagram
 
 The model has no runtime state. In Blender the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
-the Bad's sliding leaves and the back hall's three doors move on their own clock (each one at its
+the Bad's sliding leaves, the back hall's three doors and the Büro door move on their own clocks (each one at its
 built or its other state, or on the way); otherwise the state is the model entry (cutaway all / noroof / eg or a sub-model), the Darstellung
 (house progress `p` 0–4), the Standpunkt (or Eigene Ansicht), a forced dusk value from the sun
 toggle (cleared by any stage change), the saved view per entry, the Rundgang
