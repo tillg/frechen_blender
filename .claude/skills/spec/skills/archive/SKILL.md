@@ -72,5 +72,6 @@ auto-select here.
 - Always let the user pick the change; always ask before committing.
 - Update the system description before committing — don't strand knowledge in change artifacts.
 - The first commit carries the work and the docs; the second only removes the change directory.
-- No branches, no push. Unattended: don't archive at all — report what is ready and stop.
+- No new branches. Push and merge only as `CLAUDE.md` › GitHub issues says (issue branch, after the
+  human's approval). Unattended: don't archive at all — report what is ready and stop.
 - Edit spec files with the Edit/Write tools, not sed/python in Bash. Mermaid for diagrams.
