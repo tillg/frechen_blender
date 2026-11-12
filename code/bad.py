@@ -69,6 +69,7 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
             B(o, m, HALF + w0, HALF + w1, tc + d0, tc + d1, zl + za, zl + zb, r)
 
         hc.six_panel_leaf(part, LW, LH)
+        hc.sliding_pulls(part, LW)
         hc.SLIDE[c + o] = (-HALF, 0.0, 0.0)          # one object each: rolls over the WC half and back
         hc.LEAVES.append((c, [(x0 + HALF, y0 + tc - LT / 2, zl), (x0 + HALF + LW, y0 + tc + LT / 2, zl + LH)]))
     B("_Innentueren", "Metall", 0, W, NICHE, NICHE + 0.11, LIN - 0.05, LIN - 0.005, rng.random())   # rail

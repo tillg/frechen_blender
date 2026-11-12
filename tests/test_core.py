@@ -314,7 +314,7 @@ def test_regal_submodel():
     the sill; bridge from 2.02 above the 2.00 head), 94 column (south); 30 / 48 free to the walls;
     depth 42, middle base 48; books in it. With the three wall pieces: east wall with the window, north
     wall with the balcony door, Flur wall with the Büro door (106, moved 50 west), whose leaf opened
-    90 deg stands 10.5 in front of the south column, its levers 8."""
+    90 deg stands 10.5 in front of the south column, its levers 5.5."""
     import regal as r
     bp = house_core.build_regal()
     leaves = [pts for c, pts in house_core.LEAVES if c == "Regal"]
@@ -360,7 +360,7 @@ def test_regal_submodel():
     xs = [p[0] + x0 for p in leaves[0]]
     assert max(p[1] + y0 for p in leaves[0]) > r.S0
     assert r.XF - max(xs) == pytest.approx(0.105)
-    assert r.XF - (doors[0]["leaf"][1][0] + x0) == pytest.approx(0.08)                   # its levers
+    assert r.XF - (doors[0]["leaf"][1][0] + x0) == pytest.approx(0.055)                  # its levers
     texts = [t for *_, t in bp.dims]
     for t in ("48 frei", "Säule 94", "Mitte 94", "30 frei", "Fenster 90", "Unterteil 95", "Brücke 36", "Höhe 238",
               "Tiefe 42", "Tür 106", "10,5 Luft", "39 frei"):
@@ -411,6 +411,35 @@ def test_vitrine_52_in_the_nw_corner_behind_the_piano():
     assert sum(m == "Glas" for m, _, _ in box) >= 12                                              # door, shelves, glasses
     piano = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Moebel")) if m == "Klavierlack"]
     assert max(xs) < min(lo[0] for lo, _ in piano) and max(xs) < 6.953                           # piano, north window
+
+
+
+def test_every_door_has_handles():
+    """Request 2026-11-11: every door has handles. Hinged interior leaves (six-panel and glazed, also
+    the swinging ones): black iron levers on both faces at the lock edge, 1.05 m; french and terrace
+    doors (FD, GD): a handle on the room side of every leaf; sliding leaves (Bad, Speis): flush pulls
+    on both faces. Front and back door had theirs already."""
+    bp = house_core.build()
+    for d in bp.doors:                                                    # the plan box covers the levers
+        (x0, y0), (x1, y1) = d["leaf"]
+        assert min(x1 - x0, y1 - y0) >= 0.14 - 1e-9 or d["w"] > 1.0, d
+    for c in ("EG", "OG"):
+        iron = [(lo, hi) for o in [n for cc, n in bp.geo if cc == c and "tuer" in n.lower()]
+                for m, lo, hi in _parts(bp, (c, o)) if m == "Eisen"]
+        leaves = [pts for cc, pts in house_core.LEAVES if cc == c]
+        for pts in leaves:
+            (ax, ay, az), (bx, by, bz) = pts
+            box = [min(ax, bx) - 0.08, max(ax, bx) + 0.08, min(ay, by) - 0.08, max(ay, by) + 0.08]
+            near = [(lo, hi) for lo, hi in iron if box[0] < lo[0] and hi[0] < box[1] and box[2] < lo[1] and hi[1] < box[3]
+                    and abs((lo[2] + hi[2]) / 2 - min(az, bz) - 1.04) < 0.12]                 # 1.05 m above the floor
+            thin = 0 if abs(bx - ax) < abs(by - ay) else 1                # the leaf's thin axis
+            mid = (pts[0][thin] + pts[1][thin]) / 2
+            assert any(hi[thin] < mid for lo, hi in near) and any(lo[thin] > mid for lo, hi in near), (c, pts)
+    fo = [(m, lo, hi) for c in ("EG", "OG") for m, lo, hi in _parts(bp, (c, c + "_Fenster_Tueren"))]
+    handles = [(lo, hi) for m, lo, hi in fo if m == "Metall"]
+    for o in [o for o in house_core.OPENINGS if o["kind"] in ("FD", "GD")]:
+        assert any(o["a"] - 1e-6 <= (lo[1] if o["ax"] == "y" else lo[0]) and (hi[1] if o["ax"] == "y" else hi[0]) <= o["b"] + 1e-6
+                   and o["sill"] < lo[2] < o["head"] for lo, hi in handles), o
 
 
 def test_west_og_windows_wall_below_up_to_the_ceiling():
@@ -650,7 +679,7 @@ def test_waschkueche_open_cupboard_with_laundry_baskets_on_the_west_wall():
     assert 5.59 < lo[0] < 5.62 and hi[0] - lo[0] > 0.5                       # against the west wall
     assert abs(hi[2] - zo - 2.0) < 0.01
     leaf = [l for c, l in house_core.LEAVES if c == "OG" and 7.0 < max(l[0][0], l[1][0]) < 7.3
-            and 6.0 < min(l[0][1], l[1][1]) < 6.06][0]
+            and 5.9 < min(l[0][1], l[1][1]) < 6.06][0]                       # (5 cm off the wall: its lever)
     assert table[2][1] < lo[1] and hi[1] < min(leaf[0][1], leaf[1][1])        # clear of table and leaf
     uprights = [p for p in carcass if p[0] == "FichteZ" and p[2][0] - p[1][0] > 0.3]
     assert len(uprights) == 2                                                 # the two sides, no dividers
@@ -1477,8 +1506,10 @@ def test_gaeste_wc_doors_swing():
 
     def turned(n, pts=False):                                             # the leaf at its other state
         (px, py, _), a = BP.pivot[n], math.radians(BP.swing[n])
+        g = BP.geo[("EG", n)]                                             # its body: the levers stand proud
+        body = {i for f, m in zip(g["f"], g["m"]) if m != "Eisen" for i in f}
         vs = [(px + (x - px) * math.cos(a) - (y - py) * math.sin(a), py + (x - px) * math.sin(a) + (y - py) * math.cos(a))
-              for x, y, z in BP.geo[("EG", n)]["v"]]
+              for x, y, z in (g["v"][i] for i in sorted(body))]
         return vs if pts else ([min(v[k] for v in vs) for k in (0, 1)], [max(v[k] for v in vs) for k in (0, 1)])
 
     lo, hi = turned("EG_WC_Tuer")                                         # closed: in the WC door's lining
@@ -1489,5 +1520,6 @@ def test_gaeste_wc_doors_swing():
     assert lo[0] > 0.0 and hi[0] > 0.8 and lo[1] > 7.408 and hi[1] > 8.1                  # at the north jamb
     assert all(y < 8.377 - 0.09 for x, y in turned("EG_Hintertuer", True) if x < 0.31)   # in the wall: clear of the jamb
     # as built (open): the Windfang leaf lies along the back hall's north wall (8.506), in front of it
-    wl = [v for v in BP.geo[("EG", "EG_Windfangtuer")]["v"]]
+    g = BP.geo[("EG", "EG_Windfangtuer")]                                 # its body (the levers stand proud)
+    wl = [g["v"][i] for i in sorted({i for f, m in zip(g["f"], g["m"]) if m != "Eisen" for i in f})]
     assert 8.506 - 0.10 < min(v[1] for v in wl) and max(v[1] for v in wl) <= 8.506 + 1e-6 and max(v[0] for v in wl) <= 2.358 + 1e-6
