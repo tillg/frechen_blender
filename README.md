@@ -1,9 +1,9 @@
 # Frechenlehen – Blender-Modell und Web-Ansicht
 
+**[🏠 Das Haus im Browser: tillg.github.io/frechen_blender](https://tillg.github.io/frechen_blender)** · **[▶ Film: Rundgang durchs Haus](https://tillg.github.io/frechen_blender/rundgang.mp4)** (der neueste, läuft direkt im Browser)
+
 ![Ansicht von Südosten](docs/images/ansicht_suedost.png)
 ![Ansicht von Nordwesten](docs/images/ansicht_nordwest.png)
-
-**[▶ Film: Rundgang durchs Haus](https://tillg.github.io/frechen_blender/rundgang.mp4)** (der neueste, läuft direkt im Browser)
 
 3D-Modell des Hauses, erzeugt aus den Architekten-Plänen (Grundriss EG/OG, Ansichten, M 1:100).
 Ein gemeinsamer Python-Kern (`code/house_core.py`, die Öfen in `code/ofen.py`, der Schreibtisch in `code/desk.py`, das Bad der Großeltern in `code/bad.py`, die Küche in `code/kueche.py`, das Gäste-WC am Hintereingang in `code/gaeste_wc.py`, das Regal im Büro in `code/regal.py`) beschreibt das Haus; daraus entstehen das
