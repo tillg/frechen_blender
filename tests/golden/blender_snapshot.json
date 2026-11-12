@@ -397,15 +397,16 @@
  },
  "EG_Buerotuer": {
   "bbox": [
-   14.01,
+   13.96,
    8.876,
    0.01,
-   14.05,
+   14.1,
    9.878,
    1.97
   ],
-  "faces": 84,
+  "faces": 120,
   "materials": [
+   "FL_Eisen",
    "FL_Innentuer"
   ],
   "origin": [
@@ -413,8 +414,8 @@
    8.876,
    0.0
   ],
-  "rnd": "598995835e1f0c57",
-  "verts": 112
+  "rnd": "f6d688f98d7c5583",
+  "verts": 160
  },
  "EG_Fenster_Tueren": {
   "bbox": [
@@ -425,11 +426,12 @@
    12.72,
    2.3
   ],
-  "faces": 1648,
+  "faces": 1972,
   "materials": [
    "FL_Glas",
    "FL_Holz",
    "FL_Laerche",
+   "FL_Metall",
    "FL_Tuer"
   ],
   "origin": [
@@ -437,8 +439,8 @@
    0.0,
    0.0
   ],
-  "rnd": "e66abbbec7edee16",
-  "verts": 2156
+  "rnd": "b9c9ff3a8f27ccc7",
+  "verts": 2588
  },
  "EG_Fliesen": {
   "bbox": [
@@ -628,13 +630,13 @@
  "EG_Innentueren": {
   "bbox": [
    -1.21,
-   2.533,
+   2.445,
    0.0,
    14.145,
    9.966,
    2.17
   ],
-  "faces": 1056,
+  "faces": 1332,
   "materials": [
    "FL_Eisen",
    "FL_Innentuer",
@@ -646,8 +648,8 @@
    0.0,
    0.0
   ],
-  "rnd": "97e6533ca0a2a38e",
-  "verts": 1408
+  "rnd": "d20a779994f57ce8",
+  "verts": 1776
  },
  "EG_Kueche": {
   "bbox": [
@@ -959,14 +961,15 @@
  "EG_Schiebetuer_hinten": {
   "bbox": [
    1.274,
-   9.866,
+   9.862,
    0.005,
    2.358,
-   9.906,
+   9.91,
    1.995
   ],
-  "faces": 84,
+  "faces": 108,
   "materials": [
+   "FL_Eisen",
    "FL_Innentuer"
   ],
   "origin": [
@@ -974,20 +977,21 @@
    0.0,
    0.0
   ],
-  "rnd": "a468ce4f1b87cdb8",
-  "verts": 112
+  "rnd": "c004e24b6981c3b2",
+  "verts": 144
  },
  "EG_Schiebetuer_vorne": {
   "bbox": [
    1.274,
-   9.916,
+   9.912,
    0.005,
    2.358,
-   9.956,
+   9.96,
    1.995
   ],
-  "faces": 84,
+  "faces": 108,
   "materials": [
+   "FL_Eisen",
    "FL_Innentuer"
   ],
   "origin": [
@@ -995,8 +999,8 @@
    0.0,
    0.0
   ],
-  "rnd": "9ffb83bb1f8bcbf1",
-  "verts": 112
+  "rnd": "cff713efd914359e",
+  "verts": 144
  },
  "EG_Schrank": {
   "bbox": [
@@ -1141,15 +1145,16 @@
  },
  "EG_WC_Tuer": {
   "bbox": [
-   1.175,
+   1.125,
    6.723,
    0.01,
-   1.215,
+   1.265,
    7.427,
    1.97
   ],
-  "faces": 84,
+  "faces": 120,
   "materials": [
+   "FL_Eisen",
    "FL_Innentuer"
   ],
   "origin": [
@@ -1157,8 +1162,8 @@
    6.723,
    0.0
   ],
-  "rnd": "af9016db3aaa07b9",
-  "verts": 112
+  "rnd": "0a3148c053915852",
+  "verts": 160
  },
  "EG_Waende": {
   "bbox": [
@@ -1206,13 +1211,13 @@
  "EG_Windfangtuer": {
   "bbox": [
    1.316,
-   8.416,
+   8.391,
    0.01,
    2.358,
-   8.506,
+   8.531,
    1.97
   ],
-  "faces": 102,
+  "faces": 138,
   "materials": [
    "FL_Eisen",
    "FL_Innentuer",
@@ -1223,8 +1228,8 @@
    8.481,
    0.0
   ],
-  "rnd": "6601cb6d3a80353c",
-  "verts": 136
+  "rnd": "69a1ee8130cafb55",
+  "verts": 184
  },
  "Flamme_0_0": {
   "bbox": [
@@ -2579,18 +2584,19 @@
    12.726,
    4.9
   ],
-  "faces": 1764,
+  "faces": 2088,
   "materials": [
    "FL_Glas",
-   "FL_Laerche"
+   "FL_Laerche",
+   "FL_Metall"
   ],
   "origin": [
    0.0,
    0.0,
    0.0
   ],
-  "rnd": "14d6660213bf3b4b",
-  "verts": 2352
+  "rnd": "14158d5c212b72ae",
+  "verts": 2784
  },
  "OG_Fliesen": {
   "bbox": [
@@ -2644,8 +2650,9 @@
    9.694,
    4.77
   ],
-  "faces": 1218,
+  "faces": 1578,
   "materials": [
+   "FL_Eisen",
    "FL_Innentuer"
   ],
   "origin": [
@@ -2653,8 +2660,8 @@
    0.0,
    0.0
   ],
-  "rnd": "0c67e680f5674c06",
-  "verts": 1624
+  "rnd": "9113f4009a5a893d",
+  "verts": 2104
  },
  "OG_Laeden": {
   "bbox": [

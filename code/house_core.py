@@ -313,7 +313,7 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
             continue
         tm, fd, fw = (t0 + t1) / 2, 0.04, 0.06
         if kind == "GD":
-            glazed_door(B, fo, a, b, sill, head, tm)
+            glazed_door(B, fo, a, b, sill, head, tm, -out)
             continue
         F = "Laerche"
         B(F, a, a + fw, tm - fd, tm + fd, sill, head, fo)
@@ -338,6 +338,9 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
                     zr = g0 + (g1 - g0) * (0.52 if rows == 2 else r / rows)
                     B(F, sa + sf, sb - sf, tm - 0.02, tm + 0.02, zr - gb / 2, zr + gb / 2, fo)
                 B("Glas", sa + sf, sb - sf, tm - 0.004, tm + 0.004, g0, g1, fo)
+                if kind == "FD" and out:                         # handle: room side, stile towards the middle
+                    u = sb - sf / 2 if (sa + sb) / 2 < (a + b) / 2 or n == 1 else sa + sf / 2
+                    olive(B, fo, u, tm + 0.03 * out * -1, -out, sill + 1.05)
         if sh and out:
             w = (b - a) / 2
             ta, tb = (t1, t1 + 0.03) if out > 0 else (t0 - 0.03, t0)
@@ -346,9 +349,10 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     B(mat, cur, u1, t0, t1, z0, z1)
 
 
-def glazed_door(B, fo, a, b, sill, head, tm):
+def glazed_door(B, fo, a, b, sill, head, tm, s=0):
     """Terrace door after glass_door_to_terrasse.jpg: larch frame, leaves of ~0.95 m (at least
-    two), each with 2 x 4 panes. Also used for the big west windows."""
+    two), each with 2 x 4 panes. Also used for the big west windows. s: +1 / -1 = the room side across
+    the wall, where each leaf gets a handle on its stile towards the middle (0: none)."""
     M, fw = "Laerche", 0.07
     B(M, a, a + fw, tm - 0.045, tm + 0.045, sill, head, fo)
     B(M, b - fw, b, tm - 0.045, tm + 0.045, sill, head, fo)
@@ -371,6 +375,9 @@ def glazed_door(B, fo, a, b, sill, head, tm):
         for r in (1, 2, 3):
             zr = g0 + (g1 - g0) * r / 4
             B(M, ga, gb, tm - 0.025, tm + 0.025, zr - 0.017, zr + 0.017, fo)
+        if s:
+            u = lb - st / 2 if (la + lb) / 2 < (a + b) / 2 else la + st / 2
+            olive(B, fo, u, tm + 0.035 * s, s, sill + 1.05 if sill < 0.1 else (za + zb) / 2)
 
 
 def interior(coll, x0, x1, y0, y1, doors=(), z0=0.0, z1=Z_EG_TOP, head=DOOR_H, ops=()):
@@ -420,7 +427,7 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style=
         rl = 0.8 + 0.2 * random.random()                          # stiles/rails light, panels darker
         if flat:
             uh, su = (a, -1) if hg == "a" else (b, 1)             # leaf runs away from the opening
-            off = 0.017 + LT / 2                                  # clear of the architrave
+            off = 0.075                                           # clear of the architrave; the lever clear of the wall
             L = lambda w, d, uh=uh, su=su, off=off: (uh + su * w, tf + swing * (off + d))
         else:
             uh, su = (a + lin, 1) if hg == "a" else (b - lin, -1)
@@ -440,8 +447,36 @@ def panel_door(coll, ax, a, b, t0, t1, z0, head, swing, hinge, flat=True, style=
         LEAVES.append((coll, [P(*L(0, -LT / 2), zl), P(*L(LW, LT / 2), zl + LH)]))
         ua, sa = (a + lin, 1) if hg == "a" else (b - lin, -1)                 # hinge at the lining, closed along u
         DOORS.append(dict(c=coll, z=z0, hinge=P(ua, tf, z0)[:2], w=LW, closed=P(sa, 0, 0)[:2],
-                          open=P(0, swing, 0)[:2], leaf=xy_box(P(*L(0, -0.045), 0), P(*L(LW, 0.045), 0))))  # + levers
+                          open=P(0, swing, 0)[:2], leaf=xy_box(P(*L(0, -0.07), 0), P(*L(LW, 0.07), 0))))  # + levers
         (glazed_leaf if style == "glazed" else six_panel_leaf)(part, LW, LH)
+        door_levers(part, LW)
+
+
+def door_levers(part, LW, z=1.04):
+    """Lever handles on both faces of a hinged leaf at its lock edge (leaf-local: w from the hinge, d
+    across, z above the leaf's bottom; 1.05 m above the floor): a long plate with the keyhole below,
+    the lever's neck and its arm pointing to the hinge; black iron like the back door's."""
+    for s in (1, -1):
+        d = lambda a, b, s=s: (min(s * a, s * b), max(s * a, s * b))
+        part(LW - 0.075, LW - 0.035, *d(0.02, 0.026), z - 0.13, z + 0.06, 0.5, "Eisen")   # plate
+        part(LW - 0.061, LW - 0.049, *d(0.026, 0.07), z - 0.006, z + 0.006, 0.5, "Eisen")   # neck
+        part(LW - 0.171, LW - 0.049, *d(0.058, 0.07), z - 0.006, z + 0.006, 0.5, "Eisen")   # arm
+
+
+def sliding_pulls(part, LW, z=1.04):
+    """Flush pulls on both faces of a sliding leaf, near both ends (leaf-local as door_levers)."""
+    for w in (0.035, LW - 0.055):
+        for s in (1, -1):
+            part(w, w + 0.02, min(s * 0.02, s * 0.024), max(s * 0.02, s * 0.024), z - 0.09, z + 0.11, 0.5, "Eisen")
+
+
+def olive(B, fo, u, tf, s, z):
+    """Window-type handle on the room side of a french or terrace door leaf: a rose on the stile's
+    face tf, the neck, the olive lever hanging down (s: +1 / -1 = direction into the room)."""
+    T = lambda a, b: (min(tf + s * a, tf + s * b), max(tf + s * a, tf + s * b))
+    B("Metall", u - 0.018, u + 0.018, *T(0, 0.012), z - 0.04, z + 0.04, fo)
+    B("Metall", u - 0.008, u + 0.008, *T(0.012, 0.05), z - 0.008, z + 0.008, fo)
+    B("Metall", u - 0.009, u + 0.009, *T(0.035, 0.05), z - 0.12, z + 0.008, fo)
 
 
 def six_panel_leaf(part, LW, LH):
@@ -1021,6 +1056,7 @@ def speis():
         box(c, "EG_Innentueren", m, tc + d0, tc + d1, ys + w0, ys + w1, zl + za, zl + zb, r)
 
     six_panel_leaf(part, 1.00, LH)
+    sliding_pulls(part, 1.00)
     LEAVES.append((c, [(tc - LT / 2, ys, zl), (tc + LT / 2, ys + 1.00, zl + LH)]))
     box(c, "EG_Innentueren", "Metall", 5.495, 5.56, 3.26, 5.29, zl + LH + 0.005, zl + LH + 0.045, rng.random())   # rail
 

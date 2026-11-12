@@ -26,7 +26,9 @@ edited: 2026-11-11
   - larch balconies with cut-out balusters
   - outside lamps
 - **Interior:**
-  - panelled interior doors (opened)
+  - panelled interior doors (opened; flat ones 7.5 cm off the wall), every door with handles: black
+    levers on both faces of hinged leaves, flush pulls on sliding leaves, a room-side handle on each
+    french / terrace door leaf
   - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf,
     hinged north, opened 90° into the back hall, so it lies along the back hall's north wall)
   - Stube niche with a segmental arch
