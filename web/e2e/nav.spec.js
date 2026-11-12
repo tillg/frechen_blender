@@ -146,9 +146,9 @@ test('Reset: lowest Darstellung and the standard Standpunkt, and the saved view 
 const camAt = (page) => page.evaluate(() => window.__fl.cameraAt());
 const distTo = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
-test('Bibliothek puts the camera at its spot, looking at its target; dragging turns the view in place', async ({ page }) => {
+test('Bibliothek - Ecke hinten rechts puts the camera at its spot, looking at its target; dragging turns the view in place', async ({ page }) => {
   await open(page);
-  await choose(page, 'Standpunkt', 'Bibliothek');
+  await choose(page, 'Standpunkt', 'Bibliothek - Ecke hinten rechts');
   expect(distTo(await camAt(page), [13.7, 12.05, 1.6])).toBeLessThan(0.01);
   const c = await page.evaluate(() => window.__fl.project(9.2, 9.4, 1.0));       // the target sits mid-screen
   const vp = page.viewportSize();
@@ -171,14 +171,15 @@ test('Ganzes Haus lists the outside views, both storeys\' rooms and the routes; 
   await open(page);
   await page.getByRole('button', { name: 'Standpunkt', exact: true }).click();
   const all = await entries(page);
-  for (const n of ['Von Südosten', 'Von Nordwesten', 'Stube', 'Bibliothek', 'Bichlach', 'Yoga', 'Um und durch das Haus', 'Durch die Stube & Küche'])
+  for (const n of ['Von Südosten', 'Von Nordwesten', 'Stube', 'Bibliothek - Ecke hinten rechts', 'Bibliothek - Klavierspieler', 'Bichlach', 'Yoga', 'Um und durch das Haus', 'Durch die Stube & Küche'])
     expect(all, n).toContain(n);
   await page.keyboard.press('Escape');
   await choose(page, 'Modell', 'Erdgeschoss');
   await expect(page.getByRole('button', { name: 'Standpunkt', exact: true })).toHaveText('Von oben');   // its standard
   await page.getByRole('button', { name: 'Standpunkt', exact: true }).click();
   const eg = await entries(page);
-  expect(eg).toContain('Bibliothek');
+  expect(eg).toContain('Bibliothek - Ecke hinten rechts');
+  expect(eg).toContain('Bibliothek - Klavierspieler');
   for (const n of ['Bichlach', 'Yoga', 'Von Südosten', 'Um und durch das Haus']) expect(eg, n).not.toContain(n);
 });
 

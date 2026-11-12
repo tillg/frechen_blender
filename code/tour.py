@@ -115,7 +115,8 @@ ROUTES = [("Um und durch das Haus", ROUTE), ("Durch die Stube & Küche", STUBE_K
 
 # Standpunkte: (name, group in the drop-down, house entries it is listed in, camera, look-at point,
 # vertical field of view in degrees). The first spot of an entry is its standard. Inside spots stand
-# at eye height in a room corner, looking across the room (the viewer lets the mouse look around).
+# at eye height in a room corner, looking across the room (the viewer lets the mouse look around);
+# the Klavierspieler sits on the piano bench instead.
 SEE = 60                                                                  # inside: wide, like the Rundgang
 SPOTS = [
     ("Von Südosten", "Außen", ("haus",), (33, -24, 13), (7.4, 6.4, 3.2), 28),       # the README view
@@ -127,7 +128,8 @@ SPOTS = [
     ("Stube", "Erdgeschoss", ("haus", "eg"), (12.6, 0.75, EYE), (10.0, 5.0, 1.0), SEE),
     ("Küche", "Erdgeschoss", ("haus", "eg"), (8.35, 2.7, EYE), (6.2, 5.4, 1.0), SEE),
     ("Speis", "Erdgeschoss", ("haus", "eg"), (5.95, 4.79, EYE), (3.0, 4.79, 1.2), SEE),
-    ("Bibliothek", "Erdgeschoss", ("haus", "eg"), (13.7, 12.05, EYE), (9.2, 9.4, 1.0), SEE),   # behind the desk
+    ("Bibliothek - Ecke hinten rechts", "Erdgeschoss", ("haus", "eg"), (13.7, 12.05, EYE), (9.2, 9.4, 1.0), SEE),  # behind the desk
+    ("Bibliothek - Klavierspieler", "Erdgeschoss", ("haus", "eg"), (8.12, 11.94, 1.25), (9.12, 10.21, 0.32), SEE),  # on the piano bench, over the keys
     ("Oma & Opa", "Erdgeschoss", ("haus", "eg"), (5.7, 9.45, EYE), (2.8, 11.9, 1.0), SEE),
     ("Nadine & Till", "1. Stock", ("haus", "og"), (13.95, 0.9, OG), (9.12, 3.44, Z_OG + 1.0), SEE),
     ("Waschküche", "1. Stock", ("haus", "og"), (8.25, 3.1, OG), (5.9, 5.2, Z_OG + 1.0), SEE),

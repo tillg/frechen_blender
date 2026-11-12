@@ -206,10 +206,11 @@ change; the same model always gives byte-identical files.
     also opens Ganzes Haus). A stage, another Modell, Reset or a route returns to the 3D view.
   - **Standpunkt:** named camera poses in groups. House: Außen (Von Südosten = the README view and
     the standard, Südwesten, Nordosten, Nordwesten), Übersicht (Von oben, Schräg von Südosten; EG
-    and 1. Stock), Erdgeschoss (Stube, Küche, Speis, Bibliothek, Oma & Opa) and 1. Stock (Nadine &
-    Till, Waschküche, Saschi, Bichlach, Jugend, Yoga), each inside group at eye height (1.6 m) in
-    the room, listed in Ganzes Haus and its own storey. Sub-models list their own views (Schräg,
-    Von oben, …). A group Routen (Ganzes Haus only) lists "Um und durch das Haus" and "Durch die
+    and 1. Stock), Erdgeschoss (Stube, Küche, Speis, Bibliothek - Ecke hinten rechts, Bibliothek -
+    Klavierspieler, Oma & Opa) and 1. Stock (Nadine & Till, Waschküche, Saschi, Bichlach, Jugend,
+    Yoga), each inside group at eye height (1.6 m) in the room, except Klavierspieler: seated on
+    the piano bench (eye 1.25 m), looking over the keys and the piano into the room; listed in
+    Ganzes Haus and its own storey. Sub-models list their own views (Schräg, Von oben, …). A group Routen (Ganzes Haus only) lists "Um und durch das Haus" and "Durch die
     Stube & Küche". After the user moves the camera the drop-down shows "Eigene Ansicht".
   - **Reset:** forgets the entry's saved view; lowest Darstellung (Skizze / Drahtmodell) and the
     entry's standard Standpunkt.
@@ -301,7 +302,7 @@ sequenceDiagram
     V-->>Visitor: Skizze
     Visitor->>V: choose Darstellung (Massenmodell … Eingerichtet)
     V-->>Visitor: Massenmodell → Detailmodell → Gebaut → Eingerichtet
-    Visitor->>V: orbit, Modell "Erdgeschoss", Standpunkt "Bibliothek", a route, sun toggle
+    Visitor->>V: orbit, Modell "Erdgeschoss", Standpunkt "Bibliothek - Ecke hinten rechts", a route, sun toggle
 ```
 
 ## Inputs and outputs
