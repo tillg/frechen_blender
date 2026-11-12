@@ -178,9 +178,17 @@ def test_desk_export(tmp_path):
     jlen = struct.unpack_from("<I", data, 12)[0]
     g = json.loads(data[20:20 + jlen])
     names = {n["name"] for n in g["nodes"]}
-    assert {"Desk_Moebel", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R", "Desk_Stuehle"} == names
+    assert {"Desk_Moebel", "Desk_Schreibtisch", "Desk_Handrad", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R",
+            "Desk_Stuehle"} == names
     bp = house_core.build_desk()
     house_core.build()
+    lifted = {n["name"]: n["extras"]["lift"] for n in g["nodes"] if "lift" in n["extras"]}     # #10: the desk cranks up
+    assert lifted == {o: pytest.approx(0.30) for o in ("Desk_Schreibtisch", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R")}
+    wheel = next(n for n in g["nodes"] if n["name"] == "Desk_Handrad")
+    assert wheel["extras"]["crank"] == pytest.approx([1, 0, 0, 8 * math.pi])       # glTF axis, radians: 4 turns
+    hx, hy, hz = bp.pivot["Desk_Handrad"]
+    assert wheel["translation"] == pytest.approx([hx, hz, -hy])
+    assert [n["name"] for n in g["nodes"] if "crank" in n["extras"]] == ["Desk_Handrad"]
     pane = next(n for n in g["nodes"] if n["name"] == "Desk_Bildschirm_L")
     x, y, z = bp.pivot["Desk_Bildschirm_L"]
     assert pane["translation"] == pytest.approx([x, z, -y])
