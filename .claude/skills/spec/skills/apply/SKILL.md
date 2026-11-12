@@ -86,4 +86,5 @@ Step 3/7 [python]: <step>
 - Keep changes minimal and scoped to the step; `status` identical in all files of the change.
 - Pause on errors, blockers or unclear requirements — don't guess.
 - Edit spec files with the Edit/Write tools, not sed/python in Bash.
-- Don't commit: `/spec:archive` commits with the user's approval. Don't create branches.
+- Don't commit: commits come at `[under review]` and `/spec:archive`, with the user's approval
+  (`CLAUDE.md` › GitHub issues). No branches besides the issue branch.

@@ -76,7 +76,7 @@ A project file cannot remove user-scope hooks and status line (`disableAllHooks`
 
 - **Subagents first** for search-heavy, parallelizable or multi-file work. Use `explorer` / `researcher` / `worker` (cheaper models), not `general-purpose` (runs on Opus).
 - **Never mock** anything without explicit permission. **Never make tests pass by changing/removing them** without explicit permission.
-- **Never create or switch branches** without explicit permission. Git worktrees go in `.worktrees/`.
+- **Branches:** one per issue (`issue/<n>-<slug>`, created at `[wip]`, deleted after its merge; see Spec-driven workflow › GitHub issues). Any other branch, or switching branches outside that flow, only with explicit permission. Git worktrees go in `.worktrees/`.
 - **Verify before claiming done**: after each change the quick check (`check.sh quick` + the change's own test) and a Show; the full check (`check.sh full`, after a Blender rebuild/save/still if the Blender output changed) at the end of `/spec:apply` and at `/spec:archive`. "Looks right" is not done.
 - **Be extremely concise when reporting.** Sacrifice grammar for concision.
 - **Consult the advisor** before a large plan, when an error repeats, and before calling a long task done.
@@ -102,6 +102,28 @@ small change:  tweak
   `.claude/skills/spec/reference/project.md`.
 - Choices made while nobody was there to ask go into `DECISIONS.md`
   (`.claude/skills/spec/reference/decisions.md`).
+
+### GitHub issues
+
+Work is tracked as issues in `tillg/frechen_blender`. Each issue carries exactly **one** state label (in brackets, to tell them from topic labels like `plan`, `system`);
+a transition swaps it: `gh issue edit <n> --remove-label <old> --add-label <new>`.
+
+```
+[new] → [wip] → [testing] → [under review] → [done]    (red check or review findings → back to [wip])
+```
+
+Work on an issue always starts with its branch, before any other step: `git switch main && git pull
+&& git switch -c issue/<n>-<slug>`, then label `[wip]`.
+
+| Label | Set when | Step |
+|---|---|---|
+| `[new]` | the issue is filed | — |
+| `[wip]` | work starts: branch `issue/<n>-<slug>` from current `main`, change dir `specs/changes/<n>-<slug>/` (the pane matches branch and change by the last path segment) | `/spec:propose` or `/spec:tweak` |
+| `[testing]` | the final check starts (Blender rebuild/save if the output changed, then `check.sh full`); not for the per-step quick check. Red → back to `[wip]` | end of `/spec:apply` |
+| `[under review]` | final check green, `/spec:adversarial-code-review` done; work committed on the branch (with approval), pushed, PR opened with `Closes #<n>`. Waits for a human; requested changes → back to `[wip]` | — |
+| `[done]` | after the human's approval: `/spec:archive` on the branch (digest the change into `specs/system/` and ADRs, delete the change dir), push, `gh pr merge <pr> --merge --delete-branch` (closes the issue, deletes the branch), `git switch main && git pull` | `/spec:archive` + merge |
+
+A tweak without an issue stays as before: one commit on `main`, no labels.
 
 Working principles of the workflow:
 
