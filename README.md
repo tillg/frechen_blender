@@ -79,7 +79,8 @@ dazu Tag/Abend (nur Haus, ab Detailmodell) und **Reset**.
   ein anderes Modell, Reset oder eine Route führen zurück zur 3D-Ansicht.
 - **Standpunkt:** benannte Blickpunkte aus `tour.py` – außen von den vier Ecken, im Erdgeschoss und
   1. Stock von oben und schräg, in jedem Raum aus einer Ecke in Augenhöhe (1,60 m), z. B.
-  „Bibliothek“ im Eck hinter dem Schreibtisch; drinnen schaut man sich mit der Maus um, statt um
+  „Bibliothek - Ecke hinten rechts“ im Eck hinter dem Schreibtisch; dazu „Bibliothek - Klavierspieler“,
+  sitzend auf der Klavierbank (Augen auf 1,25 m) über die Tasten und den Flügel in den Raum; drinnen schaut man sich mit der Maus um, statt um
   einen Punkt zu kreisen. Wer die Kamera selbst bewegt, sieht „Eigene Ansicht“. In „Ganzes Haus“
   folgen die **Routen**: „Um und durch das Haus“ (die Kamerafahrt des Films) und „Durch die Stube &
   Küche“.
