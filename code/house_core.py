@@ -1311,7 +1311,8 @@ def build_og():
     # interior
     H = DOOR_H
     interior(c, 0.31, 14.575, 8.57, 8.86,
-             [(3.17, 4.15, 1, "b"), (7.28, 8.17, 1, "a", False), (12.30, 13.18, 1, "a", False)], z0, z1, H)
+             [(3.17, 4.15, 1, "b"), (6.31, 7.20, 1, "a", False), (12.30, 13.18, 1, "a", False)], z0, z1, H)   # Jugend: 10 cm from
+    # its west wall, clear of the stair hole (issue #6)
     interior(c, 6.05, 6.21, 8.86, 12.485, (), z0, z1)
     interior(c, 9.08, 9.25, 8.86, 12.485, (), z0, z1)
     interior(c, 2.57, 2.71, 5.46, 8.57, [(7.66, 8.47, -1, "a")], z0, z1, H)
@@ -2112,7 +2113,7 @@ def build_furniture():
     desk.stuhl("EG", *desk.DESK_AT)
     # OG: Yoga, Jugend (two bunk beds instead of the plan's double bed), Schlafen NE, SW, SE, HWR
     bed("OG", 0.86, 2.45, 8.862, 10.85, "S", zo, n=2)
-    bunk_bed("OG", 6.22, 7.17, 8.90, 10.96, "E", zo)
+    bunk_bed("OG", 6.22, 7.17, 9.76, 11.82, "E", zo)          # middle of the west wall, past the door leaf (#6)
     bunk_bed("OG", 8.13, 9.07, 8.90, 10.96, "W", zo)
     bed("OG", 9.86, 10.78, 8.862, 10.92, "S", zo)
     bed("OG", 10.80, 11.72, 8.862, 10.92, "S", zo)
