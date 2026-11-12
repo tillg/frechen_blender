@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-11
+edited: 2026-11-12
 ---
 
 # Domain: Frechenlehen house model
@@ -24,8 +24,15 @@ the team uses them:
 | **EG** (Erdgeschoss) | Ground floor, z = 0 … 2.40 m. |
 | **OG** (Obergeschoss) | Upper floor, z = 2.70 … 4.90 m (`Z_OG`, `Z_OG_TOP`). |
 | **Dach** | Roof: ridge runs east–west at 7.67 m, ~20° pitch, wide eaves (`EAVE_OH`) and gable overhangs (`GABLE_OH`). |
-| **Grundriss** | Floor plan (`grundriss_eg.png`, `grundriss_og.png` in the folder of the current plans, see `LOG.md`), 1:100. |
-| **Ansicht** | Elevation drawing. |
+| **Grundriss** | Floor plan, 1:100: the architect's input plan (`grundriss_eg.png`, `grundriss_og.png` in the folder of the current plans, see `LOG.md`) and our generated one, a horizontal section through a storey at its **cut height (Schnitthöhe)** seen from above. Parts the cut passes through are **cut** (walls hatched inside one heavy outline, other parts a thin one); parts below it are **projection** in thin lines; loose furniture and parts above the cut are left out. |
+| **Ansicht** | Elevation drawing: the architect's, and our generated one, named after the facade it shows (Ansicht Süd = the south facade seen from the south), orthographic with hidden lines removed, glass opaque, a grey ground band below ±0,00. |
+| **Plan sheet** (Planblatt) | One A3 SVG at 1:100 in `plans/` (`eg`, `og`, `nord`, `ost`, `sued`, `west`), sized in mm (1 m = 10 mm), with a title block (Frechenlehen, sheet, M 1:100, model state), a scale bar and, on the floor plans, a north arrow. |
+| **Door swing** (Türaufschlag) | A hinged leaf's record (hinge, width, room side, its box as built); the plan draws the conventional symbol, the leaf at 90° and a quarter arc, however far the door stands open in the model. |
+| **Stair symbol** | The stair in the plan as the architect draws it, in every storey it serves: outline, a line at each riser, the walking line (**Lauflinie**) from a circle at the bottom step to an arrow at the top, always pointing up; in its bottom storey the step count with rise/run ("15 STG 18.0/25.5"). |
+| **Plan room** (Raumstempel) | The architect's room name and the computed net area ("Küche / 24,06 m²"): the region round its anchor in a section just below the ceiling, door openings closed by their lintels. One anchor per region. |
+| **Dimension chain** (Maßkette) | A ticked row of lengths along one side; a floor plan has three per side (openings, walls and rooms, overall), summing exactly. Lengths ≥ 1 m in metres with two decimals ("2.05"), below in cm ("31"), a remaining half centimetre as a superscript 5 ("4.01⁵", "41⁵"). |
+| **Level mark** (Höhenkote) | A level in metres relative to OK FFB EG (±0,00; +2,70 OK FFB OG; eaves, ridge) on the elevations. |
+| **Model state** | A short hash of everything the plan sheets are drawn from, printed instead of a date so the output stays deterministic. |
 | **Putz** | Plaster, the white facade (RAL 9010). |
 | **Laden / Läden** | Window shutters, blue RAL 5014. |
 | **Cross boards** (Querbretter) | The two white boards across every shutter, per storey (`Laeden_Querbretter`, `OG_Laeden_Querbretter`). |
@@ -135,6 +142,26 @@ erDiagram
   - bumped plaster
   - glass
   - emissive: stove fire, lamp filaments
+
+The plan sheets draw from the Blueprint and its plan records:
+
+```mermaid
+erDiagram
+    BLUEPRINT ||--o{ PLAN_SHEET : "export_plans draws"
+    PLAN_SHEET ||--|| GRUNDRISS : "is one of"
+    PLAN_SHEET ||--|| ANSICHT : "is one of"
+    GRUNDRISS }o--|| STOREY : "cuts at its cut height"
+    GRUNDRISS ||--o{ PLAN_ROOM : "labels"
+    GRUNDRISS ||--o{ DOOR_SWING : "draws"
+    GRUNDRISS ||--o{ STAIR_SYMBOL : "draws"
+    GRUNDRISS ||--o{ DIMENSION_CHAIN : "carries"
+    ANSICHT ||--o{ LEVEL_MARK : "carries"
+    ANSICHT ||--|| DIMENSION_CHAIN : "overall width"
+    PLAN_ROOM }o--|| STOREY : "anchor on"
+    DOOR_SWING }o--|| LEAF : "records"
+    STAIR_SYMBOL }o--|{ STOREY : "in every storey it serves"
+    DIMENSION_CHAIN ||--o{ OPENING : "dimensions"
+```
 
 ## Stages of the viewer
 

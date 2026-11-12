@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-11
+edited: 2026-11-12
 ---
 
 # Architecture: Frechenlehen house model
@@ -10,13 +10,14 @@ edited: 2026-11-11
 
 The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
 `code/ofen.py` (stoves), `code/desk.py` (Büro desk), `code/bad.py` (Bad Großeltern),
-`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC) and `code/regal.py` (Schrank im Büro), no `bpy`). Two
+`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC) and `code/regal.py` (Schrank im Büro), no `bpy`). Three
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
 - `build_house.py` builds the Blender scene. Blender renders the stills and the film from it.
 - `export_gltf.py` writes a `.glb` for the three.js **viewer** in `web/`. GitHub Pages
   publishes the viewer.
+- `export_plans.py` writes the six **plan sheets** for the architect to `plans/` (committed).
 
 Details on running the scripts and on pitfalls are in `CLAUDE.md`. The script table is in
 `README.md`.
@@ -34,6 +35,7 @@ flowchart TB
         MO["mesh_ops.py<br/>triangulate · orient"]
         BH["build_house.py<br/>Blender backend"]
         EX["export_gltf.py<br/>glTF backend"]
+        EP["export_plans.py<br/>plan-sheet backend"]
         PA["paint.py"]
         WR["windrose.py"]
         GA["garden.py"]
@@ -52,10 +54,12 @@ flowchart TB
     PDF -. measured by hand .-> CORE
     PH -. modelled by hand .-> CORE
     OF & DK <--> CORE
-    CORE --> BH & EX
+    CORE --> BH & EX & EP
     CORE --> PA & WR & GA & FI
     CORE --> TO --> FI & EX
-    MO --> EX
+    MO --> EX & EP
+    EP --> PLANS[("plans/*.svg<br/>committed")]
+    PLANS -->|npm run blueprint copies| APP
     BH & PA & WR & GA & FI --> SC
     SC --> EV --> OUT["tmp/film/*.png → mp4,<br/>docs/images/*.png"]
     EX -->|npm run blueprint| GLB --> APP
@@ -211,6 +215,42 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
   `ROUTES[1:]`) and `spots = [{name, group, entries, cam, at, fov}]` (`SPOTS`).
 - **Hidden node `GA_Grasbuschel`:** the grass clump, with `_H` (0 at the root … 1 at the tip).
 - **Axes:** z-up model → y-up glTF as `(x, z, -y)`, so north is −Z in three.js.
+
+### `export_plans.py` — plan-sheet backend
+
+Standard library only, no Blender: `python3 code/export_plans.py plans/` calls `house_core.build()`
+and writes `eg.svg`, `og.svg` (Grundrisse) and `nord.svg`, `ost.svg`, `sued.svg`, `west.svg`
+(Ansichten). It knows only how to draw; what an object is comes from the core:
+
+- **Core records** (no geometry, no `random` draws): `DOORS` (every hinged leaf: storey, hinge,
+  width, closed / open direction, the leaf's plan box as built incl. levers; recorded by
+  `panel_door`, `entrance_door`, `back_door`), `PLAN_ROOMS` (the architect's room names with
+  storey and anchor), `PLAN` (object classes: wall suffix and material, frames, skip words for
+  floors and ceilings, ground, extra collections and objects such as the balconies and the west
+  cladding, `stair_objects`) and `STAIRS` (each stair: storeys, plan box, risers, walking line,
+  rise, run). The Blueprint carries them as `doors`, `plan_rooms`, `plan`, `stairs`.
+- **Section (Grundriss).** Every closed Part of the storey is sliced at its cut height (`CUT`: EG
+  1.80, OG 1.55 above `Z_OG`; a test asserts every opening spans it). Wall loops are hatched and
+  get one heavy outline, the union boundary (no seams between abutting boxes); other cut Parts a
+  thin outline. Loose furniture (`FURNITURE`), door leaves as built (their `DOORS` box) and the
+  `PLAN` stair objects are neither cut nor projected.
+- **Projection.** One hidden-line routine for plans (from the cut height down) and elevations (one
+  facade, all non-furniture house geometry, no ground): faces oriented outward per Part
+  (`mesh_ops`), back faces culled, painted far to near as white-filled polygons with a thin
+  stroke (glass opaque), a 2 cm occupancy raster drops covered faces, coplanar same-material edges
+  are not stroked.
+- **Annotation.** Door swings: the conventional 90° leaf and quarter arc from `DOORS`. The stair
+  as in the architect's plan, in every storey it serves (`STAIRS`): outline, a line at each riser,
+  the walking line from a circle at the bottom step to an arrow at the top, in its bottom storey
+  "15 STG 18.0/25.5". Room labels from `PLAN_ROOMS` with the net area of the region round the
+  anchor in a section just below the ceiling (`ROOM_CUT`, openings closed by their lintels).
+  Dimension chains on all four sides scanned from the section (openings, walls and rooms,
+  overall; rounded cumulatively so they sum up). Elevations: level marks (±0,00, OK FFB OG,
+  eaves, ridge) and the overall width.
+- **Sheet.** A3 landscape, `viewBox="0 0 420 297"` in mm (1 m = 10 mm), frame, title block with
+  the model state (a hash of every plan input, no date), scale bar, north arrow on the floor
+  plans; fixed decimals and a stable element order, so the output is byte-identical across runs.
+  `tests/test_plans.py` (its currency test `slow`) fails when `plans/` is older than the model.
 
 ### `tour.py` — routes and Standpunkte
 
@@ -459,14 +499,24 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | **`@eye`** tests out of the default e2e run; `playwright.config.js` drops `grepInvert` when an argument contains `@eye` | Keep them (66 s every run); an env var to opt in | They assert nothing a human doesn't check. A config `grepInvert` also applies under `--grep @eye` and a CLI `--grep-invert` doesn't override it. |
 | Repo-local **`.venv`** with pinned pytest | pytest into the Homebrew Python; pyenv | Reproducible, leaves the system Python alone, works in non-interactive shells. |
 | One URL switch **`hires=on`** for full quality (all lights, full pixel ratio, grass indoors); speed shortcuts apply in the Rundgang too | Shortcuts off whenever the tour runs; a capture-only flag | The browser Rundgang should be fast; the film capture asks for full quality by name. The capture script forces it. |
+| Plan sheets from a **third stdlib backend** reading the Blueprint | Blender Freestyle SVG; an export in the viewer | ADR-001-XEWL: facts once in the core. Headless, fast, testable, deterministic; Freestyle needs Blender and is hard to control and diff. |
+| Grundriss = **exact section of the closed Parts + projection below**, without loose furniture | A symbolic plan from `wall()` records; all geometry | Every model change (Bad walls, Küche, partitions) shows without a second description; the sheets show the building and its built-ins. |
+| **Cut height per storey** (EG 1.80, OG 1.55), asserted against all openings | DIN 1.00–1.20 with high windows dashed | At 1.20 the WC windows (sill 1.57) would not show. |
+| **Painter's algorithm** with opaque fills and a raster cull | Exact hidden-line removal; a raster image | Vector output the architect can read; ~3 s and 0.5 MB per elevation. |
+| Dimension chains **scanned from the section**, rounded cumulatively | Chains typed per facade | They follow every model change and always sum to the overall length. |
+| **`PLAN_ROOMS`** with the architect's names; areas computed | Reusing `ROOM_NAMES` (the family's names) | The sheets are for the architect; areas are never typed. |
+| **`DOORS`, `STAIRS`, `PLAN`** recorded in the core | Deriving arcs from `LEAVES`; name rules in the exporter | `LEAVES` has no hinge or width; what an object is, is a model fact (ADR-001-XEWL). Records keep `GEO` and the random sequence unchanged. |
+| Doors as the **conventional 90° symbol**, stairs as the **architect's symbol** (risers, walking line, arrow up) | The leaf at its built angle; the cut and projected treads | The architect reads the standard symbols; nothing shows twice. |
+| **`plans/*.svg` committed**, a test that they equal a fresh export | Generated and git-ignored like the `.glb` | Ready to send; `git diff plans/` shows what a change did to the drawings. Every core change re-exports them. |
+| **A3, 1:100**, one view per sheet, mm `viewBox`; **model-state hash**, no date | The architect's 1:128 sheet; a date or git SHA | True scale at 100 %; a date breaks determinism, the SHA is unknown before the commit. |
 
 ## Data
 
 - **Source of truth:** the core. The constants and builder calls in `code/house_core.py` are
   the model's data; the backends and the viewer repeat none of them.
-- **Generated, committed:** `frechenlehen.blend` (~5.8 MB, must equal the current build),
-  `frechenlehen_rundgang.mp4` (~45 MB), `docs/images/*.png`,
-  `tests/golden/blender_snapshot.json`.
+- **Generated, committed:** `frechenlehen.blend` (must equal the current build), the two newest
+  Rundgang films `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (~88 MB each), `docs/images/*.png`,
+  `plans/*.svg` (must equal a fresh export), `tests/golden/blender_snapshot.json`.
 - **Generated, git-ignored:** `web/public/frechenlehen.glb` (`npm run blueprint`, run before
   `dev`, `build` and `test`, and by the dev server after each saved `code/*.py`), `web/dist/`,
   the test environment `.venv/`.
