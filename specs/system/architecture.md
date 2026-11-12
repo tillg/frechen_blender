@@ -60,6 +60,7 @@ flowchart TB
     MO --> EX & EP
     EP --> PLANS[("plans/*.svg<br/>committed")]
     PLANS -->|npm run blueprint copies| APP
+    EP -->|re-exported in Actions| PAGES
     BH & PA & WR & GA & FI --> SC
     SC --> EV --> OUT["tmp/film/*.png → mp4,<br/>docs/images/*.png"]
     EX -->|npm run blueprint| GLB --> APP
@@ -77,7 +78,7 @@ flowchart TB
 | three.js 0.187 | Viewer: `WebGPURenderer` with TSL node materials. It falls back to WebGL2 automatically ([ADR-003-SKGB](../architecture/adr-003-skgb-webgpu-tsl.md)). |
 | Vite 8 | Bundler and dev server for `web/`; vanilla JS, no framework. |
 | pytest · Vitest · Playwright | Python tests, web unit tests, browser e2e (headless Chromium on the real GPU via `--use-angle=metal`, WebGL2 path). pytest runs from a repo-local `.venv` (`requirements-dev.txt`); `pytest.ini` registers the marker `slow` (Blender parity) with `--strict-markers`. Playwright starts no server of its own: project `dev` tests `/`, project `preview` the build under `/frechen_blender/` (setup project `build` runs `npm run build` first), both on the one dev server on 5377; tests tagged `@eye` are left out unless `@eye` is on the command line. `scripts/check.sh quick\|full` runs and times the two check tiers. |
-| GitHub Actions + Pages | Builds the `.glb` and the viewer on push to `main` and publishes `web/dist`, plus the newest film (`film_release.py latest`) as `rundgang.mp4`, so the browser plays it (GitHub's raw files download as `application/octet-stream`). |
+| GitHub Actions + Pages | Builds the `.glb`, the plan sheets (`export_plans.py`, so Pages never serves stale `plans/`) and the viewer on push to `main` and publishes `web/dist`, plus the newest film (`film_release.py latest`) as `rundgang.mp4`, so the browser plays it (GitHub's raw files download as `application/octet-stream`). |
 | ffmpeg | Encodes the film frames to H.264 MP4. |
 
 ## Components
@@ -547,4 +548,4 @@ Model work runs locally on the owner's Mac (arm64). A headless film render is
 `Blender -b frechenlehen.blend -a`, at about 1 s per frame, one frame per camera key. The MP4 is
 linked raw from GitHub. `.github/workflows/pages.yml` builds on `ubuntu-latest`
 (Python 3.13, Node 24) and deploys `web/dist` to `https://tillg.github.io/frechen_blender/`
-(base path `/frechen_blender/`). Only the deploy job holds `pages: write`/`id-token: write`.
+(base path `/frechen_blender/`). It runs `python3 code/export_plans.py plans/` before `npm run build`. Only the deploy job holds `pages: write`/`id-token: write`.
