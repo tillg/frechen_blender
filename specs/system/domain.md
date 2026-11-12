@@ -49,7 +49,7 @@ the team uses them:
 | **Collection** | Blender grouping. The house lives in `Haus` with sub-collections `FL_EG`, `FL_OG`, `FL_Dach`, `FL_Balkone`, `FL_Umgebung`, `FL_Referenz`. In the `.glb` it is `extras.collection` per node. |
 | **rnd** | A random value per Part, stored per face, that varies the shade of boards and slabs. |
 | **Core** (`house_core`) | The pure-Python description of the house: constants, materials as data, primitives, builders. It knows nothing about Blender or three.js. |
-| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `SLIDE`, `SWING`, `MAT_DEF`, paint colours, room lights and the garden layout. Not to be confused with "model", the whole 3D house. |
+| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `SLIDE`, `SWING`, `LIFT`, `CRANK`, `MAT_DEF`, paint colours, room lights and the garden layout. Not to be confused with "model", the whole 3D house. |
 | **Backend** | Turns a Blueprint into output. **Blender backend** (`build_house.py`): the `.blend` scene. **glTF backend** (`export_gltf.py`): the `.glb` file. |
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
 | **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
@@ -61,6 +61,8 @@ the team uses them:
 | **Waschbecken einzeln / doppelt** | The house's one basin design, after `input/2026-11-12 input/waschbecken_einzeln.jpeg` / `waschbecken_doppelt.jpg`: a rectangular white ceramic basin, top 85 cm, 17 cm high, a tap deck along the wall, one bowl, one drain. *einzeln*: one mixer; *doppelt*: one long bowl with two mixers. Size per place: Bad Großeltern d 100 × 47, back hall e 40 × 28, OG Bad NW d 120 × 47, OG Bad S d 100 × 47, OG WC e 50 × 40, OG Flur e 60 × 47. |
 | **Waschbeckenständer** (Ständer, Rohre) | The chrome tube frame under every Waschbecken (`waschbecken_staender.png`), more decoration than support: two front legs with collars and tapered feet, a front rail and two side rails at 52 cm running back to balls on wall rosettes, two back posts up to the basin, a bottle trap from the drain to the wall. |
 | **Speis A / B / C** | The pantry's built-ins: open shelf A on the Flur wall, open shelf B on the aisle, cabinet C back to back with B with doors to the Essen; all to the ceiling. |
+| **Lift / Crank** | A group of objects that moves straight up together to its other state and back (`LIFT`: the Büro desk top with its devices), and an object turning about its pivot while they move (`CRANK`: the desk's hand wheel). Like slide and swing, the viewer animates them in Eingerichtet only, outside the Rundgang; Blender and the film keep them as built (low). |
+| **Kurbelgestell** | The Büro desk's cast-iron crank frame after `schreibtischgestell.jpg`, under a solid cherry (Kirschbaum) top. |
 | **Bildschirm** | A monitor pane of the Schreibtisch whose material shows a screen image (a screenshot) instead of a colour or procedural texture. |
 | **Stage** | One of five looks of the house in the viewer: **Skizze** (sketch), **Massenmodell** (massing model), **Detailmodell** (detailed model), **Gebaut** (built reality), **Eingerichtet** (furnished: Gebaut plus furniture). The Darstellung drop-down chooses it; the internal progress `p` is 0…4 (the URL value), and the stages blend only in the code. |
 | **Modell** (drop-down) | The model-entry chooser at the top right of every viewer page: **Ganzes Haus**, **Erdgeschoss**, **1. Stock** │ the sub-models Ofen, Schreibtisch, Bad Oma & Opa, Küche, Gäste-WC, Schrank im Büro. The three house entries are the **cutaway**: roof and OG hidden or not (`cut=` `all` / `eg` / `noroof`), the ground never hidden. |
@@ -127,6 +129,8 @@ erDiagram
     BLUEPRINT ||--|| GARDEN_LAYOUT : garden
     OBJECT_ENTRY ||--o| PIVOT : "origin (EG_Haustuer, screens, swinging leaves)"
     OBJECT_ENTRY ||--o| SWING : "yaw to the other state (back hall doors)"
+    OBJECT_ENTRY ||--o| LIFT : "rise to the other state (Büro desk top and devices)"
+    OBJECT_ENTRY ||--o| CRANK : "turn while lifting (desk hand wheel)"
     BLUEPRINT ||--|| BLENDER_SCENE : "Blender backend"
     BLUEPRINT ||--|| GLB : "glTF backend"
     GLB ||--|| VIEWER : "loaded by"
