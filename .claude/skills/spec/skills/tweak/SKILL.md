@@ -87,5 +87,6 @@ summary; log choices (`decisions.md`).
 - Tests first, always (unless `Test first: none — …`). Never weaken, skip, delete or mock a test to
   pass without the user's explicit agreement.
 - Never create `specs/changes/<name>/` — a tweak that needs one is a change: escalate.
-- One commit, only the approved files. No branches.
+- One commit, only the approved files. No branches besides the issue branch (`CLAUDE.md` › GitHub
+  issues).
 - Edit spec files with the Edit/Write tools, not sed/python in Bash.
