@@ -17,7 +17,7 @@ test('Bad page draws the bathroom with the core dimensions, without errors', asy
   expect(await page.evaluate(() => window.__bad.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(8);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['Dusche 80', 'Glas 35', 'Mauer 120', 'Waschtrog 100', 'WC 96.4', 'Schrank 96.4', '120 tief', 'Durchgang 96.7']) {
+  for (const t of ['Dusche 80', 'Glas 35', 'Mauer 120', 'Waschbecken 100', 'WC 96.4', 'Schrank 96.4', '120 tief', 'Durchgang 96.7']) {
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   await expect(page.locator('.dim', { hasText: /^60$/ })).toHaveCount(1);                    // the cabinet's depth (the wardrobe is gone)

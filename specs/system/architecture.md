@@ -108,7 +108,8 @@ flowchart LR
 - **Bad Großeltern.** `code/bad.py` the same way: `bad_neu(c, x0, y0)` builds the bathroom into
   collection `c` with the room's inner SW corner at (x0, y0) (`EG` at `BAD_AT`, or `Bad` at the
   origin), after `input/2026-11-08 input/grosseltern_v4.svg`: its own walls (12 cm niche wall,
-  lintel, 1 m low wall), glass, walk-in shower with limestone cladding, Waschtrog, toilet + WC
+  lintel, 1 m low wall), glass, walk-in shower with limestone cladding, the Waschbecken doppelt
+  (`waschbecken(…, rng=random.Random(rng.random()))`: one draw from its stream), toilet + WC
   tiles (`toilet()`, `wainscot()`), the white Schrank (`_Schrank`) and the two interlocking
   sliding leaves (WC leaf open, both in `LEAVES`); own `random.Random(5)`. Its floor too, last
   and from its own `random.Random(7)` (`floor()`: limestone strip, oak, a `Fuge` base in
@@ -126,9 +127,9 @@ flowchart LR
   Garderobe by the back hall into collection `c` with the old WC room's inner SW corner at
   (x0, y0) (`EG` at `WC_AT`, or `GaesteWC` at the origin), after
   `input/2026-11-10 input/gaeste_wc_v3.svg`; positions in house coordinates and shifted, as the
-  hand basin hangs outside the room. Its walls: the partition and the WC's north wall
+  hand basin stands outside the room. Its walls: the partition and the WC's north wall
   (`interior()` with the WC door and the open Garderobe passage). Toilet and WC tiles
-  (`toilet()`, `wainscot()`), the basin (`wc_basin(mirror=False)`) with tiles on the back hall's
+  (`toilet()`, `wainscot()`), the basin (`waschbecken()`, einzeln 40 × 28, `tile=WC_TILE_T`) with tiles on the back hall's
   east wall (`wainscot(sides="e")`) and a pine-framed mirror, the Garderobe (`_Garderobe`: bench,
   hook board, hooks, hat shelf); own `random.Random(12)`, the north wall and the toilet from the
   global stream. It also builds the back hall's other two doors: `back_door(c, dx, dy)` and the
@@ -147,6 +148,13 @@ flowchart LR
   `wall()` / `interior()` calls; `walls=True` (the sub-model) adds the pieces of those three walls
   (`waende()`, global random stream). `tuer(c)` gives the Büro door's leaf an object of its own
   (`<c>_Buerotuer`) with a `PIVOT` at the hinge and a `SWING`.
+- **Waschbecken.** `waschbecken(coll, wx, wy, fx, fy, w, d, taps, z, tile, rng)` builds one
+  washbasin into `<coll>_Sanitaer` in the wall frame of `at_wall()`: the hollow `Keramik` basin
+  (top z + 0.85, 17 cm high, `taps` mixers), the `Metall` Waschbeckenständer and the bottle trap;
+  `tile` puts it in front of WC tiles. Every Part shares one `rnd` from `rng`, else a new
+  `random.Random(16)` per call. Callers: `build_sanitary()` (OG Bad NW and S, OG WC with
+  `wc_mirror()`, OG Flur with `flur_panel()`; the Bäder's mirrors from `bad_mirror()`),
+  `gaeste_wc.py` and `bad.py`.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
   `build_gaeste_wc()` / `build_regal()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
   in `dims`) for `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html` /
@@ -508,6 +516,9 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | **`DOORS`, `STAIRS`, `PLAN`** recorded in the core | Deriving arcs from `LEAVES`; name rules in the exporter | `LEAVES` has no hinge or width; what an object is, is a model fact (ADR-001-XEWL). Records keep `GEO` and the random sequence unchanged. |
 | Doors as the **conventional 90° symbol**, stairs as the **architect's symbol** (risers, walking line, arrow up) | The leaf at its built angle; the cut and projected treads | The architect reads the standard symbols; nothing shows twice. |
 | **`plans/*.svg` committed**, a test that they equal a fresh export | Generated and git-ignored like the `.glb` | Ready to send; `git diff plans/` shows what a change did to the drawings. Every core change re-exports them. |
+| **One basin builder `waschbecken()`** in the core for all six washbasins, with its own `random.Random(16)` per call (`bad.py` passes one drawn from its stream) | A sub-model module; one builder per kind; the global stream | One design in six places is one function. Basin edits shift no other part's `rnd`. |
+| Waschbeckenständer in **`Metall`** (metal 1.0) | `Stahl` | Chrome is a mirror metal; the viewer lights metal ≥ 0.5 with an env map, so it renders bright. |
+| **`Keramik` neutral white** (0.95, 0.95, 0.95) | The former slightly warm (0.90, 0.90, 0.88) | The basins should be "strahlend weiß". The warm look in the house's Gebaut/Eingerichtet stages is the evening light, which stays. |
 | **A3, 1:100**, one view per sheet, mm `viewBox`; **model-state hash**, no date | The architect's 1:128 sheet; a date or git SHA | True scale at 100 %; a date breaks determinism, the SHA is unknown before the commit. |
 
 ## Data

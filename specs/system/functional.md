@@ -80,7 +80,7 @@ edited: 2026-11-12
     and a rain head; east of it a 1.20 m wall 1.00 m high and one L-shaped clear glass pane on
     its shower edge, flush with the north french door's jamb, on the wall to the ceiling and 35 cm
     from the north wall down to the floor;
-    on the wall's east face one 1.00 m Waschtrog with two mixers; in the south a 1.20 m niche
+    on the wall's east face a Waschbecken doppelt 100 × 47; in the south a 1.20 m niche
     split by a 12 cm wall into WC and an open white Schrank (cabinet 60 cm deep over the full
     width, nothing in front of it), closed by two interlocking sliding doors (the WC leaf open,
     slid behind the Schrank leaf); 96.7 cm passage between the front leaf and the wall's end;
@@ -95,7 +95,7 @@ edited: 2026-11-12
     40 cm free in front of it; Taubenblau tiles in the WC only. The Garderobe is open through the
     old 80 cm opening: a spruce bench 35 × 110 cm at 45 cm from wall to wall with scrolled arms,
     a hook board with six iron hooks at 1.65 m and a hat shelf at 1.85 m on three brackets, after
-    `garderobe mallnitz.jpeg`. The WC's hand basin 40/28 hangs outside, centred on the back
+    `garderobe mallnitz.jpeg`. The WC's hand basin, a Waschbecken einzeln 40/28, stands outside, centred on the back
     hall's east wall between the WC wall and the Windfang door (top 85 cm), Taubenblau tiles
     behind it up to the door's architrave and a mirror 40 × 60 cm in a 7 cm pine frame from
     1.20 m. Back door, WC door and Windfang door swing to show where they get in each other's
@@ -113,12 +113,20 @@ edited: 2026-11-12
     the south column; it shows how: it swings shut in 2 s, rests 4 s, swings open, rests 4 s, on
     the sub-model page and in the house in stage Eingerichtet (the film and the Rundgang see it
     open). Depths and shelf heights estimated from the photo
-  - OG bathrooms: shower, basin with mirror
+  - the six washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
+    white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
+    52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
+    (100 × 47) and the OG Bäder (120 × 47 in the Bad at the end of the Flur, 100 × 47 in Nadine &
+    Till's, each under a plain mirror as wide as the basin), einzeln in the back hall (40 × 28),
+    the OG WC 2,30 (50 × 40) and the OG Flur (60 × 47)
+  - OG bathrooms: shower, Waschbecken doppelt with mirror
   - the four WCs (also the WC in the Bad Großeltern's niche and the Gäste-WC), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
-    row, floor-standing toilet with a close-coupled cistern; where the plan draws a hand basin
-    (WC 2,30) a basin on chrome console legs under a mirror in a black frame
-  - OG Flur, right of the Waschküche door: deep ceramic sink on a dark stone panel, one mixer tap
+    row, floor-standing toilet with a close-coupled cistern; in the WC 2,30 (next to the
+    Waschküche) a Waschbecken einzeln 50 × 40 under a mirror in a black frame, clear of the open
+    door leaf
+  - OG Flur, right of the Waschküche door: a Waschbecken einzeln 60 × 47 in front of a dark stone
+    panel
   - Waschküche: two front loaders at the east wall, a dryer stacked on the north one; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the
     right wall from the door (west) an open spruce cupboard, 2.0 m high, continuous shelves

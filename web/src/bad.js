@@ -1,5 +1,5 @@
 // Bad Großeltern sub-model (bad.html): the grandparents' bathroom of house_core.build_bad()
-// (code/bad.py) with its shower, low wall, Waschtrog and the WC / Schrank niche, drawn by
+// (code/bad.py) with its shower, low wall, Waschbecken and the WC / Schrank niche, drawn by
 // submodel.js. Model origin: the room's inner SW corner; the room is 2.048 x 3.817 m, open to the
 // bedroom in the east.
 import { startSubmodel } from './submodel.js';
