@@ -99,11 +99,16 @@ flowchart LR
   (`ofen_im_haus()`) and `werkstattofen()`; `house_core` imports it and calls them, `build_ofen()`
   stays in `house_core`. `ofen.py` uses the primitives and `GEO`/`PARTS` through `house_core` (the two
   modules import each other). Its materials are entries of `MAT_DEF`.
-- **Desk.** `code/desk.py` the same way: the table builder `desk()` (Büro desk, OG laundry
-  table), `desk_neu(c, x0, y0)` (table, two monitors, MacBook, keyboard, trackpad, built straight
-  into collection `c`: `EG` at `DESK_AT`, or `Desk` at the origin) and `stuhl()`; `build_desk()`
-  stays in `house_core`. The devices draw `rnd` from their own `random.Random(3)`, so no later part
-  shifts. Each screen pane is an object with a `PIVOT` (lower-left corner) and a `TURN` (yaw);
+- **Desk.** `code/desk.py` the same way: the plain table builder `desk()` (OG laundry table),
+  `desk_neu(c, x0, y0)` (the Büro desk: cherry top 190 × 100 (`DESK_W`/`DESK_D`) on the cast-iron
+  crank frame, two monitors, MacBook, keyboard, trackpad, built straight into collection `c`: `EG`
+  at `DESK_AT`, or `Desk` at the origin) and `stuhl()`; `build_desk()` stays in `house_core`. The
+  static frame is furniture in `<c>_Moebel`; the lifted parts (top, top bars, spindles) are
+  `<c>_Schreibtisch`, the hand wheel `<c>_Handrad` (`PIVOT` at the hub). `LIFT` (object → metres
+  up, `LIFT_DZ` = 0.30) holds `_Schreibtisch`, `_Geraete`, `_Bildschirm_L/R`; `CRANK` (object →
+  axis, degrees) turns `_Handrad` 4 × 360° per stroke. Frame and wheel draw `rnd` from their own
+  `random.Random(18)` (the top and spindles take the old table's five global draws), the devices
+  from `random.Random(3)`, so no later part shifts. Each screen pane is an object with a `PIVOT` (lower-left corner) and a `TURN` (yaw);
   its material carries `image` (path under `web/public/`) and `size` (w, h in metres), mapped in
   object space by both backends (`local()` stores the mesh unturned).
 - **Bad Großeltern.** `code/bad.py` the same way: `bad_neu(c, x0, y0)` builds the bathroom into
@@ -188,7 +193,9 @@ flowchart LR
 (`SLIDE`: object → (dx, dy, dz) to its other end of travel; the Bad's two sliding leaves, one
 object each; glTF node `extras.slide`), `swing` (`SWING`: object → degrees about its pivot from
 as built to its other state; the back hall's three door leaves; glTF node `extras.swing` in
-radians about y). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
+radians about y), `lift` (`LIFT`: object → metres straight up to its other state; glTF
+`extras.lift`) and `crank` (`CRANK`: object → (axis, degrees) turned about its pivot while the
+lift moves; glTF `extras.crank` = [glTF axis, radians]). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
 hinged at the lining's corner, with the `SWING` that closes it.
 
 ### `build_house.py` — Blender backend
@@ -390,8 +397,10 @@ sequenceDiagram
   edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
   lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s; the Büro door
-  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest). `main.js`
-  moves both too, in stage Eingerichtet outside the Rundgang (else as built), and draws while
+  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest); nodes with `extras.lift` rise and
+  sink together on one clock (`liftingNodes()`: 3 s up, 4 s rest, 3 s down, 4 s rest), nodes with
+  `extras.crank` turning with them. `main.js`
+  moves them too, in stage Eingerichtet outside the Rundgang (else as built), and draws while
   they move and their travel is in view, throttled like a fire. `submodel.js` builds the same
   `toolbar.js` panel on every sub-model page: the page config `views` (`{key: [label, cam, at]}`)
   are its Standpunkte, the three looks its Darstellung (one constant in `submodel.js`).
@@ -472,6 +481,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | **Short routes must be closed** (`build_tour` smooths cyclically, `step()` wraps with `% T`) | Jump back on loop | A seamless Endlos; a pytest enforces it. |
 | Leaves are modelled **open** (kitchen door 90° into the Küche, Speis sliding leaf slid south) | Closed | The Rundgang walks through the kitchen door and looks into the Speis aisle. |
 | The back hall's three doors **swing in the viewer** (`SWING`), the film keeps them as built | Static doors; animate in the film too | They show where the doors get in each other's way; the film camera and its clearance stay fixed. Moving only in Eingerichtet, as the Bad's leaves: the Skizze lines don't follow. |
+| The desk lifts by **own registries `LIFT` + `CRANK` on one shared clock** | Reuse `SLIDE` with a dz | `slides.js` moves one random slide node at a time: top and devices would part. The spindles ride with the top, inside the solid housings when low. |
 | Back door and Windfang door are **built by the Gäste-WC sub-model** | Only the WC door in the module | The page shows all three swinging doors; one builder for house and page. |
 | **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public. The viewer names the rooms (Standpunkte). |
 | **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. |
