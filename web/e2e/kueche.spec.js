@@ -38,7 +38,7 @@ test('the drop-down reaches every page, from the house and from a sub-model', as
   await page.waitForFunction(() => window.__fl?.ready === true);
   const sel = page.getByRole('button', { name: 'Modell', exact: true });
   await sel.click();
-  expect(await entries(page)).toEqual(['Ganzes Haus', 'Erdgeschoss', '1. Stock', '—', ...pages.map((p) => p[0])]);
+  expect(await entries(page)).toEqual(['Ganzes Haus', 'Erdgeschoss', 'Erdgeschoss - Alternativ', '1. Stock', '—', ...pages.map((p) => p[0])]);
   await sel.click();
   await expect(sel).toHaveText('Ganzes Haus');
   for (const [label, path, hook] of pages) {

@@ -94,6 +94,19 @@ describe('the Büro door (code/regal.py) on its own clock', () => {
   });
 });
 
+describe('the leaves of a layout variant (#5: the saloon leaves) on a clock of their own', () => {
+  it('the back hall keeps its rotation; the variant leaves (hidden in the default layout) take no slot of it', () => {
+    const mk = (name, variant) => { const o = new Object3D(); o.name = name; o.userData.swing = Math.PI / 2; if (variant) o.userData.variant = variant; return o; };
+    const hall = [mk('EG_Hintertuer'), mk('EG_WC_Tuer')], alt = [mk('EG_Alt_Pendeltuer_S', 'alt'), mk('EG_Alt_Pendeltuer_N', 'alt')];
+    const picks = () => 0.99;                                           // always the last node of a clock
+    const s = swingingNodes([...hall, ...alt], picks);
+    s.update(4.5);
+    const st = s.state();
+    expect([st.EG_Hintertuer.pos, st.EG_WC_Tuer.pos]).toEqual([0, 0.5]);   // as with the hall alone
+    expect([st.EG_Alt_Pendeltuer_S.pos, st.EG_Alt_Pendeltuer_N.pos]).toEqual([0, 0.5]);   // their own clock
+  });
+});
+
 describe('liftingNodes (the Büro desk, code/desk.py: #10)', () => {
   it('lifts every extras.lift node together: 3 s up, 4 s rest, 3 s down; the crank turns with it', () => {
     expect([LIFT_PERIOD, LIFT_ROLL]).toEqual([7, 3]);
