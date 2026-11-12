@@ -1,5 +1,5 @@
-# Builds the .glb from the Python core and the three.js viewer, and publishes web/dist on
-# GitHub Pages (https://tillg.github.io/frechen_blender/). One-time repo setting: Pages source
+# Builds the .glb and the plan sheets from the Python core and the three.js viewer, and publishes
+# web/dist on GitHub Pages (https://tillg.github.io/frechen_blender/). One-time repo setting: Pages source
 # "GitHub Actions".
 name: Pages
 
@@ -30,6 +30,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
         working-directory: web
+      - run: python3 code/export_plans.py plans/   # fresh plan sheets; npm run blueprint copies them to dist/plans/
       - run: npm run build          # prebuild: python3 ../code/export_gltf.py public/frechenlehen.glb
         working-directory: web
       - run: cp "$(python3 code/film_release.py latest .)" web/dist/rundgang.mp4   # the newest film, playable in the browser
