@@ -42,8 +42,9 @@ def bbox(bp, names=()):
     return tuple(min(v[i] for v in vs) for i in range(3)), tuple(max(v[i] for v in vs) for i in range(3))
 
 
-def view(bp, box, side=None):
-    """(cam, at, p, cut) framing box; side n|e|s|w|top overrides the direction."""
+def view(bp, box, side=None, names=()):
+    """(cam, at, p, cut) framing box; side n|e|s|w|top overrides the direction. names: the objects
+    framed; one of the EG variant Alternativ (#5) is seen in its entry Erdgeschoss - Alternativ."""
     lo, hi = box
     at = tuple((lo[i] + hi[i]) / 2 for i in range(3))
     r = math.dist(lo, hi) / 2
@@ -60,6 +61,9 @@ def view(bp, box, side=None):
     else:
         kind = "inside"
         cut = "eg" if at[2] < house_core.Z_EG_TOP else "noroof" if at[2] < house_core.Z_OG_TOP else "all"
+        layouts = {(bp.variant or {}).get(o) for c, o in bp.geo if any(o.startswith(n) for n in names)}
+        if cut == "eg" and "alt" in layouts and "main" not in layouts:
+            cut = "eg_alt"
         side = side or "se"
     dx, dy = SIDES[side]
     h = math.hypot(dx, dy)
@@ -117,7 +121,7 @@ def main(argv=None):
         box = (tuple(c - 0.5 for c in pt), tuple(c + 0.5 for c in pt))
     else:
         box = bbox(bp, o.objects)
-    cam, at, p, cut = view(bp, box, o.side or FACING.get(o.page))
+    cam, at, p, cut = view(bp, box, o.side or FACING.get(o.page), o.objects)
     link = url(o.page, cam, at, p if o.p is None else o.p, cut)
     if not o.print:
         pid = subprocess.run(["lsof", "-tiTCP:%d" % PORT, "-sTCP:LISTEN"], capture_output=True, text=True).stdout.split()

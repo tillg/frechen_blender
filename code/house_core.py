@@ -8,7 +8,7 @@ OG walls and all heights were measured from the plans/elevations (approx. +-5 cm
 Details (doors, balconies, cladding, terrace, lamps, eaves) follow the photos in input/.
 """
 import math, random
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import ofen  # the stoves (code/ofen.py); it uses the primitives below via house_core.*
 import desk  # the Büro desk sub-model (code/desk.py), the same way
 import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
@@ -129,6 +129,8 @@ SWING = {}    # object -> degrees about the vertical through its PIVOT (counter-
 LIFT = {}     # object -> metres straight up to its other state (the desk top with its devices): the
               # viewer lifts them together on one clock
 CRANK = {}    # object -> (axis (x, y, z), degrees) it turns about its PIVOT while the lift moves
+VARIANT = {}  # object -> "main" (only the default layout has it) or "alt" (only the EG variant Alternativ,
+              # issue #5); objects not in it are shared. Blender and the plan sheets leave "alt" out
 
 
 def local(p, piv, turn=0.0):
@@ -672,9 +674,12 @@ def build_eg():
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
-    interior(c, 5.240, 5.490, 3.13, 5.849, [(4.33, 5.249)])  # Speis / Küche: ends at the cabinet C, open
+    interior(c, 5.240, 5.490, 3.73, 5.849, [(4.33, 5.249)])  # Speis / Küche: open over the aisle; its stub
+    box(c, "EG_Speis_Waende", "Putz", 5.240, 5.490, 3.13, 3.73, z0, z1, GEO[(c, "EG_Waende")]["r"][-1])   # to C:
+    VARIANT["EG_Speis_Waende"] = "main"                   # default only (#5), the wall's rnd, no draw
     speis()                                                 # over the aisle (sliding leaf on the Küche side)
     vorrat()                                                # its shelves stocked (illustration)
+    speis_alt()                                             # the variant Alternativ (#5, viewer only)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
@@ -1059,6 +1064,8 @@ def speis():
 
     shelves(5.249, 5.847)                                                     # A
     shelves(3.732, 4.33)                                                      # B
+    o = "EG_Speis_C"                                                          # C: default only (#5)
+    VARIANT[o] = "main"
     yd, yc = 3.13, 3.15                                                       # C: doors / carcass front
     box(c, o, "Front", x0, x1, yc, 3.728, 0.10, top, rng.random())
     box(c, o, "Fuge", x0, x1, yc + 0.06, 3.728, 0.005, 0.10, rng.random())
@@ -1076,12 +1083,65 @@ def speis():
     rl = 0.8 + 0.2 * rng.random()
 
     def part(w0, w1, d0, d1, za, zb, r=rl, m="Innentuer"):
-        box(c, "EG_Innentueren", m, tc + d0, tc + d1, ys + w0, ys + w1, zl + za, zl + zb, r)
+        box(c, "EG_Speis_Schiebetuer", m, tc + d0, tc + d1, ys + w0, ys + w1, zl + za, zl + zb, r)
 
     six_panel_leaf(part, 1.00, LH)
     sliding_pulls(part, 1.00)
     LEAVES.append((c, [(tc - LT / 2, ys, zl), (tc + LT / 2, ys + 1.00, zl + LH)]))
-    box(c, "EG_Innentueren", "Metall", 5.495, 5.56, 3.26, 5.29, zl + LH + 0.005, zl + LH + 0.045, rng.random())   # rail
+    box(c, "EG_Speis_Schiebetuer", "Metall", 5.495, 5.56, 3.26, 5.29, zl + LH + 0.005, zl + LH + 0.045, rng.random())   # rail
+    VARIANT["EG_Speis_Schiebetuer"] = "main"                 # default only (#5)
+
+
+def speis_alt():
+    """The EG variant Alternativ (issue #5; objects flagged "alt" in VARIANT, only the viewer's
+    Erdgeschoss - Alternativ shows them): cabinet C stands against the Essen's west wall over its
+    full width, from the south wall to shelf B's back, six leaf columns of the same painted Mallnitz
+    fronts; B gets a closed back of vertical spruce boards towards the Essen; the Speis/Küche wall
+    ends at B (its stub to C is default only, speis()), and instead of the sliding leaf two
+    half-height saloon leaves without handles hang in the opening, closed (PIVOT on their jambs,
+    SWING into the Speis: the viewer swings them). Own random stream, no global draw."""
+    c, rng, top = "EG", random.Random(25), Z_EG_TOP - 0.003
+    o, P = "EG_Alt_Schrank", frame("y")                          # u along y, t = x
+    ua, ub, xw, xf = 0.417, 3.712, 2.774, 3.372                   # south wall .. B's back; wall .. fronts
+    lbox(c, o, "Front", P, ua, ub, xw, xf - 0.02, 0.10, top, rng.random())
+    lbox(c, o, "Fuge", P, ua, ub, xw, xf - 0.08, 0.005, 0.10, rng.random())
+    n = 6
+    for k in range(n):                       # as C in speis(), cup pulls where pairs meet
+        a, b = ua + (ub - ua) * k / n, ua + (ub - ua) * (k + 1) / n
+        hu = b - 0.08 if k % 2 == 0 else a + 0.08
+        for za, zb, zk in ((1.0515, 1.995, 1.13), (2.005, top - 0.003, 2.07)):
+            mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, rng.random(), [(hu, zk)])
+        for j in range(3):
+            za, zb = 0.105 + 0.315 * j + 0.0015, 0.105 + 0.315 * (j + 1) - 0.0015
+            mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, rng.random(), [((a + b) / 2, zb - 0.07)])
+    o, x0, x1 = "EG_Alt_Speis", 2.774, 5.238                     # B's back: vertical boards, 2 mm gaps
+    k = round((x1 - x0) / 0.20)
+    for i in range(k):
+        box(c, o, "FichteZ", x0 + (x1 - x0) * i / k + 0.001, x0 + (x1 - x0) * (i + 1) / k - 0.001,
+            3.715, 3.731, 0.012, top, rng.random())
+    # saloon leaves in the opening y 4.33 .. 5.249 of the wall x 5.24 .. 5.49, in its middle plane,
+    # 2 cm off the jambs, 6 mm apart; bottom 0.35, top 1.65 at the hinge curving down to 1.50
+    xm, T, zb0, gap = 5.365, 0.025, 0.35, 0.02
+    W = (5.249 - 4.33 - 2 * gap - 0.006) / 2
+    tops = lambda w: 1.50 + 0.15 * math.cos(math.pi / 2 * w / W)
+    for s, uh, d, sw in (("S", 4.33 + gap, 1, 90.0), ("N", 5.249 - gap, -1, -90.0)):
+        o = "EG_Alt_Pendeltuer_" + s
+        PIVOT[o], SWING[o], r = (xm, uh, 0.0), sw, 0.8 + 0.2 * rng.random()
+        Q = lambda w, t, z, uh=uh, d=d: (xm + t, uh + d * w, z)      # leaf-local: w from the hinge
+        part = lambda w0, w1, za, zb, t=T / 2, o=o, Q=Q: box(c, o, "Innentuer", *[v for pair in zip(
+            Q(w0, -t, za), Q(w1, t, zb)) for v in pair], r)
+        part(0, 0.06, zb0, tops(0))                                                # hinge stile
+        part(W - 0.06, W, zb0, tops(W))                                            # meeting stile
+        part(0.06, W - 0.06, zb0, zb0 + 0.12)                                      # bottom rail
+        ws = [0.06 + (W - 0.12) * i / 8 for i in range(9)]                          # top rail, curved
+        pts = [(w, tops(w)) for w in ws] + [(w, tops(w) - 0.10) for w in ws[::-1]]
+        add(c, o, "Innentuer", [Q(w, t, z) for t in (-T / 2, T / 2) for w, z in pts],
+            [list(range(18))[::-1], list(range(18, 36))] + [(i, (i + 1) % 18, 18 + (i + 1) % 18, 18 + i) for i in range(18)], r)
+        for i in range(4):                                                         # slats, thinner
+            w0 = 0.06 + (W - 0.12) * (2 * i + 1) / 9
+            part(w0, w0 + (W - 0.12) / 9, zb0 + 0.12, tops(w0 + (W - 0.12) / 18) - 0.10, T / 4)
+    for o in ("EG_Alt_Schrank", "EG_Alt_Speis", "EG_Alt_Pendeltuer_S", "EG_Alt_Pendeltuer_N"):
+        VARIANT[o] = "alt"
 
 
 def vorrat():
@@ -2258,6 +2318,7 @@ class Blueprint:
     swing: dict = None  # SWING: object -> degrees about its pivot to its other state (None: none)
     lift: dict = None   # LIFT: object -> metres up to its other state (None: none)
     crank: dict = None  # CRANK: object -> (axis, degrees) about its pivot while the lift moves
+    variant: dict = None  # VARIANT: object -> "main" / "alt" (None: no variant)
     doors: list = ()   # DOORS: every hinged leaf (plan sheets: door swings)
     plan_rooms: list = ()   # PLAN_ROOMS: the architect's room names with storey and anchor (plan sheets)
     plan: dict = None  # PLAN: the object classes of the plan sheets
@@ -2268,7 +2329,7 @@ def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
-    LIFT.clear(); CRANK.clear()
+    LIFT.clear(); CRANK.clear(); VARIANT.clear()
     LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear(); STAIRS.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
@@ -2279,7 +2340,15 @@ def build():
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
                      turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), lift=dict(LIFT), crank=dict(CRANK),
-                     doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
+                     variant=dict(VARIANT), doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
+
+
+def default_layout(bp):
+    """bp without the objects of the EG variant Alternativ (VARIANT "alt", issue #5) and their
+    pivots and swings: what Blender and the plan sheets show."""
+    alt = {o for o, v in (bp.variant or {}).items() if v == "alt"}
+    keep = lambda d: {k: v for k, v in d.items() if (k[1] if isinstance(k, tuple) else k) not in alt}
+    return replace(bp, geo=keep(bp.geo), parts=keep(bp.parts), pivot=keep(bp.pivot), swing=keep(bp.swing or {}))
 
 
 def build_ofen():

@@ -24,11 +24,11 @@ test('the three drop-downs and Reset sit at the same box on the house and every 
   }
 });
 
-test('Modell lists Ganzes Haus, Erdgeschoss, 1. Stock, a separator, then the six sub-models', async ({ page }) => {
+test('Modell lists Ganzes Haus, Erdgeschoss, Erdgeschoss - Alternativ, 1. Stock, a separator, then the six sub-models', async ({ page }) => {
   for (const [url, hook] of [PAGES[0], PAGES[1]]) {
     await open(page, url, hook);
     await page.getByRole('button', { name: 'Modell', exact: true }).click();
-    expect(await entries(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', '1. Stock', '—', 'Ofen', 'Schreibtisch',
+    expect(await entries(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', 'Erdgeschoss - Alternativ', '1. Stock', '—', 'Ofen', 'Schreibtisch',
       'Bad Oma & Opa', 'Küche', 'Gäste-WC', 'Schrank im Büro']);
   }
 });
