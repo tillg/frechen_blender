@@ -129,8 +129,10 @@ edited: 2026-11-12
     row, floor-standing toilet with a close-coupled cistern; in the WC 2,30 (next to the
     Waschküche) a Waschbecken einzeln 50 × 40 under a mirror in a black frame, clear of the open
     door leaf
-  - OG Flur, right of the Waschküche door: a Waschbecken einzeln 60 × 47 in front of a dark stone
-    panel
+  - OG Flur, exactly midway between the doors to Saschi and the Waschküche: a Waschbecken einzeln
+    60 × 47 on Taubenblau WC tiles
+    reaching 15 cm beyond it on either side, above them a mirror 110 × 95 in a 10 cm wooden frame
+    (`wood_mirror()`, as the back hall's 54 × 74 with 7 cm)
   - Waschküche: two front loaders at the east wall, a dryer stacked on the north one; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the
     right wall from the door (west) an open spruce cupboard, 2.0 m high, continuous shelves

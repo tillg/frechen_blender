@@ -70,13 +70,8 @@ def gaeste_wc_neu(c="GaesteWC", x0=0.0, y0=0.0):
     # 40 x 60 in a 7 cm wooden frame (2.5 cm deep), its glass set back in the frame
     hc.waschbecken(c, WO + dx, BM + dy, -1, 0, BW, BD, 1, tile=hc.WC_TILE_T)
     hc.wainscot(c, 0.0, WO + dx - 1.0, WO + dx, YF + dy, FWA - 0.07 + dy, None, sides="e")
-    o, r = "_Sanitaer", rng.random()
     ya, yb, za, zb = BM - MGW / 2 - MF, BM + MGW / 2 + MF, MZ, MZ + MGH + 2 * MF
-    B(o, "Kiefer", WO - 0.025, WO, ya, yb, za, za + MF, r)                                   # bottom, top
-    B(o, "Kiefer", WO - 0.025, WO, ya, yb, zb - MF, zb, r)
-    B(o, "Kiefer", WO - 0.025, WO, ya, ya + MF, za + MF, zb - MF, r)                         # sides
-    B(o, "Kiefer", WO - 0.025, WO, yb - MF, yb, za + MF, zb - MF, r)
-    B(o, "Spiegel", WO - 0.012, WO - 0.004, ya + MF, yb - MF, za + MF, zb - MF)
+    hc.wood_mirror(c, WO + dx, BM + dy, -1, 0, yb - ya, zb - za, MF, za, rng)
 
     # Garderobe after garderobe mallnitz.jpeg: old spruce; a bench from wall to wall (seat, apron,
     # end boards with a scrolled arm), the hook board above it with six iron hooks, the hat shelf on
