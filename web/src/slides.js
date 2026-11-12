@@ -6,8 +6,10 @@ import { Quaternion, Vector3 } from 'three/webgpu';
 // code/gaeste_wc.py) the same way: every DOOR_PERIOD s one swings to its other state in DOOR_SWING s.
 // The Büro door (code/regal.py, node name *_Buerotuer) has a clock of its own: it swings to its other
 // state in BUERO_SWING s, rests there 4 s, swings back (every BUERO_PERIOD s), so one sees how it clears
-// the bookcase.
+// the bookcase. The Büro desk (code/desk.py, node extras.lift / extras.crank) cranks up in LIFT_ROLL s,
+// rests, cranks down (every LIFT_PERIOD s), its top and devices together, the hand wheel turning.
 export const PERIOD = 4, ROLL = 2, DOOR_PERIOD = 3, DOOR_SWING = 3, BUERO_PERIOD = 6, BUERO_SWING = 2;
+export const LIFT_PERIOD = 7, LIFT_ROLL = 3;
 
 // n leaves, rand() in [0, 1). Returns tick(t) for rising t (seconds) -> each leaf's position:
 // 0 as built, 1 at its other end.
@@ -75,5 +77,31 @@ export function swingingNodes(objects, rand = Math.random) {
       return moved;
     },
     state: () => Object.fromEntries(nodes.map((n, k) => [n.obj.name, { pos: pos[k], yaw: n.by * pos[k] }])),
+  };
+}
+
+// The nodes with extras.lift (glTF metres up) and extras.crank ([axis x, y, z, radians] about the
+// node's origin) on one clock: all at the same fraction of the stroke. update(t, on) and state() as
+// slidingNodes (state: per node name its position 0..1 and its rise dy or turn angle).
+export function liftingNodes(objects) {
+  const nodes = objects.filter((o) => o.userData.lift || o.userData.crank).map((obj) => ({ obj,
+    home: obj.position.clone(), turn: obj.quaternion.clone(), lift: obj.userData.lift ?? 0, crank: obj.userData.crank }));
+  const tick = createSlides(1, () => 0, LIFT_PERIOD, LIFT_ROLL);
+  const q = new Quaternion(), axis = new Vector3();
+  let pos = 0;
+  return {
+    nodes,
+    update(t, on = true) {
+      const now = tick(t)[0], next = on ? now : 0;
+      const moved = next !== pos;
+      pos = next;
+      for (const n of nodes) {
+        n.obj.position.copy(n.home).setY(n.home.y + n.lift * pos);
+        if (n.crank) n.obj.quaternion.multiplyQuaternions(q.setFromAxisAngle(axis.fromArray(n.crank), n.crank[3] * pos), n.turn);
+      }
+      return moved;
+    },
+    state: () => Object.fromEntries(nodes.map((n) => [n.obj.name,
+      n.crank ? { pos, angle: n.crank[3] * pos } : { pos, dy: n.obj.position.y - n.home.y }])),
   };
 }
