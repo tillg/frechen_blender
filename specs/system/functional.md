@@ -66,12 +66,21 @@ edited: 2026-11-12
     door, a door over the upper half and three drawers below; the wall to the Küche ends at C's
     front and is open
     over the aisle, where a sliding door on the Küche side stands slid open to the south
+  - variant **Alternativ** (viewer entry Erdgeschoss - Alternativ only; Blender, film and plans show
+    the above): C over the full west wall of the Essen (six leaf columns), B with a closed back of
+    vertical spruce boards towards the Essen, the Speis/Küche wall ending at B, and in the opening
+    two half-height saloon leaves (curved top rail, slats, no handles) that swing into the Speis
   - dining table after tisch-briol.png, one table 2.00 m long: board top, legs splayed on a flat
     foot frame with corner blocks; 8 chairs (3 per long side, one at each end)
-  - Büro desk in the Bibliothek between the two north french doors: two LG UltraFine 6K 32"
+  - Büro desk in the Bibliothek between the two north french doors: a 190 × 100 × 4 cm solid
+    cherry top (Kirschbaum) on the cast-iron crank frame of `input/2026-11-12 input/schreibtischgestell.jpg`
+    (two arched legs, foot tube, gearboxes and spindle housings, drive rods, four spindles under
+    flat bars, hand wheel on the east leg); two LG UltraFine 6K 32"
     monitors at 170° showing the screenshots `screen_a12` (left) and `screen_pilcrow` (right),
     a closed MacBook Pro partly under the left one with a softly lit logo, white Magic Keyboard
-    and Magic Trackpad
+    and Magic Trackpad. In the viewer (house in Eingerichtet, outside the Rundgang, and the
+    Schreibtisch sub-model) the top with everything on it cranks up 30 cm in 3 s, rests 4 s and
+    comes down, the hand wheel turning 4 times per stroke; Blender and the film keep it at 75 cm
   - all chairs (dining table, Bibliothek desk) are board chairs after stuhl.png: thick plank
     seat on battens, four splayed stick legs without stretchers, one tall backrest board leaning
     back with a pointed heart cut out
@@ -193,8 +202,9 @@ change; the same model always gives byte-identical files.
 - **Navigation panel** at the top right of every page (house and the five sub-models), the same
   place everywhere: three drop-downs that open below and a Reset button (house: plus the sun
   toggle). There is no timeline bar and no Play.
-  - **Modell:** Ganzes Haus, Erdgeschoss, 1. Stock (the cutaway: the whole house, without roof,
-    only the EG; the ground stays), a separator, then Ofen, Schreibtisch, Bad Oma & Opa, Küche,
+  - **Modell:** Ganzes Haus, Erdgeschoss, Erdgeschoss - Alternativ, 1. Stock (the cutaway: the
+    whole house, without roof, only the EG – the default or the variant Alternativ –; the ground
+    stays), a separator, then Ofen, Schreibtisch, Bad Oma & Opa, Küche,
     Gäste-WC, Schrank im Büro. A house entry switches in place, a sub-model entry opens its page; the current one is
     selected.
   - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert. On

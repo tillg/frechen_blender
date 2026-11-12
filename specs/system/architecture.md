@@ -99,11 +99,16 @@ flowchart LR
   (`ofen_im_haus()`) and `werkstattofen()`; `house_core` imports it and calls them, `build_ofen()`
   stays in `house_core`. `ofen.py` uses the primitives and `GEO`/`PARTS` through `house_core` (the two
   modules import each other). Its materials are entries of `MAT_DEF`.
-- **Desk.** `code/desk.py` the same way: the table builder `desk()` (Büro desk, OG laundry
-  table), `desk_neu(c, x0, y0)` (table, two monitors, MacBook, keyboard, trackpad, built straight
-  into collection `c`: `EG` at `DESK_AT`, or `Desk` at the origin) and `stuhl()`; `build_desk()`
-  stays in `house_core`. The devices draw `rnd` from their own `random.Random(3)`, so no later part
-  shifts. Each screen pane is an object with a `PIVOT` (lower-left corner) and a `TURN` (yaw);
+- **Desk.** `code/desk.py` the same way: the plain table builder `desk()` (OG laundry table),
+  `desk_neu(c, x0, y0)` (the Büro desk: cherry top 190 × 100 (`DESK_W`/`DESK_D`) on the cast-iron
+  crank frame, two monitors, MacBook, keyboard, trackpad, built straight into collection `c`: `EG`
+  at `DESK_AT`, or `Desk` at the origin) and `stuhl()`; `build_desk()` stays in `house_core`. The
+  static frame is furniture in `<c>_Moebel`; the lifted parts (top, top bars, spindles) are
+  `<c>_Schreibtisch`, the hand wheel `<c>_Handrad` (`PIVOT` at the hub). `LIFT` (object → metres
+  up, `LIFT_DZ` = 0.30) holds `_Schreibtisch`, `_Geraete`, `_Bildschirm_L/R`; `CRANK` (object →
+  axis, degrees) turns `_Handrad` 4 × 360° per stroke. Frame and wheel draw `rnd` from their own
+  `random.Random(18)` (the top and spindles take the old table's five global draws), the devices
+  from `random.Random(3)`, so no later part shifts. Each screen pane is an object with a `PIVOT` (lower-left corner) and a `TURN` (yaw);
   its material carries `image` (path under `web/public/`) and `size` (w, h in metres), mapped in
   object space by both backends (`local()` stores the mesh unturned).
 - **Bad Großeltern.** `code/bad.py` the same way: `bad_neu(c, x0, y0)` builds the bathroom into
@@ -124,6 +129,15 @@ flowchart LR
   and shifted; own `random.Random(14)`. The room's walls, the kitchen door and the Speis
   (`speis()`: shelves A/B, cabinet C, sliding leaf on the kitchen side, own `random.Random(9)`)
   stay in `house_core`.
+- **Variant Alternativ.** `VARIANT` (object → `main` | `alt`) flags the objects of one layout only.
+  `speis()` puts the default-only parts in objects of their own (`EG_Speis_C`, `EG_Speis_Schiebetuer`,
+  `EG_Speis_Waende`: the wall's 60 cm stub to C, with the wall's `rnd`, suffix `_Waende` so the plan
+  sheets cut it as wall). `speis_alt()` (own `random.Random(25)`) builds the `alt` objects:
+  `EG_Alt_Schrank` (C on the Essen west wall, y 0.417–3.712, six columns), `EG_Alt_Speis` (B's back,
+  vertical spruce boards) and the saloon leaves `EG_Alt_Pendeltuer_S`/`_N` (half height, built
+  closed, `PIVOT` + `SWING` ±90° into the Speis; neither in `LEAVES` nor `DOORS`).
+  `default_layout(bp)` returns the Blueprint without the `alt` objects (and their pivots, swings):
+  `build_house.py` and `export_plans.py` build from it.
 - **Gäste-WC.** `code/gaeste_wc.py` the same way: `gaeste_wc_neu(c, x0, y0)` builds WC and
   Garderobe by the back hall into collection `c` with the old WC room's inner SW corner at
   (x0, y0) (`EG` at `WC_AT`, or `GaesteWC` at the origin), after
@@ -188,7 +202,10 @@ flowchart LR
 (`SLIDE`: object → (dx, dy, dz) to its other end of travel; the Bad's two sliding leaves, one
 object each; glTF node `extras.slide`), `swing` (`SWING`: object → degrees about its pivot from
 as built to its other state; the back hall's three door leaves; glTF node `extras.swing` in
-radians about y). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
+radians about y), `lift` (`LIFT`: object → metres straight up to its other state; glTF
+`extras.lift`) and `crank` (`CRANK`: object → (axis, degrees) turned about its pivot while the
+lift moves; glTF `extras.crank` = [glTF axis, radians]) and `variant` (`VARIANT`; glTF
+`extras.variant`). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
 hinged at the lining's corner, with the `SWING` that closes it.
 
 ### `build_house.py` — Blender backend
@@ -228,7 +245,8 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
 
 ### `export_plans.py` — plan-sheet backend
 
-Standard library only, no Blender: `python3 code/export_plans.py plans/` calls `house_core.build()`
+Standard library only, no Blender: `python3 code/export_plans.py plans/` calls
+`house_core.default_layout(house_core.build())`
 and writes `eg.svg`, `og.svg` (Grundrisse) and `nord.svg`, `ost.svg`, `sued.svg`, `west.svg`
 (Ansichten). It knows only how to draw; what an object is comes from the core:
 
@@ -346,15 +364,18 @@ sequenceDiagram
     `InstancedBufferAttribute`.
 - **Visibility.** `main.js` feeds materials, lights and garden a merged view
   (`built + furnished`), so Eingerichtet looks like Gebaut. One `applyVisibility()` (on
-  progress and cutaway changes) shows an object iff the cutaway does not hide it and, for
-  `extras.furniture`, the stage is Eingerichtet.
+  progress and cutaway changes) shows an object iff the cutaway does not hide it, for
+  `extras.furniture` the stage is Eingerichtet, and for `extras.variant` it is the cutaway's
+  layout (`alt` in `eg_alt`, else `main`). The Skizze lines (`ink.js`) are grouped by collection,
+  level and variant (`Ink_EG_base_alt`) and follow the same rule.
 - **`toolbar.js`.** The one navigation panel of every page (house and sub-models): three custom
   drop-downs (button + `role="listbox"`, always open below; keys ↑ ↓ Enter Esc), Reset and, on
-  the house, the sun toggle. Modell (house entries Ganzes Haus / Erdgeschoss / 1. Stock, a
+  the house, the sun toggle. Modell (house entries Ganzes Haus / Erdgeschoss / Erdgeschoss -
+  Alternativ / 1. Stock, a
   separator, the sub-model pages), Darstellung (levels) and Standpunkt (group headings; "Eigene
   Ansicht" appears after a camera move). A page passes its entries, levels, spots, routes and
-  callbacks. The house entries switch the cutaway in place (`all` / `eg` / `noroof`, URL `cut=`
-  kept); a sub-model entry navigates to its page (relative URLs).
+  callbacks. The house entries switch the cutaway in place (`all` / `eg` / `eg_alt` / `noroof`, URL `cut=`
+  kept; `eg_alt` lists the Erdgeschoss Standpunkte); a sub-model entry navigates to its page (relative URLs).
 - **`ui.js`.** The house page's title and its toolbar wiring (stage labels as levels, sun toggle
   enabled from p 1.5). `body.dataset.stage`/`cutaway` mirror the state.
 - **`viewstate.js`.** Pure, no three.js. Saved views in `localStorage` under
@@ -390,8 +411,11 @@ sequenceDiagram
   edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
   lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s; the Büro door
-  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest). `main.js`
-  moves both too, in stage Eingerichtet outside the Rundgang (else as built), and draws while
+  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest; the leaves of a variant on one of
+  their own, so hidden leaves take no slot of the others); nodes with `extras.lift` rise and
+  sink together on one clock (`liftingNodes()`: 3 s up, 4 s rest, 3 s down, 4 s rest), nodes with
+  `extras.crank` turning with them. `main.js`
+  moves them too, in stage Eingerichtet outside the Rundgang (else as built), and draws while
   they move and their travel is in view, throttled like a fire. `submodel.js` builds the same
   `toolbar.js` panel on every sub-model page: the page config `views` (`{key: [label, cam, at]}`)
   are its Standpunkte, the three looks its Darstellung (one constant in `submodel.js`).
@@ -463,7 +487,8 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Speis shelves and cabinet are **built-ins** (`EG_Speis`, stage Gebaut) | Furniture (`EG_Moebel`, Eingerichtet) | Cabinet C replaces a wall; floor-to-ceiling joinery belongs to the house like the kitchen. |
 | One **navigation panel** (`toolbar.js`: Modell, Darstellung, Standpunkt, Reset) on every page | Per-page buttons; a link per sub-model | The same controls at the same place everywhere; one page list in one place. |
 | Routes are a **group inside the Standpunkt drop-down** | A 4th "Routen" drop-down | Three drop-downs everywhere. |
-| The **cutaway is the house entries** of the Modell drop-down (Ganzes Haus `all`, Erdgeschoss `eg`, 1. Stock `noroof`) | Separate cut buttons | Today's `cut=` values stay, so `show.py`, `shot.js` and every URL stay valid. |
+| The **cutaway is the house entries** of the Modell drop-down (Ganzes Haus `all`, Erdgeschoss `eg`, Erdgeschoss - Alternativ `eg_alt`, 1. Stock `noroof`) | Separate cut buttons | Today's `cut=` values stay, so `show.py`, `shot.js` and every URL stay valid. |
+| A layout **variant is an object flag** (`VARIANT`) in the core, one glb; the variant entry is a cutaway value (`eg_alt`); Blender, film and plans show the default (`default_layout()`) | Two glbs or Blueprints; per-Part flags; a separate `v=` URL parameter; the variant in Blender too | One build and file; the viewer only toggles visibility like `furniture`; URLs, `show.py` and `shot.js` keep working; the default stays the agreed plan. |
 | **Custom drop-downs** (button + `role="listbox"`) that always open below | Native `<select>`; `appearance: base-select` | A native macOS select opens over the chosen entry, i.e. upwards far down the list; `base-select` is Chrome-only. e2e tests click `role=button`, then `role=option`. |
 | The **URL wins over `localStorage`**, which holds the same query string, one saved view per model entry | Storage wins; a JSON state; one view per page | `show.py`, `shot.js`, the blueprint-watch reload and shared links all open `?cam=…`: one format, one parser. Each house entry opens at its own view. |
 | **Standpunkte and routes live in `tour.py`**, exported in `scene.extras` | JS literals in `main.js` | ADR-001-XEWL: model facts once in the core; the golden and pytest machinery is there. Sub-model views stay in the page config (not used anywhere else). |
@@ -472,6 +497,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | **Short routes must be closed** (`build_tour` smooths cyclically, `step()` wraps with `% T`) | Jump back on loop | A seamless Endlos; a pytest enforces it. |
 | Leaves are modelled **open** (kitchen door 90° into the Küche, Speis sliding leaf slid south) | Closed | The Rundgang walks through the kitchen door and looks into the Speis aisle. |
 | The back hall's three doors **swing in the viewer** (`SWING`), the film keeps them as built | Static doors; animate in the film too | They show where the doors get in each other's way; the film camera and its clearance stay fixed. Moving only in Eingerichtet, as the Bad's leaves: the Skizze lines don't follow. |
+| The desk lifts by **own registries `LIFT` + `CRANK` on one shared clock** | Reuse `SLIDE` with a dz | `slides.js` moves one random slide node at a time: top and devices would part. The spindles ride with the top, inside the solid housings when low. |
 | Back door and Windfang door are **built by the Gäste-WC sub-model** | Only the WC door in the module | The page shows all three swinging doors; one builder for house and page. |
 | **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public. The viewer names the rooms (Standpunkte). |
 | **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. |

@@ -766,7 +766,7 @@ def sheet(name, body, state, north=False, stamp=None):
 
 
 def export(outdir, stamp=None):
-    bp = house_core.build()
+    bp = house_core.default_layout(house_core.build())   # the sheets show the default layout
     state = model_state(bp)
     out = Path(outdir)
     out.mkdir(parents=True, exist_ok=True)
