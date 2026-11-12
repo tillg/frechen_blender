@@ -459,12 +459,27 @@ def test_west_og_windows_wall_below_up_to_the_ceiling():
     assert bars and not any(any(o["a"] < y < o["b"] for o in west) and z > house_core.Z_OG for _, y, z in bars)
 
 
+def test_grosseltern_werkstattofen():
+    """Oma & Opa (issue #4): the Bibliothek's workshop stove once more, in the bedroom's NW corner
+    between the north wall and the 14 cm wall stub north of the Bad opening, turned 45° to face
+    the room (SE); an object of its own, so the Bibliothek's stays as it is."""
+    ofen = BP.geo[("EG", "EG_Werkstattofen_Grosseltern")]
+    lo = [min(p[k] for p in ofen["v"]) for k in range(3)]
+    hi = [max(p[k] for p in ofen["v"]) for k in range(3)]
+    assert 2.657 + 0.09 < lo[0] < 2.657 + 0.15 and 12.473 - 0.15 < hi[1] < 12.473 - 0.09   # in the corner
+    assert 0.55 < hi[0] - lo[0] < 0.65 and 1.0 <= hi[2] <= 1.1                         # turned 45°
+    assert len(ofen["v"]) == len(BP.geo[("EG", "EG_Werkstattofen")]["v"])             # same stove
+    (fire,) = [f for f in BP.fires if lo[0] < f["base"][0] < hi[0] and lo[1] < f["base"][1] < hi[1]]
+    assert abs(fire["u"][0] - fire["u"][1]) < 1e-6 and fire["u"][0] < -0.7 and fire["collection"] == "EG"  # faces SE
+    assert "EG_Werkstattofen_Grosseltern" not in BP.furniture                         # built in
+
+
 def test_fires_are_recorded_where_the_stoves_burn():
     """The flames are no longer static geometry: every stove records its fire (base = centre of
     the flame bed in the flame plane, u = unit along the width, w, h, d) in FIRES, and the
-    animated fire component (code/fire.py, web/src/fire.js) draws them. Four in the house (Stube
-    Ofen, Bibliothek and Schlafen SE workshop stoves, Küche Herd), one in the Ofen sub-model."""
-    assert len(BP.fires) == 5 and len(house_core.build_ofen().fires) == 2   # the Ofen: front + back door
+    animated fire component (code/fire.py, web/src/fire.js) draws them. Five in the house (Stube
+    Ofen, Bibliothek, Oma & Opa and Schlafen SE workshop stoves, Küche Herd), one in the Ofen sub-model."""
+    assert len(BP.fires) == 6 and len(house_core.build_ofen().fires) == 2   # the Ofen: front + back door
     house_core.build()                                                    # restore the registries
     assert not any(m == "Feuer" for g in BP.geo.values() for m in g["m"])
 
@@ -477,6 +492,7 @@ def test_fires_are_recorded_where_the_stoves_burn():
     assert sum(inside(f, ("EG", "EG_Ofen_Feuertuer")) for f in BP.fires) == 1
     assert sum(inside(f, ("EG", "EG_Ofen_Hintertuer")) for f in BP.fires) == 1
     assert sum(inside(f, ("EG", "EG_Werkstattofen")) for f in BP.fires) == 1
+    assert sum(inside(f, ("EG", "EG_Werkstattofen_Grosseltern")) for f in BP.fires) == 1
     assert sum(inside(f, ("OG", "OG_Werkstattofen")) for f in BP.fires) == 1
     assert sum(inside(f, ("EG", "EG_Herd")) for f in BP.fires) == 1
     og = next(f for f in BP.fires if f["base"][2] > house_core.Z_OG)

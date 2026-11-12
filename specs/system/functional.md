@@ -41,6 +41,10 @@ edited: 2026-11-12
   - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
     with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
+  - small black workshop stove after `input/2026-11-03 input/werkstattofen.jpeg` (40 × 40 × 105 cm,
+    fire behind glass), three times, each in a room corner 10 cm off both walls and turned 45° to
+    face the room: Bibliothek (Flur wall × wall stub), Oma & Opa (north wall × the 14 cm stub north
+    of the Bad opening), Schlafen SE in the OG (Bad wall × WC wall)
   - Küche after `input/2026-11-09 input/speis_kueche_v6.svg` (also a sub-model page): the door
     to the Flur where it really is (clear 81 cm, hinged west, opened 90° into the Küche); behind
     it a Besenschrank 51 × 55 × 2.20 m; the Spülzeile (~150 cm, steel sink and tap at the water connection)
