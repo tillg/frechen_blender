@@ -153,7 +153,8 @@ flowchart LR
   (top z + 0.85, 17 cm high, `taps` mixers), the `Metall` Waschbeckenständer and the bottle trap;
   `tile` puts it in front of WC tiles. Every Part shares one `rnd` from `rng`, else a new
   `random.Random(16)` per call. Callers: `build_sanitary()` (OG Bad NW and S, OG WC with
-  `wc_mirror()`, OG Flur with `flur_panel()`; the Bäder's mirrors from `bad_mirror()`),
+  `wc_mirror()`, OG Flur on `wainscot(sides="s")` with `wood_mirror()`, which the back hall's
+  mirror in `gaeste_wc.py` shares with its own `rng`; the Bäder's mirrors from `bad_mirror()`),
   `gaeste_wc.py` and `bad.py`.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
   `build_gaeste_wc()` / `build_regal()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines

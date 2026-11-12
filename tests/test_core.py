@@ -628,19 +628,46 @@ def test_stube_sitzecke_in_the_se_corner():
     assert min(math.dist((tx, ty), (x, y)) for x, y in ((ax, ay), (bx, by))) > 0.5     # chairs either side
 
 
-def test_og_flur_waschbecken_right_of_the_waschkueche_door():
-    """OG Flur: a washbasin on the wall right of the Waschküche door (seen from the Flur: west of
-    it, x < 7.15, wall face y 6.35; the plan draws a basin there) after input/2026-11-05 input/
-    waschbecken-briol.jpeg: the dark stone panel; on it, since 2026-11-12, a Waschbecken einzeln 60 x 47
-    on its Ständer (input/2026-11-12 input/), standing in front of the 2 cm panel."""
+def test_og_flur_waschbecken_between_the_two_doors():
+    """OG Flur: a washbasin on the wall between the two doors to the south rooms (wall face y 6.35;
+    the plan draws a basin there), a Waschbecken einzeln 60 x 47 on its Ständer (input/2026-11-12
+    input/), centred exactly between the two door openings (request 2026-11-12). Issue #8: instead
+    of the grey stone panel behind it, the Taubenblau WC tiles (wainscot) about 15 cm beyond the
+    basin on either side, and above it a big mirror in a wide wooden frame like the one over the
+    back hall's basin (gaeste_wc.py)."""
     zo = house_core.Z_OG
-    parts = [p for p in part_list(("OG", "OG_Sanitaer")) if p[1][1] >= 6.35 - 1e-9 and 6.0 < p[1][0] and p[2][0] < 7.15]
-    stone = [p for p in parts if p[0] == "Schiefer"]
-    assert stone and "Schiefer" in house_core.MAT_DEF
-    slo = [min(p[1][k] for p in stone) for k in range(3)]; shi = [max(p[2][k] for p in stone) for k in range(3)]
-    assert shi[1] <= 6.38 and slo[2] <= zo + 0.02 and shi[2] >= zo + 1.5 and shi[0] <= 7.15 - 0.2
-    basin = _waschbecken(("OG", "OG_Sanitaer"), (6.45, 6.35, 0, 1), 0.60, 0.47, 1, zo, 0.02)
-    assert all(lo[1] >= 6.37 - 1e-6 for m, lo, hi in basin)                              # in front of the panel
+    assert "Schiefer" not in house_core.MAT_DEF
+    wall = [p for p in part_list(("OG", "OG_Waende")) if abs(p[1][1] - 6.06) < 1e-6 and abs(p[2][1] - 6.35) < 1e-6
+            and abs(p[1][2] - zo) < 1e-6 and p[1][0] < 6.5 < p[2][0]]
+    assert len(wall) == 1                                                               # full height: no opening
+    wa, wb = wall[0][1][0], wall[0][2][0]
+    lintels = [p for p in part_list(("OG", "OG_Waende")) if abs(p[1][1] - 6.06) < 1e-6 and p[1][2] > zo + 1.5
+               and (abs(p[2][0] - wa) < 1e-6 or abs(p[1][0] - wb) < 1e-6)]
+    assert len(lintels) == 2                                                            # a door on either side
+    X = (wa + wb) / 2
+    near = lambda p: p[2][1] <= 6.40 and p[1][1] >= 6.35 - 1e-9 and wa < p[1][0] and p[2][0] < wb
+    tiles = [p for p in part_list(("OG", "OG_Fliesen")) if near(p) and p[0] == "Fliese"]
+    assert tiles
+    tlo = [min(p[1][k] for p in tiles) for k in range(3)]; thi = [max(p[2][k] for p in tiles) for k in range(3)]
+    assert abs(tlo[0] - (X - 0.45)) < 0.01 and abs(thi[0] - (X + 0.45)) < 0.01   # basin 60 + 2 x 15
+    assert tlo[2] <= zo + 0.02 and 1.05 < thi[2] - zo < 1.15                            # floor to the cap
+    assert thi[1] <= 6.35 + house_core.WC_TILE_T + 0.005
+    basin = _waschbecken(("OG", "OG_Sanitaer"), (X, 6.35, 0, 1), 0.60, 0.47, 1, zo, house_core.WC_TILE_T)
+    assert all(lo[1] >= 6.35 + house_core.WC_TILE_T - 1e-6 for m, lo, hi in basin)      # on the tiles
+    san = [p for p in part_list(("OG", "OG_Sanitaer")) if near(p)]
+    assert not [p for p in san if p[0] == "Schiefer"]
+    glass = [p for p in san if p[0] == "Spiegel"]
+    frame = [p for p in san if p[0] == "Kiefer"]
+    assert len(glass) == 1 and len(frame) == 4
+    _, glo, ghi, _ = glass[0]
+    flo = [min(p[1][k] for p in frame) for k in range(3)]; fhi = [max(p[2][k] for p in frame) for k in range(3)]
+    assert abs(fhi[0] - flo[0] - 1.10) < 1e-6 and abs(fhi[2] - flo[2] - 0.95) < 1e-6   # 110 x 95 (request: 20 wider)
+    assert abs(ghi[0] - glo[0] - 0.90) < 1e-6 and abs(ghi[2] - glo[2] - 0.75) < 1e-6   # glass 90 x 75
+    assert abs((glo[0] + ghi[0]) / 2 - X) < 0.005                                    # centred over the basin
+    for gap in (glo[0] - flo[0], fhi[0] - ghi[0], glo[2] - flo[2], fhi[2] - ghi[2]):
+        assert abs(gap - 0.10) < 1e-6                                                   # 10 cm frame (back hall: 7)
+    assert flo[2] > thi[2] and fhi[2] < house_core.Z_OG_TOP - 0.05                      # above the tiles, below the ceiling
+    assert fhi[1] - 6.35 <= 0.03 and ghi[1] < fhi[1]                                    # flat on the wall, glass set back
 
 
 def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
