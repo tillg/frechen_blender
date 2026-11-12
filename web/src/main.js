@@ -105,20 +105,23 @@ function setProgress(p) {
   dirty = true;
   saveView();
 }
-// cutaway: hide whole collections ('roof' = Dach incl. west cladding, 'og' = OG + OG balconies)
-const HIDE = { all: [], noroof: ['roof'], eg: ['roof', 'og'] };
+// cutaway: hide whole collections ('roof' = Dach incl. west cladding, 'og' = OG + OG balconies);
+// eg_alt (Erdgeschoss - Alternativ) cuts as eg and shows the EG variant Alternativ (extras.variant
+// 'alt') instead of the default layout ('main'), which every other cutaway shows
+const HIDE = { all: [], noroof: ['roof'], eg: ['roof', 'og'], eg_alt: ['roof', 'og'] };
+const layout = (o, c) => !o.userData.variant || o.userData.variant === (c === 'eg_alt' ? 'alt' : 'main');
 // furniture only in Eingerichtet
 function applyVisibility() {
   const furnished = stageAt(progress) === 'furnished';
   for (const o of bp.objects) {
-    if (!o.userData.hidden) o.visible = !HIDE[cut].includes(cutLevel(o)) && (!o.userData.furniture || furnished);
+    if (!o.userData.hidden) o.visible = !HIDE[cut].includes(cutLevel(o)) && (!o.userData.furniture || furnished) && layout(o, cut);
   }
   for (const g of fire.group.children) g.visible = !HIDE[cut].includes(cutLevel(g));   // the OG stove's fire goes with the OG
 }
 function setCutaway(c) {
   cut = c;
   applyVisibility();
-  for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level);
+  for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level) && layout(l, c);
   dirty = true;
   saveView();
 }
@@ -127,7 +130,7 @@ function setCutaway(c) {
 // stage and cutaway. The URL follows the view, so a reload (e.g. after a core change) or a shared
 // link opens the same view. Each house entry (Ganzes Haus / Erdgeschoss / 1. Stock) also keeps its
 // view in the browser (viewstate.js): a URL without a view opens the last entry at its saved view.
-const ENTRY = { all: 'haus', eg: 'eg', noroof: 'og' }, HOUSE_ENTRIES = Object.values(ENTRY);
+const ENTRY = { all: 'haus', eg: 'eg', eg_alt: 'eg_alt', noroof: 'og' }, HOUSE_ENTRIES = Object.values(ENTRY);
 const storage = safeStorage(), key = (m) => storageKey('index', m), LAST = key('last');
 const url = new URLSearchParams(location.search);
 const urlPlan = PLANS.some(([k]) => k === url.get('plan')) ? url.get('plan') : null;   // ?plan=eg: a sheet of Ganzes Haus
@@ -136,7 +139,8 @@ url.delete('m');                                                    // ?m=: from
 const query = new URLSearchParams(initialQuery(url.size ? `?${url}`.replaceAll('%2C', ',') : '', storage, key(model)));
 const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
 const cutOf = (m) => Object.keys(ENTRY).find((c) => ENTRY[c] === m);
-const standard = (m) => SPOTS.find((s) => s.entries.includes(m));      // the entry's first Standpunkt
+const spotEntry = (m) => (m === 'eg_alt' ? 'eg' : m);              // Erdgeschoss - Alternativ: the Erdgeschoss spots
+const standard = (m) => SPOTS.find((s) => s.entries.includes(spotEntry(m)));   // the entry's first Standpunkt
 let saveTimer = 0;
 // the view is written 300 ms after the last change; a pending write is flushed before the entry
 // changes (switchModel), so it lands under the entry it belongs to
@@ -184,7 +188,7 @@ function applyView(q) {                                             // camera an
   const v = (k) => q.get(k)?.split(',').map(Number), std = standard(model);
   if (v('cam')) place(v('cam'), v('at') ?? std.at, Number(q.get('fov') ?? FOV), !!v('at') && Math.hypot(...v('cam').map((c, i) => c - v('at')[i])) < 2 * LOOK);
   else place(std.cam, std.at, std.fov, false);
-  spot = SPOTS.find((s) => s.entries.includes(model) && at(s))?.name ?? null;
+  spot = SPOTS.find((s) => s.entries.includes(spotEntry(model)) && at(s))?.name ?? null;
   if (q.has('p')) setProgress(Number(q.get('p')));
 }
 applyView(query);
@@ -203,7 +207,7 @@ const ROUTES = [{ name: 'Um und durch das Haus', ...bp.extras.tour },
 function spotItems(m) {
   const items = [];
   let group;
-  for (const s of SPOTS.filter((x) => x.entries.includes(m))) {
+  for (const s of SPOTS.filter((x) => x.entries.includes(spotEntry(m)))) {
     if (s.group !== group) items.push({ group: (group = s.group) });
     items.push({ value: `spot:${s.name}`, label: s.name });
   }
@@ -305,7 +309,7 @@ renderer.setAnimationLoop((now) => {
   const t = now / 1000 - (t0 ??= now / 1000), moving = stageAt(progress) === 'furnished' && !touring;
   const rolling = slides.update(t, moving), swinging = swings.update(t, moving), lifting = lifts.update(t, moving);
   // tour, fire, rolling leaves, swinging doors, the desk: ≤ 30 fps, less GPU load; otherwise only after a change
-  if (touring || (!dirty && (fireInView() || (rolling && inView(slideBoxes)) || (swinging && inView(swingBoxes))
+  if (touring || (!dirty && (fireInView() || (rolling && inView(slideBoxes)) || (swinging && inView(swingBoxes.filter((b, i) => swings.nodes[i].obj.visible)))
       || (lifting && inView(liftBoxes))))) {
     if (!drawDue(now, lastDraw)) return;
   }
@@ -341,6 +345,8 @@ if (import.meta.env.MODE !== 'production') {
     setProgress,
     setCutaway,
     visible: (name) => bp.byName[name].visible,
+    inks: () => ink.group.children.filter((l) => l.visible).map((l) => l.name),   // shown Skizze line groups
+    get spot() { return spot; },                                               // the Standpunkt's name, or null
     setSurfaces: (on) => { surfaces.forEach((m) => { m.visible = on; }); dirty = true; },
     lookFrom: (...p) => { camera.position.copy(yup(p)); controls.update(); dirty = true; },   // model z-up coords
     get camera() { const p = camera.position; return [p.x, -p.z, p.y]; },        // model z-up coords

@@ -657,7 +657,7 @@
    9.966,
    2.17
   ],
-  "faces": 1332,
+  "faces": 1218,
   "materials": [
    "FL_Eisen",
    "FL_Innentuer",
@@ -669,8 +669,8 @@
    0.0,
    0.0
   ],
-  "rnd": "cedcd921c373849d",
-  "verts": 1776
+  "rnd": "b134ab8d65f18cc5",
+  "verts": 1624
  },
  "EG_Kueche": {
   "bbox": [
@@ -1069,16 +1069,36 @@
  "EG_Speis": {
   "bbox": [
    2.774,
-   3.10829,
-   0.005,
+   3.732,
+   0.012,
    5.238,
    5.847,
    2.397
   ],
-  "faces": 1264,
+  "faces": 132,
   "materials": [
    "FL_FichteX",
-   "FL_FichteZ",
+   "FL_FichteZ"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "1156b8452e0ac0f2",
+  "verts": 176
+ },
+ "EG_Speis_C": {
+  "bbox": [
+   2.774,
+   3.10829,
+   0.005,
+   5.238,
+   3.728,
+   2.397
+  ],
+  "faces": 1132,
+  "materials": [
    "FL_Front",
    "FL_Fuge",
    "FL_Metall"
@@ -1088,8 +1108,52 @@
    0.0,
    0.0
   ],
-  "rnd": "127299656d75a6be",
-  "verts": 1872
+  "rnd": "1833f9376cbd7485",
+  "verts": 1696
+ },
+ "EG_Speis_Schiebetuer": {
+  "bbox": [
+   5.495,
+   3.26,
+   0.005,
+   5.56,
+   5.29,
+   2.075
+  ],
+  "faces": 114,
+  "materials": [
+   "FL_Eisen",
+   "FL_Innentuer",
+   "FL_Metall"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "c6d278ae766ced10",
+  "verts": 152
+ },
+ "EG_Speis_Waende": {
+  "bbox": [
+   5.24,
+   3.13,
+   0.0,
+   5.49,
+   3.73,
+   2.4
+  ],
+  "faces": 6,
+  "materials": [
+   "FL_Putz"
+  ],
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "rnd": "c512a04571706d6e",
+  "verts": 8
  },
  "EG_Stuehle": {
   "bbox": [

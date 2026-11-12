@@ -70,7 +70,11 @@ Tag), **Gebaut** (Abend; warmes Licht nur in den Räumen und Außenleuchten, die
 **Navigation** (oben rechts, auf jeder Seite gleich): drei Auswahlfelder, die immer nach unten aufklappen,
 dazu Tag/Abend (nur Haus, ab Detailmodell) und **Reset**.
 
-- **Modell:** Ganzes Haus, Erdgeschoss (ohne Dach und 1. Stock), 1. Stock (ohne Dach) – ein Strich –
+- **Modell:** Ganzes Haus, Erdgeschoss (ohne Dach und 1. Stock), Erdgeschoss - Alternativ (dasselbe
+  mit der Variante zum Ausprobieren: der blaue Schrank C über die ganze Westwand des Essplatzes, die
+  Speis zum Essplatz nur durch die geschlossene Rückwand von Regal B getrennt, die Wand zur Küche um
+  60 cm kürzer und statt der Schiebetür eine Pendeltür mit zwei halbhohen Flügeln wie im Western-Saloon;
+  Blender, Film und Pläne zeigen weiter den vereinbarten Stand), 1. Stock (ohne Dach) – ein Strich –
   Ofen, Schreibtisch, Bad Oma & Opa, Küche, Gäste-WC, Schrank im Büro (springt zur gewählten Seite).
 - **Darstellung:** im Haus die fünf Stufen, in den Teilmodellen Drahtmodell, Masse, Gerendert.
   Bei Ganzes Haus folgt der Abschnitt **Pläne** mit den sechs Planblättern aus `plans/` (Grundriss

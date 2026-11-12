@@ -286,3 +286,11 @@ def test_routes_and_spots_in_scene_extras(glb):
     assert [s["name"] for s in ex["spots"]] == [s[0] for s in tour.SPOTS]
     assert ex["spots"][0] == {"name": "Von Südosten", "group": "Außen", "entries": ["haus"],
                               "cam": [33, -24, 13], "at": [7.4, 6.4, 3.2], "fov": 28}
+
+
+def test_variant_extras(glb):
+    """Issue #5: the objects of one layout only carry extras.variant ("main" / "alt"), which the
+    viewer's Erdgeschoss - Alternativ switches on; shared objects carry none."""
+    gltf = glb["gltf"]
+    got = {n["name"]: n["extras"]["variant"] for n in gltf["nodes"] if "variant" in n.get("extras", {})}
+    assert got == house_core.build().variant and "alt" in got.values() and "main" in got.values()
