@@ -63,7 +63,7 @@ test('desk page is part of the build, with its screen textures', async ({ page }
   await page.goto(BASE);
   await choose(page, 'Modell', 'Schreibtisch');
   await page.waitForURL(/\/frechen_blender\/desk\.html$/);
-  await expect(page.locator('.dim', { hasText: 'Tisch 194.8' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.dim', { hasText: 'Tisch 190' })).toBeVisible({ timeout: 30_000 });
   await expect.poll(() => tex).toBe(2);
   expect(failed).toEqual([]);
   expect(errors).toEqual([]);
