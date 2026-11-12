@@ -249,7 +249,7 @@ def test_ofen_built_into_the_stube():
 
 def test_bibliothek_piano_desk_and_werkstattofen():
     """Bibliothek (Musikraum + Büro): grand piano turned 30° to the left (counter-clockwise from
-    above) and then 180° in place (keyboard and bench to the north), desk filling the wall between the two north french doors (10.919 .. 12.867), and a
+    above) and then 180° in place (keyboard and bench to the north), desk between the two north french doors (cherry top 10.943 .. 12.843, #10), and a
     small workshop stove (input/2026-11-03 input/werkstattofen.jpeg) in the corner of the Flur wall
     and the wall stub at the offener Kamin, turned 45° to face the room."""
     g = BP.geo[("EG", "EG_Moebel")]
@@ -259,8 +259,9 @@ def test_bibliothek_piano_desk_and_werkstattofen():
     (ax, ay), (bx, by) = next((p, q) for p in top for q in top if 1.09 < math.dist(p, q) < 1.105)  # long edge, 1.10
     assert abs(math.degrees(math.atan2(by - ay, bx - ax)) % 180 - 30) < 0.5        # 15°, then "etwas mehr"
     assert sum(y for _, y, _ in keys) / len(keys) > 11.4      # then 180° (2026-11-08): keyboard to the north
-    desk = [(x, y) for x, y, z in g["v"] if z == 0.75 and y > 11 and 10 < x < 14.6]
-    assert round(min(x for x, _ in desk), 3) == 10.919 and round(max(x for x, _ in desk), 3) == 12.867
+    t = BP.geo[("EG", "EG_Schreibtisch")]
+    desk = [(x, y) for x, y, z in t["v"] if z == 0.75]
+    assert round(min(x for x, _ in desk), 3) == 10.943 and round(max(x for x, _ in desk), 3) == 12.843
     assert max(y for _, y in desk) <= 12.473
     ofen = BP.geo[("EG", "EG_Werkstattofen")]
     lo = [round(min(p[k] for p in ofen["v"]), 3) for k in range(3)]
@@ -955,8 +956,9 @@ def test_desk_submodel():
     import desk
     bp = house_core.build_desk()
     assert {c for c, _ in bp.geo} == {"Desk"} and bp.garden is None
-    assert {n for _, n in bp.geo} == {"Desk_Moebel", "Desk_Stuehle", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R"}
-    v = bp.geo[("Desk", "Desk_Moebel")]["v"]
+    assert {n for _, n in bp.geo} == {"Desk_Moebel", "Desk_Schreibtisch", "Desk_Handrad", "Desk_Stuehle", "Desk_Geraete",
+                                      "Desk_Bildschirm_L", "Desk_Bildschirm_R"}
+    v = bp.geo[("Desk", "Desk_Schreibtisch")]["v"]
     lo, hi = [min(p[k] for p in v) for k in range(3)], [max(p[k] for p in v) for k in range(3)]
     assert [round(a, 3) for a in lo[:2] + hi] == [0, 0, desk.DESK_W, desk.DESK_D, 0.75]
     W, D, T = desk.DESK_W, desk.DESK_D, 0.75
@@ -990,25 +992,25 @@ def test_desk_submodel():
     assert T + desk.MAC[2] < min(p[2] for p in panes["L"]) - 0.05
     keys = [g["v"][i] for f, m in zip(g["f"], g["m"]) if m == "Tasten" for i in f]
     assert max(p[1] for p in keys) < 0.5 and max(p[2] for p in keys) < T + 0.02   # flat, in front
-    assert len(bp.dims) >= 5 and any("194.8" in t for _, _, t in bp.dims)
+    assert len(bp.dims) >= 5 and any("Tisch 190" in t for _, _, t in bp.dims)
 
 
 def test_desk_built_into_the_bibliothek():
-    """The desk sub-model stands in the Bibliothek at today's place (SW corner 10.919 / 11.48),
+    """The desk sub-model stands in the Bibliothek (SW corner 10.943 / 11.471: #10 kept the old centre in x and the back edge),
     unrotated; its devices and screens are loose furniture ("Eingerichtet"), the screens keep their
     pivots."""
     import desk
     sub = house_core.build_desk()
     house_core.build()                                                    # restore the registries
     x0, y0 = desk.DESK_AT
-    for n in ("Geraete", "Bildschirm_L", "Bildschirm_R"):
+    for n in ("Geraete", "Bildschirm_L", "Bildschirm_R", "Schreibtisch", "Handrad"):
         a, b = sub.geo[("Desk", "Desk_" + n)]["v"], BP.geo[("EG", "EG_" + n)]["v"]
         assert len(a) == len(b) and all(math.dist((p[0] + x0, p[1] + y0, p[2]), q) < 1e-9 for p, q in zip(a, b))
         assert "EG_" + n in BP.furniture
     px, py, pz = sub.pivot["Desk_Bildschirm_L"]
     assert math.dist(BP.pivot["EG_Bildschirm_L"], (px + x0, py + y0, pz)) < 1e-9
     assert BP.turn["EG_Bildschirm_L"] == sub.turn["Desk_Bildschirm_L"]
-    assert desk.DESK_AT == (10.919, 11.48)
+    assert desk.DESK_AT == (10.943, 11.471)
 
 
 def test_back_door_has_lever_handles_inside_and_outside():
@@ -1672,3 +1674,76 @@ def test_gaeste_wc_doors_swing():
     g = BP.geo[("EG", "EG_Windfangtuer")]                                 # its body (the levers stand proud)
     wl = [g["v"][i] for i in sorted({i for f, m in zip(g["f"], g["m"]) if m != "Eisen" for i in f})]
     assert 8.506 - 0.10 < min(v[1] for v in wl) and max(v[1] for v in wl) <= 8.506 + 1e-6 and max(v[0] for v in wl) <= 2.358 + 1e-6
+
+
+def test_desk_cherry_top_on_the_crank_frame():
+    """Issue #10: a 190 x 100 solid cherry top (4 cm) on the cast-iron crank frame of
+    input/2026-11-12 input/schreibtischgestell.jpg: the static frame (legs, foot tube, gearboxes,
+    drive rods) is furniture in Desk_Moebel, inside the top's footprint and below it; the lifted
+    parts (top, top bars, spindles) are Desk_Schreibtisch; the hand wheel Desk_Handrad turns about
+    its hub (PIVOT) along x. The top and everything on it lift 30 cm (75 -> 105) in the viewer."""
+    import desk
+    bp = house_core.build_desk()
+    house_core.build()
+    assert (desk.DESK_W, desk.DESK_D, desk.DESK_H) == (1.90, 1.00, 0.75)
+    W, D = desk.DESK_W, desk.DESK_D
+    t = bp.geo[("Desk", "Desk_Schreibtisch")]
+    wood = [t["v"][i] for f, m in zip(t["f"], t["m"]) if m == "Kirschbaum" for i in f]
+    box = lambda vs: [round(min(p[k] for p in vs), 3) for k in range(3)] + [round(max(p[k] for p in vs), 3) for k in range(3)]
+    assert box(wood) == [0, 0, 0.71, W, D, 0.75]
+    assert bp.mat_def["Kirschbaum"]["wood"][2] == "x"                       # grain along the top
+    assert set(t["m"]) == {"Kirschbaum", "Eisen"}                          # + top bars, spindles
+    iron = [t["v"][i] for f, m in zip(t["f"], t["m"]) if m == "Eisen" for i in f]
+    assert max(p[2] for p in iron) <= 0.71 + 1e-9
+    assert min(p[2] for p in iron) + desk.LIFT_DZ < desk.GEAR_TOP          # spindles stay in their housings
+    fr = bp.geo[("Desk", "Desk_Moebel")]
+    assert set(fr["m"]) == {"Eisen"}
+    lo, hi = box(fr["v"])[:3], box(fr["v"])[3:]
+    assert lo[0] > 0 and lo[1] > 0 and lo[2] == 0 and hi[0] < W and hi[1] < D and hi[2] < 0.70
+    assert bp.lift == {o: desk.LIFT_DZ for o in ("Desk_Schreibtisch", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R")}
+    assert desk.LIFT_DZ == 0.30
+    assert bp.crank == {"Desk_Handrad": ((1, 0, 0), 4 * 360)}
+    wh, (px, py, pz) = bp.geo[("Desk", "Desk_Handrad")]["v"], bp.pivot["Desk_Handrad"]
+    assert px >= hi[0] - 1e-9 and max(p[0] for p in wh) < W               # on the leg's outer face, under the top
+    assert 0.12 < max(math.hypot(p[1] - py, p[2] - pz) for p in wh) < 0.14  # wheel about 26 cm
+    texts = [t for _, _, t in bp.dims]
+    assert "Tisch 190" in texts and "100" in texts and "75–105" in texts
+
+
+def test_desk_lifted_clears_the_room():
+    """In the house the lifted desk (top, bars, spindles, devices, screens) at both heights and in
+    between overlaps no Part of any other object; only the spindles run inside the frame's housings
+    and legs (by design), never outside their footprint."""
+    import desk
+    moving = {"EG_Schreibtisch", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R"}
+    assert moving == set(BP.lift)
+
+    def boxes(key):
+        g = BP.geo[key]
+        for first, n in BP.parts[key]:
+            vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+            yield [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
+
+    swept = [(lo, hi[:2] + [hi[2] + desk.LIFT_DZ]) for o in moving for lo, hi in boxes(("EG", o))]
+    assert len(swept) > 10
+    spindle = lambda lo, hi: hi[0] - lo[0] < 0.031 and hi[1] - lo[1] < 0.031 and hi[2] - desk.LIFT_DZ < 0.71
+    inside = lambda lo, hi, a, b: all(a[k] <= lo[k] and hi[k] <= b[k] for k in range(2))   # in plan
+    hits = [(key, a, b) for key in BP.geo if key[1] not in moving for a, b in boxes(key)
+            for lo, hi in swept if all(a[k] < hi[k] - 1e-6 and b[k] > lo[k] + 1e-6 for k in range(3))
+            and not (key[1] == "EG_Moebel" and spindle(lo, hi) and inside(lo, hi, a, b))]
+    assert hits == []
+
+
+def test_desk_keeps_the_global_random_stream():
+    """desk_neu() draws exactly the five global random values the old table drew, so every part
+    built after it keeps its rnd (its own parts use their own generators)."""
+    import random, desk
+    random.seed(1)
+    desk.desk_neu("T")
+    after = random.getstate()
+    random.seed(1)
+    for _ in range(5):
+        random.random()
+    five = random.getstate()
+    house_core.build()
+    assert after == five

@@ -9,7 +9,7 @@ import { createPlanView, PLANS } from './plans.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, roomEnvironment, setReflections, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
-import { slidingNodes, swingingNodes } from './slides.js';
+import { liftingNodes, slidingNodes, swingingNodes } from './slides.js';
 import { createTour, drawDue, LOOK } from './tour.js';
 import { createUI } from './ui.js';
 import { cleanView, hasView, initialQuery, read, remove, safeStorage, storageKey, write } from './viewstate.js';
@@ -79,6 +79,10 @@ const swingBoxes = swings.nodes.map((n) => {
   n.obj.updateMatrixWorld(true);
   return b;
 });
+// the Büro desk (code/desk.py) cranks up and down the same way, its box covering both heights
+const lifts = liftingNodes(bp.objects);
+const liftBoxes = lifts.nodes.map((n) => n.obj.updateMatrixWorld(true) || new THREE.Box3().setFromObject(n.obj)
+  .union(new THREE.Box3().setFromObject(n.obj).translate(new THREE.Vector3(0, n.lift, 0))));
 scene.add(bp.root, ink.group, garden.group, fire.group);
 
 let progress = 0, cut = 'all', sun = null;               // sun: null = follow the stage, else forced dusk 0/1
@@ -299,9 +303,10 @@ renderer.setAnimationLoop((now) => {
   const p = camera.position, inside = indoors(bp.extras, [p.x, -p.z, p.y]);
   if (garden.setIndoors(!hires && inside)) dirty = true;            // hires (film capture) keeps the grass
   const t = now / 1000 - (t0 ??= now / 1000), moving = stageAt(progress) === 'furnished' && !touring;
-  const rolling = slides.update(t, moving), swinging = swings.update(t, moving);
-  // tour, fire, rolling leaves and swinging doors: ≤ 30 fps, less GPU load; otherwise only after a change
-  if (touring || (!dirty && (fireInView() || (rolling && inView(slideBoxes)) || (swinging && inView(swingBoxes))))) {
+  const rolling = slides.update(t, moving), swinging = swings.update(t, moving), lifting = lifts.update(t, moving);
+  // tour, fire, rolling leaves, swinging doors, the desk: ≤ 30 fps, less GPU load; otherwise only after a change
+  if (touring || (!dirty && (fireInView() || (rolling && inView(slideBoxes)) || (swinging && inView(swingBoxes))
+      || (lifting && inView(liftBoxes))))) {
     if (!drawDue(now, lastDraw)) return;
   }
   else if (!dirty) return;
@@ -332,6 +337,7 @@ if (import.meta.env.MODE !== 'production') {
     fires: () => fire.group.children.filter((g) => g.visible).map((g) => g.userData.collection),   // shown fires' collections
     slides: slides.state,                                                       // the Bad's sliding leaves
     doors: swings.state,                                                        // the doors by the back hall
+    lift: lifts.state,                                                          // the Büro desk (code/desk.py)
     setProgress,
     setCutaway,
     visible: (name) => bp.byName[name].visible,
