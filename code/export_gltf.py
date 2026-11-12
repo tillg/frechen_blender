@@ -139,6 +139,8 @@ def export(path, bp=None):
             node["extras"]["smooth"] = True
         if name in bp.furniture:
             node["extras"]["furniture"] = True
+        if name in (bp.variant or {}):                       # one layout only: "main" / "alt" (Erdgeschoss - Alternativ)
+            node["extras"]["variant"] = bp.variant[name]
         if name in bp.pivot:
             node["translation"] = list(yup(piv))
         if name in (bp.slide or {}):                         # the sub-model viewer rolls it there and back
