@@ -14,6 +14,7 @@ web/public/gaeste_wc.glb
 web/public/regal.glb
 web/public/schrankbett.glb
 web/public/gaestebad.glb
+web/public/elternbad.glb
 web/public/plans/
 web/test-results/
 web/playwright-report/

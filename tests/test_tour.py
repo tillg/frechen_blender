@@ -55,6 +55,29 @@ def test_route_looks_into_the_grosseltern_shower_and_wc():
     assert min(k[4] for k in wc) < -0.3                                   # looks down at the toilet
 
 
+def test_route_walks_into_the_elternbad_and_back_out():
+    """Issue #3 (request 2026-11-13): the door of the Bad Nadine & Till moved to the south end of its east wall
+    (y 0.65 .. 1.58, wall x 8.59 .. 8.72). The Rundgang walks in through it to the back (west) wall, turns right
+    (past the shower and toilet in the north) until its back is to that wall, waits, and walks straight out."""
+    def looking_at(k, tx, ty, tol=12):
+        a = math.degrees(math.atan2(ty - k[1], tx - k[0]) - k[3])
+        return abs((a + 180) % 360 - 180) < tol
+    og = [(i, k) for i, k in enumerate(KEYS) if k[2] > house_core.Z_OG]
+    bad = [(i, k) for i, k in og if 5.59 < k[0] < 8.59 and 0.40 < k[1] < 2.62]
+    back = [(i, k) for i, k in bad if k[0] < 6.2]                         # at the back wall
+    assert back and min(k[0] for i, k in back) > 5.59 + 0.25
+    i0, i1 = back[0][0], back[-1][0]
+    assert looking_at(back[0][1], 5.0, back[0][1][1])                      # arrives facing the wall
+    east = [k for i, k in back if looking_at(k, 9.0, k[1], 3)]
+    assert len(east) >= tour.PAUSE * tour.FPS                             # back to the wall, waiting
+    assert [k for i, k in back if looking_at(k, k[0], 3.0)]               # turned right: via the north
+    assert not [k for i, k in back if looking_at(k, k[0], 0.0)]           # not via the basin (south)
+    door = lambda k: 8.5 < k[0] < 9.0 and 0.75 < k[1] < 1.5
+    assert [k for i, k in og if i < i0 and door(k) and looking_at(k, 5.0, k[1], 20)]     # in through the door
+    assert [k for i, k in og if i > i1 and door(k) and looking_at(k, 10.0, k[1], 20)]    # straight out again
+    assert not [k for i, k in og if 8.72 < k[0] < 9.0 and 1.7 < k[1] < 2.6]             # old door
+
+
 # ---------------------------------------------------------------- routes and Standpunkte (viewer)
 import house_core  # noqa: E402
 
@@ -185,7 +208,7 @@ def test_routes_and_spots_clear_the_wandlampen():
         else:
             l, h = lamps[j]
             lamps[j] = ([min(a, b) for a, b in zip(l, lo)], [max(a, b) for a, b in zip(h, hi)])
-    assert len(lamps) == 29
+    assert len(lamps) == 35
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in lamps)
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
