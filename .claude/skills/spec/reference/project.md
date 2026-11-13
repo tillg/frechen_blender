@@ -26,7 +26,7 @@ requirements-dev.txt`) and `cd web && npm install`.
 2. `bash scripts/check.sh quick` (`pytest -m "not slow"` + Vitest; prints the time per part);
 3. **Show**, when the step has a visible effect in the viewer: `.venv/bin/python code/show.py
    <object…> --print` gives the view URL (`--from n|e|s|w|top` for another side, `--page
-   ofen|desk|bad|kueche|gaeste_wc|regal` for a sub-model); look at it first with `cd web && node shot.js '<url>'
+   ofen|desk|bad|kueche|gaeste_wc|regal|schrankbett` for a sub-model); look at it first with `cd web && node shot.js '<url>'
    ../tmp/web/<name>.png` and read the PNG at 1× (object hidden → retry with `--from`); then
    `.venv/bin/python code/show.py <object…>` opens it in the user's browser (a new tab). It refuses
    when the server on 5377 runs from another clone: switching is the user's call.

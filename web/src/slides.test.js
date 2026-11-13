@@ -142,4 +142,25 @@ describe('liftingNodes (the Büro desk, code/desk.py: #10)', () => {
     expect(top.position.y).toBeCloseTo(0.75);
     expect(wheel.quaternion.w).toBeCloseTo(1);
   });
+
+  it('a node with extras.fold also folds about its own hinge while it cranks: the Schrankbett\'s feet (#7)', () => {
+    // the feet turn with the bed about its axis (origin, x) and fold back about their hinge (glTF h, x):
+    // folded up, the leg lies flat against the underside instead of standing out
+    const feet = new Object3D(), h = [0, -0.08, -1.78];               // hinge: 1.78 towards the foot, 8 cm under the axis
+    feet.name = 'feet'; feet.position.set(1, 0.24, -0.37);
+    feet.userData.crank = [1, 0, 0, Math.PI / 2];
+    feet.userData.fold = [...h, 1, 0, 0, -Math.PI / 2];
+    const s = liftingNodes([feet]);
+    const world = (p) => new Vector3(...p).applyQuaternion(feet.quaternion).add(feet.position);
+    const leg = [0, -0.228, -1.78];                                    // the leg's foot, on the floor, down
+    s.update(10);                                                      // folded up
+    const hinge = world(h), foot = world(leg);
+    expect(hinge.x).toBeCloseTo(1); expect(hinge.y).toBeCloseTo(0.24 + 1.78); expect(hinge.z).toBeCloseTo(-0.37 - 0.08);
+    expect(foot.y).toBeCloseTo(hinge.y - 0.148);                      // hangs flat along the upright underside
+    expect(foot.z).toBeCloseTo(hinge.z);                              // not standing out into the room
+    expect(feet.quaternion.w).toBeCloseTo(1);                          // net: no turn (bed +90, leg -90)
+    expect(s.state().feet).toEqual({ pos: 1, angle: Math.PI / 2 });
+    s.update(10, false);
+    expect(feet.position.toArray()).toEqual([1, 0.24, -0.37]);         // off: as built
+  });
 });

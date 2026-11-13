@@ -10,7 +10,7 @@ import './ui.css';
 export const HOUSE = [['haus', 'Ganzes Haus', 'all'], ['eg', 'Erdgeschoss', 'eg'], ['eg_alt', 'Erdgeschoss - Alternativ', 'eg_alt'], ['og', '1. Stock', 'noroof']];
 export const PAGES = [['ofen', 'Ofen', 'ofen.html'], ['desk', 'Schreibtisch', 'desk.html'], ['bad', 'Bad Oma & Opa', 'bad.html'],
   ['kueche', 'Küche', 'kueche.html'], ['gaeste_wc', 'Gäste-WC', 'gaeste_wc.html'],
-  ['regal', 'Schrank im Büro', 'regal.html']];
+  ['regal', 'Schrank im Büro', 'regal.html'], ['schrankbett', 'Schrankbett', 'schrankbett.html']];
 
 function el(tag, attrs = {}, text = '') {
   const e = Object.assign(document.createElement(tag), attrs);

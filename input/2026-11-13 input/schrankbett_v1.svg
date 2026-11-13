@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1300" viewBox="0 0 1800 1300">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+<rect width="6" height="6" fill="#ddd"/><line x1="0" y1="0" x2="0" y2="6" stroke="#999" stroke-width="1.5"/></pattern></defs>
+<style>
+.wall{fill:url(#hatch);stroke:#555;stroke-width:1}.win{fill:#fff;stroke:#555;stroke-width:1}.wallf{fill:#f4f1ea;stroke:#555;stroke-width:1}
+.thin{stroke:#555;stroke-width:1}.ext{stroke:#999;stroke-width:0.6}.ceil{stroke:#555;stroke-width:1.5}
+.abbr{fill:none;stroke:#555;stroke-width:1;stroke-dasharray:3 3}.axis{stroke:#26a;stroke-width:0.8;stroke-dasharray:10 3 2 3}
+.cab{fill:#8a5a3c;stroke:#3a2214;stroke-width:1}.cabc{fill:#6b4029;stroke:#2a170c;stroke-width:1}.open{fill:#4a2c1c;stroke:#3a2214;stroke-width:1}
+.panel{fill:none;stroke:#3a2214;stroke-width:1}.metal{fill:#333;stroke:#000;stroke-width:0.5}
+.bed{fill:#d9b98a;stroke:#6b4029;stroke-width:1}.bedu{fill:#c79a62;stroke:#3a2214;stroke-width:1}.feet{fill:#6b4029;stroke:#2a170c;stroke-width:1}
+.mat{fill:#f1ebdc;stroke:#888;stroke-width:1}.pil{fill:#fff;stroke:#888;stroke-width:1}.duv{fill:#9fb7c4;fill-opacity:0.6;stroke:#567;stroke-width:1}
+.up{fill:none;stroke:#26a;stroke-width:1.2;stroke-dasharray:6 4}.beyond{fill:#efe4d8;stroke:#865;stroke-width:1;stroke-dasharray:4 3}
+.pivot{fill:#d33;stroke:#900;stroke-width:1}.arc{fill:none;stroke:#d33;stroke-width:1.5;stroke-dasharray:2 3}
+.swing{fill:none;stroke:#777;stroke-width:1}.leaf{fill:#f6c;stroke:#900;stroke-width:1}
+.dim{stroke:#333;stroke-width:1}
+text{font-family:Helvetica,Arial,sans-serif}
+.t{font-size:20px;font-weight:bold}.s{font-size:15px}.s2{font-size:12px;fill:#555}.n{font-size:12px;fill:#900}
+.nb{font-size:12px;fill:#26a;font-weight:bold;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.axt{font-size:12px;fill:#900;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.q{font-size:14px;fill:#a60;font-style:italic}.d{font-size:12px;fill:#000;font-weight:bold}
+.w{font-size:12px;fill:#fff;font-weight:bold}.h{font-size:18px;font-weight:bold;paint-order:stroke;stroke:#fff;stroke-width:3px}
+</style><rect width="1800" height="1300" fill="#fff"/>
+<text x="30" y="96" class="t">Grundriss OG, Yoga (Schnitt in 1 m Höhe)</text>
+<rect x="126.0" y="650.0" width="46.5" height="15.0" class="wall"/>
+<rect x="126.0" y="121.2" width="46.5" height="380.2" class="wall"/>
+<rect x="126.0" y="501.5" width="46.5" height="148.5" class="win"/>
+<line x1="149.2" y1="650.0" x2="149.2" y2="501.5" class="thin"/>
+<text x="145.2" y="575.8" class="s2" text-anchor="middle" transform="rotate(-90 145.2 575.8)">Fenster BRH 75</text>
+<rect x="126.0" y="665.0" width="475.5" height="43.5" class="wall"/>
+<rect x="748.5" y="665.0" width="285.0" height="43.5" class="wall"/>
+<line x1="1033.5" y1="665.0" x2="1033.5" y2="121.2" class="abbr"/>
+<line x1="172.5" y1="121.2" x2="1033.5" y2="121.2" class="abbr"/>
+<polyline points="601.5,659.0 602.0,647.5 603.3,636.0 605.6,624.7 608.7,613.6 612.7,602.7 617.5,592.3 623.2,582.2 629.6,572.6 636.7,563.5 644.6,555.1 653.0,547.2 662.1,540.1 671.7,533.7 681.8,528.0 692.2,523.2 703.1,519.2 714.2,516.1 725.5,513.8 737.0,512.5 748.5,512.0 760.0,512.5 771.5,513.8 782.8,516.1 793.9,519.2 804.8,523.2 815.2,528.0 825.3,533.7 834.9,540.1 844.0,547.2 852.4,555.1 860.3,563.5 867.4,572.6 873.8,582.2 879.5,592.3 884.3,602.7 888.3,613.6 891.4,624.7 893.7,636.0 895.0,647.5 895.5,659.0" class="swing"/>
+<rect x="748.5" y="659.0" width="147.0" height="6.0" class="leaf"/>
+<text x="748.5" y="582.5" class="n" text-anchor="middle">Tür Yoga, öffnet</text>
+<text x="748.5" y="605.0" class="n" text-anchor="middle">180° an die Wand</text>
+<text x="832.5" y="275.0" class="h" text-anchor="middle">Yoga (OG)</text>
+<rect x="172.5" y="597.5" width="54.4" height="66.8" class="cab"/>
+<rect x="175.3" y="600.5" width="48.7" height="62.0" class="open"/>
+<rect x="535.9" y="597.5" width="54.4" height="66.8" class="cab"/>
+<rect x="538.7" y="600.5" width="48.7" height="62.0" class="open"/>
+<rect x="226.9" y="662.5" width="309.0" height="1.8" class="cabc"/>
+<rect x="228.4" y="597.5" width="306.0" height="24.0" class="up"/>
+<rect x="231.4" y="597.5" width="300.0" height="46.5" class="up"/>
+<rect x="228.4" y="333.5" width="306.0" height="306.0" class="bed"/>
+<rect x="231.4" y="336.5" width="300.0" height="300.0" class="mat"/>
+<line x1="381.4" y1="636.5" x2="381.4" y2="336.5" class="thin"/>
+<rect x="268.9" y="578.0" width="75.0" height="52.5" class="pil"/>
+<rect x="418.9" y="578.0" width="75.0" height="52.5" class="pil"/>
+<rect x="232.9" y="338.0" width="297.0" height="234.0" class="duv"/>
+<text x="381.4" y="470.0" class="h" text-anchor="middle">Liegefläche 200 × 200</text>
+<text x="381.4" y="492.5" class="s2" text-anchor="middle">Bett ausgeklappt, 204 breit, 204 lang</text>
+<text x="382.5" y="657.5" class="nb" text-anchor="middle">Bett hochgeklappt (gestrichelt)</text>
+<line x1="226.9" y1="609.5" x2="535.9" y2="609.5" class="axis"/>
+<text x="529.9" y="602.0" class="axt" text-anchor="end">Drehachse</text>
+<line x1="172.5" y1="747.5" x2="590.2" y2="747.5" class="dim"/>
+<line x1="168.5" y1="751.5" x2="176.5" y2="743.5" class="dim"/>
+<line x1="222.9" y1="751.5" x2="230.9" y2="743.5" class="dim"/>
+<line x1="531.9" y1="751.5" x2="539.9" y2="743.5" class="dim"/>
+<line x1="586.2" y1="751.5" x2="594.2" y2="743.5" class="dim"/>
+<text x="199.7" y="762.5" class="d" text-anchor="middle">Schrank 36</text>
+<text x="381.4" y="762.5" class="d" text-anchor="middle">Bett 206</text>
+<text x="563.1" y="762.5" class="d" text-anchor="middle">Schrank 36</text>
+<line x1="172.5" y1="785.0" x2="590.2" y2="785.0" class="dim"/>
+<line x1="168.5" y1="789.0" x2="176.5" y2="781.0" class="dim"/>
+<line x1="586.2" y1="789.0" x2="594.2" y2="781.0" class="dim"/>
+<text x="381.4" y="800.0" class="d" text-anchor="middle">Schrankwand 278</text>
+<line x1="172.5" y1="708.5" x2="172.5" y2="755.0" class="ext"/>
+<line x1="226.9" y1="708.5" x2="226.9" y2="743.0" class="ext"/>
+<line x1="535.9" y1="708.5" x2="535.9" y2="743.0" class="ext"/>
+<line x1="590.2" y1="708.5" x2="590.2" y2="755.0" class="ext"/>
+<line x1="90.0" y1="665.0" x2="90.0" y2="597.5" class="dim"/>
+<line x1="86.0" y1="669.0" x2="94.0" y2="661.0" class="dim"/>
+<line x1="86.0" y1="601.5" x2="94.0" y2="593.5" class="dim"/>
+<text x="85.0" y="631.2" class="d" text-anchor="middle" transform="rotate(-90 85.0 631.2)">Tiefe 45</text>
+<line x1="82.5" y1="597.5" x2="172.5" y2="597.5" class="ext"/>
+<line x1="52.5" y1="665.0" x2="52.5" y2="333.5" class="dim"/>
+<line x1="48.5" y1="669.0" x2="56.5" y2="661.0" class="dim"/>
+<line x1="48.5" y1="337.5" x2="56.5" y2="329.5" class="dim"/>
+<text x="47.5" y="499.2" class="d" text-anchor="middle" transform="rotate(-90 47.5 499.2)">ausgeklappt 221 ab Wand</text>
+<line x1="45.0" y1="333.5" x2="228.4" y2="333.5" class="ext"/>
+<line x1="231.4" y1="312.5" x2="531.4" y2="312.5" class="dim"/>
+<line x1="227.4" y1="316.5" x2="235.4" y2="308.5" class="dim"/>
+<line x1="527.4" y1="316.5" x2="535.4" y2="308.5" class="dim"/>
+<text x="381.4" y="307.5" class="d" text-anchor="middle">200</text>
+<line x1="523.9" y1="636.5" x2="523.9" y2="336.5" class="dim"/>
+<line x1="519.9" y1="640.5" x2="527.9" y2="632.5" class="dim"/>
+<line x1="519.9" y1="340.5" x2="527.9" y2="332.5" class="dim"/>
+<text x="518.9" y="486.5" class="d" text-anchor="middle" transform="rotate(-90 518.9 486.5)">200</text>
+<line x1="231.4" y1="336.5" x2="231.4" y2="303.5" class="ext"/>
+<line x1="531.4" y1="336.5" x2="531.4" y2="303.5" class="ext"/>
+<text x="1075" y="134.0" class="t">Ansicht Süd (Blick aus dem Raum, Bett hoch)</text>
+<rect x="1640.0" y="214.5" width="40.3" height="325.0" class="wall"/>
+<rect x="1120.0" y="520.0" width="560.3" height="19.5" class="wall"/>
+<rect x="1120.0" y="214.5" width="560.3" height="19.5" class="wall"/>
+<rect x="1120.0" y="234.0" width="520.0" height="284.4" class="wallf"/>
+<rect x="1120.0" y="518.4" width="520.0" height="1.6" class="win"/>
+<rect x="1140.8" y="260.0" width="127.4" height="260.0" class="leaf"/>
+<text x="1204.5" y="390.0" class="w" text-anchor="middle" transform="rotate(-90 1204.5 390.0)">Tür Yoga</text>
+<rect x="1325.1" y="247.0" width="267.8" height="271.4" class="open"/>
+<rect x="1326.4" y="249.6" width="265.2" height="265.2" class="bedu"/>
+<text x="1459.0" y="390.0" class="w" text-anchor="middle" transform="rotate(-90 1459.0 390.0)">Bett hochgeklappt: Unterseite Fichte</text>
+<rect x="1570.8" y="253.5" width="7.8" height="3.9" class="feet"/>
+<rect x="1339.4" y="253.5" width="7.8" height="3.9" class="feet"/>
+<rect x="1595.3" y="509.6" width="42.2" height="8.8" class="open"/>
+<rect x="1593.1" y="234.8" width="46.6" height="274.4" class="cab"/>
+<rect x="1596.8" y="238.3" width="39.3" height="267.4" class="panel"/>
+<rect x="1598.3" y="357.5" width="2.1" height="39.0" class="metal"/>
+<rect x="1280.4" y="509.6" width="42.2" height="8.8" class="open"/>
+<rect x="1278.2" y="234.8" width="46.6" height="274.4" class="cab"/>
+<rect x="1281.8" y="238.3" width="39.3" height="267.4" class="panel"/>
+<rect x="1317.5" y="357.5" width="2.1" height="39.0" class="metal"/>
+<rect x="1325.1" y="234.4" width="267.8" height="12.6" class="cab"/>
+<text x="1459.0" y="245.8" class="w" text-anchor="middle">Blende</text>
+<line x1="1680.3" y1="234.0" x2="1120.0" y2="234.0" class="ceil"/>
+<text x="1198.0" y="224.9" class="s2" text-anchor="middle">Decke 2,20</text>
+<line x1="1640.0" y1="569.4" x2="1278.0" y2="569.4" class="dim"/>
+<line x1="1636.0" y1="573.4" x2="1644.0" y2="565.4" class="dim"/>
+<line x1="1588.9" y1="573.4" x2="1596.9" y2="565.4" class="dim"/>
+<line x1="1321.1" y1="573.4" x2="1329.1" y2="565.4" class="dim"/>
+<line x1="1274.0" y1="573.4" x2="1282.0" y2="565.4" class="dim"/>
+<text x="1616.4" y="584.4" class="d" text-anchor="middle">36</text>
+<text x="1459.0" y="584.4" class="d" text-anchor="middle">206</text>
+<text x="1301.5" y="584.4" class="d" text-anchor="middle">36</text>
+<line x1="1640.0" y1="189.8" x2="1278.0" y2="189.8" class="dim"/>
+<line x1="1636.0" y1="193.8" x2="1644.0" y2="185.8" class="dim"/>
+<line x1="1274.0" y1="193.8" x2="1282.0" y2="185.8" class="dim"/>
+<text x="1459.0" y="184.8" class="d" text-anchor="middle">Schrankwand 278</text>
+<line x1="1268.2" y1="598.0" x2="1140.8" y2="598.0" class="dim"/>
+<line x1="1264.2" y1="602.0" x2="1272.2" y2="594.0" class="dim"/>
+<line x1="1136.8" y1="602.0" x2="1144.8" y2="594.0" class="dim"/>
+<text x="1204.5" y="613.0" class="d" text-anchor="middle">Tür 98</text>
+<line x1="1698.5" y1="520.0" x2="1698.5" y2="234.0" class="dim"/>
+<line x1="1694.5" y1="524.0" x2="1702.5" y2="516.0" class="dim"/>
+<line x1="1694.5" y1="238.0" x2="1702.5" y2="230.0" class="dim"/>
+<text x="1693.5" y="377.0" class="d" text-anchor="middle" transform="rotate(-90 1693.5 377.0)">Raumhöhe 220</text>
+<line x1="1733.6" y1="520.0" x2="1733.6" y2="249.6" class="dim"/>
+<line x1="1729.6" y1="524.0" x2="1737.6" y2="516.0" class="dim"/>
+<line x1="1729.6" y1="253.6" x2="1737.6" y2="245.6" class="dim"/>
+<text x="1728.6" y="384.8" class="d" text-anchor="middle" transform="rotate(-90 1728.6 384.8)">Bett hoch, OK 208</text>
+<line x1="1767.4" y1="247.0" x2="1767.4" y2="234.4" class="dim"/>
+<line x1="1763.4" y1="251.0" x2="1771.4" y2="243.0" class="dim"/>
+<line x1="1763.4" y1="238.4" x2="1771.4" y2="230.4" class="dim"/>
+<text x="1762.4" y="240.7" class="d" text-anchor="middle" transform="rotate(-90 1762.4 240.7)">Blende ab 210</text>
+<text x="1075" y="695" class="t">Schnitt durch die Nische (Blick nach Westen)</text>
+<rect x="1090.7" y="730.5" width="49.3" height="425.0" class="wall"/>
+<rect x="1090.7" y="1130.0" width="491.3" height="25.5" class="wall"/>
+<rect x="1090.7" y="730.5" width="491.3" height="25.5" class="wall"/>
+<rect x="1140.0" y="1128.0" width="442.0" height="2.0" class="win"/>
+<text x="1573.5" y="742.4" class="s2" text-anchor="end">Decke</text>
+<text x="1119.3" y="960.0" class="s2" text-anchor="middle" transform="rotate(-90 1119.3 960.0)">Südwand</text>
+<rect x="1142.9" y="756.5" width="73.6" height="371.5" class="beyond"/>
+<rect x="1216.5" y="917.5" width="4.2" height="51.0" class="metal"/>
+<rect x="1196.1" y="1082.4" width="13.6" height="13.6" class="metal"/>
+<rect x="1140.8" y="756.5" width="2.0" height="371.5" class="cabc"/>
+<rect x="1142.9" y="756.5" width="70.2" height="3.2" class="cabc"/>
+<rect x="1213.1" y="756.5" width="3.4" height="16.5" class="cabc"/>
+<text x="1223.3" y="759.9" class="n" text-anchor="start">Blende</text>
+<polygon points="1168.9,1102.8 1515.7,1102.8 1515.7,1099.4 1168.9,1099.4" class="cabc"/>
+<polygon points="1168.9,1099.4 1172.3,1099.4 1172.3,1075.6 1168.9,1075.6" class="cabc"/>
+<polygon points="1512.3,1099.4 1515.7,1099.4 1515.7,1075.6 1512.3,1075.6" class="cabc"/>
+<polygon points="1172.3,1097.7 1512.3,1097.7 1512.3,1094.3 1172.3,1094.3" class="cabc"/>
+<polygon points="1172.3,1094.3 1512.3,1094.3 1512.3,1063.7 1172.3,1063.7" class="mat"/>
+<polygon points="1179.1,1063.7 1238.6,1063.7 1238.6,1050.1 1179.1,1050.1" class="pil"/>
+<polygon points="1245.4,1063.7 1510.6,1063.7 1510.6,1056.9 1245.4,1056.9" class="duv"/>
+<polygon points="1505.5,1128.0 1510.6,1128.0 1510.6,1102.8 1505.5,1102.8" class="cabc"/>
+<polygon points="1216.5,1123.2 1216.5,776.4 1189.3,776.4 1189.3,1123.2" class="up"/>
+<polygon points="1189.3,1119.8 1189.3,779.8 1163.8,779.8 1163.8,1119.8" class="up"/>
+<polygon points="1241.7,786.6 1241.7,781.5 1216.5,781.5 1216.5,786.6" class="up"/>
+<polyline points="1515.7,1075.6 1514.9,1063.3 1513.7,1051.1 1511.9,1038.9 1509.7,1026.8 1507.0,1014.8 1503.9,1003.0 1500.3,991.2 1496.2,979.6 1491.7,968.2 1486.7,956.9 1481.3,945.9 1475.4,935.1 1469.2,924.5 1462.5,914.2 1455.4,904.1 1448.0,894.3 1440.1,884.9 1431.9,875.7 1423.4,866.9 1414.5,858.4 1405.2,850.3 1395.7,842.5 1385.9,835.1 1375.8,828.1 1365.4,821.6 1354.7,815.4 1343.9,809.6 1332.8,804.3 1321.5,799.4 1310.0,795.0 1298.4,791.0 1286.6,787.5 1274.7,784.5 1262.7,781.9 1250.6,779.8 1238.4,778.1 1226.2,777.0 1213.9,776.3 1201.6,776.1 1189.3,776.4" class="arc"/>
+<text x="1301.5" y="768.8" class="nb" text-anchor="start">Schwenk max, 2,08 (Luft 1,8 zur Blende)</text>
+<rect x="1199.5" y="1085.8" width="6.8" height="6.8" class="pivot"/>
+<text x="1235.2" y="1119.8" class="axt" text-anchor="start">Drehachse</text>
+<line x1="1233.5" y1="1118.1" x2="1208.0" y2="1094.3" class="thin"/>
+<text x="1515.7" y="1039.9" class="s2" text-anchor="middle">Bett ausgeklappt</text>
+<line x1="1563.3" y1="1130.0" x2="1563.3" y2="1063.7" class="dim"/>
+<line x1="1559.3" y1="1134.0" x2="1567.3" y2="1126.0" class="dim"/>
+<line x1="1559.3" y1="1067.7" x2="1567.3" y2="1059.7" class="dim"/>
+<text x="1558.3" y="1096.8" class="d" text-anchor="middle" transform="rotate(-90 1558.3 1096.8)"></text>
+<text x="1579.3" y="1063.2" class="d" text-anchor="middle" transform="rotate(-90 1579.3 1063.2)">Liegehöhe 39</text>
+<line x1="1055.0" y1="1130.0" x2="1055.0" y2="756.0" class="dim"/>
+<line x1="1051.0" y1="1134.0" x2="1059.0" y2="1126.0" class="dim"/>
+<line x1="1051.0" y1="760.0" x2="1059.0" y2="752.0" class="dim"/>
+<text x="1050.0" y="943.0" class="d" text-anchor="middle" transform="rotate(-90 1050.0 943.0)">Raumhöhe 220</text>
+<line x1="1140.0" y1="1181.0" x2="1216.5" y2="1181.0" class="dim"/>
+<line x1="1136.0" y1="1185.0" x2="1144.0" y2="1177.0" class="dim"/>
+<line x1="1164.9" y1="1185.0" x2="1172.9" y2="1177.0" class="dim"/>
+<line x1="1198.9" y1="1185.0" x2="1206.9" y2="1177.0" class="dim"/>
+<line x1="1212.5" y1="1185.0" x2="1220.5" y2="1177.0" class="dim"/>
+<text x="1154.5" y="1196.0" class="d" text-anchor="middle">17</text>
+<text x="1185.9" y="1196.0" class="d" text-anchor="middle">20</text>
+<text x="1209.7" y="1196.0" class="d" text-anchor="middle">8</text>
+<line x1="1140.0" y1="1215.0" x2="1216.5" y2="1215.0" class="dim"/>
+<line x1="1136.0" y1="1219.0" x2="1144.0" y2="1211.0" class="dim"/>
+<line x1="1212.5" y1="1219.0" x2="1220.5" y2="1211.0" class="dim"/>
+<text x="1178.2" y="1230.0" class="d" text-anchor="middle">Tiefe 45</text>
+<line x1="1140.0" y1="1249.0" x2="1515.7" y2="1249.0" class="dim"/>
+<line x1="1136.0" y1="1253.0" x2="1144.0" y2="1245.0" class="dim"/>
+<line x1="1511.7" y1="1253.0" x2="1519.7" y2="1245.0" class="dim"/>
+<text x="1327.8" y="1264.0" class="d" text-anchor="middle">ausgeklappt 221 ab Wand</text>
+<text x="30" y="930" class="t">Schrankbett v1 · 2 × 2 m Klappbett im Yoga-Zimmer (OG), Schrankwand an der Südwand</text>
+<text x="30" y="958" class="s">Von der Westwand bis zur Yoga-Tür 278 breit: Schrank 36, Nische 206 (Bett 204 + je 1), Schrank 36; Tiefe 45 bis Türfront.</text>
+<text x="30" y="980" class="s">Bett 204 × 204, Liegefläche 200 × 200, Liegehöhe 39; ausgeklappt 221 ab Wand (Kopfende 17).</text>
+<text x="30" y="1002" class="s">Drehachse 20 vom Kopfende, 8 über der Unterseite (24 über Boden); hochgeklappt bündig mit den Türfronten, OK 208.</text>
+<text x="30" y="1024" class="s">Höchster Punkt des Schwenks 2,08 (Seitenschiene, Fußende) unter der Blende ab 2,10; Blende bis 2,197, Decke 2,20.</text>
+<text x="30" y="1046" class="q">Der linke Schrank verdeckt einen Teil der Fensterlaibung (abgesprochen). Fichte wie die übrigen OG-Möbel (angenommen).</text>
+<text x="30" y="1068" class="q">Nicht maßstäblich; Maße in cm. Füße stehen hochgeklappt 15 über die Türfront (real: an die Unterseite geklappt).</text>
+<rect x="30" y="1097" width="34" height="16" class="wall"/><text x="72" y="1110" class="s">Wand (Schnitt)</text>
+<rect x="260" y="1097" width="34" height="16" class="cab"/><text x="302" y="1110" class="s">Schrank, Türfront</text>
+<rect x="490" y="1097" width="34" height="16" class="bed"/><text x="532" y="1110" class="s">Bett ausgeklappt</text>
+<rect x="30" y="1123" width="34" height="16" class="up"/><text x="72" y="1136" class="s">Bett hochgeklappt</text>
+<rect x="260" y="1123" width="34" height="16" class="leaf"/><text x="302" y="1136" class="s">Türblatt</text>
+<rect x="490" y="1123" width="34" height="16" class="arc"/><text x="532" y="1136" class="s">Schwenkkreis</text>
+<text x="30" y="40" class="t">Schrankbett Yoga (Vorschlag v1, 2026-11-13)</text>
+<text x="30" y="62" class="s2">Grundriss, Ansicht Süd und Schnitt; alle Maße aus code/schrankbett.py (Ursprung: innere SW-Ecke des Yoga-Zimmers)</text>
+<path d="M952.5,155.2 l-9,24 l9,-7 l9,7 z" fill="#333"/><text x="952.5" y="151.2" class="s" text-anchor="middle">N</text>
+</svg>

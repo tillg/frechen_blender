@@ -83,13 +83,17 @@ export function swingingNodes(objects, rand = Math.random) {
 }
 
 // The nodes with extras.lift (glTF metres up) and extras.crank ([axis x, y, z, radians] about the
-// node's origin) on one clock: all at the same fraction of the stroke. update(t, on) and state() as
-// slidingNodes (state: per node name its position 0..1 and its rise dy or turn angle).
+// node's origin) on one clock: all at the same fraction of the stroke. A node with extras.fold
+// ([hinge x, y, z relative to its origin, axis x, y, z, radians]) also folds about that hinge, in its
+// own turning frame (the Schrankbett's feet fold onto the bed's underside as it goes up, #7).
+// update(t, on) and state() as slidingNodes (state: per node name its position 0..1 and its rise dy or
+// turn angle).
 export function liftingNodes(objects) {
   const nodes = objects.filter((o) => o.userData.lift || o.userData.crank).map((obj) => ({ obj,
-    home: obj.position.clone(), turn: obj.quaternion.clone(), lift: obj.userData.lift ?? 0, crank: obj.userData.crank }));
+    home: obj.position.clone(), turn: obj.quaternion.clone(), lift: obj.userData.lift ?? 0, crank: obj.userData.crank,
+    fold: obj.userData.fold }));
   const tick = createSlides(1, () => 0, LIFT_PERIOD, LIFT_ROLL);
-  const q = new Quaternion(), axis = new Vector3();
+  const q = new Quaternion(), qf = new Quaternion(), axis = new Vector3(), h = new Vector3(), v = new Vector3();
   let pos = 0;
   return {
     nodes,
@@ -100,6 +104,12 @@ export function liftingNodes(objects) {
       for (const n of nodes) {
         n.obj.position.copy(n.home).setY(n.home.y + n.lift * pos);
         if (n.crank) n.obj.quaternion.multiplyQuaternions(q.setFromAxisAngle(axis.fromArray(n.crank), n.crank[3] * pos), n.turn);
+        if (n.fold) {                                     // turn about the hinge h: position += Q (h - F h), Q = Q F
+          qf.setFromAxisAngle(axis.fromArray(n.fold, 3), n.fold[6] * pos);
+          h.fromArray(n.fold);
+          n.obj.position.add(v.copy(h).sub(h.clone().applyQuaternion(qf)).applyQuaternion(n.obj.quaternion));
+          n.obj.quaternion.multiply(qf);
+        }
       }
       return moved;
     },

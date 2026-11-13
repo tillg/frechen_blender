@@ -8,7 +8,7 @@ export default defineConfig(({ command, isPreview }) => ({
   resolve: { alias: [{ find: /^three$/, replacement: 'three/webgpu' }] },
   build: {
     target: 'es2022',                                        // top-level await in main.js
-    rollupOptions: { input: ['index.html', 'ofen.html', 'desk.html', 'bad.html', 'kueche.html', 'gaeste_wc.html', 'regal.html'] },  // the house and the sub-models
+    rollupOptions: { input: ['index.html', 'ofen.html', 'desk.html', 'bad.html', 'kueche.html', 'gaeste_wc.html', 'regal.html', 'schrankbett.html'] },  // the house and the sub-models
   },
   plugins: [blueprintWatch(), serveBuild()],                // code/*.py saved: new .glb, reload;
                                                              // web/dist/ under /frechen_blender/
