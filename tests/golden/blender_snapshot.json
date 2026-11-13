@@ -751,7 +751,7 @@
    0.0,
    0.0
   ],
-  "rnd": "c67ff4d8a58d3c5d",
+  "rnd": "9c7b4bcb8c35e8cd",
   "verts": 5876
  },
  "EG_Ofen_Bank": {
@@ -2876,6 +2876,51 @@
   "rnd": "1bbbd012654e6752",
   "verts": 2104
  },
+ "OG_Klappbett": {
+  "bbox": [
+   0.6825,
+   9.03,
+   2.86,
+   2.7225,
+   11.07,
+   3.17
+  ],
+  "faces": 168,
+  "materials": [
+   "FL_Bettwaesche",
+   "FL_FichteX",
+   "FL_FichteY",
+   "FL_Leinen"
+  ],
+  "origin": [
+   0.6725,
+   9.23,
+   2.94
+  ],
+  "rnd": "057469e20d2ac318",
+  "verts": 224
+ },
+ "OG_Klappfuesse": {
+  "bbox": [
+   0.7825,
+   11.01,
+   2.712,
+   2.6225,
+   11.04,
+   2.86
+  ],
+  "faces": 12,
+  "materials": [
+   "FL_FichteZ"
+  ],
+  "origin": [
+   0.6725,
+   9.23,
+   2.94
+  ],
+  "rnd": "e633e76a313be626",
+  "verts": 16
+ },
  "OG_Laeden": {
   "bbox": [
    2.34,
@@ -2920,14 +2965,14 @@
  },
  "OG_Moebel": {
   "bbox": [
-   0.85,
+   0.31,
    0.53,
    2.712,
    14.573,
    12.483,
-   4.7
+   4.897
   ],
-  "faces": 45708,
+  "faces": 45756,
   "materials": [
    "FL_Bettwaesche",
    "FL_Creme",
@@ -2947,8 +2992,8 @@
    0.0,
    0.0
   ],
-  "rnd": "a12a419f0a4bde9f",
-  "verts": 59328
+  "rnd": "98a7a3c8fc552d68",
+  "verts": 59392
  },
  "OG_Raumnamen": {
   "bbox": [

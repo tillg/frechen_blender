@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test';
 import { choose, entries } from './menu.js';
 
 const PAGES = [['/', '__fl'], ['/ofen.html', '__ofen'], ['/desk.html', '__desk'], ['/bad.html', '__bad'],
-  ['/kueche.html', '__kueche'], ['/gaeste_wc.html', '__gaeste_wc'], ['/regal.html', '__regal']];
+  ['/kueche.html', '__kueche'], ['/gaeste_wc.html', '__gaeste_wc'], ['/regal.html', '__regal'],
+  ['/schrankbett.html', '__schrankbett']];
 
 async function open(page, url = '/', hook = '__fl') {
   await page.goto(url);
@@ -29,7 +30,7 @@ test('Modell lists Ganzes Haus, Erdgeschoss, Erdgeschoss - Alternativ, 1. Stock,
     await open(page, url, hook);
     await page.getByRole('button', { name: 'Modell', exact: true }).click();
     expect(await entries(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', 'Erdgeschoss - Alternativ', '1. Stock', '—', 'Ofen', 'Schreibtisch',
-      'Bad Oma & Opa', 'Küche', 'Gäste-WC', 'Schrank im Büro']);
+      'Bad Oma & Opa', 'Küche', 'Gäste-WC', 'Schrank im Büro', 'Schrankbett']);
   }
 });
 

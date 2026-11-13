@@ -9289,10 +9289,11 @@
 <path stroke-width="0.25" d="M260.65 195.15L262.25 193.55"/>
 <text stroke="none" x="197.03" y="193.55" font-size="2.00" text-anchor="middle">12.88⁵</text>
 </g>
+<text x="20.00" y="30.00" font-size="12.00" text-anchor="start" font-family="Georgia, 'Times New Roman', serif" letter-spacing="0.24">Frechenlehen</text>
 <g fill="none" stroke="#000" stroke-width="0.35"><rect x="290" y="257" width="120" height="30"/><path d="M290 267H410M290 277H410M350 277V287"/></g>
 <text x="293.00" y="264.00" font-size="5.00" text-anchor="start" font-weight="bold">Frechenlehen</text>
 <text x="293.00" y="274.00" font-size="4.50" text-anchor="start">Ansicht West</text>
 <text x="293.00" y="283.50" font-size="3.50" text-anchor="start">M 1:100</text>
-<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand c3ec69427842</text>
+<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand a9320d34c7e4</text>
 <g id="scale" stroke="#000" stroke-width="0.18"><rect x="290.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="300.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="310.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="320.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="330.00" y="251.00" width="10.00" height="1.50" fill="#000"/></g><text x="290.00" y="249.80" font-size="2.00" text-anchor="middle">0</text><text x="300.00" y="249.80" font-size="2.00" text-anchor="middle">1</text><text x="310.00" y="249.80" font-size="2.00" text-anchor="middle">2</text><text x="320.00" y="249.80" font-size="2.00" text-anchor="middle">3</text><text x="330.00" y="249.80" font-size="2.00" text-anchor="middle">4</text><text x="340.00" y="249.80" font-size="2.00" text-anchor="middle">5</text><text x="342.50" y="252.40" font-size="2.00" text-anchor="start">m</text>
 </svg>

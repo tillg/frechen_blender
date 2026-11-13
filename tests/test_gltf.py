@@ -254,6 +254,32 @@ def test_gaeste_wc_export(tmp_path):
 
 
 
+def test_schrankbett_export(tmp_path):
+    """--schrankbett: the wall bed sub-model with its wall pieces and dimension lines, no Rundgang; the
+    bed (origin on its hinge axis) folds 90 deg about x (glTF x) on the lift clock (extras.crank)."""
+    out = tmp_path / "schrankbett.glb"
+    subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--schrankbett"], check=True)
+    data = out.read_bytes()
+    jlen = struct.unpack_from("<I", data, 12)[0]
+    g = json.loads(data[20:20 + jlen])
+    names = {n["name"] for n in g["nodes"]}
+    assert {"Schrankbett_Moebel", "Schrankbett_Klappbett", "Schrankbett_Waende"} <= names
+    crank = {n["name"]: n["extras"]["crank"] for n in g["nodes"] if "crank" in n["extras"]}
+    assert sorted(crank) == ["Schrankbett_Klappbett", "Schrankbett_Klappfuesse"]
+    assert crank["Schrankbett_Klappbett"][:3] == [1, 0, 0]
+    assert crank["Schrankbett_Klappbett"][3] == pytest.approx(math.pi / 2)
+    bp = house_core.build_schrankbett()
+    house_core.build()
+    node = next(n for n in g["nodes"] if n["name"] == "Schrankbett_Klappbett")
+    px, py, pz = bp.pivot["Schrankbett_Klappbett"]
+    assert node["translation"] == pytest.approx([px, pz, -py])                     # origin on the hinge axis
+    feet = next(n for n in g["nodes"] if n["name"] == "Schrankbett_Klappfuesse")    # fold onto the underside
+    (hx, hy, hz), _, deg = bp.fold["Schrankbett_Klappfuesse"]
+    assert feet["extras"]["fold"] == pytest.approx([hx - px, hz - pz, -(hy - py), 1, 0, 0, math.radians(deg)])
+    ex = g["scenes"][0]["extras"]
+    assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex
+
+
 def test_regal_export(tmp_path):
     """--regal: the "Schrank im Büro" sub-model with its wall pieces and dimension lines, no Rundgang,
     nothing sliding; the Büro door swings."""

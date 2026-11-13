@@ -413,6 +413,130 @@ def test_vitrine_52_in_the_nw_corner_behind_the_piano():
     assert max(xs) < min(lo[0] for lo, _ in piano) and max(xs) < 6.953                           # piano, north window
 
 
+def _folded(bp, key, deg):
+    """(down-state part box, vertices) per Part of object key, turned by deg about its CRANK axis x
+    through its PIVOT (deg 90: folded up); an object with a FOLD first folds about its own hinge (x) by
+    the same share of its angle."""
+    def rx(p, c, a):                                                      # turn p about the x axis through c
+        y, z = p[1] - c[1], p[2] - c[2]
+        return (p[0], c[1] + y * math.cos(a) - z * math.sin(a), c[2] + y * math.sin(a) + z * math.cos(a))
+    g, piv = bp.geo[key], bp.pivot[key[1]]
+    hinge, _, fdeg = (bp.fold or {}).get(key[1], (piv, None, 0.0))
+    move = lambda p: rx(rx(p, hinge, math.radians(fdeg * deg / 90)), piv, math.radians(deg))
+    for (m, lo, hi), (first, n) in zip(_parts(bp, key), bp.parts[key]):
+        yield (m, lo, hi), [move(g["v"][i]) for f in g["f"][first:first + n] for i in f]
+
+
+def test_schrankbett_submodel():
+    """Issue #7: code/schrankbett.py, the Yoga room's wall bed at its own origin (the room's inner SW
+    corner: west wall x south wall; floor slab at z 0, the room 2.20 high): a 45 deep Schrankwand
+    on the south wall from the west wall to 5 mm short of the Yoga door's architrave, up to 3 mm under
+    the ceiling: a side cabinet either side of a 2.06 niche, a Blende over it; the bed (lying area
+    2.00 x 2.00) built folded down, an object of its own that folds up 90 deg about x (CRANK); its feet
+    an object of their own on the same axis that also fold onto the underside (FOLD -90 deg about their
+    hinge); the underside framed with six raised panels like the doors (request 2026-11-13). With the
+    pieces of the west wall (window) and the south wall (Yoga door)."""
+    import schrankbett as s
+    bp = house_core.build_schrankbett()
+    house_core.build()                                                    # restore the registries
+    assert s.SCHRANKBETT_AT == (0.31, 8.86) and bp.garden is None
+    assert {c for c, _ in bp.geo} == {"Schrankbett"}
+    assert {"Schrankbett_Moebel", "Schrankbett_Klappbett", "Schrankbett_Klappfuesse", "Schrankbett_Waende"} <= {n for _, n in bp.geo}
+    assert bp.crank == {"Schrankbett_Klappbett": ((1, 0, 0), 90), "Schrankbett_Klappfuesse": ((1, 0, 0), 90)}
+    assert bp.pivot["Schrankbett_Klappfuesse"] == bp.pivot["Schrankbett_Klappbett"]
+    (hx, hy, hz), axis, deg = bp.fold["Schrankbett_Klappfuesse"]
+    assert list(bp.fold) == ["Schrankbett_Klappfuesse"] and axis == (1, 0, 0) and deg == -90
+    assert hz == pytest.approx(s.ZU)                                     # hinged at the underside
+    case = list(_parts(bp, ("Schrankbett", "Schrankbett_Moebel")))
+    wood = [(lo, hi) for m, lo, hi in case if m != "Metall"]
+    assert min(lo[0] for lo, _ in wood) == pytest.approx(0.0)
+    assert max(hi[0] for _, hi in wood) == pytest.approx(3.17 - 0.07 - 0.005 - 0.31)
+    assert min(lo[1] for lo, _ in wood) == pytest.approx(0.005) and max(hi[1] for _, hi in wood) == pytest.approx(0.45)
+    assert min(lo[2] for lo, _ in wood) == pytest.approx(0.012) and max(hi[2] for _, hi in wood) == pytest.approx(2.197)
+    # the niche: what crosses the line z 1.0, y 0.2 is the two side cabinets; between them 2.06 free
+    xs = sorted((lo[0], hi[0]) for lo, hi in wood if lo[1] < 0.2 < hi[1] and lo[2] < 1.0 < hi[2])
+    gaps = [(a[1], b[0]) for a, b in zip(xs, xs[1:]) if b[0] > a[1] + 0.5]
+    assert len(gaps) == 1
+    n0, n1 = gaps[0]
+    assert n1 - n0 == pytest.approx(2.06) and min(n0, max(hi[0] for _, hi in wood) - n1) >= 0.35
+    blende = [(lo, hi) for lo, hi in wood if lo[0] <= n0 + 1e-6 and hi[0] >= n1 - 1e-6 and lo[2] > 2.0]
+    assert blende and max(hi[1] for _, hi in blende) == pytest.approx(0.45)
+    # the bed, down: two mattresses filling the 2.00 x 2.00 lying area, about 40 high
+    bed = list(_parts(bp, ("Schrankbett", "Schrankbett_Klappbett")))
+    mat = [(lo, hi) for m, lo, hi in bed if m == "Leinen"]
+    assert len(mat) == 2
+    assert max(hi[0] for _, hi in mat) - min(lo[0] for lo, _ in mat) == pytest.approx(2.0)
+    assert max(hi[1] for _, hi in mat) - min(lo[1] for lo, _ in mat) == pytest.approx(2.0)
+    assert 0.35 <= max(hi[2] for _, hi in mat) <= 0.50
+    assert n0 < min(lo[0] for _, lo, _ in bed) and max(hi[0] for _, _, hi in bed) < n1
+    face = [(m, lo, hi) for m, lo, hi in bed if lo[2] < s.ZU + 0.009]    # the underside: board, frame, fields
+    assert len(face) >= 1 + 7 + 6 and min(lo[2] for _, lo, _ in face) == pytest.approx(s.ZU)
+    feet = list(_parts(bp, ("Schrankbett", "Schrankbett_Klappfuesse")))
+    assert len(feet) == 2 and all(lo[2] == pytest.approx(0.012) and hi[2] == pytest.approx(s.ZU) for _, lo, hi in feet)
+    # walls: the west window (y 8.96 .. 9.95 from a 0.75 sill up to the ceiling), the Yoga door 3.17 .. 4.15
+    H = (lambda p: [m for m, lo, hi in _parts(bp, ("Schrankbett", "Schrankbett_Waende"))
+                    if all(lo[k] - 1e-6 <= p[k] <= hi[k] + 1e-6 for k in range(2)) and lo[2] < p[2] < hi[2]])
+    assert H((-0.15, 0.6, 1.5)) == [] and H((-0.15, 0.6, 0.4)) == ["Putz"] and H((-0.15, 1.3, 1.5)) == ["Putz"]
+    assert H((3.3, -0.15, 1.0)) == [] and H((2.0, -0.15, 1.0)) == ["Putz"]
+
+
+def test_schrankbett_fold_clears():
+    """The bed folds up about its pivot (5 deg steps) without going through the carcass's back, the
+    floor (finish 12 mm), the Blende or the ceiling, nor out of its niche sideways; folded up it lies
+    in the carcass, its underside flush with the door fronts (y 0.45). The feet fold onto the
+    underside meanwhile: folded up they lie flat on it, standing out by their thickness only (3 cm)."""
+    import schrankbett as s
+    bp = house_core.build_schrankbett()
+    house_core.build()                                                    # restore the registries
+    case = [(lo, hi) for m, lo, hi in _parts(bp, ("Schrankbett", "Schrankbett_Moebel")) if m != "Metall"]
+    xs = sorted((lo[0], hi[0]) for lo, hi in case if lo[1] < 0.2 < hi[1] and lo[2] < 1.0 < hi[2])
+    n0, n1 = next((a[1], b[0]) for a, b in zip(xs, xs[1:]) if b[0] > a[1] + 0.5)
+    back = max(hi[1] for lo, hi in case if hi[1] < 0.05 and lo[0] <= n0 and hi[0] >= n1)
+    under = min(lo[2] for lo, hi in case if lo[0] <= n0 + 1e-6 and hi[0] >= n1 - 1e-6 and lo[2] > 2.0)
+    for o in ("Klappbett", "Klappfuesse"):
+        key = ("Schrankbett", "Schrankbett_" + o)
+        for deg in range(0, 91, 5):
+            for (m, lo, hi), vs in _folded(bp, key, deg):
+                for x, y, z in vs:
+                    assert n0 < x < n1 and z >= 0.012 - 1e-6 and y > back, (o, deg, m, x, y, z)
+                    assert z < (under if y < 0.45 else 2.20) - 1e-6, (o, deg, m, x, y, z)
+        for (m, lo, hi), vs in _folded(bp, key, 90):
+            assert max(y for _, y, _ in vs) <= 0.45 + (0.03 if o == "Klappfuesse" else 0.0) + 1e-6, (o, m, lo, hi)
+            assert min(y for _, y, _ in vs) >= 0.45 - 1e-6 or o == "Klappbett", (o, m, lo, hi)   # on the face
+
+
+def test_schrankbett_built_into_the_house():
+    """The Schrankbett stands in the Yoga room at SCHRANKBETT_AT on the OG floor, every part the same
+    (carcass: furniture OG_Moebel; the bed and its feet: OG_Klappbett, OG_Klappfuesse, furniture, folding about x); the old Yoga
+    bed is gone; down, the bed lies inside the room, clear of the Yoga door's leaf."""
+    import schrankbett as s
+    sub = house_core.build_schrankbett()
+    house_core.build()                                                    # restore the registries
+    (x0, y0), z0 = s.SCHRANKBETT_AT, house_core.Z_OG
+    S = lambda bp, key, d=(0.0, 0.0, 0.0): {tuple(sorted({tuple(round(p[k] + d[k], 6) for k in range(3)) for p in ps}))
+                                            for ps in _solids_pts(bp, key)}
+    assert S(sub, ("Schrankbett", "Schrankbett_Moebel"), (x0, y0, z0)) <= S(BP, ("OG", "OG_Moebel"))
+    for o in ("Klappbett", "Klappfuesse"):
+        assert S(sub, ("Schrankbett", "Schrankbett_" + o), (x0, y0, z0)) == S(BP, ("OG", "OG_" + o))
+        assert BP.crank["OG_" + o] == ((1, 0, 0), 90)
+    (hx, hy, hz), axis, deg = sub.fold["Schrankbett_Klappfuesse"]
+    assert BP.fold["OG_Klappfuesse"] == (pytest.approx((hx + x0, hy + y0, hz + z0)), axis, deg)
+    px, py, pz = sub.pivot["Schrankbett_Klappbett"]
+    assert BP.pivot["OG_Klappbett"] == pytest.approx((px + x0, py + y0, pz + z0))
+    assert {"OG_Moebel", "OG_Klappbett", "OG_Klappfuesse"} <= BP.furniture
+    assert not any(m == "Leinen" and lo[0] < 2.5 and lo[1] < 10.9 and hi[1] > 8.86
+                   for m, lo, hi in _parts(BP, ("OG", "OG_Moebel")))                               # old bed
+    bed = list(_parts(BP, ("OG", "OG_Klappbett"))) + list(_parts(BP, ("OG", "OG_Klappfuesse")))
+    assert min(lo[0] for _, lo, _ in bed) > 0.31 and max(hi[1] for _, _, hi in bed) < 12.485
+    _clear(bed, _leaf_boxes(BP, "OG", z0), "Yoga door leaf")
+
+
+def _solids_pts(bp, key):
+    """The vertices of each Part of object key."""
+    g = bp.geo[key]
+    return [[g["v"][i] for f in g["f"][a:a + n] for i in f] for a, n in bp.parts[key]]
+
+
 def test_every_door_has_handles():
     """Request 2026-11-11: every door has handles. Hinged interior leaves (six-panel and glazed, also
     the swinging ones): black iron levers on both faces at the lock edge, 1.05 m; french and terrace
