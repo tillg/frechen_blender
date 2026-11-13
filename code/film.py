@@ -7,7 +7,7 @@ Run inside Blender: exec(open(".../code/film.py").read())
 import bpy, importlib, math, os, sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
-import ofen, desk, bad, kueche, gaeste_wc, regal, schrankbett, gaestebad, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(gaeste_wc); importlib.reload(regal); importlib.reload(schrankbett); importlib.reload(gaestebad); importlib.reload(house_core)  # pick up core edits
+import ofen, desk, bad, kueche, gaeste_wc, regal, schrankbett, gaestebad, elternbad, house_core; importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(gaeste_wc); importlib.reload(regal); importlib.reload(schrankbett); importlib.reload(gaestebad); importlib.reload(elternbad); importlib.reload(house_core)  # pick up core edits
 import tour; importlib.reload(tour)                    # the route (after the core it imports)
 from house_core import ROOM_LIGHT_H, ROOM_LIGHTS
 

@@ -3,7 +3,8 @@ the Windfang round the sofa to the Stube's seating corner (slow turn, pause at t
 (turn, pause) -> Küche: look down the Speis aisle, out through the Küche door -> Großeltern: into their Bad (look into the shower,
 then the WC, pausing at each), then turn at the wall beside the balcony door -> along the Flur to the back door (turn, pause) -> Bibliothek, back corner (turn, pause at the
 piano) -> stairs -> OG: peeks into the first room on the right and the Waschküche -> Schlafen SE,
-back corner (turn, pause at the Kamin), peek into its Bad -> peek into the NE room opposite ->
+back corner (turn, pause at the Kamin), into its Bad to the back wall (turn round, pause) and out ->
+peek into the NE room opposite ->
 peeks into the SW room and the Bad at the end -> Yoga, back corner (turn) -> down the stairs, out
 to the start point, turn to face the house, pause (closed route: the viewer can loop it).
 
@@ -77,10 +78,11 @@ ROUTE = [
               (13.85, 1.5), (13.95, 0.9)], OG, WALK),                     # Schlafen SE: past the bed (clear of the
                                                                           # Wandlampe between the balcony doors), back corner
     turn((9.12, 3.44), L), ("hold", PAUSE),                               # the Kamin
-    turn((8.65, 2.1), L),                                                 # the Bad door
-    ("path", [(13.95, 0.9), (11.4, 0.9), (10.4, 0.95), (8.8, 2.12)], OG, WALK),    # clear of the Wandlampe on the south wall
-    *peek((7.3, 0.7), (7.3, 2.35)),                                       # its Bad
-    ("path", [(8.8, 2.12), (9.9, 2.6), (10.6, 3.6), (10.75, 4.6), (11.2, 5.3), (11.1, 6.2), (11.4, 7.3),
+    turn((8.65, 1.15), L),                                                # the Bad door (south end of the wall, #3)
+    ("path", [(13.95, 0.9), (11.4, 0.9), (10.4, 0.95), (9.3, 1.15), (5.95, 1.15)], OG, WALK),   # clear of the
+                                                                          # Wandlampe on the south wall; into the Bad to its back wall
+    turn((8.6, 1.15), R), ("hold", PAUSE),                                # right round past shower and WC: back to the wall
+    ("path", [(5.95, 1.15), (10.0, 1.15), (10.45, 2.6), (10.6, 3.6), (10.75, 4.6), (11.2, 5.3), (11.1, 6.2), (11.4, 7.3),
               (12.74, 7.9), (12.74, 9.7)], OG, WALK),                     # the NE room opposite
     *peek((10.2, 11.6, Z_OG + 0.5), (14.4, 10.2)),         # in to the end of the open leaf; the beds
     ("path", [(12.74, 9.7), (12.6, 7.7), (11.1, 7.15), (4.45, 7.15), (4.45, 6.3)], OG, WALK),  # back left in the Flur
