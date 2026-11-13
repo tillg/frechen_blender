@@ -11,7 +11,8 @@ await startSubmodel({
     top: ['Von oben', [1.13, 1.55, 9.0], [1.13, 1.551, 0.0]],      // plan, north at the top
     door: ['Von der Tür', [2.1, 2.95, 1.6], [1.1, 0.5, 0.9]],      // inside the Flur door, looking at niche and shower
   },
-  colors: { Gaestebad_Sanitaer: 0x2b5f8e, Gaestebad_Fliesen: 0x4f7a5a, Gaestebad_Waende: 0x8a8a8a,
+  colors: { Gaestebad_Sanitaer: 0x2b5f8e, Gaestebad_Spiegel: 0x2b5f8e, Gaestebad_Wandlampen: 0x8a6a2b,
+    Gaestebad_Fliesen: 0x4f7a5a, Gaestebad_Waende: 0x8a8a8a,
     Gaestebad_Innentueren: 0x8a5a2b, Gaestebad_Fenster_Tueren: 0x4f7a5a },
   walls: [],
   grid: [1.13, 1.55],

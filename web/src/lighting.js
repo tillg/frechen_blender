@@ -1,5 +1,6 @@
 // Day and dusk: sun from Blender's angle (setup_scene), hemisphere light, sky background, and
-// at dusk a low warm sun, deep-blue sky and warm point lights at ROOM_LIGHTS (floor + ROOM_LIGHT_H),
+// at dusk a low warm sun, deep-blue sky and warm point lights at ROOM_LIGHTS (floor + ROOM_LIGHT_H) and,
+// dimmer, at the bulbs of the Wandlampen (WALL_LIGHTS; one ranking, one pool with the room lights),
 // and the wall lamps outside switched on: a warm spot pointing down from the OUTSIDE_LIGHTS bulbs.
 // The switched-on lamps inside (LAMP_LIGHTS, above the Ofen bed) glow by day and at dusk.
 // hires (full quality, film capture): one light per site, always in the render list. Fast mode
@@ -17,6 +18,7 @@ const h = Math.hypot(0.439, 0.627), E = (8 * Math.PI) / 180;
 const DUSK_DIR = yup((0.439 / h) * Math.cos(E), (-0.627 / h) * Math.cos(E), Math.sin(E));
 const SKY = [0.62, 0.76, 0.92], DUSK_SKY = [0.015, 0.03, 0.10];   // linear, SKY = Blender world
 const ROOM_N = 6, OUTSIDE_N = 2;                     // fast mode: pool sizes
+const ROOM_BASE = 9, LAMP_BASE = 2, OUTSIDE_BASE = 14;   // dusk intensity per site: fill light, Wandlampe, outside lamp
 const FADE = 1.0, STOREY_W = 3;   // fade width (m) before the cut-off; height counts 3× indoors (own storey first)
 
 export function createLighting(scene, extras, target, uDetail = uniform(1), { hires = false } = {}) {
@@ -30,17 +32,22 @@ export function createLighting(scene, extras, target, uDetail = uniform(1), { hi
   sun.shadow.normalBias = 0.02;
   sun.shadow.radius = 3;
   const hemi = new THREE.HemisphereLight(0xffffff, 0xb8b0a0, 1.4);
-  const roomSites = extras.room_lights.map(([x, y, z]) => yup(x, y, z + extras.ROOM_LIGHT_H));
-  const outsideSites = extras.outside_lights.map(([x, y, z]) => yup(x, y, z));
-  const roomLight = (p) => {
+  const roomSites = [
+    ...extras.room_lights.map(([x, y, z]) => ({ p: yup(x, y, z + extras.ROOM_LIGHT_H), base: ROOM_BASE })),
+    ...(extras.wall_lights ?? []).map(([x, y, z]) => ({ p: yup(x, y, z), base: LAMP_BASE })),
+  ];
+  const outsideSites = extras.outside_lights.map(([x, y, z]) => ({ p: yup(x, y, z), base: OUTSIDE_BASE }));
+  const roomLight = ({ p, base }) => {
     const l = new THREE.PointLight(0xffb070, 0, 8, 2);
     l.position.copy(p);
+    l.userData.base = base;
     return l;
   };
-  const outsideLight = (p) => {
+  const outsideLight = ({ p, base }) => {
     const l = new THREE.SpotLight(0xffb070, 0, 9, 1.2, 0.7, 2);     // under the shade: down and out
     l.position.copy(p);
     l.target.position.copy(p).y -= 1;
+    l.userData.base = base;
     return l;
   };
   const roomLights = (hires ? roomSites : roomSites.slice(0, ROOM_N)).map(roomLight);
@@ -60,8 +67,7 @@ export function createLighting(scene, extras, target, uDetail = uniform(1), { hi
     sun.intensity = 2.2 + (0.7 - 2.2) * v;
     sun.color.copy(white).lerp(warm, v);
     hemi.intensity = 1.4 + (0.25 - 1.4) * v;
-    for (const l of roomLights) l.intensity = 9 * v;
-    for (const l of outsideLights) l.intensity = 14 * v;
+    for (const l of [...roomLights, ...outsideLights]) l.intensity = l.userData.base * v;
     if (!hires) showPool(v > 0);
   }
   function showPool(on) {
@@ -81,21 +87,23 @@ export function createLighting(scene, extras, target, uDetail = uniform(1), { hi
   }
   // fast mode, at dusk: pooled light k sits at the k-th nearest site and dims to 0 as its distance
   // reaches that of the nearest site left out (d_cut), so a light leaves the pool already dark
-  function place(sites, lights, base, cam, w) {
-    const d = sites.map((p, i) => [Math.hypot(p.x - cam.x, w * (p.y - cam.y), p.z - cam.z), i]).sort((a, b) => a[0] - b[0]);
+  function place(sites, lights, cam, w) {
+    const d = sites.map(({ p }, i) => [Math.hypot(p.x - cam.x, w * (p.y - cam.y), p.z - cam.z), i]).sort((a, b) => a[0] - b[0]);
     const dCut = d[lights.length]?.[0] ?? Infinity;
     lights.forEach((l, k) => {
       const [dk, i] = d[k];
-      l.position.copy(sites[i]);
-      if (l.isSpotLight) l.target.position.copy(sites[i]).y -= 1;
+      const { p, base } = sites[i];
+      l.position.copy(p);
+      if (l.isSpotLight) l.target.position.copy(p).y -= 1;
+      l.userData.base = base;
       l.intensity = base * uDusk.value * Math.min(Math.max((dCut - dk) / FADE, 0), 1);
     });
   }
   function update(cam, inside) {                                   // y-up camera position; inside: indoors()
     if (hires || uDusk.value === 0) return;
     const w = inside ? STOREY_W : 1;
-    place(roomSites, roomLights, 9, cam, w);
-    place(outsideSites, outsideLights, 14, cam, w);
+    place(roomSites, roomLights, cam, w);
+    place(outsideSites, outsideLights, cam, w);
   }
   setDusk(0);
   return { sun, hemi, roomLights, outsideLights, lampLights, setDusk, update, prewarm, uDusk };
