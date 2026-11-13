@@ -4,7 +4,7 @@ like the EG Gäste-WC below it (code/gaeste_wc.py): a 10 cm partition over the E
 WC niche (no wall, no door; toilet centred on its south wall, facing north; Taubenblau tiles), east of it
 a walk-in shower 115 wide, long to 5 cm short of the Flur door's leaf (open flat against the east wall),
 a 65 cm glass panel on its north edge from the east wall, the rest open; the Waschbecken doppelt 120 in
-the middle of the north wall under a mirror 140 x 95 in a 10 cm wooden frame (like the OG Flur's).
+the middle of the north wall under a mirror 140 x 85 in a 10 cm wooden frame (like the OG Flur's).
 
 Pure Python like house_core.py, which imports this module: build_sanitary() calls gaestebad_neu() at
 GAESTEBAD_AT on the OG floor, build_og() takes the Flur door (TUER) from here; house_core.build_gaestebad()
@@ -25,7 +25,7 @@ GA = 1.92                                    # glass GA .. WO (65), open PB .. G
 TX = (WI + PA) / 2                           # toilet axis: centred in the niche
 BX = (WI + WO) / 2                           # basin and mirror: the middle of the north wall
 BW, BD = 1.20, 0.47                          # Waschbecken doppelt
-MW, MH, MF, MZ = 1.40, 0.95, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
+MW, MH, MF, MZ = 1.40, 0.85, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
 
 
 def cm(a, b):
@@ -58,6 +58,9 @@ def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
     # north wall: the basin in the middle, the mirror above it
     hc.waschbecken(c, BX + dx, YN + dy, 0, -1, BW, BD, 2, z=z)
     hc.wood_mirror(c, BX + dx, YN + dy, 0, -1, MW, MH, MF, z + MZ, rng)
+    for k in range(4):                                   # four Wandlampen over it, one per quarter of its width (#19)
+        hc.wandlampe(c, BX - MW / 2 + MW * (k + 0.5) / 4 + dx, YN + dy, 0, -1, z + hc.WANDLAMPE_SPIEGEL_H)
+    hc.wandlampe(c, WI + dx, (6.32 + 6.77) / 2 + dy, 1, 0, z + hc.WANDLAMPE_SPIEGEL_H)   # west wall: between the windows
     # south wall: the shower east of the partition, the WC niche west of it (tiles on its three walls)
     hc.shower(c, PB + dx, WO + dx, YS + dy, SN + dy, [(GA + dx, SN + dy, WO + dx, SN + dy)],
               ((GA + WO) / 2 + dx, YS + dy, 0, 1), z=z)

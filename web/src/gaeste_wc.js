@@ -11,7 +11,7 @@ await startSubmodel({
     top: ['Von oben', [1.1, 1.0, 9.0], [1.1, 1.001, 0.0]],         // plan, north at the top
     flur: ['Vom Flur', [0.9, 4.4, 1.6], [1.1, 0.6, 1.0]],          // from the Flur looking south (the drawing's section)
   },
-  colors: { GaesteWC_Sanitaer: 0x2b5f8e, GaesteWC_Innentueren: 0x8a5a2b, GaesteWC_Garderobe: 0x8a5a2b,
+  colors: { GaesteWC_Sanitaer: 0x2b5f8e, GaesteWC_Spiegel: 0x2b5f8e, GaesteWC_Innentueren: 0x8a5a2b, GaesteWC_Garderobe: 0x8a5a2b,
             GaesteWC_Fliesen: 0x4f7a5a, GaesteWC_Waende: 0x8a8a8a },
   walls: [[2.048, 2.4, [1.024, 0, 1.2], 0], [1.933, 2.4, [2.048, 0.9665, 1.2], Math.PI / 2]],   // south, east
   grid: [1.1, 1.2],
