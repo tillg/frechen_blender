@@ -21,6 +21,7 @@ import house_core, mesh_ops  # noqa: E402
 PAGE_W, PAGE_H = 420, 297                     # A3 landscape, mm
 S = 10                                        # 1:100: mm on paper per m in the model
 FONT = "Helvetica, Arial, sans-serif"
+TITLE_FONT = "Georgia, 'Times New Roman', serif"   # the sheet heading, set like the viewer's title (web/src/ui.css)
 CUT = {"EG": 1.80, "OG": 1.55}               # Schnitthöhe above the floor: above every sill, below every head
 FLOOR = {"EG": 0.0, "OG": house_core.Z_OG}
 CEIL = {"EG": house_core.Z_EG_TOP, "OG": house_core.Z_OG_TOP}
@@ -750,6 +751,7 @@ def sheet(name, body, state, north=False, stamp=None):
            f'<rect width="{PAGE_W}" height="{PAGE_H}" fill="#fff"/>',
            f'<rect x="10" y="10" width="{PAGE_W - 20}" height="{PAGE_H - 20}" fill="none" stroke="#000" stroke-width="0.5"/>',
            body,
+           text(20, 30, "Frechenlehen", 12).replace(">Frechenlehen<", f' font-family="{TITLE_FONT}" letter-spacing="0.24">Frechenlehen<'),
            f'<g fill="none" stroke="#000" stroke-width="0.35"><rect x="{tx}" y="{ty}" width="120" height="30"/>'
            f'<path d="M{tx} {ty + 10}H{tx + 120}M{tx} {ty + 20}H{tx + 120}M{tx + 60} {ty + 20}V{ty + 30}"/></g>',
            text(tx + 3, ty + 7, "Frechenlehen", 5, weight="bold"),
