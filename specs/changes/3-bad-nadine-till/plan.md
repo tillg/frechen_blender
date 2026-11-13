@@ -74,15 +74,12 @@ System docs are updated at `/spec:archive`.
 
 ## Resume here (paused 2026-11-13, user away)
 
-Done and committed on `issue/3-bad-nadine-till`: steps 1–8 above. A first headless rebuild + save of
-`frechenlehen.blend`, the parity golden and `plans/` were made **before** the walk-in-shower step, so they
-are one change behind. Next:
+Done, committed and merged to `main` (for the website) on the user's request; branch `issue/3-bad-nadine-till`
+kept, issue #3 stays open. Steps 1–8 done; a headless rebuild + save of `frechenlehen.blend`, the parity golden
+and `plans/` are current (quick check, `test_plans`, `test_blender_parity` green). Next:
 
-1. `bash scripts/check.sh quick` (last run green before the walk-in step; re-run).
-2. Rebuild headless again (Blender MCP was not reachable): `/Applications/Blender.app/Contents/MacOS/Blender -b
-   frechenlehen.blend --python <script exec'ing build_house, fire, paint, windrose, garden, film + save>`;
-   `UPDATE_GOLDEN=1 .venv/bin/python -m pytest -q tests/test_blender_parity.py`; `python3 code/export_plans.py plans/`.
-3. Film camera clearance check of the route (BVH ≥ 0.25 m + ray casts) in Blender, a still of the Bad to `tmp/details/`.
-4. `bash scripts/check.sh full` (baseline had 5 #19 leftovers: parity, plans, gaestebad label, hires light
+1. Film camera clearance check of the route through the Bad (BVH `find_nearest` ≥ 0.25 m + `ray_cast` between
+   frames) in Blender, a still of the Bad to `tmp/details/`; then tick the `[blender]` step.
+2. `bash scripts/check.sh full` (baseline had 5 #19 leftovers: parity, plans, gaestebad label, hires light
    count — all addressed here — and the tour frame-rate test, 10.9 fps, environment-dependent).
-5. `/spec:adversarial-code-review`, then label `[under review]`, PR `Closes #3`.
+3. `/spec:adversarial-code-review`, fixes on the branch, then PR `Closes #3` → `[under review]`, archive.
