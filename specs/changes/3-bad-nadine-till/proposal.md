@@ -1,7 +1,7 @@
 ---
 feature: 3-bad-nadine-till
 title: "Proposal: Bad Nadine & Till"
-status: applying
+status: applied
 order: 1
 created: 2026-11-13
 edited: 2026-11-13
@@ -44,8 +44,9 @@ gets longer; the bath gets the house's standard Wandlampen (#19) and the Gästeb
     the toilet, flat south it would cover the window). Its south jamb sits 25 cm off the south wall
     so the leaf with its levers (`DOORS` box from y 0.625) clears the window lamp, which reaches y 0.61.
     The old opening 1.65..2.58 is closed.
-  - Toilet: back to the north wall, axis 8.14 (45 cm from the east wall), facing south to the
-    window; Taubenblau subway tiles (`wainscot`) on the north wall from the shower glass to the east
+  - Toilet: back to the north wall, axis 8.14 (45 cm from the east wall), facing south; the window
+    (6.84..7.72) is ahead to the right, seen diagonally — the toilet takes the old door's place, so it
+    cannot stand on the window's axis; Taubenblau subway tiles (`wainscot`) on the north wall from the shower glass to the east
     wall and on the east wall from the north wall to the door architrave (user's choice).
   - Shower: stays in the NW corner, y 1.64..2.62, lengthened east to x 7.72 (the window's east
     jamb; 2.13 × 0.98, 20 cm short of the cistern). Reading of "Ausgang an der Wandseite": the
@@ -65,8 +66,9 @@ gets longer; the bath gets the house's standard Wandlampen (#19) and the Gästeb
     `web/elternbad.html` with dimension lines, `show.py --page elternbad`, toolbar entry.
   - Rundgang (user request 2026-11-13): instead of peeking in, it walks through the new door to the
     back (west) wall, turns right until its back is to the wall, pauses, and walks straight out.
-  - Shower walls (user request 2026-11-13): limestone slabs to 2.0 on the west and north wall like the
-    Bad Großeltern's; the floor already is the same limestone (`BATHS_OG`).
+  - Shower walls and floor (user requests 2026-11-13): limestone slabs to 2.0 on the west and north wall like
+    the Bad Großeltern's; walk-in without a tray, the room's limestone floor (`BATHS_OG`) runs through; the
+    sub-model page lays the same floor.
   - Modell drop-down (user request 2026-11-13): the sub-models grouped by storey, `Erdgeschoss` first,
     then `1. Stock`.
   - Blender rebuild, parity golden, tour golden, plan sheets.

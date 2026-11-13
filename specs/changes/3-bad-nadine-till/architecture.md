@@ -1,7 +1,7 @@
 ---
 feature: 3-bad-nadine-till
 title: "Architecture: Bad Nadine & Till"
-status: applying
+status: applied
 order: 3
 created: 2026-11-13
 edited: 2026-11-13
@@ -25,7 +25,7 @@ flowchart LR
     EB --> BE[house_core.build_elternbad]
     HC --> BH[build_house.py] & GL[export_gltf.py] & PL[export_plans.py]
     BE --> GL2[export_gltf.py --elternbad] --> PG[web/elternbad.html]
-    TR[tour.py: peek at the new door] --> FI[film.py] & GL
+    TR[tour.py: walk into the Bad and out] --> FI[film.py] & GL
 ```
 
 ## Impact
@@ -62,7 +62,8 @@ No ADR: the sub-model pattern is ADR-001-XEWL's module list, extended at archive
 
 ## Integration points
 
-- `house_core`: `wall`, `interior`, `panel_door(flat=False)`, `shower`, `toilet`, `wainscot`,
+- `house_core`: `wall`, `interior`, `panel_door(flat=False)`, `shower(tray=False)` (new option),
+  `limestone()` (new, from `bad.stone()`), `tiles`, `toilet`, `wainscot`,
   `waschbecken`, `wood_mirror`, `wandlampe`, `WANDLAMPE_H`, `WANDLAMPE_SPIEGEL_H`, `WC_TILE_T`.
 - Tests that pin today's Bad S or the lamp count, updated deliberately (plan step 2 and 3):
   `test_core.py` lamp count 29 (`test_*` at line 29, `test_wandlampen_og_placements`),

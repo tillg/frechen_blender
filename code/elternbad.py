@@ -3,8 +3,8 @@ Bad between Waschküche and Schlafzimmer (S, under the window of the south wall)
 Schlafzimmer at the south end of the east wall (hinged south, open 90 deg into the Bad; 25 cm off the corner,
 so the open leaf with its levers clears the Wandlampe left of the window); the toilet where the door was (NE corner, back to
 the north wall, facing the window; Taubenblau tiles on the north and east wall); the shower in the NW corner,
-long towards the toilet to the window's east jamb, its entrance (60) at the west wall, glass from there and
-at its toilet end, walk-in on the room's limestone floor (no tray), its west and north wall clad in limestone
+long towards the toilet to the window's east jamb, its entrance (60) on its south edge at the west wall, glass
+from there and at its toilet end, walk-in on the room's limestone floor (no tray), its west and north wall clad in limestone
 to 2.0 like the Bad Großeltern's; the Waschbecken doppelt 100 under a mirror 110 x 85 in a 10 cm wooden frame (like the
 Gästebad's, narrower: the wall to the window is 125), the basin's end 15 from the window reveal, four
 Wandlampen over it, one left of the window (seen from inside), one over the cistern.
@@ -12,7 +12,8 @@ Wandlampen over it, one left of the window (seen from inside), one over the cist
 Pure Python like house_core.py, which imports this module: build_sanitary() calls elternbad_neu() at
 ELTERNBAD_AT on the OG floor, build_og() takes the door (TUER) from here, BATHS_OG the room (ROOM);
 house_core.build_elternbad() wraps it at the origin with the pieces of the room's four walls (walls=True)
-as the Blueprint of web/elternbad.html. The floor stays the house's limestone (BATHS_OG).
+as the Blueprint of web/elternbad.html. The floor is the house's limestone (BATHS_OG); the sub-model lays the
+same slabs itself.
 """
 import random
 import house_core as hc
@@ -38,14 +39,20 @@ def cm(a, b):
 
 
 def waende(c, dx, dy):
-    """The sub-model's pieces of the room's four walls: south (outer wall, the window), west (Waschküche
-    side), north (Waschküche) and east (Schlafzimmer, with the door); in the house build_og() builds them whole."""
+    """The sub-model's pieces of the room's four walls and its floor: south (outer wall, the window with its
+    shutters), west (Waschküche
+    side), north (Waschküche) and east (Schlafzimmer, with the door); in the house build_og() builds them whole.
+    The floor: the limestone slabs of the house's floor_cover() on a dark base, from its own generator."""
     H, zo = hc.Z_OG_TOP - hc.Z_OG, hc.Z_OG
     hc.wall(c, 5.44 + dx, 8.72 + dx, 0.0 + dy, YS + dy, 0.0, H,
-            [(FENSTER[0] + dx, FENSTER[1] + dx, 3.62 - zo, 4.60 - zo, "W")], out=-1)
+            [(FENSTER[0] + dx, FENSTER[1] + dx, 3.62 - zo, 4.60 - zo, "W", 1)], out=-1)
     hc.interior(c, 5.44 + dx, WI + dx, YS + dy, 2.79 + dy, (), 0.0, H)
     hc.interior(c, WI + dx, WO + dx, YN + dy, 2.79 + dy, (), 0.0, H)
     hc.interior(c, WO + dx, 8.72 + dx, YS + dy, 2.79 + dy, [(TUER[0] + dy, TUER[1] + dy, -1, "a", False)], 0.0, H)
+    rng = random.Random(4)
+    hc.box(c, c + "_Boden", "Fuge", WI + dx, WO + dx, YS + dy, YN + dy, 0.0, 0.002, rng.random())
+    hc.tiles(c, c + "_Bodenbelag", "Kalkstein", WI + dx, WO + dx, YS + dy, YN + dy, 0.002, 0.018, [0.5, 0.4, 0.55, 0.45],
+             (0.35, 0.8), 0.006, (), rng)
 
 
 def elternbad_neu(c="Elternbad", x0=0.0, y0=0.0, z=0.0, walls=False):
@@ -65,9 +72,8 @@ def elternbad_neu(c="Elternbad", x0=0.0, y0=0.0, z=0.0, walls=False):
         hc.wandlampe(c, BX - MW / 2 + MW * (k + 0.5) / 4 + dx, YS + dy, 0, 1, z + hc.WANDLAMPE_SPIEGEL_H)
     hc.wandlampe(c, LX + dx, YS + dy, 0, 1, z + hc.WANDLAMPE_H)
     # north wall: the walk-in shower from the west wall to SE (no tray: the limestone floor runs through; limestone
-    # on its two walls from the floor up; the north
-    # wall's to the glass, the west wall's to the north slabs; the head on their face), the toilet in the NE
-    # corner on its tiles, a lamp over the cistern
+    # on its two walls from the floor up, the north wall's to the glass, the west wall's to the north slabs; the
+    # head on their face), the toilet in the NE corner on its tiles, a lamp over the cistern
     hc.limestone(c, True, YN + dy, -1, WI + dx, SE - 0.005 + dx, z + 0.018, z + CLAD, rng)
     hc.limestone(c, False, WI + dx, 1, SS + dy, YN - ST + dy, z + 0.018, z + CLAD, rng)
     hc.shower(c, WI + dx, SE + dx, SS + dy, YN + dy,
