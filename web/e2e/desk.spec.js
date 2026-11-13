@@ -78,16 +78,17 @@ test('in the house the desk cranks up too: in Eingerichtet, drawn while it moves
   await page.goto('/?cam=11.9,9.4,1.6&at=11.9,12.0,0.9&p=4&cut=eg');                   // Bibliothek, onto the desk
   await page.waitForFunction(() => window.__fl?.ready === true);
   const at = () => page.evaluate(() => window.__fl.lift());
-  expect(Object.keys(await at()).sort()).toEqual(['EG_Bildschirm_L', 'EG_Bildschirm_R', 'EG_Geraete', 'EG_Handrad', 'EG_Schreibtisch']);
+  expect(Object.keys(await at()).sort()).toEqual(['EG_Bildschirm_L', 'EG_Bildschirm_R', 'EG_Geraete', 'EG_Handrad', 'EG_Schreibtisch',
+    'OG_Klappbett', 'OG_Klappfuesse']);                                                  // the Schrankbett on the same clock (#7)
   await page.waitForFunction(() => { const p = window.__fl.lift().EG_Schreibtisch.pos; return p > 0 && p < 0.5; }, null, { timeout: 12000, polling: 16 });
   const d0 = await page.evaluate(() => window.__fl.draws);
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => window.__fl.draws)).toBeGreaterThan(d0 + 3);        // drawn while it moves
   await page.evaluate(() => window.__fl.setProgress(3));                                // Gebaut: as built
   await page.waitForTimeout(100);
-  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0]);
+  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0, 0, 0]);
   await choose(page, 'Modell', 'Ganzes Haus');                                         // the routes are listed there
   await choose(page, 'Standpunkt', 'Um und durch das Haus');                            // the tour (the film)
   await page.waitForTimeout(8000);                                                      // sees it as built
-  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0]);
+  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0, 0, 0]);
 });
