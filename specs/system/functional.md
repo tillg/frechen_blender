@@ -34,7 +34,7 @@ edited: 2026-11-13
   - Stube niche with a segmental arch
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
-    threshold), the Bäder (the Gästebad with its WC niche and shower, Bad S) and
+    threshold), the Bäder (the Gästebad with its WC niche and shower, the Bad Nadine & Till with its shower) and
     all four WCs (and the Garderobe beside the Gäste-WC); in the Bad Großeltern a limestone strip as wide as its WC along the west wall
     (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip and in its
     niche's Schrank)
@@ -139,7 +139,7 @@ edited: 2026-11-13
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
     52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
     (100 × 47) and the OG Bäder (120 × 47 in the Gästebad, 100 × 47 in Nadine & Till's under a
-    plain mirror as wide as the basin), einzeln in the back hall (40 × 28), the OG WC 2,30
+    mirror 110 × 85 in the same wooden frame), einzeln in the back hall (40 × 28), the OG WC 2,30
     (50 × 40) and the OG Flur (60 × 47)
   - Gästebad at the end of the OG Flur (NW; also a sub-model page with its four walls and
     dimensions), split along its south wall like the EG Gäste-WC below it: a 10 cm partition over
@@ -148,7 +148,15 @@ edited: 2026-11-13
     (open flat against the east wall), a 65 cm glass on its north edge from the east wall, 50 cm
     open beside the partition, no door; the Waschbecken doppelt 120 centred on the north wall under
     a mirror 140 × 95 in a 10 cm wooden frame from 1.17
-  - Bad S (Nadine & Till): corner shower, Waschbecken doppelt 100 with a plain mirror
+  - Bad Nadine & Till (OG, S, between Waschküche and Schlafzimmer; also a sub-model page with its
+    four walls, its limestone floor and dimensions): the door at the south end of the east wall,
+    open 90° into the Bad; the toilet in the NE corner facing the south window (seen diagonally), on
+    Taubenblau tiles on the north and east wall, a Wandlampe over the cistern; a walk-in shower
+    213 × 98 along the north wall to the window's east jamb, no tray (the limestone floor runs
+    through, a drain), entrance 60 at the west wall, glass 153 and a glass end towards the toilet,
+    its west and north wall in limestone slabs to 2 m like the Bad Großeltern's; the Waschbecken
+    doppelt 100 west of the window (15 cm from its reveal) under the wood-framed mirror with four
+    Wandlampen, one more left of the window
   - the four WCs (the WC in the Bad Großeltern's niche, the Gäste-WC, the WC 2,30 and the Gästebad's WC niche), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
     row, floor-standing toilet with a close-coupled cistern; in the WC 2,30 (next to the
@@ -206,7 +214,8 @@ change; the same model always gives byte-identical files.
      the WC, pause at each), then turn at the wall beside the balcony door,
      back door (turn, pause), Bibliothek back corner (turn, pause at the piano)
   3. up the stairs; OG: peeks into the first room on the right and the Waschküche, Schlafen SE
-     back corner (turn, pause at the Kamin), peeks into its Bad, the NE room opposite, the SW room
+     back corner (turn, pause at the Kamin), into its Bad through the door to the west wall, turns
+     right until its back is to the wall, pauses, walks straight out; peeks into the NE room opposite, the SW room
      and the end Bad, Yoga back corner (turn)
   4. down the stairs, out to the start point, turn to face the house, pause; the route is closed
 
@@ -220,8 +229,8 @@ change; the same model always gives byte-identical files.
   toggle). There is no timeline bar and no Play.
   - **Modell:** Ganzes Haus, Erdgeschoss, Erdgeschoss - Alternativ, 1. Stock (the cutaway: the
     whole house, without roof, only the EG – the default or the variant Alternativ –; the ground
-    stays), a separator, then Ofen, Schreibtisch, Bad Oma & Opa, Küche,
-    Gäste-WC, Schrank im Büro, Schrankbett, Gästebad. A house entry switches in place, a sub-model entry opens its page; the current one is
+    stays), a separator, then the sub-models by storey: under the heading Erdgeschoss Ofen, Schreibtisch,
+    Bad Oma & Opa, Küche, Gäste-WC, Schrank im Büro; under 1. Stock Schrankbett, Gästebad, Bad Nadine & Till. A house entry switches in place, a sub-model entry opens its page; the current one is
     selected.
   - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert. On
     Ganzes Haus a group **Pläne** follows the stages: the six plan sheets of `plans/` (Grundriss EG,
@@ -292,7 +301,7 @@ change; the same model always gives byte-identical files.
 - **Show**: `.venv/bin/python code/show.py <object…>` opens the user's browser on the dev server
   at a view URL that frames the named objects (prefix match) — outside objects from the nearest
   facade, 20° up, whole house; inside objects from the SE diagonal, 55° up, with the storeys above
-  cut away; sub-model pages (`--page ofen|desk|bad|kueche|gaeste_wc|regal|schrankbett|gaestebad`) from the SE (Küche from the open south, Gäste-WC from the back hall in the north, Schrank im Büro from the room in the west, Schrankbett from the room in the north, Gästebad from above), 30° up, Gerendert. Options:
+  cut away; sub-model pages (`--page ofen|desk|bad|kueche|gaeste_wc|regal|schrankbett|gaestebad|elternbad`) from the SE (Küche from the open south, Gäste-WC from the back hall in the north, Schrank im Büro from the room in the west, Schrankbett from the room in the north, Gästebad and Bad Nadine & Till from above), 30° up, Gerendert. Options:
   `--from n|e|s|w|top`, `--at x,y,z`, `--p 0…4` (house only), `--print` (only print the URL). It
   refuses (exit 2) when the server on 5377 runs from another clone.
 - `cd web && node shot.js '<url>' <png>`: one headless 1280×720 screenshot of a view URL after the
