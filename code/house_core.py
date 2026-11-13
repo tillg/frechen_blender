@@ -104,6 +104,8 @@ MAT_DEF = {
     "Wolle":      dict(rgba=(0.45, 0.14, 0.10, 1), rough=0.95),
     "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0, night=True),   # viewer: lit at dusk only
     "GluehfadenAn": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0),              # switched-on lamp (Ofen bed)
+    "Messing":    dict(rgba=(0.20, 0.17, 0.09, 1), metal=0.45, rough=0.35),   # Wandlampen: antique brass
+    "Opalglas":   dict(rgba=(0.92, 0.89, 0.82, 1), rough=0.25, emit=1.0, night=True),   # their shades: glow at dusk
     "Alu":        dict(rgba=(0.72, 0.72, 0.74, 1), metal=0.15, rough=0.35),   # desk: MacBook, keyboard, monitor stands
     "Tasten":     dict(rgba=(0.93, 0.93, 0.92, 1), rough=0.45),             # white keys, trackpad glass
     "Apfel":      dict(rgba=(0.95, 0.95, 0.97, 1), emit=0.5, rough=0.3),   # the softly lit logo on the closed MacBook
@@ -748,9 +750,9 @@ def toilet(coll, wx, wy, fx, fy, z=0.0):
 
 
 def bad_mirror(coll, wx, wy, fx, fy, w, z=0.0):
-    """Plain mirror of the Bäder, w wide, centred on (wx, wy) above the basin."""
+    """Plain mirror of the Bäder, w wide, centred on (wx, wy) above the basin (object <coll>_Spiegel)."""
     (xa, ya), (xb, yb) = at_wall(wx, wy, fx, fy)(-w / 2, 0.0), at_wall(wx, wy, fx, fy)(w / 2, 0.008)
-    box(coll, coll + "_Sanitaer", "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
+    box(coll, coll + "_Spiegel", "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
 
 
 def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
@@ -804,8 +806,8 @@ def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
 
 def wc_mirror(coll, wx, wy, fx, fy, z=0.0):
     """Mirror of the WCs after bad_mallnitz.jpeg (input/2026-11-08 input/): on the plaster above
-    the tiles, in a stepped black frame, centred on (wx, wy)."""
-    o, M = coll + "_Sanitaer", at_wall(wx, wy, fx, fy)
+    the tiles, in a stepped black frame, centred on (wx, wy) (object <coll>_Spiegel)."""
+    o, M = coll + "_Spiegel", at_wall(wx, wy, fx, fy)
     z0, z1, mw, fw = z + 1.22, z + 2.05, 0.30, 0.07
     F = lambda u0, u1, v1, za, zb: box(coll, o, "Eisen", *[c for p in zip(M(u0, 0.0), M(u1, v1)) for c in sorted(p)], za, zb)
     F(-mw, mw, 0.035, z0, z0 + fw); F(-mw, mw, 0.035, z1 - fw, z1)
@@ -840,9 +842,9 @@ def shower(coll, x0, x1, y0, y1, glass, head, z=0.0):
 def wood_mirror(coll, wx, wy, fx, fy, w, h, fw, z0, rng=random):
     """Mirror in a wooden frame (back hall in gaeste_wc.py, OG Flur): outer w x h from z0 up, frame
     fw wide and 2.5 cm deep (Kiefer), the glass set back in it; centred on the wall point (wx, wy)
-    facing (fx, fy). Two draws from rng (default: the global stream): the frame boards share one,
-    the glass takes one."""
-    o, M, r = coll + "_Sanitaer", at_wall(wx, wy, fx, fy), rng.random()
+    facing (fx, fy); object <coll>_Spiegel. Two draws from rng (default: the global stream): the frame
+    boards share one, the glass takes one."""
+    o, M, r = coll + "_Spiegel", at_wall(wx, wy, fx, fy), rng.random()
     F = lambda m, u0, u1, v0, v1, za, zb, rnd: box(coll, o, m, *[c for p in zip(M(u0, v0), M(u1, v1))
                                                                  for c in sorted(p)], za, zb, rnd)
     u, z1 = w / 2, z0 + h
@@ -920,13 +922,17 @@ def build_sanitary():
     toilet("OG", 9.26, 3.98, 0, 1, z=zo)
     waschbecken("OG", 9.92, 4.95, -1, 0, 0.50, 0.40, 1, z=zo, tile=WC_TILE_T)   # between toilet and door leaf
     wc_mirror("OG", 9.92, 4.95, -1, 0, z=zo)
+    wandlampe("OG", 9.92, 4.95, -1, 0, zo + WANDLAMPE_SPIEGEL_H)                    # over the mirror (#19)
     # OG Flur (plan: basin symbol): a Waschbecken einzeln 60 exactly between the doors to Saschi
     # and Waschküche (openings 4.02 .. 4.87 and 7.15 .. 8.17 of the wall y 6.06 .. 6.35), on Taubenblau tiles
-    # 15 cm wider each side, above them a mirror 110 x 95 in a 10 cm wooden frame
+    # 15 cm wider each side, above them a mirror 110 x 85 in a 10 cm wooden frame, two Wandlampen over it (#19)
     xf = (4.87 + 7.15) / 2
-    wood_mirror("OG", xf, 6.35, 0, 1, 1.10, 0.95, 0.10, zo + 1.17)
+    wood_mirror("OG", xf, 6.35, 0, 1, 1.10, 0.85, 0.10, zo + 1.17)
+    for d in (-0.275, 0.275):
+        wandlampe("OG", xf + d, 6.35, 0, 1, zo + WANDLAMPE_SPIEGEL_H)
     wainscot("OG", zo, xf - 0.45, xf + 0.45, 6.35, 7.35, None, sides="s")
     waschbecken("OG", xf, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, tile=WC_TILE_T)
+    build_wandlampen()
 
 
 # ---------------------------------------------------------------- furniture
@@ -1658,6 +1664,88 @@ def lamp(x, y, z, nx, ny, c="Umgebung", o="Aussenleuchten", scale=1.0, outside=T
     loft([ring(0.38, -0.06, 0.006, 6), ring(0.38, -0.11, 0.006, 6)], "Gluehfaden" if outside else "GluehfadenAn")
 
 
+WANDLAMPE_H = 1.70          # Wandlampe (#19): its wall outlet (rosette centre) above the floor
+WANDLAMPE_SPIEGEL_H = 2.10  # the same for every lamp over a mirror: above the OG WC's (top 2.05), under the 2.20 ceiling
+WALL_LIGHTS = []            # (x, y, z) light of every Wandlampe: the viewer lights them at dusk; 50 cm out from
+                            # the wall at the bulb's height, so its light doesn't burn a spot into the plaster (the shade glows itself)
+
+
+def wandlampe(coll, wx, wy, fx, fy, z):
+    """Wall lamp after input/2026-11-13 input/wandlampe.png (#19): a brass rosette on the wall, the
+    gooseneck arm (out, a quarter bend up, an arch over) down into a stepped brass gallery with three
+    set screws, holding an opal-glass bell (maker: Ø 16, 11 high, reaching 21 from the wall). Rosette
+    centre on the wall point (wx, wy) at height z, facing (fx, fy); object <coll>_Wandlampen; its light
+    goes to WALL_LIGHTS. One fixed rnd for all parts, no random draws."""
+    o, r, ax = coll + "_Wandlampen", 0.5, 0.13                   # ax: the shade's axis, 13 out from the wall
+    M = at_wall(wx, wy, fx, fy)
+    W = lambda n, s, h: (*M(s, n), z + h)                        # n out of the wall, s along it, h up
+    SMOOTH.add(o)
+    WALL_LIGHTS.append(W(0.50, 0, -0.05))
+    turned(coll, o, "Messing", W(0.0005, 0, 0), W(0.022, 0, 0),                     # rosette
+           [(0.042, 0), (0.042, 0.25), (0.036, 0.35), (0.034, 0.55), (0.025, 0.7), (0.015, 0.85), (0.011, 1)], 24, r)
+    turned(coll, o, "Messing", W(0.02, 0, 0), W(0.036, 0, 0), [(0.010, 0), (0.010, 0.5), (0.007, 0.7), (0.006, 1)], 12, r)
+    # arm: tube 1 cm across along a path in the (n, h) plane
+    path = [(0.03, 0.0)] + [(0.045 + 0.05 * math.sin(math.pi / 2 * i / 8), 0.05 - 0.05 * math.cos(math.pi / 2 * i / 8))
+                            for i in range(9)]
+    path += [(0.1125 - 0.0175 * math.cos(math.pi * i / 12), 0.0625 + 0.0175 * math.sin(math.pi * i / 12)) for i in range(13)]
+    path += [(ax, 0.03)]
+    k, rings = 10, []
+    for i, (n, h) in enumerate(path):
+        (na, ha), (nb, hb) = path[max(i - 1, 0)], path[min(i + 1, len(path) - 1)]
+        ln = math.hypot(nb - na, hb - ha)
+        nn, nh = -(hb - ha) / ln, (nb - na) / ln
+        rings.append([W(n + 0.005 * math.cos(2 * math.pi * j / k) * nn, 0.005 * math.sin(2 * math.pi * j / k),
+                        h + 0.005 * math.cos(2 * math.pi * j / k) * nh) for j in range(k)])
+    v = [p for ring in rings for p in ring]
+    f = [(i * k + j, i * k + (j + 1) % k, (i + 1) * k + (j + 1) % k, (i + 1) * k + j)
+         for i in range(len(rings) - 1) for j in range(k)]
+    add(coll, o, "Messing", v, f + [list(range(k))[::-1], list(range(len(v) - k, len(v)))], r)
+    # gallery: stepped cap, its lip round the shade's neck, three set screws
+    G = [(0.004, 0.034), (0.010, 0.032), (0.014, 0.028), (0.016, 0.024), (0.019, 0.021), (0.019, 0.016), (0.022, 0.014),
+         (0.022, 0.008), (0.025, 0.006), (0.026, 0.0), (0.030, -0.002), (0.034, -0.004), (0.034, -0.012)]
+    turned(coll, o, "Messing", W(ax, 0, 0.034), W(ax, 0, -0.012), [(rr, (0.034 - h) / 0.046) for rr, h in G], 24, r)
+    for a in (90, 210, 330):
+        c, s = math.cos(math.radians(a)), math.sin(math.radians(a))
+        turned(coll, o, "Messing", W(ax + 0.033 * c, 0.033 * s, -0.008), W(ax + 0.043 * c, 0.043 * s, -0.008),
+               [(0.0025, 0), (0.0025, 0.6), (0.004, 0.6), (0.004, 1)], 8, r)
+    # shade: opal bell, 3 mm glass, from the gallery down to the rim (Ø 16)
+    out = [(0.032, -0.010), (0.036, -0.016), (0.042, -0.024), (0.047, -0.034), (0.050, -0.046), (0.0525, -0.060),
+           (0.055, -0.072), (0.059, -0.084), (0.065, -0.096), (0.072, -0.108), (0.077, -0.116), (0.080, -0.120)]
+    prof, k = out + [(rr - 0.003, h) for rr, h in out[::-1]], 24
+    m = len(prof)
+    v = [W(ax + rr * math.cos(2 * math.pi * i / k), rr * math.sin(2 * math.pi * i / k), h) for rr, h in prof for i in range(k)]
+    add(coll, o, "Opalglas", v, [(j * k + i, j * k + (i + 1) % k, (j + 1) % m * k + (i + 1) % k, (j + 1) % m * k + i)
+                                 for j in range(m) for i in range(k)], r)
+
+
+# the OG's Wandlampen at WANDLAMPE_H (#19): (wall point x, y, facing), each centred in the free wall span the
+# request names, two in one span at its thirds ("vorne" = east). Over the mirrors: build_sanitary(), gaestebad.py
+WANDLAMPEN_OG = [
+    ((4.15 + 6.31) / 2, 8.57, 0, -1),                                     # Flur: Yoga .. Jugend door
+    (7.20 + 5.10 / 3, 8.57, 0, -1), (7.20 + 2 * 5.10 / 3, 8.57, 0, -1),   # Flur: Jugend .. Bichlach door, over the stair
+    ((11.51 + 14.35) / 2, 6.35, 0, 1),                                    # Flur: Schlafzimmer door .. east end
+    (6.05, (8.86 + 12.485) / 2, -1, 0),                                   # Yoga: middle of the wall to the Jugendzimmer
+    ((0.31 + 3.88) / 2, 12.485, 0, -1),                                   # Yoga: NW corner .. balcony door
+    ((5.074 + 6.05) / 2, 8.86, 0, 1),                                     # Yoga: end of the open door leaf .. SE corner
+    ((7.20 + 8.13) / 2, 8.86, 0, 1),                                      # Jugend: door .. east ("front") bunk bed
+    (9.08, (10.96 + 12.485) / 2, -1, 0),                                  # Jugend: that bunk bed .. north wall
+    ((13.18 + 14.575) / 2, 8.86, 0, 1),                                   # Bichlach: door .. east wall
+    ((10.95 + 12.91) / 2, 12.485, 0, -1),                                 # Bichlach: between the two north balcony doors
+    ((10.70 + 12.84) / 2, 0.40, 0, 1),                                    # Schlafzimmer: balcony door .. window
+    (14.35, (2.67 + 4.15) / 2, -1, 0),                                    # Schlafzimmer: between the east balcony doors
+    (10.07, (3.84 + 5.266) / 2, 1, 0),                                    # Schlafzimmer: WC corner (Kaminofen) .. open leaf's end
+    (9.26, 3.98, 0, 1),                                                   # WC: over the cistern
+    *[(5.59 + 0.75 * (k + 0.5), 2.79, 0, 1) for k in range(4)],           # Waschküche: over the table (full width)
+    (8.59, (4.85 + 6.06) / 2, -1, 0),                                     # Waschküche: washer tower .. Flur wall
+    (5.44, (3.37 + 6.06) / 2, -1, 0),                                     # Saschi: nightstand .. Flur wall
+]
+
+
+def build_wandlampen():
+    for wx, wy, fx, fy in WANDLAMPEN_OG:
+        wandlampe("OG", wx, wy, fx, fy, Z_OG + WANDLAMPE_H)
+
+
 def build_terrace():
     """After terrasse_and_outside_lamps.jpeg: granite slabs of mixed size in rows along the
     wall, a pebble strip against the wall, soil beds for the bushes (garden.py plants them).
@@ -1791,7 +1879,8 @@ def build_annex():
 # built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
 FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
-             "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse"}
+             "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse",
+             "EG_Spiegel", "OG_Spiegel"}   # the mirrors are furnishings: not on the plan sheets (#19)
 
 
 def _grain(ax):
@@ -2170,8 +2259,7 @@ ROOM_LIGHTS = [  # (x, y, floor z)
     (13.5, 7.5, 0), (5.0, 7.4, 0), (10.0, 7.0, 0), (11.7, 3.2, 0), (7.0, 4.5, 0), (5.5, 1.8, 0),
     (13.0, 10.7, 0), (10.2, 10.7, 0), (4.3, 10.7, 0), (7.6, 10.7, 0), (1.3, 11.3, 0),
     (1.3, 7.5, 0), (4.0, 4.79, 0),                  # (4.0, 4.79): Speis, over the aisle
-    (5.0, 7.4, Z_OG), (10.0, 7.0, Z_OG), (12.0, 3.0, Z_OG), (4.0, 3.0, Z_OG), (7.0, 4.3, Z_OG),
-    (7.0, 1.5, Z_OG), (3.0, 10.7, Z_OG), (7.6, 10.7, Z_OG), (11.8, 10.7, Z_OG), (1.4, 7.4, Z_OG),
+    (7.0, 1.5, Z_OG),                               # OG: only Bad S; the other rooms are lit by their Wandlampen (#19)
 ]
 ROOM_LIGHT_H = 2.1          # light height above its floor
 
@@ -2309,6 +2397,7 @@ class Blueprint:
     dims: list = ()    # dimension lines [(p0, p1, text)] (Ofen sub-model only)
     outside_lights: list = ()   # OUTSIDE_LIGHTS: the wall lamps' filament centres
     lamp_lights: list = ()      # LAMP_LIGHTS: switched-on lamps inside
+    wall_lights: list = ()      # WALL_LIGHTS: the Wandlampen's bulbs (lit at dusk)
     fires: list = ()   # FIRES: base (centre of the flame bed, in the flame plane), u (unit along
                        # the width, normal = (-u_y, u_x) towards the viewer), w, h, d
     turn: dict = None  # TURN: object -> degrees about its pivot (None: no turned object)
@@ -2330,6 +2419,7 @@ def build():
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
     LIFT.clear(); CRANK.clear(); FOLD.clear(); VARIANT.clear()
     LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear(); STAIRS.clear()
+    WALL_LIGHTS.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
@@ -2338,7 +2428,7 @@ def build():
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
-                     turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), lift=dict(LIFT), crank=dict(CRANK),
+                     wall_lights=list(WALL_LIGHTS), turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), lift=dict(LIFT), crank=dict(CRANK),
                      fold=dict(FOLD), variant=dict(VARIANT), doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
 
 
@@ -2420,11 +2510,11 @@ def build_gaestebad():
     """The Gästebad sub-model alone (web/gaestebad.html, #18): WC niche, shower, basin and mirror with the
     pieces of the room's four walls at the origin (the room's inner SW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
-    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); WALL_LIGHTS.clear()
     random.seed(22)
     dims = gaestebad.gaestebad_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
-                     [], None, set(), dims)
+                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS))
 
 
 def build_schrankbett():
