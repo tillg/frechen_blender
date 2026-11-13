@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-12
+edited: 2026-11-13
 ---
 
 # Architecture: Frechenlehen house model
@@ -275,7 +275,8 @@ and writes `eg.svg`, `og.svg` (Grundrisse) and `nord.svg`, `ost.svg`, `sued.svg`
   Dimension chains on all four sides scanned from the section (openings, walls and rooms,
   overall; rounded cumulatively so they sum up). Elevations: level marks (±0,00, OK FFB OG,
   eaves, ridge) and the overall width.
-- **Sheet.** A3 landscape, `viewBox="0 0 420 297"` in mm (1 m = 10 mm), frame, title block with
+- **Sheet.** A3 landscape, `viewBox="0 0 420 297"` in mm (1 m = 10 mm), frame, the heading
+  "Frechenlehen" top left (Georgia, set like the viewer's title), title block with
   the model state (a hash of every plan input, no date; `--generated`, passed only by the Pages
   workflow, adds "generiert: <day>. <Monat> <year> <HH:MM> Uhr" in Berlin time in its top row), scale bar, north arrow on the floor
   plans; fixed decimals and a stable element order, so the output is byte-identical across runs.
