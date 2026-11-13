@@ -1707,7 +1707,6 @@ def test_elternbad_layout():
     assert {_floor_at("OG", x, y) for x in (5.8, 6.5, 7.5) for y in (1.8, 2.3)} - {None} == {"Kalkstein"}   # None: a joint
     drain = [(lo, hi) for m, lo, hi in san if m == "Metall" and 5.6 < lo[0] < 7.7 and 1.65 < lo[1] < 2.6 and hi[2] < zo + 0.05]
     assert len(drain) == 1 and abs(drain[0][0][2] - (zo + 0.018)) < 1e-6
-    tray = drain
     glass = sorted((lo, hi) for m, lo, hi in san if m == "Glas" and 5.5 < lo[0] < 8.6 and lo[1] < 2.7)
     assert len(glass) == 2 and all(abs(lo[2] - (zo + 0.018)) < 1e-6 for lo, hi in glass)        # from the floor
     assert near(glass[0][0][:2], (6.19 - 0.004, 1.64 - 0.004)) and near(glass[0][1][:2], (7.72 + 0.004, 1.64 + 0.004))
@@ -1749,7 +1748,7 @@ def test_elternbad_layout():
     assert len(got) == len(want) and all(any(same(g, w) for g in got) for w in want), (got, want)
     # the open leaf clears lamps, toilet, basin, shower; the shower glass clears the toilet
     lamps = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Wandlampen")) if 5.5 < lo[0] < 8.6 and lo[1] < 2.7]
-    _clear([("leaf", lo, hi) for lo, hi in leaf], lamps + [(lo, hi) for m, lo, hi in toilet + basin] + tray + glass, "leaf")
+    _clear([("leaf", lo, hi) for lo, hi in leaf], lamps + [(lo, hi) for m, lo, hi in toilet + basin] + drain + glass, "leaf")
     _clear([("glass", lo, hi) for lo, hi in glass], [(lo, hi) for m, lo, hi in toilet], "shower glass")
 
 
@@ -1776,6 +1775,14 @@ def test_elternbad_submodel():
     assert len(bp.wall_lights) == 6 and len(bp.parts[("Elternbad", "Elternbad_Wandlampen")]) == 6 * 8
     for x, y, z in bp.wall_lights:
         assert any(math.dist((x + x0, y + y0, z + house_core.Z_OG), q) < 1e-6 for q in BP.wall_lights), (x, y, z)
+    # the floor (request 2026-11-13): the house's limestone, also on the page (in the house: floor_cover, BATHS_OG)
+    fl = [(m, lo, hi) for m, lo, hi in _parts(bp, ("Elternbad", "Elternbad_Bodenbelag"))]
+    assert fl and {m for m, lo, hi in fl} == {"Kalkstein"}
+    assert all(abs(hi[2] - 0.018) < 1e-6 and abs(lo[2] - 0.002) < 1e-6 for m, lo, hi in fl)
+    assert ("Elternbad", "Elternbad_Laeden") in bp.geo                    # the window's shutters, as in the house
+    area = sum((hi[0] - lo[0]) * (hi[1] - lo[1]) for m, lo, hi in fl)
+    assert 0.95 * (e.WO - e.WI) * (e.YN - e.YS) < area <= (e.WO - e.WI) * (e.YN - e.YS) + 1e-6    # the whole room
+    assert min(lo[0] for m, lo, hi in fl) >= -1e-6 and max(hi[0] for m, lo, hi in fl) <= e.WO - e.WI + 1e-6
     labels = [d[2] for d in bp.dims]
     for t in ("Dusche 213 × 98", "Glas 153", "60 offen", "Waschbecken 100", "Spiegel 110 × 85", "Tür 93", "Fenster 88"):
         assert t in labels, (t, labels)

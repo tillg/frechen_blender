@@ -1,7 +1,7 @@
 ---
 feature: 3-bad-nadine-till
 title: "Domain: Bad Nadine & Till"
-status: applying
+status: applied
 order: 2
 created: 2026-11-13
 edited: 2026-11-13
