@@ -1,4 +1,4 @@
-"""Frechenlehen – the stoves: the Ofen sub-model (corner stove with benches and bed, input/ofen),
+"""Frechenlehen – the stoves: the Ofen sub-model (corner stove with benches and bed, input/2026-11-04 input),
 its placement in the Stube, the small workshop stove (werkstattofen.jpeg) and the Wamsler kitchen
 cooker (wamsler.jpeg).
 
@@ -49,7 +49,7 @@ def filleted(pts, r, at, n=8):
 
 
 def ofen_neu():
-    """Corner stove after the sketches in input/ofen (plan from above): 1.20 x 1.20 m, 1.15 m
+    """Corner stove after the sketches in input/2026-11-04 input (plan from above): 1.20 x 1.20 m, 1.15 m
     high, the free corner cut from 0.70/1.20 to 1.20/0.70 with rounded kinks and top edge. In
     the diagonal face a 65 cm fire door, centred, up to 10 cm below the top, with the fire behind
     the glass;

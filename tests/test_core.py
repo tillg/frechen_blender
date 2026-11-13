@@ -131,7 +131,7 @@ def test_parts_cover_all_faces():
 
 
 def test_ofen_submodel_after_the_sketches():
-    """input/ofen: corner stove 1.20 x 1.20 x 1.15 m with the free corner cut 0.70/0.70 (fire
+    """input/2026-11-04 input: corner stove 1.20 x 1.20 x 1.15 m with the free corner cut 0.70/0.70 (fire
     door over the whole diagonal), bed above it 1.90 along one wall (sketch: 2.00, shortened for the
     Stube door), 1.20 deep at the stove, 0.70 deep beyond it (along +y), underside at 1.45 m; long
     bench 1.60 (sketch: 2.00, shortened for the passage to the Essen). Corner of the room at the origin, walls along +x and +y."""
