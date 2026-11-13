@@ -73,11 +73,12 @@ ROUTE = [
     *peek((6.5, 12.2), (8.8, 10.4)),                       # left: past the open leaf
     ("path", [(6.76, 8.72), (6.8, 8.0), (7.5, 7.0), (7.66, 6.3)], OG, WALK),    # Waschküche
     *peek((8.3, 4.5), (5.9, 4.5)),
-    ("path", [(7.66, 6.3), (7.9, 6.85), (11.1, 6.85), (11.1, 6.2), (11.2, 5.2), (13.3, 4.6), (14.0, 3.9),
-              (14.0, 1.5), (13.95, 0.9)], OG, WALK),                      # Schlafen SE: past the bed, back corner
+    ("path", [(7.66, 6.3), (7.9, 6.85), (11.1, 6.85), (11.1, 6.2), (11.2, 5.2), (13.3, 4.6), (13.85, 3.9),
+              (13.85, 1.5), (13.95, 0.9)], OG, WALK),                     # Schlafen SE: past the bed (clear of the
+                                                                          # Wandlampe between the balcony doors), back corner
     turn((9.12, 3.44), L), ("hold", PAUSE),                               # the Kamin
     turn((8.65, 2.1), L),                                                 # the Bad door
-    ("path", [(13.95, 0.9), (11.4, 0.75), (10.4, 0.95), (8.8, 2.12)], OG, WALK),
+    ("path", [(13.95, 0.9), (11.4, 0.9), (10.4, 0.95), (8.8, 2.12)], OG, WALK),    # clear of the Wandlampe on the south wall
     *peek((7.3, 0.7), (7.3, 2.35)),                                       # its Bad
     ("path", [(8.8, 2.12), (9.9, 2.6), (10.6, 3.6), (10.75, 4.6), (11.2, 5.3), (11.1, 6.2), (11.4, 7.3),
               (12.74, 7.9), (12.74, 9.7)], OG, WALK),                     # the NE room opposite
@@ -132,11 +133,11 @@ SPOTS = [
     ("Bibliothek - Klavierspieler", "Erdgeschoss", ("haus", "eg"), (8.12, 11.94, 1.25), (9.12, 10.21, 0.32), SEE),  # on the piano bench, over the keys
     ("Oma & Opa", "Erdgeschoss", ("haus", "eg"), (5.7, 9.45, EYE), (2.8, 11.9, 1.0), SEE),
     ("Nadine & Till", "1. Stock", ("haus", "og"), (13.95, 0.9, OG), (9.12, 3.44, Z_OG + 1.0), SEE),
-    ("Waschküche", "1. Stock", ("haus", "og"), (8.25, 3.1, OG), (5.9, 5.2, Z_OG + 1.0), SEE),
+    ("Waschküche", "1. Stock", ("haus", "og"), (8.25, 3.3, OG), (5.9, 5.2, Z_OG + 1.0), SEE),
     ("Saschi", "1. Stock", ("haus", "og"), (3.7, 5.2, OG), (5.0, 0.8, Z_OG + 1.0), SEE),
     ("Bichlach", "1. Stock", ("haus", "og"), (9.6, 12.1, OG), (13.8, 9.4, Z_OG + 1.0), SEE),
     ("Jugend", "1. Stock", ("haus", "og"), (7.6, 12.2, OG), (7.6, 9.0, Z_OG + 1.0), SEE),
-    ("Yoga", "1. Stock", ("haus", "og"), (5.6, 9.25, OG), (1.5, 11.8, Z_OG + 1.0), SEE),
+    ("Yoga", "1. Stock", ("haus", "og"), (5.6, 9.4, OG), (1.5, 11.8, Z_OG + 1.0), SEE),
 ]
 
 
