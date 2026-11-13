@@ -108,6 +108,16 @@ def test_gaeste_wc_page(capsys):
     assert cam[1] > at[1] and cam[0] == at[0]
 
 
+def test_gaestebad_page(capsys):
+    """The Gästebad sub-model page (gaestebad.html) is a --page, seen from above: its four walls stand
+    full height round it."""
+    assert show.main(["Gaestebad_Sanitaer", "--page", "gaestebad", "--print"]) == 0
+    link = capsys.readouterr().out.strip()
+    assert link.startswith("http://localhost:5377/gaestebad.html?cam=") and link.endswith("&look=full")
+    cam, at = (tuple(map(float, q.split("=")[1].split(","))) for q in link.split("?")[1].split("&")[:2])
+    assert cam[0] == at[0] and cam[2] > at[2] + 3
+
+
 def test_regal_page(capsys):
     """The "Schrank im Büro" sub-model page (regal.html) is a --page, seen from the room (west), facing
     the window, not through the east wall (SE)."""

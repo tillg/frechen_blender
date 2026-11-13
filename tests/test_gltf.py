@@ -254,6 +254,22 @@ def test_gaeste_wc_export(tmp_path):
 
 
 
+def test_gaestebad_export(tmp_path):
+    """--gaestebad: the Gästebad sub-model (#18) with its wall pieces and dimension lines, no Rundgang,
+    nothing moving."""
+    out = tmp_path / "gaestebad.glb"
+    subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--gaestebad"], check=True)
+    data = out.read_bytes()
+    jlen = struct.unpack_from("<I", data, 12)[0]
+    g = json.loads(data[20:20 + jlen])
+    assert {"Gaestebad_Waende", "Gaestebad_Sanitaer", "Gaestebad_Fliesen"} <= {n["name"] for n in g["nodes"]}
+    assert not any(k in n["extras"] for n in g["nodes"] for k in ("slide", "swing", "crank", "fold"))
+    bp = house_core.build_gaestebad()
+    house_core.build()
+    ex = g["scenes"][0]["extras"]
+    assert len(ex["dims"]) == len(bp.dims) and "tour" not in ex
+
+
 def test_schrankbett_export(tmp_path):
     """--schrankbett: the wall bed sub-model with its wall pieces and dimension lines, no Rundgang; the
     bed (origin on its hinge axis) folds 90 deg about x (glTF x) on the lift clock (extras.crank)."""

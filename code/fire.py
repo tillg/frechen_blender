@@ -122,8 +122,8 @@ def burn(coll, f, i, outer, core):
 
 def main():
     sys.path.insert(0, os.path.join(os.path.dirname(bpy.data.filepath) or PROJECT, "code"))  # this clone: the open .blend's folder (unsaved, headless test: snapshot.py's PROJECT)
-    import ofen, desk, bad, kueche, gaeste_wc, regal, schrankbett, house_core
-    importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(gaeste_wc); importlib.reload(regal); importlib.reload(schrankbett); importlib.reload(house_core)    # pick up core edits in a long session
+    import ofen, desk, bad, kueche, gaeste_wc, regal, schrankbett, gaestebad, house_core
+    importlib.reload(ofen); importlib.reload(desk); importlib.reload(bad); importlib.reload(kueche); importlib.reload(gaeste_wc); importlib.reload(regal); importlib.reload(schrankbett); importlib.reload(gaestebad); importlib.reload(house_core)    # pick up core edits in a long session
     bp = house_core.build()
     coll = _collection("Feuer")
     outer = _flame_material("Flamme", house_core.MAT_DEF["Feuer"])
