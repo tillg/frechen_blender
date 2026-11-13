@@ -493,3 +493,13 @@ def test_sheets_leave_the_variant_out(sheets):
     svg = (sheets / "eg.svg").read_text()
     assert f"Modellstand {ep.model_state(house_core.default_layout(BP))}" in svg
     assert ep.model_state(BP) != ep.model_state(house_core.default_layout(BP))
+
+
+def test_every_sheet_carries_the_viewers_title_top_left(sheets):
+    """'Frechenlehen' at the top left of every sheet, set like the viewer's title (Georgia, regular)."""
+    for key, _ in ep.SHEETS:
+        svg = (sheets / f"{key}.svg").read_text()
+        m = re.search(r'<text x="([\d.]+)" y="([\d.]+)" font-size="([\d.]+)"[^>]*font-family="Georgia[^"]*"[^>]*>Frechenlehen</text>', svg)
+        assert m, key
+        x, y, size = map(float, m.groups())
+        assert x < 30 and y < 40 and size >= 8, (key, x, y, size)

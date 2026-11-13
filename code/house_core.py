@@ -15,6 +15,7 @@ import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
 import kueche  # the Küche sub-model (code/kueche.py), the same way
 import gaeste_wc  # the Gäste-WC by the back hall (code/gaeste_wc.py), the same way
 import regal  # the Büro bookcase "Schrank im Büro" (code/regal.py), the same way
+import schrankbett  # the Yoga room's wall bed (code/schrankbett.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -129,6 +130,7 @@ SWING = {}    # object -> degrees about the vertical through its PIVOT (counter-
 LIFT = {}     # object -> metres straight up to its other state (the desk top with its devices): the
               # viewer lifts them together on one clock
 CRANK = {}    # object -> (axis (x, y, z), degrees) it turns about its PIVOT while the lift moves
+FOLD = {}     # object -> (hinge (x, y, z), axis, degrees) it folds about meanwhile, in its own turning frame
 VARIANT = {}  # object -> "main" (only the default layout has it) or "alt" (only the EG variant Alternativ,
               # issue #5); objects not in it are shared. Blender and the plan sheets leave "alt" out
 
@@ -1794,7 +1796,7 @@ def build_annex():
 # built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
 FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
-             "EG_Schreibtisch", "EG_Handrad"}
+             "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse"}
 
 
 def _grain(ax):
@@ -2111,8 +2113,8 @@ def build_furniture():
     regal.regal_neu("EG", *regal.REGAL_AT)                 # Schrank im Büro around the east window
     regal.vitrine("EG")                                     # its narrow element: NW corner, behind the piano
     desk.stuhl("EG", *desk.DESK_AT)
-    # OG: Yoga, Jugend (two bunk beds instead of the plan's double bed), Schlafen NE, SW, SE, HWR
-    bed("OG", 0.86, 2.45, 8.862, 10.85, "S", zo, n=2)
+    # OG: Yoga (wall bed), Jugend (two bunk beds instead of the plan's double bed), Schlafen NE, SW, SE, HWR
+    schrankbett.schrankbett_neu("OG", *schrankbett.SCHRANKBETT_AT, zo)      # Yoga: the wall bed, folded down (#7)
     bunk_bed("OG", 6.22, 7.17, 9.76, 11.82, "E", zo)          # middle of the west wall, past the door leaf (#6)
     bunk_bed("OG", 8.13, 9.07, 8.90, 10.96, "W", zo)
     bed("OG", 9.86, 10.78, 8.862, 10.92, "S", zo)
@@ -2319,6 +2321,7 @@ class Blueprint:
     swing: dict = None  # SWING: object -> degrees about its pivot to its other state (None: none)
     lift: dict = None   # LIFT: object -> metres up to its other state (None: none)
     crank: dict = None  # CRANK: object -> (axis, degrees) about its pivot while the lift moves
+    fold: dict = None   # FOLD: object -> (hinge, axis, degrees) about its own hinge meanwhile
     variant: dict = None  # VARIANT: object -> "main" / "alt" (None: no variant)
     doors: list = ()   # DOORS: every hinged leaf (plan sheets: door swings)
     plan_rooms: list = ()   # PLAN_ROOMS: the architect's room names with storey and anchor (plan sheets)
@@ -2330,7 +2333,7 @@ def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
-    LIFT.clear(); CRANK.clear(); VARIANT.clear()
+    LIFT.clear(); CRANK.clear(); FOLD.clear(); VARIANT.clear()
     LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); LAMP_LIGHTS.clear(); FIRES.clear(); STAIRS.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
@@ -2341,7 +2344,7 @@ def build():
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), lamp_lights=list(LAMP_LIGHTS), fires=list(FIRES),
                      turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), lift=dict(LIFT), crank=dict(CRANK),
-                     variant=dict(VARIANT), doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
+                     fold=dict(FOLD), variant=dict(VARIANT), doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
 
 
 def default_layout(bp):
@@ -2416,3 +2419,15 @@ def build_regal():
     dims = regal.regal_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
                      [], None, set(), dims, swing=dict(SWING))
+
+
+def build_schrankbett():
+    """The Schrankbett sub-model alone (web/schrankbett.html): the wall bed with its Schrankwand and the
+    pieces of the west and south wall at the origin (the Yoga room's inner SW corner), plus its
+    dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); LIFT.clear(); CRANK.clear(); FOLD.clear()
+    random.seed(22)
+    dims = schrankbett.schrankbett_neu(walls=True)
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
+                     [], None, set(), dims, crank=dict(CRANK), fold=dict(FOLD))
