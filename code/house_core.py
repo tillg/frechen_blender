@@ -17,6 +17,7 @@ import gaeste_wc  # the Gäste-WC by the back hall (code/gaeste_wc.py), the same
 import regal  # the Büro bookcase "Schrank im Büro" (code/regal.py), the same way
 import schrankbett  # the Yoga room's wall bed (code/schrankbett.py), the same way
 import gaestebad  # the Gästebad im 1. Stock (code/gaestebad.py), the same way
+import elternbad  # the Bad Nadine & Till im 1. Stock (code/elternbad.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -749,12 +750,6 @@ def toilet(coll, wx, wy, fx, fy, z=0.0):
     xy_prism(coll, o, "Metall", rect(0.215, 0.27, 0.16, 0.17), z + 0.73, z + 0.745)
 
 
-def bad_mirror(coll, wx, wy, fx, fy, w, z=0.0):
-    """Plain mirror of the Bäder, w wide, centred on (wx, wy) above the basin (object <coll>_Spiegel)."""
-    (xa, ya), (xb, yb) = at_wall(wx, wy, fx, fy)(-w / 2, 0.0), at_wall(wx, wy, fx, fy)(w / 2, 0.008)
-    box(coll, coll + "_Spiegel", "Spiegel", xa, xb, ya, yb, z + 1.10, z + 1.75)
-
-
 def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
     """Waschbecken after input/2026-11-12 input/waschbecken_einzeln.jpeg / _doppelt.jpg on the
     Waschbeckenständer of waschbecken_staender.png: a rectangular ceramic basin w x d (centred on
@@ -819,15 +814,17 @@ def wc_mirror(coll, wx, wy, fx, fy, z=0.0):
     box(coll, o, "Spiegel", xa, xb, ya, yb, z0 + fw, z1 - fw)
 
 
-def shower(coll, x0, x1, y0, y1, glass, head, z=0.0):
+def shower(coll, x0, x1, y0, y1, glass, head, z=0.0, tray=True):
     """Shower tray, glass panels [(xa, ya, xb, yb) along an open edge], head on wall `head`
-    = (wx, wy, fx, fy)."""
+    = (wx, wy, fx, fy). tray=False: walk-in, the room's floor runs through (drain and glass on its 0.018 top)."""
     o = coll + "_Sanitaer"
-    box(coll, o, "Keramik", x0, x1, y0, y1, z + 0.015, z + 0.045)
+    zb = z + 0.045 if tray else z + 0.018
+    if tray:
+        box(coll, o, "Keramik", x0, x1, y0, y1, z + 0.015, zb)
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-    box(coll, o, "Metall", cx - 0.05, cx + 0.05, cy - 0.05, cy + 0.05, z + 0.045, z + 0.047)
+    box(coll, o, "Metall", cx - 0.05, cx + 0.05, cy - 0.05, cy + 0.05, zb, zb + 0.002)
     for xa, ya, xb, yb in glass:
-        box(coll, o, "Glas", xa - 0.004, xb + 0.004, ya - 0.004, yb + 0.004, z + 0.045, z + 2.0)
+        box(coll, o, "Glas", xa - 0.004, xb + 0.004, ya - 0.004, yb + 0.004, zb, z + 2.0)
         box(coll, o, "Metall", xa - 0.012, xb + 0.012, ya - 0.012, yb + 0.012, z + 2.0, z + 2.02)
     M = at_wall(*head)
     (xa, ya), (xb, yb) = M(-0.012, 0.0), M(0.012, 0.03)
@@ -851,6 +848,31 @@ def wood_mirror(coll, wx, wy, fx, fy, w, h, fw, z0, rng=random):
     F("Kiefer", -u, u, 0.0, 0.025, z0, z0 + fw, r); F("Kiefer", -u, u, 0.0, 0.025, z1 - fw, z1, r)   # bottom, top
     F("Kiefer", u - fw, u, 0.0, 0.025, z0 + fw, z1 - fw, r); F("Kiefer", -u, -u + fw, 0.0, 0.025, z0 + fw, z1 - fw, r)
     F("Spiegel", -u + fw, u - fw, 0.004, 0.012, z0 + fw, z1 - fw, rng.random())
+
+
+def limestone(coll, along_x, face, n, ua, ub, z0, top, rng, dx=0.0, dy=0.0):
+    """Limestone cladding of a walk-in shower (the Bad Großeltern's, bad.py; the Bad Nadine & Till's,
+    elternbad.py) on the wall face `face` (a y value if along_x, else an x value; n: +1/-1 into the room),
+    from u = ua to ub, z0 up to top: dark backing 2 mm off the wall, slabs 6 mm proud of it (12 thick), rows
+    of about 0.5 m, slabs 0.4 .. 0.8 long, joints 4 mm; (dx, dy) shifts it all (object <coll>_Fliesen)."""
+    T, J, o = 0.012, 0.004, coll + "_Fliesen"
+
+    def S(m, a, b, t0, t1, za, zb, r):
+        ta, tb = sorted((face + n * t0, face + n * t1))
+        if along_x:
+            box(coll, o, m, dx + a, dx + b, dy + ta, dy + tb, za, zb, r)
+        else:
+            box(coll, o, m, dx + ta, dx + tb, dy + a, dy + b, za, zb, r)
+
+    S("Fuge", ua, ub, 0.002, 0.006, z0, top, 0.5)
+    rows = [z0 + k * (top - z0) / round((top - z0) / 0.5) for k in range(round((top - z0) / 0.5) + 1)]
+    for za, zb in zip(rows[:-1], rows[1:]):
+        u = ua - rng.uniform(0, 0.4)
+        while u < ub:
+            a, b = max(u, ua), min(u + rng.uniform(0.4, 0.8), ub)
+            if b - a > 0.02:
+                S("Kalkstein", a + J / 2, b - J / 2, 0.006, T, za + J / 2, zb - J / 2, rng.random())
+            u = b if b > u else ub
 
 
 WC_TILE_T = 0.010            # tile face in front of the plaster (WC fixtures stand on it)
@@ -913,11 +935,6 @@ def build_sanitary():
         wainscot(c, z, *rect, door)
     # OG Gästebad (end of the Flur, #18): partition, WC niche, shower, basin, mirror (code/gaestebad.py)
     gaestebad.gaestebad_neu("OG", *gaestebad.GAESTEBAD_AT, z=zo)
-    # OG Bad S (Nadine & Till): corner shower NW, Waschbecken doppelt 100 on the south wall, west of the window
-    shower("OG", 5.59, 6.57, 1.64, 2.62, [(6.57, 1.64, 6.57, 2.62), (5.59, 1.64, 6.05, 1.64)],
-           (6.08, 2.62, 0, -1), z=zo)
-    waschbecken("OG", 6.14, 0.40, 0, 1, 1.00, 0.47, 2, z=zo)
-    bad_mirror("OG", 6.14, 0.40, 0, 1, 1.00, z=zo)
     # OG WC 2,30: toilet on the south wall, hand basin on the east wall
     toilet("OG", 9.26, 3.98, 0, 1, z=zo)
     waschbecken("OG", 9.92, 4.95, -1, 0, 0.50, 0.40, 1, z=zo, tile=WC_TILE_T)   # between toilet and door leaf
@@ -933,6 +950,9 @@ def build_sanitary():
     wainscot("OG", zo, xf - 0.45, xf + 0.45, 6.35, 7.35, None, sides="s")
     waschbecken("OG", xf, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, tile=WC_TILE_T)
     build_wandlampen()
+    # OG Bad Nadine & Till (S, #3): shower, toilet with tiles, basin, mirror, lamps (code/elternbad.py); last,
+    # so the Wandlampen of #19 keep their order in WALL_LIGHTS
+    elternbad.elternbad_neu("OG", *elternbad.ELTERNBAD_AT, z=zo)
 
 
 # ---------------------------------------------------------------- furniture
@@ -1325,7 +1345,7 @@ def build_og():
               (10.66, 11.51, -1, "a", False)], z0, z1, H)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
     interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
-    interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58, -1, "a")], z0, z1, H)    # Bad door opens inwards (plan)
+    interior(c, 8.59, 8.72, 0.40, 6.06, [(*elternbad.TUER, -1, "a", False)], z0, z1, H)   # Bad Nadine & Till (code/elternbad.py)
     interior(c, 9.92, 10.07, 3.84, 6.06, (), z0, z1)                 # WC 2,30: 1.20 wide (plan)
     interior(c, 8.72, 9.92, 3.84, 3.98, (), z0, z1)
     box(c, "OG_Waende", "Putz", 11.48, 11.63, 0.98, 3.98, z0, z0 + 1.20)   # Schlafen SE: wall behind the bed head
@@ -1416,9 +1436,9 @@ GAESTE_WC_EG = (gaeste_wc.WI, gaeste_wc.WO, gaeste_wc.YS, gaeste_wc.YN)    # WC 
 TRENNWAND_EG = (gaeste_wc.PA, gaeste_wc.PB, gaeste_wc.YS, gaeste_wc.YN)    # none under their partition
 BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
                                          # lays its own floor (code/bad.py): left out of the EG's
-# OG Gästebad (room, WC niche, shower niche; none under their partition) and Bad S
+# OG Gästebad (room, WC niche, shower niche; none under their partition) and Bad Nadine & Till
 BATHS_OG = [(gaestebad.WI, gaestebad.WO, gaestebad.YP, gaestebad.YN), (gaestebad.WI, gaestebad.PA, gaestebad.YS, gaestebad.YP),
-            (gaestebad.PB, gaestebad.WO, gaestebad.YS, gaestebad.YP), (5.59, 8.59, 0.40, 2.62)]
+            (gaestebad.PB, gaestebad.WO, gaestebad.YS, gaestebad.YP), elternbad.ROOM]
 
 
 def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(), rng=random):
@@ -2513,6 +2533,17 @@ def build_gaestebad():
     LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); WALL_LIGHTS.clear()
     random.seed(22)
     dims = gaestebad.gaestebad_neu(walls=True)
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
+                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS))
+
+
+def build_elternbad():
+    """The Bad Nadine & Till sub-model alone (web/elternbad.html, #3): shower, toilet, basin, mirror and lamps
+    with the pieces of the room's four walls at the origin (the room's inner SW corner), plus its dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); WALL_LIGHTS.clear()
+    random.seed(22)
+    dims = elternbad.elternbad_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
                      [], None, set(), dims, wall_lights=list(WALL_LIGHTS))
 

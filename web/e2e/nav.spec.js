@@ -4,7 +4,7 @@ import { choose, entries } from './menu.js';
 
 const PAGES = [['/', '__fl'], ['/ofen.html', '__ofen'], ['/desk.html', '__desk'], ['/bad.html', '__bad'],
   ['/kueche.html', '__kueche'], ['/gaeste_wc.html', '__gaeste_wc'], ['/regal.html', '__regal'],
-  ['/schrankbett.html', '__schrankbett'], ['/gaestebad.html', '__gaestebad']];
+  ['/schrankbett.html', '__schrankbett'], ['/gaestebad.html', '__gaestebad'], ['/elternbad.html', '__elternbad']];
 
 async function open(page, url = '/', hook = '__fl') {
   await page.goto(url);
@@ -25,12 +25,17 @@ test('the three drop-downs and Reset sit at the same box on the house and every 
   }
 });
 
-test('Modell lists Ganzes Haus, Erdgeschoss, Erdgeschoss - Alternativ, 1. Stock, a separator, then the six sub-models', async ({ page }) => {
-  for (const [url, hook] of [PAGES[0], PAGES[1]]) {
+// the open list with its group headings as '[heading]'
+const withGroups = (page) => page.evaluate(() => [...document.querySelectorAll('.fl-list:not([hidden]) li')]
+  .map((li) => (li.classList.contains('fl-rule') ? '—' : li.classList.contains('fl-group') ? `[${li.textContent}]` : li.textContent)));
+
+test('Modell lists the house entries, a separator, then the sub-models by storey: Erdgeschoss, then 1. Stock', async ({ page }) => {
+  for (const [url, hook] of [PAGES[0], PAGES[1], PAGES[9]]) {
     await open(page, url, hook);
     await page.getByRole('button', { name: 'Modell', exact: true }).click();
-    expect(await entries(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', 'Erdgeschoss - Alternativ', '1. Stock', '—', 'Ofen', 'Schreibtisch',
-      'Bad Oma & Opa', 'Küche', 'Gäste-WC', 'Schrank im Büro', 'Schrankbett', 'Gästebad']);
+    expect(await withGroups(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', 'Erdgeschoss - Alternativ', '1. Stock', '—',
+      '[Erdgeschoss]', 'Ofen', 'Schreibtisch', 'Bad Oma & Opa', 'Küche', 'Gäste-WC', 'Schrank im Büro',
+      '[1. Stock]', 'Schrankbett', 'Gästebad', 'Bad Nadine & Till']);
   }
 });
 

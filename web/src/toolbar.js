@@ -6,12 +6,13 @@
 // Relative URLs: they work under the Pages base (/frechen_blender/) too.
 import './ui.css';
 
-// the model entries: the three house entries switch the cutaway in place, the sub-models are pages
+// the model entries: the house entries switch the cutaway in place, the sub-models are pages, listed by storey
 export const HOUSE = [['haus', 'Ganzes Haus', 'all'], ['eg', 'Erdgeschoss', 'eg'], ['eg_alt', 'Erdgeschoss - Alternativ', 'eg_alt'], ['og', '1. Stock', 'noroof']];
-export const PAGES = [['ofen', 'Ofen', 'ofen.html'], ['desk', 'Schreibtisch', 'desk.html'], ['bad', 'Bad Oma & Opa', 'bad.html'],
-  ['kueche', 'Küche', 'kueche.html'], ['gaeste_wc', 'Gäste-WC', 'gaeste_wc.html'],
-  ['regal', 'Schrank im Büro', 'regal.html'], ['schrankbett', 'Schrankbett', 'schrankbett.html'],
-  ['gaestebad', 'Gästebad', 'gaestebad.html']];
+export const PAGES = [['ofen', 'Ofen', 'ofen.html', 'eg'], ['desk', 'Schreibtisch', 'desk.html', 'eg'], ['bad', 'Bad Oma & Opa', 'bad.html', 'eg'],
+  ['kueche', 'Küche', 'kueche.html', 'eg'], ['gaeste_wc', 'Gäste-WC', 'gaeste_wc.html', 'eg'],
+  ['regal', 'Schrank im Büro', 'regal.html', 'eg'], ['schrankbett', 'Schrankbett', 'schrankbett.html', 'og'],
+  ['gaestebad', 'Gästebad', 'gaestebad.html', 'og'], ['elternbad', 'Bad Nadine & Till', 'elternbad.html', 'og']];
+const STOREYS = [['eg', 'Erdgeschoss'], ['og', '1. Stock']];
 
 function el(tag, attrs = {}, text = '') {
   const e = Object.assign(document.createElement(tag), attrs);
@@ -115,7 +116,7 @@ export function createToolbar(cfg) {
     else location.href = house ? `./?m=${key}` : page[2];
   });
   model.setItems([...HOUSE.map(([value, label]) => ({ value, label })), { rule: true },
-    ...PAGES.map(([value, label]) => ({ value, label }))]);
+    ...STOREYS.flatMap(([s, group]) => [{ group }, ...PAGES.filter((p) => p[3] === s).map(([value, label]) => ({ value, label }))])]);
   model.set(cfg.model);
   const level = dropdown('Darstellung', (v) => { level.set(v); cfg.onLevel(v); });
   level.setItems(cfg.levels);

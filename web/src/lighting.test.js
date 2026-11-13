@@ -14,7 +14,7 @@ test('hires: one room light per ROOM_LIGHTS entry at floor + ROOM_LIGHT_H and pe
   expect(extras.ROOM_LIGHT_H).toBe(2.1);                           // NaN would compare equal below
   const L = createLighting(scene, extras, new THREE.Vector3(), undefined, hires);
   const n = extras.room_lights.length;
-  expect(extras.wall_lights.length).toBe(29);
+  expect(extras.wall_lights.length).toBe(35);
   expect(L.roomLights.length).toBe(n + extras.wall_lights.length);
   L.roomLights.forEach((l, i) => {
     const [x, y, z] = i < n ? extras.room_lights[i] : extras.wall_lights[i - n];
@@ -86,7 +86,7 @@ test('update() moves the pool to the sites nearest the camera, storey-aware indo
   L.setDusk(1);
   const rooms = [...L.roomLights], outs = [...L.outsideLights];
   L.update(new THREE.Vector3(33, 13, 24), false);                     // default camera, outside
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([33, 34, 3, 35, 13, 25].map(roomSite)));
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([33, 34, 47, 3, 48, 46].map(roomSite)));   // 46-48: Elternbad (#3)
   expect(sorted(L.outsideLights.map((l) => zup(l.position)))).toEqual(sorted([2, 3].map(outSite)));
   for (const l of L.outsideLights) expect(l.target.position.toArray()).toEqual(l.position.clone().setY(l.position.y - 1).toArray());
   L.update(new THREE.Vector3(11.7, 1.6, -3.2), true);                 // Stube: all EG
@@ -107,12 +107,12 @@ test('a pooled light fades to 0 at the cut-off (FADE 1.0 m)', () => {
   L.update(cam, false);
   const at = (i) => L.roomLights.find((l) => zup(l.position).join() === roomSite(i).join());
   const d = (i) => at(i).position.distanceTo(cam);
-  const [x, y, z] = roomSite(40);
+  const [x, y, z] = roomSite(35);
   const dCut = new THREE.Vector3(x, z, -y).distanceTo(cam);           // the 7th nearest site: first one left out
   expect(at(3).intensity).toBeCloseTo(9 * 0.5, 5);                    // a fill light, full
   expect(at(33).intensity).toBeCloseTo(2 * 0.5, 5);                   // a Wandlampe, full
-  expect(at(25).intensity).toBeCloseTo(2 * 0.5 * (dCut - d(25)), 5);  // the 6th, a Wandlampe, nearly out
-  expect(at(25).intensity).toBeLessThan(2 * 0.5 * 0.3);
+  expect(at(46).intensity).toBeCloseTo(2 * 0.5 * (dCut - d(46)), 5);  // the 6th, a Wandlampe (Elternbad), nearly out
+  expect(at(46).intensity).toBeLessThan(2 * 0.5 * 0.3);
 });
 
 test('prewarm() compiles with the pool in the render list, then restores day/dusk', async () => {
