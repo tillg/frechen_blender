@@ -16,6 +16,7 @@ import kueche  # the Küche sub-model (code/kueche.py), the same way
 import gaeste_wc  # the Gäste-WC by the back hall (code/gaeste_wc.py), the same way
 import regal  # the Büro bookcase "Schrank im Büro" (code/regal.py), the same way
 import schrankbett  # the Yoga room's wall bed (code/schrankbett.py), the same way
+import gaestebad  # the Gästebad im 1. Stock (code/gaestebad.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -852,8 +853,7 @@ def wood_mirror(coll, wx, wy, fx, fy, w, h, fw, z0, rng=random):
 
 WC_TILE_T = 0.010            # tile face in front of the plaster (WC fixtures stand on it)
 WCS = [  # (collection, floor z, interior rectangle, door span left free on the north wall); the
-         # Gäste-WC by the back hall tiles itself (code/gaeste_wc.py)
-    ("OG", Z_OG, (0.31, 1.57, 5.46, 6.44), (0.48, 1.42)),         # WC 2,26
+         # Gäste-WC by the back hall and the Gästebad's WC niche tile themselves (code/gaeste_wc.py, gaestebad.py)
     ("OG", Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]         # WC 2,30
 
 
@@ -909,12 +909,8 @@ def build_sanitary():
     zo = Z_OG + 0.0
     for c, z, rect, door in WCS:
         wainscot(c, z, *rect, door)
-    # OG Bad NW (end of the Flur): Waschbecken doppelt 120 on the north wall, shower in the south alcove
-    waschbecken("OG", 0.96, 8.57, 0, -1, 1.20, 0.47, 2, z=zo)
-    bad_mirror("OG", 0.96, 8.57, 0, -1, 1.20, z=zo)
-    shower("OG", 1.67, 2.57, 5.46, 6.44, [(2.10, 6.44, 2.57, 6.44)], (2.12, 5.46, 0, 1), z=zo)
-    # OG WC 2,26: toilet on the west wall below the window
-    toilet("OG", 0.31, 6.0, 1, 0, z=zo)
+    # OG Gästebad (end of the Flur, #18): partition, WC niche, shower, basin, mirror (code/gaestebad.py)
+    gaestebad.gaestebad_neu("OG", *gaestebad.GAESTEBAD_AT, z=zo)
     # OG Bad S (Nadine & Till): corner shower NW, Waschbecken doppelt 100 on the south wall, west of the window
     shower("OG", 5.59, 6.57, 1.64, 2.62, [(6.57, 1.64, 6.57, 2.62), (5.59, 1.64, 6.05, 1.64)],
            (6.08, 2.62, 0, -1), z=zo)
@@ -1317,12 +1313,10 @@ def build_og():
     # its west wall, clear of the stair hole (issue #6)
     interior(c, 6.05, 6.21, 8.86, 12.485, (), z0, z1)
     interior(c, 9.08, 9.25, 8.86, 12.485, (), z0, z1)
-    interior(c, 2.57, 2.71, 5.46, 8.57, [(7.66, 8.47, -1, "a")], z0, z1, H)
+    interior(c, 2.57, 2.71, 5.46, 8.57, [(*gaestebad.TUER, -1, "a")], z0, z1, H)   # Gästebad (code/gaestebad.py)
     interior(c, 2.71, 14.35, 6.06, 6.35,
              [(4.02, 4.87, -1, "a", False), (7.15, 8.17, -1, "a"), (8.76, 9.65, -1, "b", False),
               (10.66, 11.51, -1, "a", False)], z0, z1, H)
-    interior(c, 0.31, 1.57, 6.44, 6.54, [(0.55, 1.35, -1, "b", False)], z0, z1, H)   # WC 2,26
-    interior(c, 1.57, 1.67, 5.46, 6.44, (), z0, z1)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
     interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
     interior(c, 8.59, 8.72, 0.40, 6.06, [(1.65, 2.58, -1, "a")], z0, z1, H)    # Bad door opens inwards (plan)
@@ -1416,8 +1410,9 @@ GAESTE_WC_EG = (gaeste_wc.WI, gaeste_wc.WO, gaeste_wc.YS, gaeste_wc.YN)    # WC 
 TRENNWAND_EG = (gaeste_wc.PA, gaeste_wc.PB, gaeste_wc.YS, gaeste_wc.YN)    # none under their partition
 BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
                                          # lays its own floor (code/bad.py): left out of the EG's
-# OG Bad NW (with the shower alcove) and Bad S
-BATHS_OG = [(0.31, 2.57, 6.54, 8.57), (1.67, 2.57, 5.46, 6.54), (5.59, 8.59, 0.40, 2.62)]
+# OG Gästebad (room, WC niche, shower niche; none under their partition) and Bad S
+BATHS_OG = [(gaestebad.WI, gaestebad.WO, gaestebad.YP, gaestebad.YN), (gaestebad.WI, gaestebad.PA, gaestebad.YS, gaestebad.YP),
+            (gaestebad.PB, gaestebad.WO, gaestebad.YS, gaestebad.YP), (5.59, 8.59, 0.40, 2.62)]
 
 
 def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(), rng=random):
@@ -2165,7 +2160,7 @@ PLAN_ROOMS = [
     ("Speis", "EG", 3.9, 4.79), ("Stube", "EG", 11.7, 3.2), ("Elektroraum", "EG", 0.35, 3.9),
     ("Heizung", "EG", 0.35, 1.5),
     ("Schlafen bzw. Yoga", "OG", 3.2, 10.6), ("Schlafen", "OG", 7.6, 10.6), ("Schlafen", "OG", 11.9, 10.6),
-    ("Flur", "OG", 6.0, 7.4), ("Bad", "OG", 1.4, 7.6), ("WC", "OG", 0.94, 5.95), ("Schlafen", "OG", 4.1, 3.2),
+    ("Flur", "OG", 6.0, 7.4), ("Bad", "OG", 1.4, 7.6), ("Schlafen", "OG", 4.1, 3.2),
     ("Bad", "OG", 7.1, 1.5), ("Hauswirtschaftsraum", "OG", 7.1, 4.4), ("WC", "OG", 9.32, 5.0),
     ("Schlafen", "OG", 12.6, 2.5),
 ]
@@ -2419,6 +2414,17 @@ def build_regal():
     dims = regal.regal_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
                      [], None, set(), dims, swing=dict(SWING))
+
+
+def build_gaestebad():
+    """The Gästebad sub-model alone (web/gaestebad.html, #18): WC niche, shower, basin and mirror with the
+    pieces of the room's four walls at the origin (the room's inner SW corner), plus its dimension lines."""
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); LAMP_LIGHTS.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear()
+    random.seed(22)
+    dims = gaestebad.gaestebad_neu(walls=True)
+    return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
+                     [], None, set(), dims)
 
 
 def build_schrankbett():
