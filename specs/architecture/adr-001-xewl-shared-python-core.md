@@ -2,7 +2,7 @@
 type: ADR
 id: ADR-001-XEWL
 title: One pure-Python core with a Blender and a glTF backend
-description: The house is described once in code/house_core.py plus its sub-model modules (code/ofen.py stoves, code/desk.py desk, code/bad.py Bad Großeltern, code/kueche.py Küche, code/gaeste_wc.py Gäste-WC, code/regal.py Schrank im Büro, code/schrankbett.py Schrankbett, code/gaestebad.py Gästebad; no bpy); build_house.py (Blender) and export_gltf.py (glTF for the web viewer) are backends that only turn its Blueprint into output.
+description: The house is described once in code/house_core.py plus its sub-model modules (code/ofen.py stoves, code/desk.py desk, code/bad.py Bad Großeltern, code/kueche.py Küche, code/gaeste_wc.py Gäste-WC, code/regal.py Schrank im Büro, code/schrankbett.py Schrankbett, code/gaestebad.py Gästebad, code/elternbad.py Bad Nadine & Till; no bpy); build_house.py (Blender) and export_gltf.py (glTF for the web viewer) are backends that only turn its Blueprint into output.
 status: accepted
 date: 2026-11-03
 supersedes: []
@@ -20,7 +20,7 @@ and every later fix to a wall or a door must reach both outputs. The geometry co
 
 - Constants, `MAT_DEF`, paint colours, room-light positions, the windrose position, cross boards,
   the garden layout, primitives and builders live in `code/house_core.py`; the sub-models' builders
-  live in their own modules (`code/ofen.py` stoves, `code/desk.py` desk, `code/bad.py` Bad Großeltern, `code/kueche.py` Küche, `code/gaeste_wc.py` Gäste-WC, `code/regal.py` Schrank im Büro, `code/schrankbett.py` Schrankbett, `code/gaestebad.py` Gästebad), which `house_core`
+  live in their own modules (`code/ofen.py` stoves, `code/desk.py` desk, `code/bad.py` Bad Großeltern, `code/kueche.py` Küche, `code/gaeste_wc.py` Gäste-WC, `code/regal.py` Schrank im Büro, `code/schrankbett.py` Schrankbett, `code/gaestebad.py` Gästebad, `code/elternbad.py` Bad Nadine & Till), which `house_core`
   imports. None imports `bpy` or `mathutils`.
 - `house_core.build()` returns a **Blueprint**: plain data.
 - Backends only translate a Blueprint into output and repeat none of its facts:
@@ -53,3 +53,4 @@ and every later fix to a wall or a door must reach both outputs. The geometry co
 - 2026-11-11: a third backend, `code/export_plans.py` (standard library), draws the Blueprint as the architect's plan sheets in `plans/`; the object classes and the door, room and stair records it draws from (`PLAN`, `DOORS`, `PLAN_ROOMS`, `STAIRS`) are core facts (change `2d-plan-export`).
 - 2026-11-13: the Yoga room's wall bed ("Schrankbett") is a sub-model in `code/schrankbett.py` the same way (change `7-schrankbett`).
 - 2026-11-13: the OG Gästebad is a sub-model in `code/gaestebad.py` the same way (change `18-gaestebad-og`); the Flur door beside it is defined once there and used by `build_og()`.
+- 2026-11-13: the OG Bad Nadine & Till is a sub-model in `code/elternbad.py` the same way (change `3-bad-nadine-till`); its door, room and south window are defined once there and used by `build_og()` and `BATHS_OG`.
