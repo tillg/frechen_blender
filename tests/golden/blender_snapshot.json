@@ -20,7 +20,7 @@
    0.0,
    0.0
   ],
-  "rnd": "0d0d7e24021c611b",
+  "rnd": "71aebd7ccc79286a",
   "verts": 4416
  },
  "Balkon_EG_Nord": {
@@ -42,7 +42,7 @@
    0.0,
    0.0
   ],
-  "rnd": "c711980c271cd089",
+  "rnd": "f559d92ce312812b",
   "verts": 7448
  },
  "Balkon_OG_Nord": {
@@ -66,7 +66,7 @@
    0.0,
    0.0
   ],
-  "rnd": "bf69be67ba49d0e7",
+  "rnd": "cff2e634998f86be",
   "verts": 15252
  },
  "Balkon_OG_Ost": {
@@ -89,7 +89,7 @@
    0.0,
    0.0
   ],
-  "rnd": "97ec461caeafdb34",
+  "rnd": "7ef7922db3cf3015",
   "verts": 12096
  },
  "Balkon_OG_Sued": {
@@ -113,7 +113,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f6ad7f02416e78f3",
+  "rnd": "fe32522473de78b1",
   "verts": 5676
  },
  "Beet_Ost": {
@@ -134,7 +134,7 @@
    0.0,
    0.0
   ],
-  "rnd": "050245823b524717",
+  "rnd": "e613cbd49342d453",
   "verts": 8
  },
  "Beet_West": {
@@ -155,7 +155,7 @@
    0.0,
    0.0
   ],
-  "rnd": "c6abed9cad1837ad",
+  "rnd": "f3ef74c3f7215735",
   "verts": 8
  },
  "Dach": {
@@ -176,7 +176,7 @@
    0.0,
    0.0
   ],
-  "rnd": "cf6a18d9ed1c27e1",
+  "rnd": "2469b5d5f716bca0",
   "verts": 16
  },
  "Dach_Anbau": {
@@ -197,7 +197,7 @@
    0.0,
    0.0
   ],
-  "rnd": "662fc0575b0ce5a0",
+  "rnd": "ed4a98291e265914",
   "verts": 12
  },
  "Dach_Sparren": {
@@ -219,7 +219,7 @@
    0.0,
    0.0
   ],
-  "rnd": "6af34d535dbf7226",
+  "rnd": "aa58cc67d1091cfb",
   "verts": 448
  },
  "Dach_Untersicht": {
@@ -240,7 +240,7 @@
    0.0,
    0.0
   ],
-  "rnd": "e6e95ba7eb13c695",
+  "rnd": "e9d5cb646b8349d1",
   "verts": 904
  },
  "Decke_OG": {
@@ -261,7 +261,7 @@
    0.0,
    0.0
   ],
-  "rnd": "733e440463d8ab04",
+  "rnd": "91b8c84d347d42ab",
   "verts": 16
  },
  "EG_Anbau": {
@@ -286,7 +286,7 @@
    0.0,
    0.0
   ],
-  "rnd": "764391bd17dcebbd",
+  "rnd": "fc818d385ad43034",
   "verts": 696
  },
  "EG_Bildschirm_L": {
@@ -349,7 +349,7 @@
    0.0,
    0.0
   ],
-  "rnd": "4a1ae38fbf815598",
+  "rnd": "afed3f570448334b",
   "verts": 24
  },
  "EG_Bodenbelag": {
@@ -361,7 +361,7 @@
    12.8855,
    0.018
   ],
-  "faces": 4524,
+  "faces": 4506,
   "materials": [
    "FL_Eiche",
    "FL_Kalkstein"
@@ -371,8 +371,8 @@
    0.0,
    0.0
   ],
-  "rnd": "bf16576f2fce3715",
-  "verts": 6032
+  "rnd": "0dbb1fd6456e967d",
+  "verts": 6008
  },
  "EG_Bodenplatte": {
   "bbox": [
@@ -392,7 +392,7 @@
    0.0,
    0.0
   ],
-  "rnd": "562d8cdb96e1b7ae",
+  "rnd": "17aed0d5178e24d3",
   "verts": 16
  },
  "EG_Buerotuer": {
@@ -669,7 +669,7 @@
    0.0,
    0.0
   ],
-  "rnd": "b134ab8d65f18cc5",
+  "rnd": "e096b4b8695d3c3c",
   "verts": 1624
  },
  "EG_Kueche": {
@@ -751,7 +751,7 @@
    0.0,
    0.0
   ],
-  "rnd": "9c7b4bcb8c35e8cd",
+  "rnd": "43a80887aa203693",
   "verts": 5876
  },
  "EG_Ofen_Bank": {
@@ -1063,7 +1063,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f37b7fdb35ce21b2",
+  "rnd": "d61b71e4630d6da8",
   "verts": 88
  },
  "EG_Speis": {
@@ -1175,7 +1175,7 @@
    0.0,
    0.0
   ],
-  "rnd": "81b897b0215d9ea1",
+  "rnd": "cccd1a6d3b3ba9f9",
   "verts": 954
  },
  "EG_Tisch": {
@@ -2615,7 +2615,7 @@
    0.0,
    0.0
   ],
-  "rnd": "5157ad26a2ea1ea4",
+  "rnd": "5969cc906695a279",
   "verts": 8
  },
  "Giebel": {
@@ -2636,7 +2636,7 @@
    0.0,
    0.0
   ],
-  "rnd": "f68a0498793c43a1",
+  "rnd": "d89922fc37c663cd",
   "verts": 132
  },
  "Giebel_Fenster": {
@@ -2658,17 +2658,17 @@
    0.0,
    0.0
   ],
-  "rnd": "62bd2cab863951b7",
+  "rnd": "3dcb5229249afb1d",
   "verts": 172
  },
  "Kiesel": {
   "bbox": [
-   2.35035,
-   -0.2725,
-   -0.05222,
-   15.15863,
-   7.89009,
-   -0.01778
+   2.38303,
+   -0.27927,
+   -0.052,
+   15.15906,
+   7.89388,
+   -0.018
   ],
   "faces": 42568,
   "materials": [
@@ -2679,7 +2679,7 @@
    0.0,
    0.0
   ],
-  "rnd": "b929aa0927618f8e",
+  "rnd": "8b79aeb8fc681a9c",
   "verts": 50080
  },
  "Kiesstreifen": {
@@ -2700,7 +2700,7 @@
    0.0,
    0.0
   ],
-  "rnd": "8c439f852125db37",
+  "rnd": "719957c9ef8dae4e",
   "verts": 24
  },
  "Laeden_Querbretter": {
@@ -2742,7 +2742,7 @@
    0.0,
    0.0
   ],
-  "rnd": "0d58ba85eeec962e",
+  "rnd": "6dee23d350eaf982",
   "verts": 40
  },
  "OG_Bodenbelag": {
@@ -2754,7 +2754,7 @@
    12.8855,
    2.718
   ],
-  "faces": 4314,
+  "faces": 4290,
   "materials": [
    "FL_Eiche",
    "FL_Kalkstein"
@@ -2764,8 +2764,8 @@
    0.0,
    0.0
   ],
-  "rnd": "538543bd228ac719",
-  "verts": 5752
+  "rnd": "1f1f099a77d51d94",
+  "verts": 5720
  },
  "OG_Decke_EG": {
   "bbox": [
@@ -2785,7 +2785,7 @@
    0.0,
    0.0
   ],
-  "rnd": "e0902ce990f8fd23",
+  "rnd": "0c704c9cb6d83fa6",
   "verts": 40
  },
  "OG_Fenster_Tueren": {
@@ -2817,10 +2817,10 @@
    3.982,
    2.715,
    9.92,
-   6.438,
+   6.529,
    3.815
   ],
-  "faces": 7044,
+  "faces": 6690,
   "materials": [
    "FL_Fliese",
    "FL_Fugengrau"
@@ -2830,8 +2830,8 @@
    0.0,
    0.0
   ],
-  "rnd": "a674239e86cadc89",
-  "verts": 9392
+  "rnd": "e78f130373e53e3d",
+  "verts": 8920
  },
  "OG_Gelaender": {
   "bbox": [
@@ -2856,14 +2856,14 @@
  },
  "OG_Innentueren": {
   "bbox": [
-   0.48,
+   2.425,
    0.776,
    2.7,
    13.25,
    9.694,
    4.77
   ],
-  "faces": 1578,
+  "faces": 1404,
   "materials": [
    "FL_Eisen",
    "FL_Innentuer"
@@ -2873,8 +2873,8 @@
    0.0,
    0.0
   ],
-  "rnd": "1bbbd012654e6752",
-  "verts": 2104
+  "rnd": "43506958cb70a175",
+  "verts": 1872
  },
  "OG_Klappbett": {
   "bbox": [
@@ -2992,7 +2992,7 @@
    0.0,
    0.0
   ],
-  "rnd": "98a7a3c8fc552d68",
+  "rnd": "41c1ad9d7ea373ec",
   "verts": 59392
  },
  "OG_Raumnamen": {
@@ -3018,14 +3018,14 @@
  },
  "OG_Sanitaer": {
   "bbox": [
-   0.32,
+   0.5445,
    0.4,
    2.714,
    9.92,
    8.57,
    4.82
   ],
-  "faces": 3122,
+  "faces": 3146,
   "materials": [
    "FL_Eisen",
    "FL_Glas",
@@ -3039,8 +3039,8 @@
    0.0,
    0.0
   ],
-  "rnd": "9bb1776ecdfb1739",
-  "verts": 4940
+  "rnd": "ebdf85f9c6301abe",
+  "verts": 4972
  },
  "OG_Waende": {
   "bbox": [
@@ -3051,7 +3051,7 @@
    12.887,
    5.22779
   ],
-  "faces": 504,
+  "faces": 486,
   "materials": [
    "FL_Putz"
   ],
@@ -3060,8 +3060,8 @@
    0.0,
    0.0
   ],
-  "rnd": "4c409634c282ad3f",
-  "verts": 672
+  "rnd": "0f418b78e297ffe7",
+  "verts": 648
  },
  "OG_Werkstattofen": {
   "bbox": [
@@ -3082,7 +3082,7 @@
    0.0,
    0.0
   ],
-  "rnd": "4a1d3832a6fceb7a",
+  "rnd": "47a89acd7ab0e96f",
   "verts": 88
  },
  "Ref_Grundriss_EG": {
@@ -3146,7 +3146,7 @@
    0.0,
    0.0
   ],
-  "rnd": "cb31a4ffc647ca45",
+  "rnd": "9369373f2f656769",
   "verts": 1752
  },
  "Verschalung_Ost": {
@@ -3167,7 +3167,7 @@
    0.0,
    0.0
   ],
-  "rnd": "dfab3458e0c48215",
+  "rnd": "b244334cf0cf1428",
   "verts": 1096
  },
  "Verschalung_West": {
@@ -3189,7 +3189,7 @@
    0.0,
    0.0
   ],
-  "rnd": "c8d1fbfc666b168c",
+  "rnd": "da1f428562245c58",
   "verts": 2136
  },
  "WR_N": {
