@@ -10,7 +10,7 @@ edited: 2026-11-13
 
 The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
 `code/ofen.py` (stoves), `code/desk.py` (Büro desk), `code/bad.py` (Bad Großeltern),
-`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC), `code/regal.py` (Schrank im Büro) and `code/schrankbett.py` (Schrankbett), no `bpy`). Three
+`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC), `code/regal.py` (Schrank im Büro), `code/schrankbett.py` (Schrankbett) and `code/gaestebad.py` (Gästebad), no `bpy`). Three
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -178,18 +178,30 @@ flowchart LR
   carry a `FOLD` (hinge at the underside, (1, 0, 0), −90): they fold onto the underside meanwhile.
   Furniture (`OG_Klappbett`, `OG_Klappfuesse` in `FURNITURE`). Own `random.Random(16)`; it replaces the
   Yoga room's `bed()`.
+- **Gästebad.** `code/gaestebad.py` the same way: `gaestebad_neu(c, x0, y0, z=0, walls=False)` builds the
+  OG Bad at the end of the Flur into collection `c` with the room's inner SW corner at (x0, y0) on floor
+  z (`OG` at `GAESTEBAD_AT` = (0.31, 5.46), called from `build_sanitary()`; or `Gaestebad` at the
+  origin, `walls=True` adding the pieces of its four walls via `waende()`). Along the south wall: the
+  10 cm partition `PA..PB` (= `gaeste_wc.PA/PB`, over the EG Gäste-WC's) to `YP` = 6.54; west of it the
+  open WC niche (toilet centred, `wainscot` on its three walls, no wall or door to the Bad), east of
+  it the walk-in shower to `SN` = 6.85, 5 cm short of the Flur door's leaf open flat against the east
+  wall, its glass from `GA` = 1.92 to the east wall, the head behind it. On the north wall the
+  Waschbecken doppelt 120 centred (`BX`), above it `wood_mirror()` 140 × 95 from 1.17. The Flur door
+  (`TUER`) is defined here; `build_og()` uses it. Own `random.Random(18)` for partition and mirror;
+  toilet and shower draw from the global stream. The floor stays the core's limestone (`BATHS_OG`:
+  room, WC niche, shower niche, none under the partition). It returns its dimension lines.
 - **Waschbecken.** `waschbecken(coll, wx, wy, fx, fy, w, d, taps, z, tile, rng)` builds one
   washbasin into `<coll>_Sanitaer` in the wall frame of `at_wall()`: the hollow `Keramik` basin
   (top z + 0.85, 17 cm high, `taps` mixers), the `Metall` Waschbeckenständer and the bottle trap;
   `tile` puts it in front of WC tiles. Every Part shares one `rnd` from `rng`, else a new
-  `random.Random(16)` per call. Callers: `build_sanitary()` (OG Bad NW and S, OG WC with
+  `random.Random(16)` per call. Callers: `build_sanitary()` (OG Bad S with `bad_mirror()`, OG WC with
   `wc_mirror()`, OG Flur on `wainscot(sides="s")` with `wood_mirror()`, which the back hall's
-  mirror in `gaeste_wc.py` shares with its own `rng`; the Bäder's mirrors from `bad_mirror()`),
-  `gaeste_wc.py` and `bad.py`.
+  mirror in `gaeste_wc.py` and the Gästebad's in `gaestebad.py` share with their own `rng`),
+  `gaestebad.py`, `gaeste_wc.py` and `bad.py`.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
-  `build_gaeste_wc()` / `build_regal()` / `build_schrankbett()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
+  `build_gaeste_wc()` / `build_regal()` / `build_schrankbett()` / `build_gaestebad()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
   in `dims`) for `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html` /
-  `web/gaeste_wc.html` / `web/regal.html` / `web/schrankbett.html`. A dimension label containing "angenommen" is an assumed
+  `web/gaeste_wc.html` / `web/regal.html` / `web/schrankbett.html` / `web/gaestebad.html`. A dimension label containing "angenommen" is an assumed
   measure (shown in italics).
 - **Geometry accumulator.** Builders append vertices, faces, material names and an `rnd`
   value per face to `GEO[(collection, object)]`. Faces are polygons (quads or n-gons, may be
@@ -237,7 +249,7 @@ from `TURN`; image materials map the picture through Texture Coordinate › Obje
 ### `mesh_ops.py` and `export_gltf.py` — glTF backend
 
 Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writer.md)):
-`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk` / `--bad` / `--kueche` / `--gaeste-wc` / `--regal` / `--schrankbett`: the sub-model's
+`python3 code/export_gltf.py web/public/frechenlehen.glb` (`--ofen` / `--desk` / `--bad` / `--kueche` / `--gaeste-wc` / `--regal` / `--schrankbett` / `--gaestebad`: the sub-model's
 `.glb` instead).
 
 - `mesh_ops` does what bmesh does in Blender:
@@ -425,7 +437,7 @@ sequenceDiagram
   sun stays anchored to a fixed copy of the start target.
 - **Sub-model pages.** `submodel.js` draws a sub-model page (views, looks Drahtmodell / Masse /
   Gerendert, walls, grid, sun, dimension lines from `dims`); `ofen.js`, `desk.js`, `bad.js`,
-  `kueche.js`, `gaeste_wc.js`, `regal.js` and `schrankbett.js` only configure it. Nodes with `extras.slide` roll there and back,
+  `kueche.js`, `gaeste_wc.js`, `regal.js`, `schrankbett.js` and `gaestebad.js` only configure it. Nodes with `extras.slide` roll there and back,
   edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
   lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s; the Büro door
@@ -452,7 +464,7 @@ sequenceDiagram
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters incl. `lights` (visible room / outside lights), `hires`, `pixelRatio`,
   `tour`, `tourKey`, `slides`, `doors`), only outside production builds; `window.__ofen`
-  / `window.__desk` / `window.__bad` / `window.__kueche` / `window.__gaeste_wc` / `window.__regal` / `window.__schrankbett` on the sub-model pages.
+  / `window.__desk` / `window.__bad` / `window.__kueche` / `window.__gaeste_wc` / `window.__regal` / `window.__schrankbett` / `window.__gaestebad` on the sub-model pages.
 
 ### Checks and Show — `scripts/check.sh`, `code/show.py`, `web/shot.js`
 
@@ -472,7 +484,7 @@ flowchart LR
   each, prints a table, tees to `tmp/check-<ts>.log`, warns when quick exceeds 60 s, exits 1 when
   any part failed (2 on a wrong argument).
 - **`code/show.py`** (pure Python, no bpy) reads the Blueprint (`build()`, or `build_ofen()` /
-  `build_desk()` / `build_bad()` / `build_kueche()` / `build_gaeste_wc()` / `build_regal()` / `build_schrankbett()` for `--page`), so the view comes from the geometry the viewer
+  `build_desk()` / `build_bad()` / `build_kueche()` / `build_gaeste_wc()` / `build_regal()` / `build_schrankbett()` / `build_gaestebad()` for `--page`), so the view comes from the geometry the viewer
   draws:
   - `bbox(bp, names)`: min/max over the GEO vertices of the objects whose name starts with a
     given prefix (all objects without names; `--at` frames a 1 m box around a point).
@@ -480,7 +492,7 @@ flowchart LR
     sphere × 1.15 fits the vertical field of view (28° house, 35° sub-model). A box within
     `EDGE` = 0.2 m of the footprint `W_OUT × D_OUT` or beyond it is outside: nearest facade, 20° up,
     `cut=all`. Otherwise inside: SE diagonal, 55° up, `cut=eg` below `Z_EG_TOP`, `noroof` below
-    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; Gäste-WC: N, from the back hall; Schrank im Büro: W, from the room; Schrankbett: N, from the room; `FACING`).
+    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; Gäste-WC: N, from the back hall; Schrank im Büro: W, from the room; Schrankbett: N, from the room; Gästebad: `top`, since its four walls stand full height; `FACING`).
     `side` (`--from`) picks n/e/s/w (or `top`, 85° up from the south). `p = 4` unless `--p`
     (house only).
   - `url()` writes the viewer's format (`+n.toFixed(3)`, ties away from zero); `server_is_ours()`
