@@ -118,6 +118,15 @@ def test_gaestebad_page(capsys):
     assert cam[0] == at[0] and cam[2] > at[2] + 3
 
 
+def test_elternbad_page(capsys):
+    """The Bad Nadine & Till sub-model page (elternbad.html, #3) is a --page, seen from above."""
+    assert show.main(["Elternbad_Sanitaer", "--page", "elternbad", "--print"]) == 0
+    link = capsys.readouterr().out.strip()
+    assert link.startswith("http://localhost:5377/elternbad.html?cam=") and link.endswith("&look=full")
+    cam, at = (tuple(map(float, q.split("=")[1].split(","))) for q in link.split("?")[1].split("&")[:2])
+    assert cam[0] == at[0] and cam[2] > at[2] + 3
+
+
 def test_regal_page(capsys):
     """The "Schrank im Büro" sub-model page (regal.html) is a --page, seen from the room (west), facing
     the window, not through the east wall (SE)."""

@@ -33,7 +33,7 @@ test('Küche page draws the kitchen with the core dimensions, without errors', a
 });
 
 test('the drop-down reaches every page, from the house and from a sub-model', async ({ page }) => {
-  const pages = [['Ofen', '/ofen.html', '__ofen'], ['Schreibtisch', '/desk.html', '__desk'], ['Bad Oma & Opa', '/bad.html', '__bad'], ['Küche', '/kueche.html', '__kueche'], ['Gäste-WC', '/gaeste_wc.html', '__gaeste_wc'], ['Schrank im Büro', '/regal.html', '__regal'], ['Schrankbett', '/schrankbett.html', '__schrankbett'], ['Gästebad', '/gaestebad.html', '__gaestebad']];
+  const pages = [['Ofen', '/ofen.html', '__ofen'], ['Schreibtisch', '/desk.html', '__desk'], ['Bad Oma & Opa', '/bad.html', '__bad'], ['Küche', '/kueche.html', '__kueche'], ['Gäste-WC', '/gaeste_wc.html', '__gaeste_wc'], ['Schrank im Büro', '/regal.html', '__regal'], ['Schrankbett', '/schrankbett.html', '__schrankbett'], ['Gästebad', '/gaestebad.html', '__gaestebad'], ['Bad Nadine & Till', '/elternbad.html', '__elternbad']];
   await page.goto('/');
   await page.waitForFunction(() => window.__fl?.ready === true);
   const sel = page.getByRole('button', { name: 'Modell', exact: true });
