@@ -144,25 +144,7 @@ def stone(c, x0, y0, side, rng):
     about 0.5 m, joints 4 mm; the west wall stops short of the north wall's slabs, the north wall's
     at the glass."""
     lv0, lv1, lh, _ = LOW
-    T, J = 0.012, 0.004
+    T = 0.012
     face, n, ua, ub, top = {"w": (0.0, 1, lv0, D - T, CLAD), "n": (D, -1, 0.0, FD_JAMB - BAD_AT[0] - 0.012, CLAD),
                             "l": (SHOWER, -1, lv0, lv1, lh)}[side]
-    along_v = side != "n"
-    o = c + "_Fliesen"
-
-    def S(m, a, b, t0, t1, za, zb, r):
-        ta, tb = sorted((face + n * t0, face + n * t1))
-        if along_v:
-            hc.box(c, o, m, x0 + ta, x0 + tb, y0 + a, y0 + b, za, zb, r)
-        else:
-            hc.box(c, o, m, x0 + a, x0 + b, y0 + ta, y0 + tb, za, zb, r)
-
-    S("Fuge", ua, ub, 0.002, 0.006, 0.018, top, 0.5)
-    rows = [0.018 + k * (top - 0.018) / round((top - 0.018) / 0.5) for k in range(round((top - 0.018) / 0.5) + 1)]
-    for za, zb in zip(rows[:-1], rows[1:]):
-        u = ua - rng.uniform(0, 0.4)
-        while u < ub:
-            a, b = max(u, ua), min(u + rng.uniform(0.4, 0.8), ub)
-            if b - a > 0.02:
-                S("Kalkstein", a + J / 2, b - J / 2, 0.006, T, za + J / 2, zb - J / 2, rng.random())
-            u = b if b > u else ub
+    hc.limestone(c, side == "n", face, n, ua, ub, 0.018, top, rng, x0, y0)

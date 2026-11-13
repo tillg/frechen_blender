@@ -216,7 +216,7 @@ test('hires=on keeps every light', async ({ page }) => {
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(await page.evaluate(() => window.__fl.hires)).toBe(true);
   const L = await page.evaluate(() => window.__fl.lights);
-  expect(L.room.length).toBe(23);
+  expect(L.room.length).toBe(14 + 35);                               // room lights + Wandlampen (#19, #3)
   expect(L.outside.length).toBe(8);
   await page.evaluate(() => window.__fl.lookFrom(11.7, 3.2, 1.6));
   await page.waitForTimeout(600);                                    // saveView() runs 300 ms after a change

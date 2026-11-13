@@ -13,6 +13,7 @@ for (const [name, args, start] of [
   ['regal', ['Regal_Moebel', '--page', 'regal'], /^http:\/\/localhost:5377\/regal\.html\?cam=/],
   ['schrankbett', ['Schrankbett_Moebel', '--page', 'schrankbett'], /^http:\/\/localhost:5377\/schrankbett\.html\?cam=/],
   ['gaestebad', ['Gaestebad_Sanitaer', '--page', 'gaestebad'], /^http:\/\/localhost:5377\/gaestebad\.html\?cam=/],
+  ['elternbad', ['Elternbad_Sanitaer', '--page', 'elternbad'], /^http:\/\/localhost:5377\/elternbad\.html\?cam=/],
 ]) test(`shot.js writes a screenshot of the URL (${name})`, async ({ page }) => {
   const url = execFileSync(ROOT + '.venv/bin/python', [ROOT + 'code/show.py', ...args, '--print'],
     { encoding: 'utf8' }).trim();
