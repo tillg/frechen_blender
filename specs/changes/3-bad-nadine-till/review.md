@@ -50,3 +50,5 @@ edited: 2026-11-13
 Defects 6 (worst HIGH, an in-progress red, fixed); Standards 1 hard (fixed) + judgement calls (accepted);
 Spec 2 (stale text, fixed; toilet trade-off documented). Fixed before archive: shutters, shared window, floor,
 comments, alias, spec text. Accepted: existing sub-model patterns (`cm()`, wall literals in `waende()`), hairline gaps.
+
+**Human check:** ✅ approved by the owner on 2026-11-13 (PR #24).
