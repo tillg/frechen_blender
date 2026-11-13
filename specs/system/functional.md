@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-12
+edited: 2026-11-13
 ---
 
 # Functional: Frechenlehen house model
@@ -126,6 +126,15 @@ edited: 2026-11-12
     the south column; it shows how: it swings shut in 2 s, rests 4 s, swings open, rests 4 s, on
     the sub-model page and in the house in stage Eingerichtet (the film and the Rundgang see it
     open). Depths and shelf heights estimated from the photo
+  - Schrankbett in the Yoga room (OG, NW) after `input/2026-11-13 input/schrankbett_v1.svg` (also a
+    sub-model page): a 2 × 2 m wall bed (lying area 2.00 × 2.00, spruce) in a 45 cm deep Schrankwand on
+    the south wall, from the west wall to 5 mm short of the Yoga door's architrave (278), up to the
+    2.20 m ceiling: a 36 cabinet each side of the 206 niche, a 10 cm Blende over it. Folded down the
+    bed lies with its head at the south wall (to 2.21 m from it, mattress top 39 cm); folded up its
+    underside, framed with six raised panels like the doors, closes the niche flush with the cabinet
+    doors, its feet folded onto it. It shows how: it folds up in 3 s, rests 4 s, folds down, on the
+    sub-model page and in the house in stage Eingerichtet (the film, the Rundgang and the plan sheets
+    see it down). The left cabinet covers part of the west window's reveal (accepted)
   - the six washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
     52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
@@ -205,7 +214,7 @@ change; the same model always gives byte-identical files.
   - **Modell:** Ganzes Haus, Erdgeschoss, Erdgeschoss - Alternativ, 1. Stock (the cutaway: the
     whole house, without roof, only the EG – the default or the variant Alternativ –; the ground
     stays), a separator, then Ofen, Schreibtisch, Bad Oma & Opa, Küche,
-    Gäste-WC, Schrank im Büro. A house entry switches in place, a sub-model entry opens its page; the current one is
+    Gäste-WC, Schrank im Büro, Schrankbett. A house entry switches in place, a sub-model entry opens its page; the current one is
     selected.
   - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert. On
     Ganzes Haus a group **Pläne** follows the stages: the six plan sheets of `plans/` (Grundriss EG,
@@ -276,7 +285,7 @@ change; the same model always gives byte-identical files.
 - **Show**: `.venv/bin/python code/show.py <object…>` opens the user's browser on the dev server
   at a view URL that frames the named objects (prefix match) — outside objects from the nearest
   facade, 20° up, whole house; inside objects from the SE diagonal, 55° up, with the storeys above
-  cut away; sub-model pages (`--page ofen|desk|bad|kueche|gaeste_wc|regal`) from the SE (Küche from the open south, Gäste-WC from the back hall in the north, Schrank im Büro from the room in the west), 30° up, Gerendert. Options:
+  cut away; sub-model pages (`--page ofen|desk|bad|kueche|gaeste_wc|regal|schrankbett`) from the SE (Küche from the open south, Gäste-WC from the back hall in the north, Schrank im Büro from the room in the west, Schrankbett from the room in the north), 30° up, Gerendert. Options:
   `--from n|e|s|w|top`, `--at x,y,z`, `--p 0…4` (house only), `--print` (only print the URL). It
   refuses (exit 2) when the server on 5377 runs from another clone.
 - `cd web && node shot.js '<url>' <png>`: one headless 1280×720 screenshot of a view URL after the
