@@ -5102,8 +5102,8 @@
 <path class="fe" d="M281.12 144.70L281.12 144.95L281.41 144.95L281.41 144.70Z"/>
 <path class="fe" d="M281.12 144.95L281.12 146.55L281.41 146.55L281.41 144.95Z"/>
 <path class="fe" d="M143.86 149.15L143.86 115.09L143.61 115.09L143.61 149.15Z"/>
-<path class="fe" d="M182.14 145.90L197.52 145.90L197.52 126.35L182.14 126.35Z"/>
-<path class="f" d="M197.44 145.90L197.52 145.90L197.52 126.35L197.44 126.35Z"/>
+<path class="fe" d="M182.14 146.17L197.52 146.17L197.52 126.35L182.14 126.35Z"/>
+<path class="f" d="M197.44 146.17L197.52 146.17L197.52 126.35L197.44 126.35Z"/>
 <path class="fe" d="M288.19 173.85L294.07 173.85L294.07 173.45L288.19 173.45Z"/>
 <path class="fe" d="M281.12 140.66L281.12 140.92L281.41 140.92L281.41 140.66Z"/>
 <path class="fe" d="M281.12 143.69L281.12 143.94L281.41 143.94L281.41 143.69Z"/>
@@ -7752,6 +7752,6 @@
 <text x="293.00" y="264.00" font-size="5.00" text-anchor="start" font-weight="bold">Frechenlehen</text>
 <text x="293.00" y="274.00" font-size="4.50" text-anchor="start">Ansicht Süd</text>
 <text x="293.00" y="283.50" font-size="3.50" text-anchor="start">M 1:100</text>
-<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand fff2c168d1d7</text>
+<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 268c145e3481</text>
 <g id="scale" stroke="#000" stroke-width="0.18"><rect x="290.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="300.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="310.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="320.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="330.00" y="251.00" width="10.00" height="1.50" fill="#000"/></g><text x="290.00" y="249.80" font-size="2.00" text-anchor="middle">0</text><text x="300.00" y="249.80" font-size="2.00" text-anchor="middle">1</text><text x="310.00" y="249.80" font-size="2.00" text-anchor="middle">2</text><text x="320.00" y="249.80" font-size="2.00" text-anchor="middle">3</text><text x="330.00" y="249.80" font-size="2.00" text-anchor="middle">4</text><text x="340.00" y="249.80" font-size="2.00" text-anchor="middle">5</text><text x="342.50" y="252.40" font-size="2.00" text-anchor="start">m</text>
 </svg>

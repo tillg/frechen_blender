@@ -751,7 +751,7 @@
    0.0,
    0.0
   ],
-  "rnd": "844876fb454c724f",
+  "rnd": "eca5e88719adf949",
   "verts": 5876
  },
  "EG_Ofen_Bank": {
@@ -1061,7 +1061,7 @@
    0.0,
    0.0
   ],
-  "rnd": "0bdf2bdfeb3bd28d",
+  "rnd": "aad59addf33a0aa0",
   "verts": 88
  },
  "EG_Speis": {
@@ -1195,7 +1195,7 @@
    0.0,
    0.0
   ],
-  "rnd": "2bc77a5cdbefbb49",
+  "rnd": "c6ced8810a2d1272",
   "verts": 954
  },
  "EG_Tisch": {
@@ -3014,7 +3014,7 @@
    0.0,
    0.0
   ],
-  "rnd": "01d5922cc7eac508",
+  "rnd": "5e6d41b10575488f",
   "verts": 59392
  },
  "OG_Raumnamen": {
@@ -3047,7 +3047,7 @@
    8.57,
    4.75
   ],
-  "faces": 3141,
+  "faces": 3135,
   "materials": [
    "FL_Glas",
    "FL_Keramik",
@@ -3058,8 +3058,8 @@
    0.0,
    0.0
   ],
-  "rnd": "922f2f6df8633eb6",
-  "verts": 5002
+  "rnd": "c57bbeec3541a2d2",
+  "verts": 4994
  },
  "OG_Spiegel": {
   "bbox": [
@@ -3231,7 +3231,7 @@
    0.0,
    0.0
   ],
-  "rnd": "b38dc361e5e2324e",
+  "rnd": "3f6c5f55c87ee7d1",
   "verts": 1096
  },
  "Verschalung_West": {
@@ -3253,7 +3253,7 @@
    0.0,
    0.0
   ],
-  "rnd": "27484fe3defbe837",
+  "rnd": "1186a31ce809cafc",
   "verts": 2136
  },
  "WR_N": {
