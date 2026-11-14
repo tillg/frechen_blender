@@ -122,6 +122,7 @@ function setCutaway(c) {
   cut = c;
   applyVisibility();
   for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level) && layout(l, c);
+  lights.setLayout(c === 'eg_alt' ? 'alt' : 'main');                   // a layout's own Wandlampen light only in it (#22)
   dirty = true;
   saveView();
 }

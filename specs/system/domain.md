@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-13
+edited: 2026-11-14
 ---
 
 # Domain: Frechenlehen house model
@@ -49,7 +49,7 @@ the team uses them:
 | **Collection** | Blender grouping. The house lives in `Haus` with sub-collections `FL_EG`, `FL_OG`, `FL_Dach`, `FL_Balkone`, `FL_Umgebung`, `FL_Referenz`. In the `.glb` it is `extras.collection` per node. |
 | **rnd** | A random value per Part, stored per face, that varies the shade of boards and slabs. |
 | **Core** (`house_core`) | The pure-Python description of the house: constants, materials as data, primitives, builders. It knows nothing about Blender or three.js. |
-| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `SLIDE`, `SWING`, `LIFT`, `CRANK`, `FOLD`, `VARIANT`, `MAT_DEF`, paint colours, room lights and the garden layout. Not to be confused with "model", the whole 3D house. |
+| **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `SLIDE`, `SWING`, `LIFT`, `CRANK`, `FOLD`, `VARIANT`, `MAT_DEF`, paint colours, room lights, wall lights (with their layout tags) and the garden layout. Not to be confused with "model", the whole 3D house. |
 | **Backend** | Turns a Blueprint into output. **Blender backend** (`build_house.py`): the `.blend` scene. **glTF backend** (`export_gltf.py`): the `.glb` file. |
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
 | **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
@@ -78,9 +78,11 @@ the team uses them:
 | **No-grass area** | A rectangle where no grass grows: around house walls, terrace, gravel strip, beds, annex and the EG balcony (`no_grass`). The **windrose area** (`windrose`: star square plus four letter squares) is separate: Blender keeps grass off it, the viewer ignores it. |
 | **Clump** (Grasbüschel) | One grass instance: 6 curved, tapering blades, 0.3–0.6 m tall. |
 | **Shrub** (Strauch) | A rounded leafy bush in one of the beds (`Beet_Ost`, `Beet_West`), placed in groups of three with a gap. |
-| **Room light** | A warm point light at one of the 23 `ROOM_LIGHTS` sites (x, y, floor z), `ROOM_LIGHT_H` above the floor. In Blender, one film fill light per site. In the viewer (fast mode) by day none is on; at dusk the `ROOM_N` sites nearest the camera are lit; with `hires=on` every site has its own light. |
+| **Room light** | A warm fill light at a `ROOM_LIGHTS` site (x, y, floor z), `ROOM_LIGHT_H` above the floor; only the Speis has one, every other room is lit by its Wandlampen. In Blender, one film fill light per site. In the viewer (fast mode) by day none is on; at dusk the `ROOM_N` sites nearest the camera (room and wall lights ranked together) are lit; with `hires=on` every site has its own light. |
+| **Wandlampe** | The house's standard wall lamp after `input/2026-11-13 input/wandlampe.png`: brass rosette and gooseneck arm, a stepped gallery, an opal-glass bell (Ø 16, 11 high, reaching 21 from the wall). Rosette centre at `WANDLAMPE_H` (1.70) or, over a mirror and the Ofen bed, `WANDLAMPE_SPIEGEL_H` (2.10). 35 in the OG and 35 in the EG (33 per layout: two on the Essen's west wall in the default layout, two on the Speis's wooden back in Alternativ), each centred in a free wall span. Its **wall light** (`WALL_LIGHTS`) sits 50 cm out from the wall at the bulb's height, dimmer than a fill light; its shade glows at dusk. Not on the Grundriss. |
+| **Haubenspots** | Four spots built into a strip under the back edge of the Küche hood; one wall light for the four. |
 | **Outside lamp light** | The viewer's warm spot under an `OUTSIDE_LIGHTS` bulb (gooseneck wall lamps): off by day; at dusk the `OUTSIDE_N` nearest the camera (fast mode) or all of them (`hires=on`). |
-| **Light site** | A position a light can sit at: one `ROOM_LIGHTS` entry + `ROOM_LIGHT_H`, or one `OUTSIDE_LIGHTS` bulb. |
+| **Light site** | A position a light can sit at: one `ROOM_LIGHTS` entry + `ROOM_LIGHT_H`, one `WALL_LIGHTS` entry (of the layout shown), or one `OUTSIDE_LIGHTS` bulb. |
 | **Light pool** | The viewer's fixed set of `ROOM_N` (6) room `PointLight`s and `OUTSIDE_N` (2) outside `SpotLight`s. Its members never change; at dusk each sits at one of the nearest sites, by day the whole pool is off (`visible = false`, out of the render list). |
 | **Site distance** | How far a light site is from the camera for the ranking: `hypot(dx, dy, 3·dz)` while the camera is indoors (own storey first), else the plain 3D distance. |
 | **Cut-off fade** | A pooled light's intensity factor `clamp((d_cut − d) / FADE, 0, 1)`, `d_cut` = distance of the nearest site left out, `FADE` = 1.0 m: a light leaves the pool already dark. |
@@ -130,6 +132,7 @@ erDiagram
     BLUEPRINT ||--|{ MATERIAL_DEF : MAT_DEF
     BLUEPRINT ||--o{ PAINT : "RAL overrides"
     BLUEPRINT ||--o{ ROOM_LIGHT : ROOM_LIGHTS
+    BLUEPRINT ||--o{ WALL_LIGHT : "WALL_LIGHTS (+ layout tag)"
     BLUEPRINT ||--|| GARDEN_LAYOUT : garden
     OBJECT_ENTRY ||--o| PIVOT : "origin (EG_Haustuer, screens, swinging leaves)"
     OBJECT_ENTRY ||--o| SWING : "yaw to the other state (back hall doors)"
