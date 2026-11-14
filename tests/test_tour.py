@@ -216,3 +216,20 @@ def test_routes_and_spots_clear_the_wandlampen():
             assert gap(f[:3]) >= 0.25, (name, f[:3])
     for s in tour.SPOTS:
         assert gap(s[3]) >= 0.25, s[0]
+
+
+def test_routes_clear_the_alternativ_furniture():
+    """The Rundgang also runs in the EG variant Alternativ (?layout=alt, its film): every camera key of
+    every route keeps 0.25 m from the variant's objects (cabinet C over the Essen's west wall, B's back,
+    the saloon leaves, its lamps) as from everything else."""
+    bp = house_core.build()
+    boxes = []
+    for o in [k for k, v in bp.variant.items() if v == "alt"]:
+        g = bp.geo[("EG", o)]
+        for first, n in bp.parts[("EG", o)]:
+            vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+            boxes.append(([min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]))
+    gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
