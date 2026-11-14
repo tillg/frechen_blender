@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-13
+edited: 2026-11-14
 ---
 
 # Architecture: Frechenlehen house model
@@ -237,13 +237,24 @@ flowchart LR
 - **Garden layout** (`garden_layout()`): ground, no-grass rectangles computed from `GEO`,
   windrose rectangles, density field, the grass clump and the shrub placements.
 - **Room lights.** `ROOM_LIGHTS` (x, y, floor z) plus `ROOM_LIGHT_H`, the light height above
-  the floor.
+  the floor: only the Speis.
+- **Wandlampen.** `wandlampe(coll, wx, wy, fx, fy, z, obj=None, variant=None)` builds one lamp into
+  `obj` (default `<coll>_Wandlampen`; one fixed `rnd`, no draws, in `SMOOTH`) and appends its light
+  to `WALL_LIGHTS` (50 cm out from the wall, 5 cm under the rosette) and its layout tag to the parallel
+  `WALL_LIGHT_VARIANT` (None, "main", "alt"; both lists cleared together in every `build*()`).
+  `build_wandlampen()` (from `build_sanitary()`) builds `WANDLAMPEN_OG` and `WANDLAMPEN_EG` (wall
+  point, facing, height, layout; the EG list after `input/2026-11-14 input/lampen_eg_v1.svg`, drawn from
+  it by `lampen_eg_svg.py`) into `OG_Wandlampen`, `EG_Wandlampen`, `EG_Wandlampen_Essen` (`VARIANT`
+  main) and `EG_Alt_Wandlampen` (alt). Over mirrors: `gaestebad.py`, `elternbad.py`, `build_sanitary()`;
+  over the Ofen bed: `ofen.py` (its light moved with the Ofen by `ofen_im_haus()`); the hood's spots:
+  `kueche.py` (one light). `default_layout()` drops the alt lights. "Wandlampen" in `PLAN["skip_words"]`
+  keeps them off the Grundriss (the Ansichten show them through openings).
 - **Randomness.** `build()` clears every registry and seeds `random` with 22, so builds are
   repeatable and both backends get the same `rnd` values. The clump uses
   `random.Random(5)` and the shrubs `random.Random(6)`.
 
 `build()` returns the **Blueprint**: `geo`, `parts`, `smooth`, `pivot`, `mat_def`, `paint`,
-`room_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
+`room_lights`, `wall_lights`, `wall_variant`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
 `dims` (sub-models only), `turn` (`TURN`: object → yaw in degrees about its pivot), `slide`
 (`SLIDE`: object → (dx, dy, dz) to its other end of travel; the Bad's two sliding leaves, one
 object each; glTF node `extras.slide`), `swing` (`SWING`: object → degrees about its pivot from
@@ -284,7 +295,7 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
   float32 values.
 - **Materials** `FL_<name>`: a `pbrMetallicRoughness` approximation. The full `MAT_DEF` entry,
   `kind` and paint go in `extras`. Materials of open Parts are `doubleSided`.
-- **`scene.extras`:** `room_lights`, `ROOM_LIGHT_H`, `Z_OG`, `W_OUT`, `D_OUT`, `RIDGE_Z`,
+- **`scene.extras`:** `room_lights`, `ROOM_LIGHT_H`, `wall_lights`, `wall_light_variant`, `outside_lights`, `Z_OG`, `W_OUT`, `D_OUT`, `RIDGE_Z`,
   the garden layout and (house only, not the Ofen) `tour = {fps, frames}`, the camera keys of
   `tour.build_tour()` as JSON, `routes = [{name, frames}]` (the viewer's shorter routes, i.e.
   `ROUTES[1:]`) and `spots = [{name, group, entries, cam, at, fov}]` (`SPOTS`).
@@ -356,7 +367,7 @@ headless parity build) the caller's `PROJECT` (`tests/blender/snapshot.py`) give
 | `paint.py` | Overwrites the base colour of plain materials with `PAINT`. | `FL_*` materials from `build_house` |
 | `windrose.py` | Compass rose at `WINDROSE_CENTER`/`WINDROSE_R`, in its own collection. | core |
 | `garden.py` | Meadow: a Geometry Nodes scatter of grass clumps over an emitter grid built from the garden layout (no grass on `no_grass` or `windrose`). Leafy shrubs at the layout's shrub placements. | core, `Beet_*` objects |
-| `film.py` | Keys `FL_Kamera_Rundgang` with `tour.build_tour()` (frame range = key count), room fill lights (`Innenlicht`) at `ROOM_LIGHTS` + `ROOM_LIGHT_H`, opens `EG_Haustuer`. | core, `tour.py`, `EG_Haustuer` pivot |
+| `film.py` | Keys `FL_Kamera_Rundgang` with `tour.build_tour()` (frame range = key count), fill lights (`Innenlicht`) at `ROOM_LIGHTS` + `ROOM_LIGHT_H` and a small one at each wall light of the default layout, opens `EG_Haustuer`. | core, `tour.py`, `EG_Haustuer` pivot |
 
 ### `web/` — the viewer
 
@@ -396,12 +407,14 @@ sequenceDiagram
     pool. `update(cameraPos, inside)` (called by `main.js` right before each `renderer.render`;
     a no-op by day) ranks each kind's sites by site distance (`hypot(dx, dy, 3·dz)` while
     `indoors()`), moves pooled light *k* to the *k*-th nearest site and sets
-    `intensity = base · v · clamp((d_cut − d) / FADE, 0, 1)` (`base` 9 room / 14 outside,
+    `intensity = base · v · clamp((d_cut − d) / FADE, 0, 1)` (`base` 9 fill / 2 wall light / 14 outside,
     `FADE` 1.0 m). `prewarm(compile)` makes the pool visible, awaits
     `renderer.compileAsync`, catches a failure, and restores the day/dusk visibility; `main.js`
     awaits it after `renderer.init()`.
-  - **`hires`**: one light per site (23 + 8), always in the render list, intensity `base · v`.
-  - `LAMP_LIGHTS` (the reading lamp above the Ofen bed) are lit by day and at dusk in both modes.
+  - **`hires`**: one light per site (1 fill + 71 wall + 8 outside), always in the render list, intensity
+    `base · v`.
+  - **Layout:** `setLayout('main' | 'alt')` (from `main.js` `setCutaway()`) keeps the other layout's wall
+    lights at 0 (hires) or out of the ranking (fast mode).
 - **`hires`.** `main.js` reads `?hires=on` once; it also sets the pixel ratio (full vs. ≤ 1.5)
   and whether the grass is hidden while `indoors()` (fast mode only, Rundgang included), and
   `saveView()` keeps it in the URL.

@@ -48,3 +48,5 @@ edited: 2026-11-14
 
 Defects 5 (worst MEDIUM, both fixed); Standards 4 hard (fixed) + judgement calls (accepted); Spec 1 stale-text item
 (fixed). After the fixes: quick check green, parity green (only the film lights moved), house geometry unchanged by them.
+
+**Human check:** ✅ approved by the owner on 2026-11-14 ("merge #22, archive, then film"; PR #25).

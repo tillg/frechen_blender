@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-13
+edited: 2026-11-14
 ---
 
 # Functional: Frechenlehen house model
@@ -32,6 +32,10 @@ edited: 2026-11-13
   - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf,
     hinged north, opened 90° into the back hall, so it lies along the back hall's north wall)
   - Stube niche with a segmental arch
+  - Wandlampen (brass gooseneck, opal bell) in every room of both storeys but the Speis, each centred
+    in a free wall span; in the EG as agreed on `input/2026-11-14 input/lampen_eg_v1.svg` (also over the
+    Ofen bed and the back hall's mirror), the Essen's west-wall pair only in the default layout, a pair on
+    the Speis's wooden back in Alternativ; four spots in a strip under the Küche hood
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
     threshold), the Bäder (the Gästebad with its WC niche and shower, the Bad Nadine & Till with its shower) and
@@ -51,7 +55,7 @@ edited: 2026-11-13
     from the door frame into the NE corner, under the Abzug (plastered flue box from 1.80 m, depth
     assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
     after wamsler.jpeg (stainless steel, fire burning behind the glass, flue pipe into the east wall)
-    under an old-form steel hood (skirt with rail, canopy, stack to the ceiling); the Halbinsel
+    under an old-form steel hood (skirt with rail, canopy, stack to the ceiling; a strip of 4 spots at its back edge); the Halbinsel
     with the induction cooktop towards the dining table; no wall cabinets; east of the sink,
     where the Herd stands in front of the Spülzeile, a blind cabinet (no drawers) and the granite
     top runs up to the Herd, as the Ostzeile's does south of it; all cabinets in the style of
@@ -257,8 +261,9 @@ change; the same model always gives byte-identical files.
   - **Skizze:** hidden-line ink on paper.
   - **Massenmodell:** clay with soft sun shadows.
   - **Detailmodell:** procedural materials after `MAT_DEF`, daylight, grass and leafy shrubs.
-  - **Gebaut:** dusk sky, low sun, warm light in the rooms and outside lamps nearest the camera
-    (6 rooms, 2 lamps; inside the house the own storey first). By day all of them are off.
+  - **Gebaut:** dusk sky, low sun, the Wandlampen's shades glow and the lights nearest the camera
+    are lit (6 inside: wall lamps and the Speis's fill light; 2 outside lamps; inside the house the
+    own storey first); in "Erdgeschoss - Alternativ" the Essen's lamps of that layout. By day all off.
   - **Eingerichtet:** like Gebaut, plus the furniture (nodes with `extras.furniture`), which no
     other stage shows. The cutaway still applies: Erdgeschoss hides the OG furniture.
 - **Orbit** with the mouse (drag, scroll) around an outside Standpunkt. At an inside Standpunkt
