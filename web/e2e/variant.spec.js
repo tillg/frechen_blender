@@ -47,3 +47,18 @@ test('the Skizze lines follow the variant', async ({ page }) => {
   expect(await inks()).toContain('Ink_EG_base_main');
   expect(await inks()).not.toContain('Ink_EG_base_alt');
 });
+
+test('?layout=alt shows the Alternativ EG in the whole house and in the Rundgang (the film of the variant)', async ({ page }) => {
+  await open(page, '?layout=alt');
+  await expectVariant(page, 'alt');
+  for (const n of ['OG_Waende', 'EG_Waende']) expect(await vis(page, n), n).toBe(true);    // nothing cut away
+  expect(await vis(page, 'EG_Alt_Wandlampen')).toBe(true);                   // #22: the variant's lamps
+  expect(await vis(page, 'EG_Wandlampen_Essen')).toBe(false);
+  await choose(page, 'Standpunkt', 'Um und durch das Haus');
+  await page.waitForTimeout(300);
+  await expectVariant(page, 'alt');
+  expect(await vis(page, 'OG_Waende')).toBe(true);
+  await page.getByRole('button', { name: 'Beenden' }).click();
+  await page.waitForTimeout(400);                                            // the view lands in the URL
+  expect(await page.evaluate(() => location.search)).toContain('layout=alt');
+});

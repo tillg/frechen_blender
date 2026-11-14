@@ -16,6 +16,7 @@ await page.clock.install();
 // full quality: hires=on switches off the viewer's speed shortcuts (light pool, pixel-ratio cap, no grass indoors)
 const u = new URL(url);
 u.searchParams.set('hires', 'on');
+if (process.env.FILM_LAYOUT === 'alt') u.searchParams.set('layout', 'alt');   // the film of the EG variant Alternativ
 await page.goto(u.href);
 await page.waitForFunction(() => window.__fl?.ready === true, null, { timeout: 120_000 });
 const hires = await page.evaluate(() => window.__fl.hires);
