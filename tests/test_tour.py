@@ -197,10 +197,10 @@ def test_routes_and_spots_clear_the_wandlampen():
     route and every Standpunkt keeps the film's clearance of 0.25 m from each lamp (OG and EG, both layouts)."""
     bp = house_core.build()
     lamps = []                                                            # [(lo, hi)] per lamp: its parts lie
-    for key in [k for k in bp.geo if "Wandlampen" in k[1]]:               # within 20 cm, lamps 35+ cm apart
-      g = bp.geo[key]
-      for first, n in bp.parts[key]:
-        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+    parts = [(g["v"], g["f"][first:first + n]) for key, g in bp.geo.items() if "Wandlampen" in key[1]   # within 20 cm,
+             for first, n in bp.parts[key]]                                                        # lamps 35+ cm apart
+    for V, F in parts:
+        vs = [V[i] for f in F for i in f]
         lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
         c = [(a + b) / 2 for a, b in zip(lo, hi)]
         j = next((j for j, (l, h) in enumerate(lamps) if math.dist(c, [(a + b) / 2 for a, b in zip(l, h)]) < 0.2), None)

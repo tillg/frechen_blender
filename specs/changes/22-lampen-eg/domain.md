@@ -1,7 +1,7 @@
 ---
 feature: 22-lampen-eg
 title: "Domain: Lampen im EG"
-status: applying
+status: applied
 order: 2
 created: 2026-11-14
 edited: 2026-11-14

@@ -56,7 +56,7 @@ test('hires: dusk turns the room lights on and the sun down; they stay in the re
   L.setDusk(1);
   expect(L.sun.intensity).toBeLessThan(sunDay);
   expect(L.sun.position.y).toBeLessThan(L.sun.position.length() * Math.sin((20 * Math.PI) / 180));  // low sun
-  expect(L.roomLights.every((l) => (l.intensity > 0 || l.userData.site?.variant === 'alt') && l.visible)).toBe(true);
+  expect(L.roomLights.every((l) => (l.userData.site?.variant === 'alt' ? l.intensity === 0 : l.intensity > 0) && l.visible)).toBe(true);   // default layout
 });
 
 test('hires: dusk switches the outside lamps on: a warm light at every bulb of OUTSIDE_LIGHTS', () => {
