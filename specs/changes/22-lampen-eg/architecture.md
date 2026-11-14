@@ -1,7 +1,7 @@
 ---
 feature: 22-lampen-eg
 title: "Architecture: Lampen im EG"
-status: applying
+status: applied
 order: 3
 created: 2026-11-14
 edited: 2026-11-14
@@ -40,8 +40,9 @@ flowchart LR
 - **Garden / film:** film lights follow `wall_lights` (default layout); route unchanged, clearance
   re-checked against the EG lamps.
 - **Web viewer:** `lighting.js` (layout-aware sites; `update` gets the layout); `main.js` passes it.
-- **Render / output:** Blender rebuild + parity golden; plan sheets unchanged in content (lamps are
-  furnishings) but the model hash changes; no film re-render in this change.
+- **Render / output:** Blender rebuild + parity golden (rnd shifts after the removed reading lamp's draws);
+  Grundrisse without lamps (only the hood's strip under the cut), Ansichten show the EG lamps through the
+  openings like the OG's; no film re-render in this change.
 
 ## Key decisions
 

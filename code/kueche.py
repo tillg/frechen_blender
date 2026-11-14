@@ -106,7 +106,7 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
     for k in range(4):
         y = sa + (sb - sa) * (k + 0.5) / 4
         B(h, "Opalglas", XE - 0.06, XE - 0.02, y - 0.02, y + 0.02, 1.596, 1.60, rh)
-    hc.WALL_LIGHTS.append((XE - 0.04 + dx, ym + dy, 1.45))
+    hc.WALL_LIGHTS.append((XE - 0.50 + dx, ym + dy, 1.45))    # 50 out from the wall like every lamp's, under the hood
     hc.WALL_LIGHT_VARIANT.append(None)
     # Besenschrank in the NW corner, door to the south, on a plinth like the base units
     bx, by, bh = BESEN
