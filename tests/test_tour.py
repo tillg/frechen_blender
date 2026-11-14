@@ -193,12 +193,13 @@ def test_klavierspieler_sits_on_the_piano_bench_looking_over_the_keys():
 
 
 def test_routes_and_spots_clear_the_wandlampen():
-    """Issue #19: the Wandlampen reach 21 cm from the walls at head height; every camera key of every
-    route and every Standpunkt keeps the film's clearance of 0.25 m from each lamp."""
+    """Issues #19, #22: the Wandlampen reach 21 cm from the walls at head height; every camera key of every
+    route and every Standpunkt keeps the film's clearance of 0.25 m from each lamp (OG and EG, both layouts)."""
     bp = house_core.build()
-    g = bp.geo[("OG", "OG_Wandlampen")]
     lamps = []                                                            # [(lo, hi)] per lamp: its parts lie
-    for first, n in bp.parts[("OG", "OG_Wandlampen")]:                   # within 20 cm, lamps 35+ cm apart
+    for key in [k for k in bp.geo if "Wandlampen" in k[1]]:               # within 20 cm, lamps 35+ cm apart
+      g = bp.geo[key]
+      for first, n in bp.parts[key]:
         vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
         lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
         c = [(a + b) / 2 for a, b in zip(lo, hi)]
@@ -208,11 +209,10 @@ def test_routes_and_spots_clear_the_wandlampen():
         else:
             l, h = lamps[j]
             lamps[j] = ([min(a, b) for a, b in zip(l, lo)], [max(a, b) for a, b in zip(h, hi)])
-    assert len(lamps) == 35
+    assert len(lamps) == 35 + 35                                          # OG; EG incl. both layouts and the Ofen bed
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in lamps)
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
-            if f[2] > house_core.Z_OG:
-                assert gap(f[:3]) >= 0.25, (name, f[:3])
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
     for s in tour.SPOTS:
         assert gap(s[3]) >= 0.25, s[0]

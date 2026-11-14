@@ -23,6 +23,6 @@ test('GLTFLoader exposes _RND as _rnd', () => {
 
 test('scene extras and the hidden grass clump', () => {
   expect(bp.extras.garden.shrubs.length).toBeGreaterThan(0);
-  expect(bp.extras.room_lights.length).toBe(14);
+  expect(bp.extras.room_lights.length).toBe(1);                       // only the Speis (#22)
   expect(bp.byName.GA_Grasbuschel.visible).toBe(false);
 });
