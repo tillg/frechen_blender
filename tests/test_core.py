@@ -1485,8 +1485,8 @@ def test_wandlampen_eg_placements():
 
 def test_haube_spots():
     """Issue #22: under the Küche hood's back edge (at the east wall) a Metall strip with 4 built-in spots
-    (Opalglas discs, glowing at dusk) evenly along it, attached under the lip (1.62); one light for the four,
-    under the strip, among the wall lights (both layouts)."""
+    (Opalglas: its material glows at dusk) evenly along it, attached under the lip (1.62); one light for the four,
+    under the hood 50 cm out from the wall like every lamp's, among the wall lights (both layouts)."""
     import kueche
     key = ("EG", "EG_Haube")
     parts = list(_parts(BP, key))
@@ -1499,8 +1499,9 @@ def test_haube_spots():
     assert all(abs((ys[k + 1] - ys[k]) - (ys[1] - ys[0])) < 1e-6 for k in range(3))                  # evenly
     assert all(slo[0] < (lo[0] + hi[0]) / 2 < shi[0] and abs(hi[2] - slo[2]) < 1e-6 for lo, hi in spots)
     xm, ym = (slo[0] + shi[0]) / 2, (slo[1] + shi[1]) / 2
-    lights = [(p, v) for p, v in zip(BP.wall_lights, BP.wall_variant) if math.dist(p[:2], (xm, ym)) < 0.01]
+    lights = [(p, v) for p, v in zip(BP.wall_lights, BP.wall_variant) if math.dist(p[:2], (kueche.XE - 0.50, ym)) < 0.01]
     assert len(lights) == 1 and lights[0][1] is None and lights[0][0][2] < slo[2]
+    assert kueche.XE - 0.55 < lights[0][0][0]                                      # still under the hood (front 55)
 
 
 def test_eg_lamps_clear():

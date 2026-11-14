@@ -1632,11 +1632,11 @@ def balcony(name, x0, x1, y0, y1, ztop, sides, ph=0.95):
 OUTSIDE_LIGHTS = []   # (x, y, z) filament centre of every wall lamp: the viewer lights them at dusk
 
 
-def lamp(x, y, z, nx, ny, c="Umgebung", o="Aussenleuchten", scale=1.0):
+def lamp(x, y, z, nx, ny, c="Umgebung", o="Aussenleuchten"):
     """Gooseneck wall lamp after outdoor_lamp.jpeg: black arm, flat enamel shade (white
     inside), clear bulb with a warm filament; one of the OUTSIDE_LIGHTS (lit at dusk)."""
     sx, sy = -ny, nx
-    W = lambda n, s, h: (x + (nx * n + sx * s) * scale, y + (ny * n + sy * s) * scale, z + h * scale)
+    W = lambda n, s, h: (x + nx * n + sx * s, y + ny * n + sy * s, z + h)
     OUTSIDE_LIGHTS.append(W(0.38, 0, -0.085))
     ring = lambda n, h, r, k=16: [W(n + r * math.cos(2 * math.pi * i / k), r * math.sin(2 * math.pi * i / k), h)
                                   for i in range(k)]
@@ -1763,42 +1763,51 @@ WANDLAMPEN_OG = [
 
 # the EG's Wandlampen (#22), as agreed on input/2026-11-14 input/lampen_eg_v1.svg (its numbers): (wall point x, y,
 # facing, height, layout); "main": default layout only, "alt": the variant Alternativ only. The Ofen bed's: ofen.py
-m_, t_ = (lambda a, b: (a + b) / 2), (lambda a, b, k: a + (b - a) * k / 3)
+
+
+def _mid(a, b):
+    return (a + b) / 2
+
+
+def _third(a, b, k):
+    return a + (b - a) * k / 3
+
+
 WANDLAMPEN_EG = [
-    (m_(13.324, 13.825), 6.349, 0, 1, WANDLAMPE_H, None),        # 1 Windfang: open Windfang leaf .. front door's leaf (film)
-    (m_(14.145, 14.575), 8.576, 0, -1, WANDLAMPE_H, None),       # 2 Windfang: Bürotür's architrave .. NE corner
-    (m_(12.546, 14.351), 5.849, 0, -1, WANDLAMPE_H, None),       # 3 Stube: the open door leaf .. east wall
-    (14.351, m_(0.415, 1.254), -1, 0, WANDLAMPE_H, None),        # 4 Stube: SE corner, the east pier between the windows
+    (_mid(13.324, 13.825), 6.349, 0, 1, WANDLAMPE_H, None),        # 1 Windfang: open Windfang leaf .. front door's leaf (film)
+    (_mid(14.145, 14.575), 8.576, 0, -1, WANDLAMPE_H, None),       # 2 Windfang: Bürotür's architrave .. NE corner
+    (_mid(12.546, 14.351), 5.849, 0, -1, WANDLAMPE_H, None),       # 3 Stube: the open door leaf .. east wall
+    (14.351, _mid(0.415, 1.254), -1, 0, WANDLAMPE_H, None),        # 4 Stube: SE corner, the east pier between the windows
     (9.056, 4.64 - (4.64 - 2.938) / 3, 1, 0, WANDLAMPE_H, None), # 5 Stube: over the bench, 1/3 from the Ofen to the wall's end
     (7.46, 5.849, 0, -1, WANDLAMPE_H, None),                     # 7 Küche: over the sink
-    (8.557, m_(3.66, 4.26), -1, 0, WANDLAMPE_H, None),           # 8 Küche: over the Ostzeile, right of the hood
-    (m_(4.73, 6.618), 0.415, 0, 1, WANDLAMPE_H, None),           # 10 Essen: window .. terrace door
-    (2.772, t_(0.415, 3.108, 1), 1, 0, WANDLAMPE_H, "main"),     # 11, 12 Essen: west wall, outer wall .. Schrank C
-    (2.772, t_(0.415, 3.108, 2), 1, 0, WANDLAMPE_H, "main"),
-    (m_(3.802, 4.005), 3.715, 0, -1, WANDLAMPE_H, "alt"),        # 13, 14 Alternativ: on B's wooden back beside C, each
-    (m_(4.623, 4.826), 3.715, 0, -1, WANDLAMPE_H, "alt"),        # centred on the board nearest the thirds (no joint)
-    (m_(11.19, 12.25), 8.576, 0, -1, WANDLAMPE_H, None),         # 15 Flur: stair's foot .. Windfangtür
-    (m_(5.405, 7.263), 8.576, 0, -1, WANDLAMPE_H, None),         # 16 Flur: Oma & Opa door .. Bibliothek door
-    (m_(2.657, 4.336), 8.576, 0, -1, WANDLAMPE_H, None),         # 17 Flur: back Windfang .. Oma & Opa door
-    (t_(2.657, 6.03, 1), 6.349, 0, 1, WANDLAMPE_H, None),        # 18, 19 Flur: back Windfang's wall .. Küche door
-    (t_(2.657, 6.03, 2), 6.349, 0, 1, WANDLAMPE_H, None),
-    (m_(7.03, 9.54), 6.349, 0, 1, WANDLAMPE_H, None),            # 20 Flur: Küche door .. the Ofen's back door
-    (t_(9.351, 12.947, 1), 8.876, 0, 1, WANDLAMPE_H, None),      # 21, 22 Bibliothek: stub behind the Werkstattofen .. Bürotür
-    (t_(9.351, 12.947, 2), 8.876, 0, 1, WANDLAMPE_H, None),
-    (m_(8.352, 9.051), 8.876, 0, 1, WANDLAMPE_H, None),          # 23 Bibliothek: left of the door to the Flur
-    (6.174, t_(8.876, 11.918, 1), 1, 0, WANDLAMPE_H, None),      # 24, 25 Bibliothek: west wall .. the vitrine
-    (6.174, t_(8.876, 11.918, 2), 1, 0, WANDLAMPE_H, None),
-    (m_(7.852, 9.051), 12.473, 0, -1, WANDLAMPE_H, None),        # 26 Bibliothek: north window .. fireplace stub
-    (2.657, m_(8.876, 9.856), 1, 0, WANDLAMPE_H, None),          # 27 Oma & Opa: the stub right of the door
-    (m_(2.657, 3.866), 12.473, 0, -1, WANDLAMPE_H, None),        # 28 Oma & Opa: the stub .. balcony door
-    (0.31, m_(9.95, 10.923), 1, 0, WANDLAMPE_H, None),           # 29 Bad: sliding leaves .. limestone shower wall
+    (8.557, _mid(3.66, 4.26), -1, 0, WANDLAMPE_H, None),           # 8 Küche: over the Ostzeile, right of the hood
+    (_mid(4.73, 6.618), 0.415, 0, 1, WANDLAMPE_H, None),           # 10 Essen: window .. terrace door
+    (2.772, _third(0.415, 3.108, 1), 1, 0, WANDLAMPE_H, "main"),     # 11, 12 Essen: west wall, outer wall .. Schrank C
+    (2.772, _third(0.415, 3.108, 2), 1, 0, WANDLAMPE_H, "main"),
+    (_mid(3.802, 4.005), 3.715, 0, -1, WANDLAMPE_H, "alt"),        # 13, 14 Alternativ: on B's wooden back beside C, each
+    (_mid(4.623, 4.826), 3.715, 0, -1, WANDLAMPE_H, "alt"),        # centred on the board nearest the thirds (no joint)
+    (_mid(11.19, 12.25), 8.576, 0, -1, WANDLAMPE_H, None),         # 15 Flur: stair's foot .. Windfangtür
+    (_mid(5.405, 7.263), 8.576, 0, -1, WANDLAMPE_H, None),         # 16 Flur: Oma & Opa door .. Bibliothek door
+    (_mid(2.657, 4.336), 8.576, 0, -1, WANDLAMPE_H, None),         # 17 Flur: back Windfang .. Oma & Opa door
+    (_third(2.657, 6.03, 1), 6.349, 0, 1, WANDLAMPE_H, None),        # 18, 19 Flur: back Windfang's wall .. Küche door
+    (_third(2.657, 6.03, 2), 6.349, 0, 1, WANDLAMPE_H, None),
+    (_mid(7.03, 9.54), 6.349, 0, 1, WANDLAMPE_H, None),            # 20 Flur: Küche door .. the Ofen's back door
+    (_third(9.351, 12.947, 1), 8.876, 0, 1, WANDLAMPE_H, None),      # 21, 22 Bibliothek: stub behind the Werkstattofen .. Bürotür
+    (_third(9.351, 12.947, 2), 8.876, 0, 1, WANDLAMPE_H, None),
+    (_mid(8.352, 9.051), 8.876, 0, 1, WANDLAMPE_H, None),          # 23 Bibliothek: left of the door to the Flur
+    (6.174, _third(8.876, 11.918, 1), 1, 0, WANDLAMPE_H, None),      # 24, 25 Bibliothek: west wall .. the vitrine
+    (6.174, _third(8.876, 11.918, 2), 1, 0, WANDLAMPE_H, None),
+    (_mid(7.852, 9.051), 12.473, 0, -1, WANDLAMPE_H, None),        # 26 Bibliothek: north window .. fireplace stub
+    (2.657, _mid(8.876, 9.856), 1, 0, WANDLAMPE_H, None),          # 27 Oma & Opa: the stub right of the door
+    (_mid(2.657, 3.866), 12.473, 0, -1, WANDLAMPE_H, None),        # 28 Oma & Opa: the stub .. balcony door
+    (0.31, _mid(9.95, 10.923), 1, 0, WANDLAMPE_H, None),           # 29 Bad: sliding leaves .. limestone shower wall
     (0.792, 8.656, 0, 1, WANDLAMPE_H, None),                     # 30 WC Großeltern: over the cistern
-    (1.394, m_(9.256, 9.856), 1, 0, WANDLAMPE_H, None),          # 31 Schrank: its right wall, in front of the shelves
+    (1.394, _mid(9.256, 9.856), 1, 0, WANDLAMPE_H, None),          # 31 Schrank: its right wall, in front of the shelves
     (2.358, 7.0655, -1, 0, WANDLAMPE_SPIEGEL_H, None),           # 32 back hall: over the mirror
-    (1.419, t_(5.475, 6.574, 1), 1, 0, WANDLAMPE_H, None),       # 33, 34 Garderobe: the partition, opposite the hooks
-    (1.419, t_(5.475, 6.574, 2), 1, 0, WANDLAMPE_H, None),
+    (1.419, _third(5.475, 6.574, 1), 1, 0, WANDLAMPE_H, None),       # 33, 34 Garderobe: the partition, opposite the hooks
+    (1.419, _third(5.475, 6.574, 2), 1, 0, WANDLAMPE_H, None),
     (0.8145, 5.475, 0, 1, WANDLAMPE_H, None),                    # 35 Gäste-WC: over the cistern
-    (0.31, m_(6.723, 7.408), 1, 0, WANDLAMPE_H, None),           # 36 back hall: WC door .. back door
+    (0.31, _mid(6.723, 7.408), 1, 0, WANDLAMPE_H, None),           # 36 back hall: WC door .. back door
 ]
 WANDLAMPEN_EG_OBJ = {None: "EG_Wandlampen", "main": "EG_Wandlampen_Essen", "alt": "EG_Alt_Wandlampen"}
 
@@ -2501,7 +2510,7 @@ def default_layout(bp):
     pivots and swings: what Blender and the plan sheets show."""
     alt = {o for o, v in (bp.variant or {}).items() if v == "alt"}
     keep = lambda d: {k: v for k, v in d.items() if (k[1] if isinstance(k, tuple) else k) not in alt}
-    lights = [(p, v) for p, v in zip(bp.wall_lights, bp.wall_variant) if v != "alt"]
+    lights = [(p, v) for p, v in zip(bp.wall_lights, bp.wall_variant or [None] * len(bp.wall_lights)) if v != "alt"]
     return replace(bp, geo=keep(bp.geo), parts=keep(bp.parts), pivot=keep(bp.pivot), swing=keep(bp.swing or {}),
                    wall_lights=[p for p, v in lights], wall_variant=[v for p, v in lights])
 
@@ -2530,7 +2539,7 @@ def build_desk():
 def build_kueche():
     """The Küche sub-model alone (web/kueche.html): its furnishings and the flue box at the origin
     (the room's inner NW corner), plus its dimension lines."""
-    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); WALL_LIGHTS.clear(); WALL_LIGHT_VARIANT.clear()
     LEAVES.clear(); DOORS.clear()
     random.seed(22)
     dims = kueche.kueche_neu()
@@ -2580,7 +2589,7 @@ def build_gaestebad():
     random.seed(22)
     dims = gaestebad.gaestebad_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
-                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS))
+                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS), wall_variant=list(WALL_LIGHT_VARIANT))
 
 
 def build_elternbad():
@@ -2591,7 +2600,7 @@ def build_elternbad():
     random.seed(22)
     dims = elternbad.elternbad_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
-                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS))
+                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS), wall_variant=list(WALL_LIGHT_VARIANT))
 
 
 def build_schrankbett():

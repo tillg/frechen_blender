@@ -200,14 +200,10 @@ test('lights: none by day, the nearest few at dusk', async ({ page }) => {
   let L = await lights();
   expect(L.room.length).toBe(6);
   expect(L.outside.length).toBe(2);
-  await page.evaluate(() => window.__fl.lookFrom(11.7, 3.2, 1.6));    // inside the Stube
-  await page.waitForTimeout(400);
-  L = await lights();
-  expect(L.room).toContainEqual([11.7, 3.2, 2.1]);                   // the Stube's own light
   await page.goto('/?cam=13.1,2.2,1.6&at=9.5,4,1.4&p=3&fov=55');      // the Stube as in the Rundgang
   await page.waitForFunction(() => window.__fl?.ready === true);
   await page.waitForTimeout(400);
-  expect((await lights()).room).toContainEqual([11.7, 3.2, 2.1]);
+  expect((await lights()).room.some(([x, y, z]) => 9.06 < x && x < 14.36 && 0.4 < y && y < 5.85 && z < 2.4)).toBe(true);
   await shot(page, 'lights_dusk.png');
 });
 
@@ -216,7 +212,7 @@ test('hires=on keeps every light', async ({ page }) => {
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(await page.evaluate(() => window.__fl.hires)).toBe(true);
   const L = await page.evaluate(() => window.__fl.lights);
-  expect(L.room.length).toBe(14 + 35);                               // room lights + Wandlampen (#19, #3)
+  expect(L.room.length).toBe(1 + 71);                                // the Speis's fill light + every Wandlampe light (#19, #3, #22)
   expect(L.outside.length).toBe(8);
   await page.evaluate(() => window.__fl.lookFrom(11.7, 3.2, 1.6));
   await page.waitForTimeout(600);                                    // saveView() runs 300 ms after a change
