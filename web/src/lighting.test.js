@@ -14,7 +14,7 @@ test('hires: one room light per ROOM_LIGHTS entry at floor + ROOM_LIGHT_H and pe
   expect(extras.ROOM_LIGHT_H).toBe(2.1);                           // NaN would compare equal below
   const L = createLighting(scene, extras, new THREE.Vector3(), undefined, hires);
   const n = extras.room_lights.length;
-  expect(extras.wall_lights.length).toBe(35);
+  expect(extras.wall_lights.length).toBe(71);                         // OG 35, EG 35 (#22), the hood's spots
   expect(L.roomLights.length).toBe(n + extras.wall_lights.length);
   L.roomLights.forEach((l, i) => {
     const [x, y, z] = i < n ? extras.room_lights[i] : extras.wall_lights[i - n];
@@ -22,7 +22,30 @@ test('hires: one room light per ROOM_LIGHTS entry at floor + ROOM_LIGHT_H and pe
     expect(l.position.toArray()).toEqual(i < n ? [x, z + extras.ROOM_LIGHT_H, -y] : [x, z, -y]);
   });
   L.setDusk(1);                                                    // a Wandlampe is dimmer than a fill light
-  expect(L.roomLights.map((l) => l.intensity)).toEqual(L.roomLights.map((_, i) => (i < n ? 9 : 2)));
+  const tag = extras.wall_light_variant;                           // default layout: the Alternativ lamps dark
+  expect(L.roomLights.map((l) => l.intensity)).toEqual(L.roomLights.map((_, i) => (i < n ? 9 : tag[i - n] === 'alt' ? 0 : 2)));
+});
+
+test('the wall lights of the other layout stay dark (hires) and out of the pool (fast) (#22: the Essen lamps)', () => {
+  const tag = extras.wall_light_variant, n = extras.room_lights.length;
+  expect(tag.filter((v) => v === 'main').length).toBe(2);
+  expect(tag.filter((v) => v === 'alt').length).toBe(2);
+  const H = createLighting(new THREE.Scene(), extras, new THREE.Vector3(), undefined, hires);
+  for (const lay of ['main', 'alt']) {
+    H.setLayout(lay);
+    H.setDusk(1);
+    H.roomLights.slice(n).forEach((l, i) => expect(l.intensity > 0).toBe(!tag[i] || tag[i] === lay));
+  }
+  const F = createLighting(new THREE.Scene(), extras, new THREE.Vector3());
+  F.setDusk(1);
+  const of = (lay) => extras.wall_lights.filter((_, i) => tag[i] === lay).map((p) => p.map((v) => +v.toFixed(3)).join(','));
+  const pool = () => F.roomLights.map((l) => [l.position.x, -l.position.z, l.position.y].map((v) => +v.toFixed(3)).join(','));
+  for (const [lay, other] of [['main', 'alt'], ['alt', 'main']]) {
+    F.setLayout(lay);
+    F.update(new THREE.Vector3(3.6, 1.6, -2.6), true);                 // in the Essen, by both pairs
+    expect(pool().some((p) => of(lay).includes(p))).toBe(true);
+    expect(pool().some((p) => of(other).includes(p))).toBe(false);
+  }
 });
 
 test('hires: dusk turns the room lights on and the sun down; they stay in the render list by day', () => {
@@ -33,7 +56,7 @@ test('hires: dusk turns the room lights on and the sun down; they stay in the re
   L.setDusk(1);
   expect(L.sun.intensity).toBeLessThan(sunDay);
   expect(L.sun.position.y).toBeLessThan(L.sun.position.length() * Math.sin((20 * Math.PI) / 180));  // low sun
-  expect(L.roomLights.every((l) => l.intensity > 0 && l.visible)).toBe(true);
+  expect(L.roomLights.every((l) => (l.intensity > 0 || l.userData.site?.variant === 'alt') && l.visible)).toBe(true);
 });
 
 test('hires: dusk switches the outside lamps on: a warm light at every bulb of OUTSIDE_LIGHTS', () => {
@@ -86,17 +109,17 @@ test('update() moves the pool to the sites nearest the camera, storey-aware indo
   L.setDusk(1);
   const rooms = [...L.roomLights], outs = [...L.outsideLights];
   L.update(new THREE.Vector3(33, 13, 24), false);                     // default camera, outside
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([33, 34, 47, 3, 48, 46].map(roomSite)));   // 46-48: Elternbad (#3)
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([35, 22, 23, 70, 34, 71].map(roomSite)));   // 34, 35: Stube (#22); 70, 71: Elternbad (#3)
   expect(sorted(L.outsideLights.map((l) => zup(l.position)))).toEqual(sorted([2, 3].map(outSite)));
   for (const l of L.outsideLights) expect(l.target.position.toArray()).toEqual(l.position.clone().setY(l.position.y - 1).toArray());
-  L.update(new THREE.Vector3(11.7, 1.6, -3.2), true);                 // Stube: all EG
+  L.update(new THREE.Vector3(11.7, 1.6, -3.2), true);                 // Stube: all EG, its Wandlampen (#22)
   L.roomLights.forEach((l, i) => expect(l).toBe(rooms[i]));
   L.outsideLights.forEach((l, i) => expect(l).toBe(outs[i]));
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([3, 2, 0, 4, 5, 6].map(roomSite)));
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([36, 34, 35, 1, 2, 38].map(roomSite)));   // 1: the Ofen bed's, 2: the hood's spots
   L.update(new THREE.Vector3(11.1, 4.3, -6.3), true);                 // OG Galerie: all OG, Wandlampen only
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([35, 24, 25, 19, 36, 23].map(roomSite)));
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([24, 13, 14, 8, 25, 12].map(roomSite)));
   L.update(new THREE.Vector3(7.1, 4.3, -4.4), true);                  // Waschküche: its five lamps and the WC's
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([37, 38, 39, 40, 41, 36].map(roomSite)));
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([28, 27, 30, 29, 26, 25].map(roomSite)));
   expect(L.roomLights.every((l) => l.userData.base === 2)).toBe(true);
 });
 
@@ -107,12 +130,12 @@ test('a pooled light fades to 0 at the cut-off (FADE 1.0 m)', () => {
   L.update(cam, false);
   const at = (i) => L.roomLights.find((l) => zup(l.position).join() === roomSite(i).join());
   const d = (i) => at(i).position.distanceTo(cam);
-  const [x, y, z] = roomSite(35);
+  const [x, y, z] = extras.wall_lights[69 - extras.room_lights.length];   // exact: its distance is the cut-off
   const dCut = new THREE.Vector3(x, z, -y).distanceTo(cam);           // the 7th nearest site: first one left out
-  expect(at(3).intensity).toBeCloseTo(9 * 0.5, 5);                    // a fill light, full
-  expect(at(33).intensity).toBeCloseTo(2 * 0.5, 5);                   // a Wandlampe, full
-  expect(at(46).intensity).toBeCloseTo(2 * 0.5 * (dCut - d(46)), 5);  // the 6th, a Wandlampe (Elternbad), nearly out
-  expect(at(46).intensity).toBeLessThan(2 * 0.5 * 0.3);
+  expect(at(35).intensity).toBeCloseTo(2 * 0.5, 5);                   // the nearest, a Wandlampe (Stube, #22), full
+  expect(at(22).intensity).toBeCloseTo(2 * 0.5, 5);                   // an OG Wandlampe, full
+  expect(at(71).intensity).toBeCloseTo(2 * 0.5 * (dCut - d(71)), 5);  // the 6th, a Wandlampe (Elternbad), nearly out
+  expect(at(71).intensity).toBeLessThan(2 * 0.5 * 0.3);
 });
 
 test('prewarm() compiles with the pool in the render list, then restores day/dusk', async () => {
@@ -135,14 +158,3 @@ test('a failing prewarm restores the pool and resolves', async () => {
   expect([...L.roomLights, ...L.outsideLights].every((l) => !l.visible)).toBe(true);
 });
 
-test('the switched-on lamp inside (above the Ofen bed) is lit by day and at dusk', () => {
-  const L = createLighting(new THREE.Scene(), extras, new THREE.Vector3());
-  expect(L.lampLights.length).toBe(extras.lamp_lights.length);
-  expect(extras.lamp_lights.length).toBe(1);
-  const [x, y, z] = extras.lamp_lights[0];
-  expect(L.lampLights[0].position.toArray()).toEqual([x, z, -y]);
-  for (const v of [0, 1]) {
-    L.setDusk(v);
-    expect(L.lampLights[0].intensity).toBeGreaterThan(0);
-  }
-});

@@ -100,6 +100,14 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
              ya + 0.02 + dy, yb - 0.02 + dy, rng.random())                            # rail
     for y in (ya + 0.05, yb - 0.05):
         B(h, "Stahl", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705)
+    # at its back edge (the wall) a strip under the lip with 4 built-in spots (#22), one light for the four
+    sa, sb = ya + 0.05, yb - 0.05
+    B(h, "Metall", XE - 0.07, XE - 0.01, sa, sb, 1.60, 1.62, rh)
+    for k in range(4):
+        y = sa + (sb - sa) * (k + 0.5) / 4
+        B(h, "Opalglas", XE - 0.06, XE - 0.02, y - 0.02, y + 0.02, 1.596, 1.60, rh)
+    hc.WALL_LIGHTS.append((XE - 0.04 + dx, ym + dy, 1.45))
+    hc.WALL_LIGHT_VARIANT.append(None)
     # Besenschrank in the NW corner, door to the south, on a plinth like the base units
     bx, by, bh = BESEN
     B(o, "Front", XW, bx, by + 0.02, YN, zp, bh)
