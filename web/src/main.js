@@ -17,6 +17,8 @@ import { cleanView, hasView, initialQuery, read, remove, safeStorage, storageKey
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 // ?hires=on: full quality for the film capture, no speed shortcut that changes the picture
 const hires = new URLSearchParams(location.search).get('hires') === 'on';
+const forcedLayout = new URLSearchParams(location.search).get('layout') === 'alt' ? 'alt' : null;   // ?layout=alt: the EG variant
+// Alternativ in every entry and the Rundgang (its film), nothing cut away for it
 
 const renderer = new THREE.WebGPURenderer({ antialias: true });
 renderer.setPixelRatio(hires ? window.devicePixelRatio : Math.min(window.devicePixelRatio, 1.5));   // Retina: 44 % fewer pixels, barely softer
@@ -109,7 +111,8 @@ function setProgress(p) {
 // eg_alt (Erdgeschoss - Alternativ) cuts as eg and shows the EG variant Alternativ (extras.variant
 // 'alt') instead of the default layout ('main'), which every other cutaway shows
 const HIDE = { all: [], noroof: ['roof'], eg: ['roof', 'og'], eg_alt: ['roof', 'og'] };
-const layout = (o, c) => !o.userData.variant || o.userData.variant === (c === 'eg_alt' ? 'alt' : 'main');
+const layoutOf = (c) => forcedLayout ?? (c === 'eg_alt' ? 'alt' : 'main');
+const layout = (o, c) => !o.userData.variant || o.userData.variant === layoutOf(c);
 // furniture only in Eingerichtet
 function applyVisibility() {
   const furnished = stageAt(progress) === 'furnished';
@@ -122,7 +125,7 @@ function setCutaway(c) {
   cut = c;
   applyVisibility();
   for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level) && layout(l, c);
-  lights.setLayout(c === 'eg_alt' ? 'alt' : 'main');                   // a layout's own Wandlampen light only in it (#22)
+  lights.setLayout(layoutOf(c));                                       // a layout's own Wandlampen light only in it (#22)
   dirty = true;
   saveView();
 }
@@ -156,7 +159,7 @@ function flushView() {
     + (viewFov !== FOV ? `&fov=${viewFov}` : '');
   // the entry's default (Reset) is kept as no saved view and a bare URL
   const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
-  const extra = [plan && `plan=${plan}`, hires && 'hires=on'].filter(Boolean);
+  const extra = [plan && `plan=${plan}`, hires && 'hires=on', forcedLayout && 'layout=alt'].filter(Boolean);
   const q = (home ? '' : view) + (extra.length ? (home ? '?' : '&') + extra.join('&') : '');
   if (tour.state !== 'off') return;                               // a route is not saved, not even in the URL
   if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
