@@ -161,10 +161,9 @@ def ofen_neu():
         s0, s1 = 0.10 if i == 0 else 0.05, L - (0.10 if i == len(path) - 2 else 0.05)
         hc.add("Ofen", "Ofen_Bettrand", "FichteY" if abs(n[0]) > 0.9 else "FichteX", ring(s0) + ring(s1),
             [(0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)])
-    # small reading lamp like the photo: the outdoor gooseneck lamp at 40 %, on the head-end wall
-    # (y = 0) above the bed
-    hc.lamp(0.35, 0.0, 2.10, 0, 1, "Ofen", "Ofen_Lampe", 0.40, outside=False)
-    hc.SMOOTH.add("Ofen_Lampe")
+    # the house's standard Wandlampe on the head-end wall (y = 0) above the bed (#22: it replaces the
+    # small reading lamp); its light is one of the WALL_LIGHTS
+    hc.wandlampe("Ofen", 0.35, 0.0, 0, 1, 2.10)
     # bedding: a very thin cream mattress, 1 cm clear of the rim boards. Fixed rnd: a plain colour
     # ignores it, and drawing none leaves every later part's random value unchanged
     gm, mt = th + 0.01, zb + 0.04
@@ -208,9 +207,9 @@ def ofen_im_haus():
     north wall, so the bed runs towards the Stube door and the long bench along the west wall.
     Its objects move to EG as EG_<name>; wood grain X/Y swaps with the axes; dimension lines dropped."""
     (x0, y0), swap = OFEN_AT, {"FichteX": "FichteY", "FichteY": "FichteX"}
-    n0, nl, sh = len(hc.FIRES), len(hc.LAMP_LIGHTS), WALL_FLUR - y0   # back door: moved out to the Flur face
+    n0, nl, sh = len(hc.FIRES), len(hc.WALL_LIGHTS), WALL_FLUR - y0   # back door: moved out to the Flur face
     ofen_neu()
-    hc.LAMP_LIGHTS[nl:] = [(x0 + y, y0 - x, z) for x, y, z in hc.LAMP_LIGHTS[nl:]]
+    hc.WALL_LIGHTS[nl:] = [(x0 + y, y0 - x, z) for x, y, z in hc.WALL_LIGHTS[nl:]]
     for f in hc.FIRES[n0:]:
         (x, y, z), (ux, uy) = f["base"], f["u"]
         f.update(base=(x0 + y, y0 - x + (sh if f.get("back") else 0), z), u=(uy, -ux), collection="EG")

@@ -120,10 +120,10 @@ def test_garden_extras(glb):
     assert len(ex["garden"]["no_grass"]) == len(lay.no_grass) and len(ex["garden"]["windrose"]) == 5
     assert len(ex["garden"]["shrubs"]) == len(lay.shrubs)
     assert ex["garden"]["DENSITY"] == house_core.DENSITY and ex["garden"]["FAR_DENS"] == house_core.FAR_DENS
-    assert len(ex["room_lights"]) == 14 and len(ex["wall_lights"]) == 35 and ex["Z_OG"] == house_core.Z_OG
+    assert len(ex["room_lights"]) == 1 and len(ex["wall_lights"]) == 71 and ex["wall_light_variant"] == list(BP.wall_variant) and ex["Z_OG"] == house_core.Z_OG
     assert ex["ROOM_LIGHT_H"] == house_core.ROOM_LIGHT_H
     assert ex["outside_lights"] == [list(p) for p in BP.outside_lights] and len(ex["outside_lights"]) == 8
-    assert ex["lamp_lights"] == [list(p) for p in BP.lamp_lights] and len(ex["lamp_lights"]) == 1
+    assert "lamp_lights" not in ex                                        # no always-on lamps (#22)
     import fire                                                           # the fire component's layout
     assert len(ex["fires"]) == len(BP.fires) == 6 and ex["fires"][0]["tongues"] == fire.tongues(BP.fires[0]["w"], BP.fires[0]["h"], seed=0)
     assert all(set(f) >= {"base", "u", "w", "h", "d", "tongues"} for f in ex["fires"])

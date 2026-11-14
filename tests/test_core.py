@@ -26,7 +26,7 @@ CODE = Path(__file__).resolve().parent.parent / "code"
 def test_paint_and_room_lights_live_in_the_core():
     ral9010, ral5014 = (241, 236, 225), (99, 125, 150)
     assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014, "Front": ral5014}
-    assert len(house_core.ROOM_LIGHTS) == 14 and len(BP.wall_lights) == 35
+    assert len(house_core.ROOM_LIGHTS) == 1 and len(BP.wall_lights) == 35 + 35 + 1   # OG, EG (#22), hood spots
     assert BP.paint == house_core.PAINT and BP.room_lights == house_core.ROOM_LIGHTS
     assert "RAL =" not in (CODE / "paint.py").read_text()
     assert "ROOM_LIGHTS =" not in (CODE / "film.py").read_text()
@@ -680,18 +680,19 @@ def test_ofen_back_door_to_the_flur():
         assert not (lo[0] < (min(xs) + max(xs)) / 2 < hi[0] and lo[1] < 6.1 < hi[1] and lo[2] < 0.68 < hi[2])
 
 
-def test_small_lamp_above_the_ofen_bed():
-    """Like the photo (ofenbett-1200x800.jpg): a small gooseneck lamp on the wall above the bed's
-    head end, the outdoor lamp at reduced scale; not one of the outside lights."""
+def test_ofen_bed_wandlampe():
+    """Issue #22: over the Ofen bed's head end hangs the house's standard Wandlampe (it replaces the small
+    gooseneck reading lamp), rosette at 2.10 on the head-end wall; in the house on the Stube's west wall
+    (the Ofen 4 mm off it) facing east, its light among the wall lights. No always-on lamps any more."""
     sub = house_core.build_ofen()
-    v = sub.geo[("Ofen", "Ofen_Lampe")]["v"]
-    lo = [min(p[k] for p in v) for k in range(3)]; hi = [max(p[k] for p in v) for k in range(3)]
-    assert lo[1] >= -1e-9 and lo[2] > ofen.OFEN_BED + 0.4 and hi[2] < house_core.Z_EG_TOP     # on the wall, above the bed
-    assert max(h - l for h, l in zip(hi, lo)) < 0.25                                           # small
-    assert "GluehfadenAn" in sub.geo[("Ofen", "Ofen_Lampe")]["m"]                           # switched on
+    assert ("Ofen", "Ofen_Lampe") not in sub.geo
+    assert _rosettes(sub, ("Ofen", "Ofen_Wandlampen")) == [((0.35, 0.0), 2.1, (0, 1))] and len(sub.wall_lights) == 1
     house_core.build()
-    assert ("EG", "EG_Ofen_Lampe") in BP.geo and "EG_Ofen_Lampe" in BP.smooth
-    assert len(BP.outside_lights) == 8
+    assert ("EG", "EG_Ofen_Lampe") not in BP.geo
+    assert _rosettes(BP, ("EG", "EG_Ofen_Wandlampen")) == [((9.06, 5.495), 2.1, (1, 0))]
+    assert any(math.dist(p, (9.06 + 0.5, 5.495, 2.05)) < 1e-6 for p in BP.wall_lights)
+    assert not hasattr(BP, "lamp_lights") and not hasattr(house_core, "LAMP_LIGHTS")
+    assert "GluehfadenAn" not in house_core.MAT_DEF and len(BP.outside_lights) == 8
 
 
 def test_east_og_balcony_windows_are_french_doors():
@@ -702,22 +703,6 @@ def test_east_og_balcony_windows_are_french_doors():
             if o["ax"] == "y" and o["face"] == house_core.W_OUT and o["sill"] >= house_core.Z_OG - 1e-9}
     for a in (1.74, 4.15, 9.86):
         assert east[a]["kind"] == "FD" and east[a]["sill"] == house_core.Z_OG and east[a]["head"] == 4.60
-
-
-def test_ofen_lamp_is_switched_on():
-    """The small lamp above the Ofen bed is on: its filament glows by day too (not "night") and
-    it records a light (LAMP_LIGHTS) at the filament, for Blender and the viewer."""
-    sub = house_core.build_ofen()
-    assert len(sub.lamp_lights) == 1
-    house_core.build()
-    assert len(BP.lamp_lights) == 1 and len(BP.outside_lights) == 8
-    g = BP.geo[("EG", "EG_Ofen_Lampe")]
-    fil = [g["v"][i] for f, m in zip(g["f"], g["m"]) if m == "GluehfadenAn" for i in f]
-    assert fil and "night" not in house_core.MAT_DEF["GluehfadenAn"]
-    x, y, z = BP.lamp_lights[0]
-    assert min(p[0] for p in fil) - 0.01 <= x <= max(p[0] for p in fil) + 0.01
-    assert min(p[1] for p in fil) - 0.01 <= y <= max(p[1] for p in fil) + 0.01
-    assert min(p[2] for p in fil) - 0.01 <= z <= max(p[2] for p in fil) + 0.01
 
 
 def part_list(key):
@@ -961,8 +946,8 @@ def test_kueche_old_steel_hood_above_the_herd():
     a sloping canopy narrowing to a flue stack that runs up to the ceiling."""
     herd = _herd_body()
     hy0, hy1 = min(p[1][1] for p in herd), max(p[2][1] for p in herd)
-    hood = list(part_list(("EG", "EG_Haube")))
-    assert {p[0] for p in hood} == {"Stahl"}
+    hood = [p for p in part_list(("EG", "EG_Haube")) if p[0] == "Stahl"]   # (+ the spot strip, #22)
+    assert {p[0] for p in part_list(("EG", "EG_Haube"))} == {"Stahl", "Metall", "Opalglas"}
     lo = [min(p[1][k] for p in hood) for k in range(3)]; hi = [max(p[2][k] for p in hood) for k in range(3)]
     assert lo[1] < hy0 + 0.01 and hi[1] > hy1 - 0.01 and abs((lo[1] + hi[1]) / 2 - (hy0 + hy1) / 2) < 0.01
     assert 1.55 <= lo[2] <= 1.75 and hi[2] > house_core.Z_EG_TOP              # up into the ceiling
@@ -986,7 +971,7 @@ def test_kueche_hood_sink_tap_and_wamsler_in_steel():
     d = house_core.MAT_DEF["Stahl"]
     assert min(d["rgba"][:3]) >= 0.5 and d["metal"] < 0.5
     assert "Herd" not in house_core.MAT_DEF
-    assert {p[0] for p in part_list(("EG", "EG_Haube"))} == {"Stahl"}
+    assert {p[0] for p in part_list(("EG", "EG_Haube"))} == {"Stahl", "Metall", "Opalglas"}   # spot strip (#22)
     assert {p[0] for p in part_list(("EG", "EG_Herd"))} == {"Stahl", "Eisen", "Ofenglas"}
     assert len(_herd_body()) == 1
     zt = max(p[2][2] for p in part_list(("EG", "EG_Kueche")) if p[0] == "Granit")
@@ -1453,7 +1438,99 @@ def test_wandlampen_og_placements():
     same = lambda a, b: math.dist(a[0], b[0]) < 0.0015 and a[1:] == b[1:]     # 1.5 mm: positions at half mm round either way
     miss = ([g for g in got if not any(same(g, w) for w in flat)], [w for w in flat if not any(same(g, w) for g in got)])
     assert len(flat) == 35 and len(got) == len(flat) and miss == ([], []), miss
-    assert len(BP.wall_lights) == 35
+    assert len([p for p in BP.wall_lights if p[2] > house_core.Z_OG]) == 35
+
+
+def test_wandlampen_eg_placements():
+    """Issue #22: the Wandlampen of the EG at the places agreed on the drawing (input/2026-11-14 input/
+    lampen_eg_v1.svg; numbers as there), at WANDLAMPE_H, over the back hall's mirror at WANDLAMPE_SPIEGEL_H.
+    Lamp 1 sits between the open Windfang leaf (13.324) and the front door's leaf opened by the film (13.825).
+    11, 12 belong to the default layout (EG_Wandlampen_Essen), 13, 14 to Alternativ (EG_Alt_Wandlampen),
+    their lights tagged alike; default_layout() drops the alt ones. Off the plan sheets (PLAN skip_words)."""
+    L, S = house_core.WANDLAMPE_H, house_core.WANDLAMPE_SPIEGEL_H
+    n, s, e, w = (0, 1), (0, -1), (1, 0), (-1, 0)                         # facing: into the room
+    both = [((13.5745, 6.349), L, n),                                     # 1 Windfang: south wall
+            ((14.36, 8.576), L, s),                                       # 2 Windfang: Bürotür .. NE corner
+            ((13.4485, 5.849), L, s),                                     # 3 Stube: door leaf .. east wall
+            ((14.351, 0.8345), L, w),                                     # 4 Stube: SE corner, east pier
+            ((9.056, 4.0727), L, e),                                      # 5 Stube: over the bench
+            ((7.46, 5.849), L, s), ((8.557, 3.96), L, w),                 # 7, 8 Küche: sink; right of the hood
+            ((5.674, 0.415), L, n),                                       # 10 Essen: terrace door .. window
+            ((11.72, 8.576), L, s), ((6.334, 8.576), L, s), ((3.4965, 8.576), L, s),   # 15-17 Flur, north
+            ((3.7813, 6.349), L, n), ((4.9057, 6.349), L, n), ((8.285, 6.349), L, n),  # 18-20 Flur, south
+            ((10.5497, 8.876), L, n), ((11.7483, 8.876), L, n), ((8.7015, 8.876), L, n),   # 21-23 Bibliothek
+            ((6.174, 9.89), L, e), ((6.174, 10.904), L, e), ((8.4515, 12.473), L, s),       # 24-26
+            ((2.657, 9.366), L, e), ((3.2615, 12.473), L, s),             # 27, 28 Oma & Opa
+            ((0.31, 10.4365), L, e), ((0.792, 8.656), L, n), ((1.394, 9.556), L, e),       # 29-31 Bad, WC, Schrank
+            ((2.358, 7.0655), S, w),                                      # 32 back hall: over the mirror
+            ((1.419, 5.8413), L, e), ((1.419, 6.2077), L, e),             # 33, 34 Garderobe
+            ((0.8145, 5.475), L, n), ((0.31, 7.0655), L, e)]              # 35, 36 Gäste-WC; back hall
+    main = [((2.772, 1.3127), L, e), ((2.772, 2.2103), L, e)]             # 11, 12 Essen: west wall
+    alt = [((3.9035, 3.715), L, s), ((4.7245, 3.715), L, s)]              # 13, 14 Alternativ: B's back, on boards
+    same = lambda a, b: math.dist(a[0], b[0]) < 0.0015 and abs(a[1] - b[1]) < 0.0015 and a[2] == b[2]
+    for key, want in ((("EG", "EG_Wandlampen"), both), (("EG", "EG_Wandlampen_Essen"), main), (("EG", "EG_Alt_Wandlampen"), alt)):
+        got = [((x, y), z, f) for (x, y), z, f in _rosettes(BP, key)]
+        miss = ([g for g in got if not any(same(g, x) for x in want)], [x for x in want if not any(same(g, x) for g in got)])
+        assert len(got) == len(want) and miss == ([], []), (key, miss)
+    assert house_core.VARIANT["EG_Wandlampen_Essen"] == "main" and house_core.VARIANT["EG_Alt_Wandlampen"] == "alt"
+    assert len(BP.wall_variant) == len(BP.wall_lights)
+    tagged = lambda bp, v: [p for p, t in zip(bp.wall_lights, bp.wall_variant) if t == v]
+    assert len(tagged(BP, "main")) == 2 and len(tagged(BP, "alt")) == 2
+    near = lambda pts, xs: all(any(math.dist(p[:2], (x + 0.5 * f[0], y + 0.5 * f[1])) < 0.002 for p in pts) for (x, y), _, f in xs)
+    assert near(tagged(BP, "main"), main) and near(tagged(BP, "alt"), alt)
+    dl = house_core.default_layout(BP)
+    assert len(dl.wall_lights) == len(BP.wall_lights) - 2 and "alt" not in dl.wall_variant
+    assert "Wandlampen" in house_core.PLAN["skip_words"]
+
+
+def test_haube_spots():
+    """Issue #22: under the Küche hood's back edge (at the east wall) a Metall strip with 4 built-in spots
+    (Opalglas: its material glows at dusk) evenly along it, attached under the lip (1.62); one light for the four,
+    under the hood 50 cm out from the wall like every lamp's, among the wall lights (both layouts)."""
+    import kueche
+    key = ("EG", "EG_Haube")
+    parts = list(_parts(BP, key))
+    strip = [(lo, hi) for m, lo, hi in parts if m == "Metall"]
+    spots = sorted(((lo, hi) for m, lo, hi in parts if m == "Opalglas"), key=lambda b: b[0][1])
+    assert len(strip) == 1 and len(spots) == 4
+    (slo, shi), = strip
+    assert abs(shi[2] - 1.62) < 1e-6 and shi[0] <= kueche.XE + 1e-6 and kueche.XE - slo[0] < 0.10   # at the wall
+    ys = [(lo[1] + hi[1]) / 2 for lo, hi in spots]
+    assert all(abs((ys[k + 1] - ys[k]) - (ys[1] - ys[0])) < 1e-6 for k in range(3))                  # evenly
+    assert all(slo[0] < (lo[0] + hi[0]) / 2 < shi[0] and abs(hi[2] - slo[2]) < 1e-6 for lo, hi in spots)
+    xm, ym = (slo[0] + shi[0]) / 2, (slo[1] + shi[1]) / 2
+    lights = [(p, v) for p, v in zip(BP.wall_lights, BP.wall_variant) if math.dist(p[:2], (kueche.XE - 0.50, ym)) < 0.01]
+    assert len(lights) == 1 and lights[0][1] is None and lights[0][0][2] < slo[2]
+    assert kueche.XE - 0.55 < lights[0][0][0]                                      # still under the hood (front 55)
+
+
+def test_eg_lamps_clear():
+    """Issue #22: every EG lamp (both layouts, the Ofen bed's, the hood's strip excluded) hangs on solid wall
+    (B's wooden back for the Alternativ ones), clear of every EG object but walls, floors and ceilings (each
+    layout's lamps against its own layout's objects), of the door leaves as built and of the front door as
+    the film opens it (90 deg about its hinge)."""
+    keys = [k for k in BP.geo if k[0] == "EG" and "Wandlampen" in k[1]]
+    assert sorted(k[1] for k in keys) == ["EG_Alt_Wandlampen", "EG_Ofen_Wandlampen", "EG_Wandlampen", "EG_Wandlampen_Essen"]
+    skip = ("_Waende", "Boden", "Decke", "Wandlampen")
+    leaves = _leaf_boxes(BP, "EG", 0.0)
+    px, py = 14.73, 6.528                                                  # the front door, opened by film.py
+    leaves.append(((px - (7.433 - py), py + (14.65 - px), 0.0), (px - (6.532 - py), py + (14.81 - px), 2.125)))
+    for key in keys:
+        lay = house_core.VARIANT.get(key[1])
+        others = [(lo, hi) for k in BP.geo if k[0] == "EG" and not any(w in k[1] for w in skip)
+                  and house_core.VARIANT.get(k[1], lay) == lay for m, lo, hi in _parts(BP, k)]
+        _clear(list(_parts(BP, key)), others + leaves, key[1])
+        backing = ("EG", "EG_Alt_Speis") if lay == "alt" else ("EG", "EG_Waende")
+        for (x, y), z, (fx, fy) in _rosettes(BP, key):
+            for s, h in ((0, 0), (0.042, 0), (-0.042, 0), (0, 0.042), (0, -0.042)):
+                p = (x - fx * 0.006 - fy * s, y - fy * 0.006 + fx * s, z + h)   # just behind the rosette
+                assert _part_at(backing, *p) is not None, (key[1], (x, y, z), p)
+
+
+def test_room_lights_only_the_speis():
+    """Issue #22: the Wandlampen light the rooms at dusk; only the Speis (no lamp) keeps a fill light. The
+    OG Bad Nadine & Till's fill light goes too (it has six lamps since #3)."""
+    assert house_core.ROOM_LIGHTS == [(4.0, 4.79, 0)]
 
 
 def test_wandlampen_clear():
@@ -2224,7 +2301,8 @@ def test_variant_main_objects():
     viewer hides them in Erdgeschoss - Alternativ): cabinet C, the Speis sliding leaf with its rail,
     and the 60 cm stub of the Speis/Küche wall (a wall for the plan sheets: suffix _Waende)."""
     assert {o: v for o, v in BP.variant.items() if v == "main"} == {
-        "EG_Speis_C": "main", "EG_Speis_Schiebetuer": "main", "EG_Speis_Waende": "main"}
+        "EG_Speis_C": "main", "EG_Speis_Schiebetuer": "main", "EG_Speis_Waende": "main",
+        "EG_Wandlampen_Essen": "main"}                                  # #22: the Essen's two lamps on its west wall
     c = list(_parts(BP, ("EG", "EG_Speis_C")))
     assert 3.09 < min(lo[1] for m, lo, hi in c) < 3.13 + 1e-6 and abs(max(hi[1] for m, lo, hi in c) - 3.728) < 0.005   # pulls proud
     assert not any(lo[1] < 3.70 for m, lo, hi in _parts(BP, ("EG", "EG_Speis")))                 # A and B only
@@ -2246,7 +2324,8 @@ def test_variant_alt_objects():
     (south wall to shelf B's back), B's closed back towards the Essen, and in the opening Küche ->
     Speis two closed half-height saloon leaves (no handles) that swing into the Speis."""
     alt = {o for o, v in BP.variant.items() if v == "alt"}
-    assert alt == {"EG_Alt_Schrank", "EG_Alt_Speis", "EG_Alt_Pendeltuer_S", "EG_Alt_Pendeltuer_N"}
+    assert alt == {"EG_Alt_Schrank", "EG_Alt_Speis", "EG_Alt_Pendeltuer_S", "EG_Alt_Pendeltuer_N",
+                   "EG_Alt_Wandlampen"}                                 # #22: two lamps on B's back
     others = [p for o in ("EG_Waende", "EG_Fenster_Tueren", "EG_Stuehle", "EG_Moebel", "EG_Speis", "EG_Vorrat")
               for p in _parts(BP, ("EG", o))]
     boxes = lambda ps: [(lo, hi) for m, lo, hi in ps]
