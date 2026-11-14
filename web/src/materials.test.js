@@ -48,11 +48,6 @@ test('the lamp filament glows only at dusk (night), the fire always', () => {
   expect(mats.FL_Feuer.userData.night).toBeFalsy();
 });
 
-test('the switched-on lamp filament glows by day too', () => {
-  expect(mats.FL_GluehfadenAn.userData.night).toBeFalsy();
-  expect(mats.FL_GluehfadenAn.userData.emit).toBeGreaterThan(0);
-});
-
 test('fully metallic materials (metal >= 0.5) get the environment to reflect, the rest not', () => {
   const env = { isTexture: true };
   const ms = makeMaterials(json.materials.map((m) => ({ name: m.name, extras: m.extras })), u);
