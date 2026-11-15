@@ -31,5 +31,11 @@ edited: 2026-11-15
 - [x] [python] The user's second addition (run-2026-11-15-1633-18): the shower glass 10 cm longer, to y 6.34 (the way in 50 cm); labels, toilet lamp, docs, plan sheets follow
   - Test first: `tests/test_core.py` › `test_gaestebad_og_walls` (glass at y 6.3, its end 6.344), `test_gaestebad_clearances` (way in ≥ 50, was 60), `test_gaestebad_submodel` ("Glas 88", "Durchgang 52"), `test_wandlampen_og_placements` (toilet lamp y 5.90) — 3 red on the 6.24 glass, green after
   - Verify: `.venv/bin/python -m pytest -q tests/test_core.py tests/test_tour.py` → green; `check.sh quick`; Show (page top, door)
+- [x] [python] The user's third addition (run-2026-11-15-1633-19): freestanding slipper tub 165 × 75 after `input/2026-11-15 input/badewanne.webp`, head end (74) to the shower, foot 60, claw feet; a glass pane shower | tub; the photo in a new Fotos-Bereich "Gästebad"
+  - Test first: `test_gaestebad_og_shower_and_tub` (free of the walls, 165 × 75, under the sill, head end higher, four feet, no apron, the pane), `test_gaestebad_clearances` (way in to the pane), `test_gaestebad_submodel` labels, basin/lamp positions; `tests/test_vorlagen.py` (56 pictures, `badewanne.webp` in "gaestebad"; the anchor test takes any PLAN_ROOMS room of the name: the OG has two "Bad") — red on the built-in tub, green after
+  - Verify: `.venv/bin/python -m pytest -q tests/test_core.py tests/test_tour.py tests/test_vorlagen.py` → green; `python3 code/vorlagen.py --copy`; Show
+- [x] [python] The user's fourth addition (run-2026-11-15-1633-20): the tub's tap out of the outer (west) wall at the foot end, no standpipe
+  - Test first: `test_gaestebad_og_shower_and_tub` (tap parts on the west wall in the foot half, spout over the tub, nothing on the floor east of the tub) — red with the standpipe, green after
+  - Verify: `.venv/bin/python -m pytest -q tests/test_core.py -k gaestebad` → green; `check.sh quick`; Show
 
 System docs are updated at `/spec:archive`.

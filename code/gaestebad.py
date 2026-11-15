@@ -16,6 +16,7 @@ GAESTEBAD_AT on the OG floor, build_og() takes the Flur door (TUER) from here; h
 wraps it at the origin with the pieces of the room's four walls (walls=True) as the Blueprint of
 web/gaestebad.html. The floor stays the house's limestone (BATHS_OG).
 """
+import math
 import random
 import house_core as hc
 import gaeste_wc
@@ -25,13 +26,18 @@ WI, WO, YS, YN = 0.31, 2.57, 5.46, 8.57      # room: west and east (Flur wall) f
 PA = gaeste_wc.PA                            # the glass between shower and WC: over the EG partition's west face
 YG = 6.34                                    # its north end, 19 cm before the partition's (6.15); the way in north of it
 TUER = (7.66, 8.47)                          # Flur door in the east wall, hinged south, open flat into the Bad
-YT, XT, ZR = 6.87, WI + 0.75, 0.58           # tub: south edge (window from 6.77), east face, rim top
-SN = YT - 0.015                              # shower's north edge: clear of the tub's limestone end
+SN = 6.865                                   # shower's north edge: the glass pane to the tub
+TL, TW = 1.65, 0.75                          # tub: slipper tub, length x width (body, without the rolled rim)
+TX0, YT = WI + 0.035, SN + 0.025             # its west and south edge: free of the wall and the pane
+XT, TY1 = TX0 + TW, YT + TL                  # its east and north edge
+HEAD, FOOT = 0.74, 0.60                      # rim: raised head end (south, to the shower), foot end; under the 0.75 sill
+TAP = TY1 - 0.35                             # the tub's tap: on the west (outer) wall at the foot end
+GX = XT + 0.05                               # the pane shower | tub: from the west wall's slabs to here
 SX = (WI + PA) / 2                           # shower head: the middle of its south wall, on the slabs
 CLAD, ST = 2.0, 0.012                        # shower walls: limestone to 2.0, slab face off the wall
 WS = (5.72, 6.32, 4.18)                      # the west wall's small window: y span, sill (house z)
 TX = (PA + WO) / 2                           # toilet axis: centred between glass and east wall
-BX = 1.45                                    # basin and mirror: between the tub and the door
+BX = 1.46                                    # basin and mirror: between the tub and the door
 BW, BD = 0.60, 0.47                          # Waschbecken einzeln
 MW, MH, MF, MZ = 0.80, 0.85, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
 
@@ -52,31 +58,58 @@ def waende(c, dx, dy):
 
 
 def wanne(c, dx, dy, z, rng):
-    """The bathtub (#32) built in along the west wall from YT to the north wall, XT - WI wide: a white
-    ceramic shell (bottom at 0.15, rim walls 6 cm, a cap 2 cm high that overhangs the apron), its apron
-    (east) and south end clad with limestone (hc.limestone), a chrome deck mixer with spout on the south
-    rim, drain and overflow at that end (the back rest end is the north). Shell in <c>_Sanitaer, cladding
-    in <c>_Fliesen."""
-    o, r, R, cap = c + "_Sanitaer", rng.random(), 0.06, ZR - 0.02
-    x0, x1, y0, y1 = WI + dx, XT + dx, YT + dy, YN + dy
-    K = lambda xa, xb, ya, yb, za, zb: hc.box(c, o, "Keramik", xa, xb, ya, yb, z + za, z + zb, r)
-    K(x0 + R, x1 - R, y0 + R, y1 - R, 0.015, 0.15)                                  # bottom
-    K(x0, x0 + R, y0, y1, 0.015, cap); K(x1 - R, x1, y0, y1, 0.015, cap)           # rim walls: west, east
-    K(x0 + R, x1 - R, y0, y0 + R, 0.015, cap); K(x0 + R, x1 - R, y1 - R, y1, 0.015, cap)   # south, north
-    K(x1 - R, x1 + 0.014, y0 - 0.014, y1, cap, ZR)                                 # caps: east (over the apron),
-    K(x0, x1 - R, y0 - 0.014, y0 + R, cap, ZR)                                     # south (over the end),
-    K(x0, x0 + R, y0 + R, y1, cap, ZR); K(x0 + R, x1 - R, y1 - R, y1, cap, ZR)     # west, north
-    hc.limestone(c, False, XT, 1, YT, YN, z + 0.015, z + cap, rng, dx, dy)         # apron
-    hc.limestone(c, True, YT, -1, WI, XT + 0.012, z + 0.015, z + cap, rng, dx, dy)  # south end
-    cx = (x0 + x1) / 2
-    T = lambda p0, p1, prof: hc.turned(c, o, "Metall", (cx + p0[0], p0[1], z + p0[2]), (cx + p1[0], p1[1], z + p1[2]),
-                                       prof, rnd=r)
-    T((0, y0 + R + 0.12, 0.15), (0, y0 + R + 0.12, 0.153), [(0.025, 0), (0.025, 1)])                   # drain
-    T((0, y0 + R, ZR - 0.10), (0, y0 + R + 0.003, ZR - 0.10), [(0.025, 0), (0.025, 1)])                # overflow
-    ym = y0 + R / 2
-    T((0, ym, ZR), (0, ym, ZR + 0.13), [(0.018, 0), (0.016, 1)])                                        # mixer,
-    T((0, ym, ZR + 0.12), (0, ym + 0.16, ZR + 0.10), [(0.009, 0), (0.008, 1)])                          # spout,
-    T((0, ym, ZR + 0.13), (0, ym - 0.03, ZR + 0.18), [(0.006, 0), (0.005, 1)])                          # lever
+    """The bathtub (#32), after input/2026-11-15 input/badewanne.webp: a freestanding slipper tub TL x TW on four
+    claw feet, its oval (superellipse) body narrowing to the bottom, a rolled rim, the head end raised as a back
+    rest (HEAD, to the shower in the south) falling to FOOT at the north end; white ceramic, built of closed
+    wall segments (one Part each, all sharing one rnd). The chrome tap with spout and hand shower comes out of
+    the west (outer) wall at the foot end; the drain is at that end too. Own rng: one draw."""
+    o, r, n = c + "_Sanitaer", rng.random(), 48
+    cx, cy, a, b = (TX0 + XT) / 2 + dx, (YT + TY1) / 2 + dy, TL / 2, TW / 2
+
+    def ring(sa, sb):                                    # superellipse outline (exponent 3), from the south end round
+        pts = []
+        for i in range(n):
+            t = 2 * math.pi * i / n - math.pi / 2
+            ct, st = math.cos(t), math.sin(t)
+            pts.append((cx + sb * math.copysign(abs(ct) ** (2 / 3), ct), cy + sa * math.copysign(abs(st) ** (2 / 3), st)))
+        return pts
+
+    def rim(y):                                          # rim height: FOOT, rising over the south 40 % to HEAD
+        s = min(1.0, max(0.0, (-(y - cy) / a - 0.2) / 0.8))
+        return FOOT + (HEAD - FOOT) * s * s * (3 - 2 * s)
+
+    zb, zf, w = 0.17, 0.21, 0.055                       # body bottom, inner floor, wall
+    ob, ot = ring(0.80 * a, 0.78 * b), ring(a, b)
+    it, ib = ring(a - w, b - w), ring(0.80 * a - w, 0.78 * b - w)
+    orl, irl = ring(a + 0.012, b + 0.012), ring(a - w, b - w)
+    for i in range(n):
+        j = (i + 1) % n
+        h0, h1 = z + rim(ot[i][1]) - 0.03, z + rim(ot[j][1]) - 0.03
+        v = [(*ob[i], z + zb), (*ob[j], z + zb), (*ot[i], h0), (*ot[j], h1),
+             (*it[i], h0), (*it[j], h1), (*ib[i], z + zf), (*ib[j], z + zf)]
+        quads = [(0, 1, 3, 2), (2, 3, 5, 4), (4, 5, 7, 6), (6, 7, 1, 0), (0, 2, 4, 6), (1, 7, 5, 3)]
+        hc.add(c, o, "Keramik", v, quads, r)                                        # wall segment
+        v = [(*orl[i], h0 - 0.005), (*orl[j], h1 - 0.005), (*orl[i], h0 + 0.035), (*orl[j], h1 + 0.035),
+             (*irl[i], h0 + 0.035), (*irl[j], h1 + 0.035), (*irl[i], h0 - 0.005), (*irl[j], h1 - 0.005)]
+        hc.add(c, o, "Keramik", v, quads, r)                                        # rolled rim
+    hc.xy_prism(c, o, "Keramik", ib, z + zb, z + zf, r)                              # inner floor
+    for sx in (-1, 1):                                                               # claw feet
+        for sy in (-1, 1):
+            fx, fy = cx + sx * 0.25, cy + sy * 0.52
+            hc.turned(c, o, "Keramik", (fx, fy, z), (fx, fy, z + zb + 0.01),
+                      [(0.028, 0), (0.034, 0.12), (0.018, 0.3), (0.016, 0.55), (0.03, 0.85), (0.045, 1)], rnd=r)
+    T = lambda p0, p1, prof: hc.turned(c, o, "Metall", (p0[0] + dx, p0[1] + dy, z + p0[2]),
+                                       (p1[0] + dx, p1[1] + dy, z + p1[2]), prof, rnd=r)
+    T((cx - dx, cy + 0.50 - dy, zf), (cx - dx, cy + 0.50 - dy, zf + 0.003), [(0.03, 0), (0.03, 1)])   # drain
+    px, py, zt = WI, TAP, FOOT + 0.17                                               # the tap, on the outer wall
+    T((px, py, zt), (px + 0.008, py, zt), [(0.035, 0), (0.035, 1)])                 # rosette
+    T((px, py, zt), (px + 0.07, py, zt), [(0.022, 0), (0.022, 1)])                  # mixer body
+    T((px + 0.05, py, zt), (px + 0.05, py, zt + 0.08), [(0.007, 0), (0.006, 1)])    # lever
+    T((px + 0.07, py, zt), (px + 0.20, py, zt - 0.03), [(0.014, 0), (0.012, 1)])    # spout over the rim
+    T((px, py + 0.12, zt + 0.25), (px + 0.008, py + 0.12, zt + 0.25), [(0.025, 0), (0.025, 1)])   # hand shower:
+    T((px, py + 0.12, zt + 0.25), (px + 0.05, py + 0.12, zt + 0.25), [(0.008, 0), (0.008, 1)])     # holder,
+    T((px + 0.05, py + 0.12, zt + 0.12), (px + 0.05, py + 0.12, zt + 0.30), [(0.011, 0), (0.012, 1)])   # grip,
+    T((px + 0.05, py + 0.12, zt + 0.30), (px + 0.05, py + 0.12, zt + 0.34), [(0.02, 0), (0.022, 1)])   # head
 
 
 def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
@@ -94,7 +127,7 @@ def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
     hc.wood_mirror(c, BX + dx, YN + dy, 0, -1, MW, MH, MF, z + MZ, rng)
     for k in range(2):                                   # two Wandlampen over it, one per half of its width (#19)
         hc.wandlampe(c, BX - MW / 2 + MW * (k + 0.5) / 2 + dx, YN + dy, 0, -1, z + hc.WANDLAMPE_SPIEGEL_H)
-    hc.wandlampe(c, (WI + XT) / 2 + dx, YN + dy, 0, -1, z + hc.WANDLAMPE_SPIEGEL_H)   # over the tub's head end
+    hc.wandlampe(c, (WI + XT) / 2 + dx, YN + dy, 0, -1, z + hc.WANDLAMPE_SPIEGEL_H)   # over the tub's foot end
     hc.wandlampe(c, WO + dx, (YS + YG) / 2 + dy, -1, 0, z + hc.WANDLAMPE_H)           # east wall: over the toilet
     # back wall: the shower in the SW corner (no tray: the limestone floor runs through; limestone on the west wall,
     # its small window left free above the sill, and on the south wall to the glass; the head on the slabs), the
@@ -104,7 +137,8 @@ def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
     for ya, yb in ((YS, WS[0]), (WS[1], SN)):
         hc.limestone(c, False, WI, 1, ya, yb, sill, z + CLAD, rng, dx, dy)
     hc.limestone(c, True, YS, 1, WI + ST, PA - 0.005, z + 0.018, z + CLAD, rng, dx, dy)
-    hc.shower(c, WI + dx, PA + dx, YS + dy, SN + dy, [(PA + dx, YS + dy, PA + dx, YG + dy)],
+    hc.shower(c, WI + dx, PA + dx, YS + dy, SN + dy, [(PA + dx, YS + dy, PA + dx, YG + dy),
+                                                       (WI + ST + dx, SN + dy, GX + dx, SN + dy)],
               (SX + dx, YS + ST + dy, 0, 1), z=z, tray=False)
     wanne(c, dx, dy, z, random.Random(32))
     hc.toilet(c, TX + dx, YS + dy, 0, 1, z=z)
@@ -122,8 +156,9 @@ def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
             S(PA - 0.05, YG, f, PA - 0.05, SN, f, f"Durchgang {cm(YG, SN)}"),
             S(PA, YS + 0.85, f, TX, YS + 0.85, f, cm(PA, TX)),
             S(TX, YS + 0.85, f, WO, YS + 0.85, f, cm(TX, WO)),
-            S(WI + 0.45, YT, f, WI + 0.45, YN, f, f"Wanne {cm(YT, YN)} × {cm(WI, XT)}"),
-            S(XT + 0.03, YT + 0.15, 0.0, XT + 0.03, YT + 0.15, ZR, f"Rand {cm(0, ZR)}"),
+            S((TX0 + XT) / 2, YT, f, (TX0 + XT) / 2, TY1, f, f"Wanne {cm(YT, TY1)} × {cm(TX0, XT)}"),
+            S(XT + 0.03, YT + 0.10, 0.0, XT + 0.03, YT + 0.10, HEAD, f"Kopfende {cm(0, HEAD)}"),
+            S(XT + 0.03, TY1 - 0.25, 0.0, XT + 0.03, TY1 - 0.25, FOOT, f"Rand {cm(0, FOOT)}"),
             S(WI, YN - BD - 0.25, f, ba, YN - BD - 0.25, f, cm(WI, ba)),
             S(ba, YN - BD - 0.25, f, bb, YN - BD - 0.25, f, f"Waschbecken {cm(ba, bb)}"),
             S(bb, YN - BD - 0.25, f, WO, YN - BD - 0.25, f, cm(bb, WO)),
