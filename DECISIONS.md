@@ -44,6 +44,8 @@ Choices made while nobody was there to ask are logged here
   - [23:40 — #26: the hood and Haubenspots tests rewritten to the new place](#run-2026-11-15-1633-32)
   - [00:20 — #30: an Oberlicht 1.00 high under the ceiling, x 5.69 .. 8.49, pine lining of the full wall depth, two mullions (one on the shower glass line), Milchglas](#run-2026-11-15-1633-33)
   - [00:20 — #30: the four lamps over the Waschküche table lowered to 1.10 under the glazing](#run-2026-11-15-1633-34)
+  - [01:15 — #26 follow-up: the Wamsler's pipe from the left (north) of its top, up to 1.95 and north into the Abzug, the Kaminschacht](#run-2026-11-15-1633-35)
+  - [01:15 — #26 follow-up: #26's pipe tests rewritten to the Kaminschacht](#run-2026-11-15-1633-36)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -82,6 +84,7 @@ Choices made while nobody was there to ask are logged here
   #26: branch issue/26-haube-induktion from fix/waschkueche-zwei-maschinen, PR https://github.com/tillg/frechen_blender/pull/47 (archived on the branch; full check: pytest red only on the pre-existing `test_vorlagen` input count, Playwright 109/111: `bad.spec.js:49` green alone, the ~30 fps test load-flaky).
   #29 follow-up + #31 bug (no issue of their own, decisions 29, 30): branch fix/waschkueche-zwei-maschinen from issue/27-garderobe-jacken (= main 090110b after the merge), PR against main, `Refs #29, Refs #31`, no labels; full check 110/111 + pytest 213/214: the ~30 fps test load-flaky (green alone), `test_vorlagen`'s input count red only from the untracked #40/#44 inputs.
   #30: branch issue/30-glas-waschkueche from issue/26-haube-induktion, PR https://github.com/tillg/frechen_blender/pull/49 (archived on the branch; full check: pytest red only on the pre-existing `test_vorlagen` input count, Vitest 65/65, Playwright 111/111).
+  #26 follow-up + #34 follow-up (no issue of their own, decisions 35–38; a tweak that commits, as decision 29): branch fix/kueche-ofenrohr-schrank from issue/30-glas-waschkueche, PR against it, `Refs #26` / `Refs #34`, no labels.
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -421,3 +424,23 @@ Choices made while nobody was there to ask are logged here
 - **Why:** they light the work surface, where they belong; the glazing above stays clear.
 - **Alternatives:** move them to other walls (none free); ceiling lights (new kind of fixture); drop them (room darker at dusk).
 - **Consequences:** `test_wandlampen_og_placements` pins the new height (the issue asks for the move); still 31 OG lamps. The viewer's light pool (fast mode, at dusk) weighs height 3×: from the Waschküche test camera the westmost table lamp drops out of the six nearest and Saschi's lamp (through the wall) takes its place; `lighting.test.js` re-pinned to that.
+
+## 01:15 — #26 follow-up: the Wamsler's pipe from the left (north) of its top, up to 1.95 and north into the Abzug, the Kaminschacht {#run-2026-11-15-1633-35}
+
+- **Status:** open
+- **Context:** the user after PR #47: „Das Ofenrohr vom Wamsler Ofen sollte gehen von der linken Seite des Wamsler raus nach oben rechts in dem Eck. Das Eck oben Entschuldigung oben links ist nämlich der Kamin Schacht“. The Wamsler faces west on the east wall (y 4.30 .. 5.10); seen from its front, left = north, where its firebox is. The model's shaft is the Abzug (`kueche.ABZUG`, plastered flue box in the Küche's NE corner, x 8.227 .. 8.555, y 5.55 .. 5.847, from 1.80 to the ceiling) — the upper left corner as seen from the stove, so the user's words and the model agree. #26 had the flue at the back right and the pipe into the east wall at 1.80.
+- **Question:** where does the pipe leave the stove, how does it run, at what height does it enter the shaft?
+- **Decision:** the flue collar on the top's left (north) part, over the firebox, 14 cm from the north side, 42 cm back (x 8.392, the Abzug's middle); the pipe (Ø 12, black) rises to 1.95, bends 90° north and runs 3 cm into the Abzug's south face (y 5.55), a rosette Ø 20 on that face. 1.95 = the Abzug's underside + 15 cm, so the rosette (to 1.85) sits wholly on the face. `ofen.wamsler()` takes the shaft (face y, height) from `kueche_neu()`, no Küche numbers in `ofen.py` (ADR-001-XEWL).
+- **Why:** top outlet on the firebox side is how such cookers are piped; one bend, the shortest way into the corner; the pipe stays clear of the Spülzeile (top 0.90), the hood and the east-wall lamps (checked).
+- **Alternatives:** a rear outlet low on the left (the pipe would hide behind the stove and run up the wall corner); entering the Abzug's underside (it does not reach over the stove, a second bend needed); "rechts" as first said (corrected by the user).
+- **Consequences:** the horizontal leg runs 10 cm in front of the east wall at 1.89 .. 2.01 over the blind corner of the Spülzeile; `test_routes_and_spots_clear_the_kueche_hood` covers it (green). `eg.svg` and the elevations regenerated. The agreed drawing `speis_kueche_v6.svg` does not show the pipe and stays as it is.
+
+## 01:15 — #26 follow-up: #26's pipe tests rewritten to the Kaminschacht {#run-2026-11-15-1633-36}
+
+- **Status:** open
+- **Context:** `test_wamsler_pipe_into_the_wall_higher_up` and `test_nothing_above_the_wamsler_but_its_pipe` (#26) pin the pipe into the east wall at 1.80; `test_kueche_without_wall_cabinets_and_sealed_against_the_herd` took the Herd's north end from all its parts, now including the pipe reaching y 5.58.
+- **Question:** may #26's tests be changed?
+- **Decision:** `test_wamsler_pipe_into_the_wall_higher_up` replaced by `test_wamsler_pipe_from_its_left_into_the_kaminschacht` (Ø 12, collar on the north half, bend 1.80 < z ≤ 2.00, elbow, leg along y into the Abzug, rosette on its face within it and above its underside, clear of Küche, hood, walls, lamps, windows); `_wamsler_pipe()` classifies along y; the "nothing above" test expects 2 parts over the footprint (riser, start of the leg; the rosette now lies outside it); the sealed-against test takes the Herd's extent from its parts below 0.95.
+- **Why:** the user's follow-up asks for the move; every property of the old tests that still holds is kept.
+- **Alternatives:** keep the old tests (cannot hold after the follow-up).
+- **Consequences:** none beyond the tests.
