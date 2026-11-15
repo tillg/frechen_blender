@@ -18,6 +18,7 @@ import regal  # the Büro bookcase "Schrank im Büro" (code/regal.py), the same 
 import schrankbett  # the Yoga room's wall bed (code/schrankbett.py), the same way
 import gaestebad  # the Gästebad im 1. Stock (code/gaestebad.py), the same way
 import elternbad  # the Bad Nadine & Till im 1. Stock (code/elternbad.py), the same way
+import waschkueche  # basin and shower in the Waschküche (code/waschkueche.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -948,6 +949,8 @@ def build_sanitary():
     # OG Bad Nadine & Till (S, #3): shower, toilet with tiles, basin, mirror, lamps (code/elternbad.py); last,
     # so the Wandlampen of #19 keep their order in WALL_LIGHTS
     elternbad.elternbad_neu("OG", *elternbad.ELTERNBAD_AT, z=zo)
+    # OG Waschküche (#29): shower cabin on the west wall, basin on the east wall (code/waschkueche.py)
+    waschkueche.waschkueche_neu("OG", zo)
 
 
 # ---------------------------------------------------------------- furniture
@@ -1306,7 +1309,7 @@ def build_og():
     interior(c, 9.08, 9.25, 8.86, 12.485, (), z0, z1)
     interior(c, 2.57, 2.71, 5.46, 8.57, [(*gaestebad.TUER, -1, "a")], z0, z1, H)   # Gästebad (code/gaestebad.py)
     interior(c, 2.71, 14.35, 6.06, 6.35,
-             [(4.02, 4.87, -1, "a", False), (7.15, 8.17, -1, "a"), (8.76, 9.65, -1, "b", False),
+             [(4.02, 4.87, -1, "a", False), (7.15, 8.17, -1, "a", False), (8.76, 9.65, -1, "b", False),
               (10.66, 11.51, -1, "a", False)], z0, z1, H)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
     interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
@@ -1454,7 +1457,8 @@ def build_slabs():
     slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
     wcs = lambda c: [r for k, _, r, _ in WCS if k == c]     # all toilets: stone floors
     floor_cover("EG", 0.0, CORRIDOR_EG + wcs("EG") + [GAESTE_WC_EG], [BAD_EG, TRENNWAND_EG])
-    floor_cover("OG", Z_OG, BATHS_OG + wcs("OG"), [STAIR_HOLE])   # OG corridor: oak like the rooms
+    floor_cover("OG", Z_OG, BATHS_OG + wcs("OG") + [waschkueche.DUSCHE], [STAIR_HOLE])   # OG corridor: oak like the rooms;
+                                                                    # the Waschküche's shower cabin (#29): limestone
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 
 
@@ -1701,7 +1705,7 @@ def wandlampe(coll, wx, wy, fx, fy, z):
                                  for j in range(m) for i in range(k)], r)
 
 
-# the OG's Wandlampen at WANDLAMPE_H (#19): (wall point x, y, facing), each centred in the free wall span the
+# the OG's Wandlampen at WANDLAMPE_H (#19; or at a 5th entry): (wall point x, y, facing), each centred in the free wall span the
 # request names, two in one span at its thirds ("vorne" = east). Over the mirrors: build_sanitary(), gaestebad.py
 WANDLAMPEN_OG = [
     ((4.15 + 6.31) / 2, 8.57, 0, -1),                                     # Flur: Yoga .. Jugend door
@@ -1719,7 +1723,7 @@ WANDLAMPEN_OG = [
     (10.07, (3.84 + 5.266) / 2, 1, 0),                                    # Schlafzimmer: WC corner (Kaminofen) .. open leaf's end
     (9.26, 3.98, 0, 1),                                                   # WC: over the cistern
     *[(5.59 + 0.75 * (k + 0.5), 2.79, 0, 1) for k in range(4)],           # Waschküche: over the table (full width)
-    (8.59, (4.85 + 6.06) / 2, -1, 0),                                     # Waschküche: washer tower .. Flur wall
+    (8.59, waschkueche.BY, -1, 0, WANDLAMPE_SPIEGEL_H),                   # Waschküche: over the basin's mirror (#29)
     (5.44, (3.37 + 6.06) / 2, -1, 0),                                     # Saschi: nightstand .. Flur wall
 ]
 
@@ -1773,8 +1777,8 @@ WANDLAMPEN_EG = [
 
 
 def build_wandlampen():
-    for wx, wy, fx, fy in WANDLAMPEN_OG:
-        wandlampe("OG", wx, wy, fx, fy, Z_OG + WANDLAMPE_H)
+    for wx, wy, fx, fy, *h in WANDLAMPEN_OG:
+        wandlampe("OG", wx, wy, fx, fy, Z_OG + (h[0] if h else WANDLAMPE_H))
     for wx, wy, fx, fy, h in WANDLAMPEN_EG:
         wandlampe("EG", wx, wy, fx, fy, h)
 
@@ -2056,15 +2060,15 @@ def wicker_basket(c, o, x0, x1, y0, y1, z, h=0.35):
         turned(c, o, "Weide", pa, pb, rim, 8, r)
 
 
-def basket_cupboard(c, x0, x1, y0, y1, z):
+def basket_cupboard(c, x0, x1, y0, y1, z, n=3):
     """Open spruce cupboard against a west wall, facing east: back panel, two sides, continuous
-    shelves, on each shelf three wicker laundry baskets holding a heap of laundry."""
+    shelves, on each shelf n wicker laundry baskets (at most 66 wide) holding a heap of laundry."""
     o, h, xb = c + "_Moebel", 2.0, x0 + 0.025                          # back panel 1 cm off the wall
     box(c, o, "FichteZ", x0 + 0.01, xb, y0, y1, z + 0.012, z + h)
     for ya in (y0, y1 - 0.02):                                         # sides
         box(c, o, "FichteZ", xb, x1, ya, ya + 0.02, z + 0.012, z + h - 0.02)
     box(c, o, "FichteY", xb, x1, y0, y1, z + h - 0.02, z + h)            # top
-    n, bw = 3, 0.66                                                    # baskets per shelf, their width
+    bw = min(0.66, (y1 - y0 - 0.04 - (n + 1) * 0.03) / n)              # basket width: 3+ cm gaps
     gap = (y1 - y0 - 0.04 - n * bw) / (n + 1)
     cl = ("Leinen", "Bettwaesche", "Creme")
     for j, zs in enumerate((0.10, 0.72, 1.34)):                        # board tops
@@ -2249,7 +2253,8 @@ def build_furniture():
     desk.desk("OG", 5.592, 8.588, 2.792, 3.592, zo)                     # full width of the back wall
     folded_stack("OG", 6.45, 3.20, zo + 0.75, ("Jeans", "Jeans", "Wolle", "Bettwaesche", "Creme", "Leinen"))
     folded_stack("OG", 7.15, 3.20, zo + 0.75, ("Bettwaesche", "Creme", "Bettwaesche", "Leinen", "Bettwaesche"))
-    basket_cupboard("OG", 5.59, 6.19, 3.612, 5.95, zo)                  # right wall from the door
+    basket_cupboard("OG", 5.59, 6.19, 3.612, waschkueche.DUSCHE[2] - 0.20, zo, n=2)   # right wall from the door:
+                                                                        # 20 cm before the shower cabin (#29)
     bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)
@@ -2283,7 +2288,7 @@ PLAN_ROOMS = [
     ("Heizung", "EG", 0.35, 1.5),
     ("Schlafen bzw. Yoga", "OG", 3.2, 10.6), ("Schlafen", "OG", 7.6, 10.6), ("Schlafen", "OG", 11.9, 10.6),
     ("Flur", "OG", 6.0, 7.4), ("Bad", "OG", 1.4, 7.6), ("Schlafen", "OG", 4.1, 3.2),
-    ("Bad", "OG", 7.1, 1.5), ("Hauswirtschaftsraum", "OG", 7.1, 4.4), ("WC", "OG", 9.32, 5.0),
+    ("Bad", "OG", 7.1, 1.5), ("Hauswirtschaftsraum", "OG", 7.1, 3.2), ("WC", "OG", 9.32, 5.0),
     ("Schlafen", "OG", 12.6, 2.5),
 ]
 
