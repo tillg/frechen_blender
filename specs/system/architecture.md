@@ -215,7 +215,8 @@ flowchart LR
 - **Waschküche.** `code/waschkueche.py` (house only, no sub-model): `waschkueche_neu(c, z)`, called last in
   `build_sanitary()`, builds into the OG Waschküche (x 5.59 .. 8.59, y 2.79 .. 6.06) a floor-level shower cabin
   `DUSCHE` = (5.59, 6.69, 4.96, 6.06), 1.10 × 1.10 outer, in the NW corner right of the door as one comes in: its
-  floor is a limestone rectangle in the OG `floor_cover()` (oak around it, top at the bathroom floors' 0.018),
+  floor is part of the room's limestone (`ROOM` = (5.59, 8.59, 2.79, 6.06) in `BATHS_OG`, issue #28: the whole
+  Waschküche tiled like the OG baths, none under its walls, top at the bathroom floors' 0.018),
   `limestone()` on the west and north wall to 2.0, head (west wall) and drain via `shower(…, glass=[], tray=False)`;
   its south and east side each a glass bifold door (`faltwand()`: a wall profile, two equal 8 mm panels folding into
   the cabin, two hinges at the fold, a bar handle each side of the free panel; built closed), the two free panels
