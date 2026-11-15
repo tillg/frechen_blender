@@ -1,7 +1,7 @@
 ---
 feature: 32-dusche-badewanne
 title: "Proposal: shower and bathtub in the Gästebad"
-status: applying
+status: applied
 order: 1
 created: 2026-11-15
 edited: 2026-11-15
