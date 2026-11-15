@@ -270,6 +270,7 @@ Choices made while nobody was there to ask are logged here
 - **Why:** keeps door, leaf, table and machines; the cabin's door faces the 1.28 m free middle of the room; nothing on the south wall; basin by the door like the WC 2,30's.
 - **Alternatives:** NW corner (needs the room door at 90°, which would stand between door and cabin and block an east cabin door); SW/SE corner on the south wall (against #30); moving the machines to the west wall (larger rearrangement); shortening the table (its west part would still be blocked).
 - **Consequences:** the table's west 1.10 m is only reachable from the east; #28 (tile floor) must absorb or leave out the cabin's floor rectangle `waschkueche.DUSCHE` (else coplanar slabs).
+  Same override: `test_elternbad_layout`'s toilet filter had no northern bound and caught the cabin's hinge in the next room; it now uses the test's own `room()` scope.
 
 ## 21:07 — #29: the cabin's glass door built closed (no PIVOT/SWING), limestone on floor patch and west wall, one lamp over the mirror in the tower lamp's slot {#run-2026-11-15-1633-22}
 

@@ -10,7 +10,7 @@ edited: 2026-11-15
 
 The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
 `code/ofen.py` (stoves), `code/desk.py` (Büro desk), `code/bad.py` (Bad Großeltern),
-`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC), `code/regal.py` (Schrank im Büro), `code/schrankbett.py` (Schrankbett), `code/gaestebad.py` (Gästebad) and `code/elternbad.py` (Bad Nadine & Till), no `bpy`). Three
+`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC), `code/regal.py` (Schrank im Büro), `code/schrankbett.py` (Schrankbett), `code/gaestebad.py` (Gästebad), `code/elternbad.py` (Bad Nadine & Till) and `code/waschkueche.py` (basin and shower of the Waschküche, house only), no `bpy`). Three
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -212,6 +212,18 @@ flowchart LR
   north and east wall (`sides="ne"`); on the east wall north of the door the Waschbecken einzeln 60 on the
   tiles and `wood_mirror()` 80 × 85 on `BY`, two Wandlampen over it, one east of the window. Own `random.Random(3)` for mirror and cladding,
   `random.Random(4)` for the sub-model floor. It returns its dimension lines.
+- **Waschküche.** `code/waschkueche.py` (house only, no sub-model): `waschkueche_neu(c, z)`, called last in
+  `build_sanitary()`, builds into the OG Waschküche (x 5.59 .. 8.59, y 2.79 .. 6.06) a floor-level shower cabin
+  `DUSCHE` = (5.59, 6.69, 3.61, 4.71), 1.10 × 1.10 outer, against the west wall just north of the table: its floor
+  is a limestone rectangle in the OG `floor_cover()` (oak around it, top at the bathroom floors' 0.018), `limestone()`
+  on the west wall to 2.0, head and drain via `shower(…, glass=[], tray=False)`, 8 mm glass to the south, north and
+  east to 2.0 with a top rail over the fixed panes, a door 60 wide at the north end of the east glass (hinged north,
+  opening out, built closed: two hinges, a bar handle each side). On the east wall north of the machines the
+  Waschbecken einzeln 60 on `BY` = 5.28 (5+ cm outside the door leaf's sweep) on `wainscot(sides="e")` tiles 12 cm
+  wider each side, `wood_mirror()` 80 × 85 above; its Wandlampe is the `WANDLAMPEN_OG` entry (an entry may carry a
+  5th value, its height: here `WANDLAMPE_SPIEGEL_H`). `basket_cupboard(…, n)` (baskets per shelf, width ≤ 0.66)
+  holds two per shelf north of the cabin. Nothing on the south wall above 1.20 (to be glazed). Own `random.Random(29)`
+  for glass and limestone.
 - **Limestone cladding.** `limestone(coll, along_x, face, n, ua, ub, z0, top, rng, dx, dy)` clads a
   shower wall in `<coll>_Fliesen`: a `Fuge` backing 2 mm off the wall, `Kalkstein` slabs 6..12 mm proud,
   rows of about 0.5 m, slabs 0.4..0.8 long from `rng`, joints 4 mm. Used by `bad.stone()` and
@@ -251,7 +263,7 @@ flowchart LR
   `build_wandlampen()` (from `build_sanitary()`) builds `WANDLAMPEN_OG` and `WANDLAMPEN_EG` (wall
   point, facing, height; the EG list after `input/2026-11-14 input/lampen_eg_v1.svg`, drawn from
   it by `lampen_eg_svg.py`, without its lamps 11, 12 on the Essen west wall, where cabinet C stands;
-  13, 14 hang on B's board back) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, `build_sanitary()`;
+  13, 14 hang on B's board back) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, `build_sanitary()`, the Waschküche's in `WANDLAMPEN_OG`;
   over the Ofen bed: `ofen.py` (its light moved with the Ofen by `ofen_im_haus()`); the hood's spots:
   `kueche.py` (one light). "Wandlampen" in `PLAN["skip_words"]`
   keeps them off the Grundriss (the Ansichten show them through openings).
