@@ -1076,7 +1076,7 @@ def test_kueche_hood_over_the_cooktop():
     for k in (0, 1):
         assert abs((tlo[k] + thi[k]) / 2 - (clo[k] + chi[k]) / 2) < 0.01 and tlo[k] < clo[k] and thi[k] > chi[k]
     assert abs(lo[2] - (chi[2] + 0.65)) < 0.01 and hi[2] > house_core.Z_EG_TOP              # up into the ceiling
-    assert hi[0] - lo[0] <= 1.0 and hi[1] - lo[1] <= 0.7
+    assert 0.8 <= hi[0] - lo[0] <= 1.0 and 0.5 <= hi[1] - lo[1] <= 0.7
     rail = [p for p in hood if p[2][0] - p[1][0] > 0.8 and p[2][1] - p[1][1] < 0.03 and p[2][2] - p[1][2] < 0.03]
     assert len(rail) == 1 and rail[0][1][1] > (lo[1] + hi[1]) / 2               # on the north side
     _clear([p[:3] for p in part_list(("EG", "EG_Haube"))], [p[1:3] for p in part_list(("EG", "EG_Kueche"))], "Haube")
@@ -1120,10 +1120,10 @@ def test_wamsler_pipe_into_the_wall_higher_up():
     (_, vlo, vhi, _), (_, hlo, hhi, _), (_, rlo, rhi, _) = vert[0], horiz[0], rosette[0]
     assert abs(vhi[0] - vlo[0] - 0.12) < 0.005 and abs(hhi[2] - hlo[2] - 0.12) < 0.005     # Ø 12
     assert vlo[2] <= top + 0.1 and abs((hlo[2] + hhi[2]) / 2 - 1.80) < 0.01                 # collar .. bend at 1.80
-    assert vhi[2] >= hlo[2] + 0.06 and hlo[0] <= vlo[0] + 0.001                            # the elbow: they meet
+    assert hlo[2] < vhi[2] < hhi[2] and hlo[0] <= vlo[0] + 0.001                           # the elbow: riser ends inside
     assert abs((hlo[1] + hhi[1]) / 2 - (vlo[1] + vhi[1]) / 2) < 1e-6
     assert hhi[0] > KUECHE_EAST + 0.01                                                     # into the wall
-    assert abs(rhi[0] - KUECHE_EAST) < 0.003 and rhi[1] - rlo[1] >= 0.18                   # rosette on the face
+    assert abs(rhi[0] - KUECHE_EAST) < 1e-6 and rhi[1] - rlo[1] >= 0.18                    # rosette on the face
     assert abs((rlo[2] + rhi[2]) / 2 - 1.80) < 0.01 and abs((rlo[1] + rhi[1]) / 2 - (hlo[1] + hhi[1]) / 2) < 1e-6
 
 
