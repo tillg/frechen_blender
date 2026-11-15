@@ -1,7 +1,7 @@
 ---
 title: "Domain: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-14
+edited: 2026-11-15
 ---
 
 # Domain: Frechenlehen house model
@@ -50,9 +50,10 @@ the team uses them:
 | **rnd** | A random value per Part, stored per face, that varies the shade of boards and slabs. |
 | **Core** (`house_core`) | The pure-Python description of the house: constants, materials as data, primitives, builders. It knows nothing about Blender or three.js. |
 | **Blueprint** | What one core build returns: the GEO entries and their Parts, `SMOOTH`, `PIVOT`, `TURN`, `SLIDE`, `SWING`, `LIFT`, `CRANK`, `FOLD`, `VARIANT`, `MAT_DEF`, paint colours, room lights, wall lights (with their layout tags) and the garden layout. Not to be confused with "model", the whole 3D house. |
-| **Backend** | Turns a Blueprint into output. **Blender backend** (`build_house.py`): the `.blend` scene. **glTF backend** (`export_gltf.py`): the `.glb` file. |
+| **Backend** | Turns a Blueprint into output. **Blender backend** (`build_house.py`): the `.blend` scene; **dormant** since issue #35 (kept, compiled by a test, not run). **glTF backend** (`export_gltf.py`): the `.glb` file. |
 | **Part** | The geometry of one `add()` call: a closed solid (box, prism, sweep, …) with one `rnd` value. The unit for normal orientation. |
-| **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. |
+| **Parity snapshot** | Per-object fingerprint of the Blender build (vertex and face counts, bounding box, materials, `rnd` hash), compared with the golden. Dormant with the Blender backend: test and golden removed in issue #35, last green at `7805879`. |
+| **Dormant** | Kept in the repo, not run and not maintained, so it can be switched back on (the Blender backend, issue #35). |
 | **Viewer** | The three.js web page in `web/`. |
 | **Sub-model** | A piece of the house built alone at its own origin with dimension lines, on its own page reached through the viewer's "Modell" drop-down: the **Ofen** (`ofen.py`, `ofen.html`), the **Schreibtisch** (`desk.py`, `desk.html`), the **Bad Großeltern** (`bad.py`, `bad.html`; it brings walls of its own), the **Küche** (`kueche.py`, `kueche.html`) the **Gäste-WC** (`gaeste_wc.py`, `gaeste_wc.html`; with its partition, the WC's north wall and the back hall's three doors) the **Schrank im Büro** (`regal.py`, `regal.html`; the Tegernsee bookcase around the Bibliothek's east window, with pieces of the three walls around it), the **Schrankbett** (`schrankbett.py`, `schrankbett.html`; the Yoga room's wall bed, with pieces of the west and south wall) the **Gästebad** (`gaestebad.py`, `gaestebad.html`; the OG Bad at the end of the Flur, with pieces of its four walls) and the **Bad Nadine & Till** (`elternbad.py`, `elternbad.html`; with pieces of its four walls and its limestone floor). The house places the same parts, only translated. |
 | **Gästebad terms** | **Gästebad** (the OG Bad at the end of the Flur, NW; the architect's "Bad" with its "WC 2,26", now one room), **WC-Nische** (west along the south wall, open to the Bad, no wall or door; toilet centred, Taubenblau tiles), **bodengleiche Dusche** (walk-in shower east of it, 115 × 139, a fixed 65 cm glass from the east wall and 50 cm open beside the **Trennwand**, the 10 cm partition over the EG Gäste-WC's), a **Waschbecken doppelt** 120 centred on the north wall under a **wood-framed mirror**. |
@@ -88,8 +89,8 @@ the team uses them:
 | **Cut-off fade** | A pooled light's intensity factor `clamp((d_cut − d) / FADE, 0, 1)`, `d_cut` = distance of the nearest site left out, `FADE` = 1.0 m: a light leaves the pool already dark. |
 | **Fast mode / Full quality (`hires`)** | The viewer's two modes, chosen per page load by the URL switch `hires`. Fast mode (default, Rundgang included): light pool, pixel ratio ≤ 1.5, no grass while the camera is indoors. `?hires=on` (film capture): none of these shortcuts. |
 | **Quick check** (per-step check) | What runs after every change: the change's own new test alone, `pytest -m "not slow"` and Vitest (`scripts/check.sh quick`, ≤ 60 s), then a Show when the change is visible. |
-| **Full check** (final check) | Everything: all pytest incl. slow tests, Vitest, all Playwright projects except `@eye` (`scripts/check.sh full`); once at the end of a change (after a Blender rebuild, save and still if the Blender output changed), at archive and on request. Known bugs in `specs/bugs/` don't count as new failures. |
-| **Slow test** | A pytest test marked `slow` (the Blender parity tests: they start Blender); not in the quick check. |
+| **Full check** (final check) | Everything: all pytest incl. slow tests, Vitest, all Playwright projects except `@eye` (`scripts/check.sh full`); once at the end of a change, at archive and on request. Known bugs in `specs/bugs/` don't count as new failures. |
+| **Slow test** | A pytest test marked `slow` (plan-sheet determinism and currency: they export the sheets again); not in the quick check. |
 | **`@eye` test** | A Playwright test that only makes pictures for a human (stills along the Rundgang); not in the default run, `--grep @eye` runs it. |
 | **View URL** | The viewer's URL state: house `?cam=x,y,z&at=x,y,z&p=0…4&cut=` `all` / `noroof` / `eg`, sub-model pages `?cam=&at=&look=`, model coordinates (z up). |
 | **Show** | Opening the user's browser at a view URL that frames changed objects (`code/show.py`), after the agent has looked at a screenshot of the same URL (`web/shot.js`). |
@@ -207,8 +208,8 @@ stateDiagram-v2
 | Actor | Does |
 |---|---|
 | Owner (Till) | Gives plans and photos, asks for changes, watches stills, films and the viewer. |
-| Claude (agent) | Edits the core and the scripts, runs them in Blender over the Blender MCP server, runs the tests, renders stills and films and checks them. |
-| Blender 5.2 | Runs the Blender scripts, holds the scene, renders with EEVEE. |
+| Claude (agent) | Edits the core and the scripts, runs the tests, looks at Show screenshots of the viewer, captures films and checks them. |
+| Blender 5.2 | Dormant (issue #35): would run the Blender scripts, hold the scene and render with EEVEE once re-enabled. |
 | Browser | Loads the viewer from GitHub Pages or the Vite dev server. |
 | Family and friends | Open the viewer link. |
 | Architect (indirect) | Source of the plans (`input/*.pdf`). |
@@ -219,24 +220,24 @@ stateDiagram-v2
 flowchart LR
     P[plans + photos in input/] --> E[edit code/house_core.py]
     E --> T[pytest · npm test · playwright]
-    E --> R[rebuild in Blender:<br/>build_house → paint → windrose → garden → film]
-    R --> S[render stills to tmp/details/]
-    S -->|looks wrong| E
-    S -->|ok| F[save .blend, render film headless]
-    F --> M[ffmpeg → frechenlehen_rundgang.mp4]
+    E --> PL[export_plans.py → plans/]
     E --> W[npm run dev: .glb regenerated, viewer]
+    W --> S[Show: shot.js → tmp/web/]
+    S -->|looks wrong| E
+    W --> F[just film: capture the Rundgang]
+    F --> M[ffmpeg → YYYY-MM-DD_frechen_rundgang_threejs.mp4]
     W -->|push to main| G[GitHub Pages]
 ```
 
-1. **Rebuild.** Run all Blender scripts in a fixed order. Each one replaces only its own
-   collection or objects. Save the `.blend`.
-2. **Verify a change.** Run the test suites. Render a still from a temporary camera and look
-   at it, then remove the camera. For the viewer, look at the Playwright screenshots in
-   `tmp/web/`.
-3. **Deliberate change to the Blender output.** Regenerate the parity golden, diff it, then
-   rebuild and save the `.blend`.
-4. **Film.** Bake the route into camera keys (`tour.build_tour()`), render one frame per key
-   headless and encode them. The viewer's Rundgang plays the same keys live.
+1. **Re-export the plan sheets** after a core change (`python3 code/export_plans.py plans/`).
+2. **Verify a change.** Run the test suites. Look at a Show screenshot of the change and at the
+   Playwright screenshots in `tmp/web/`.
+3. **Blender (dormant, issue #35).** No rebuild, save, still or parity test; the scripts only
+   compile in a test, and `frechenlehen.blend` stays frozen at `7805879`. Re-enabling:
+   `CLAUDE.md` › Running › Blender backend.
+4. **Film.** Bake the route into camera keys (`tour.build_tour()`); the viewer's Rundgang plays
+   them live and `just film` captures and encodes it (the Blender render of the same keys is
+   dormant).
 5. **Refresh the README views:** `docs/images/ansicht_*.png`.
 6. **Publish the viewer:** merge to `main`; the Pages workflow builds and deploys.
 

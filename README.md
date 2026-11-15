@@ -1,4 +1,4 @@
-# Frechenlehen – Blender-Modell und Web-Ansicht
+# Frechenlehen – Web-Ansicht und Pläne (Blender ruht)
 
 **[🏠 Das Haus im Browser: tillg.github.io/frechen_blender](https://tillg.github.io/frechen_blender)** · **[▶ Film: Rundgang durchs Haus](https://tillg.github.io/frechen_blender/rundgang.mp4)** (der neueste, läuft direkt im Browser)
 
@@ -6,8 +6,15 @@
 ![Ansicht von Nordwesten](docs/images/ansicht_nordwest.png)
 
 3D-Modell des Hauses, erzeugt aus den Architekten-Plänen (Grundriss EG/OG, Ansichten, M 1:100).
-Ein gemeinsamer Python-Kern (`code/house_core.py`, die Öfen in `code/ofen.py`, der Schreibtisch in `code/desk.py`, das Bad der Großeltern in `code/bad.py`, die Küche in `code/kueche.py`, das Gäste-WC am Hintereingang in `code/gaeste_wc.py`, das Regal im Büro in `code/regal.py`, das Schrankbett im Yoga-Zimmer in `code/schrankbett.py`, das Gästebad im 1. Stock in `code/gaestebad.py`, das Bad Nadine & Till in `code/elternbad.py`) beschreibt das Haus; daraus entstehen das
-Blender-Modell und die interaktive Web-Ansicht im Browser.
+Ein gemeinsamer Python-Kern (`code/house_core.py`, die Öfen in `code/ofen.py`, der Schreibtisch in `code/desk.py`, das Bad der Großeltern in `code/bad.py`, die Küche in `code/kueche.py`, das Gäste-WC am Hintereingang in `code/gaeste_wc.py`, das Regal im Büro in `code/regal.py`, das Schrankbett im Yoga-Zimmer in `code/schrankbett.py`, das Gästebad im 1. Stock in `code/gaestebad.py`, das Bad Nadine & Till in `code/elternbad.py`) beschreibt das Haus; daraus entstehen die
+interaktive Web-Ansicht im Browser und die Pläne für den Architekten.
+
+**Blender ruht** (Issue #35, für schnellere Entwicklungszyklen): Die Blender-Skripte bleiben im
+Repo, werden aber nicht mehr ausgeführt und nicht mehr gepflegt; ein Test prüft nur noch, dass
+sie sich übersetzen lassen. `frechenlehen.blend` ist der Stand von Commit `7805879` (zuletzt
+geprüft mit grünem Paritätstest). Wieder einschalten: die sechs Skripte in Blender neu ausführen
+(Reihenfolge unten, Details in `CLAUDE.md` › Running › Blender backend) und den Paritätstest aus
+`7805879` zurückholen.
 
 ## Struktur
 
@@ -17,8 +24,8 @@ Blender-Modell und die interaktive Web-Ansicht im Browser.
 | `code/` | Python: der Kern `house_core.py` (ohne Blender), die Blender-Skripte (laufen in Blender, z. B. über den Blender-MCP-Server) und der glTF-Export |
 | `web/` | Web-Ansicht mit three.js (Vite); `web/public/frechenlehen.glb` wird aus dem Kern erzeugt, nicht eingecheckt |
 | `plans/` | Pläne für den Architekten, aus dem Modell erzeugt und eingecheckt (siehe Pläne): `eg.svg`, `og.svg`, `nord.svg`, `ost.svg`, `sued.svg`, `west.svg` |
-| `tests/` | Python-Tests (`pytest`), u. a. Vergleich des Blender-Neubaus mit einem gespeicherten Fingerabdruck |
-| `frechenlehen.blend` | das Modell (erzeugt; nach Änderungen neu bauen und speichern) |
+| `tests/` | Python-Tests (`pytest`); keiner startet Blender (die Blender-Skripte werden nur übersetzt) |
+| `frechenlehen.blend` | das Blender-Modell, eingefroren auf dem Stand von `7805879` (Blender ruht, siehe oben) |
 | `JJJJ-MM-TT_frechen_rundgang_blender.mp4`, `…_threejs.mp4` | Film: Rundgang außen, dann EG und OG (Blender-Render bzw. Web-Ansicht); der neueste `…_threejs.mp4` liegt auch auf GitHub Pages als [`rundgang.mp4`](https://tillg.github.io/frechen_blender/rundgang.mp4) und läuft dort im Browser |
 | `justfile` | `just film` (mit `FILM_LAYOUT=alt` das EG in der Aufteilung Alternativ): nimmt den Rundgang der Web-Ansicht Bild für Bild auf (`web/film.mjs`, ca. 26 min, Dev-Server dieses Checkouts auf 5377), kodiert ihn mit 25 fps auf knapp 90 MB, löscht alle Filme außer dem neuen und dem davor – auch aus der Git-Historie von `main` –, committet und pusht mit Force-Push. Einzeln: `film-capture`, `film-encode`, `film-publish` |
 | `docs/images/` | Ansichten für dieses README |
@@ -51,7 +58,7 @@ Blender-Modell und die interaktive Web-Ansicht im Browser.
 | `show.py` | ohne Blender: berechnet aus dem Kern einen Blickpunkt auf die genannten Objekte und öffnet die Web-Ansicht dort im Browser (siehe Tests) |
 | `film_release.py` | für `just film` (ohne Blender): welche alten Filme weg können (es bleiben der neue und der davor), die Bitrate für knapp 90 MB (GitHub nimmt nur Dateien unter 100 MB), das Entfernen alter Filme aus der Git-Historie und welcher Film der neueste ist (für GitHub Pages) |
 
-Ausführen in Blender: `exec(open("/Users/tgartner/git/frechen_blender/code/<skript>.py").read())`
+Ausführen in Blender (ruht, nur zum Wieder-Einschalten): `exec(open("/Users/tgartner/git/frechen_blender/code/<skript>.py").read())`
 Reihenfolge beim Neubau: `build_house` → `fire` → `paint` → `windrose` → `garden` → `film`.
 
 Koordinaten: Ursprung = äußere SW-Ecke, +X = Osten, +Y = Norden, Meter.
@@ -174,17 +181,17 @@ die Tür 93 im Süden der Ostwand, um 90° geöffnet. Standpunkte schräg, von o
 - Lokal: `cd web && npm install && npm run dev` – erzeugt zuerst das `.glb` aus dem Kern; danach Haus unter `http://localhost:5377/`, Ofen unter `http://localhost:5377/ofen.html`, Schreibtisch unter `http://localhost:5377/desk.html`, Bad unter `http://localhost:5377/bad.html`, Küche unter `http://localhost:5377/kueche.html`, Gäste-WC unter `http://localhost:5377/gaeste_wc.html`, Schrank im Büro unter `http://localhost:5377/regal.html`, Schrankbett unter `http://localhost:5377/schrankbett.html`, Gästebad unter `http://localhost:5377/gaestebad.html`, Bad Nadine & Till unter `http://localhost:5377/elternbad.html`, der Produktions-Build (`npm run build`, wie auf GitHub Pages) unter `http://localhost:5377/frechen_blender/` (immer nur ein Server, fester Port 5377; auch die Tests laufen gegen ihn). Wird eine Datei in `code/` gespeichert, erzeugt der Server das `.glb` neu und lädt die Seite nach – an derselben Stelle, denn die Ansicht steht in der URL (Haus: Kamera, Blickpunkt, Stufe, Schnitt, optional `fov=` als vertikales Sichtfeld in Grad, Standard 28, `layout=alt` für das EG in der Aufteilung Alternativ in allen Einträgen und im Rundgang (ohne etwas wegzuschneiden; für den Film dieser Aufteilung) und `hires=on` für volle Qualität bei der Filmaufnahme: alle Lichter, volle Pixeldichte, Gras auch von innen – sonst gelten die Abkürzungen für flüssiges Drehen, auch im Rundgang; Teilmodelle: Kamera, Blickpunkt, Darstellung). So lässt sich eine Ansicht auch als Link weitergeben.
   (braucht `python3`) und öffnet dann die Seite.
 
-Jede Änderung am Haus geschieht einmal im Kern (`code/house_core.py`, Öfen in `code/ofen.py`) und erscheint in Blender und im
-Browser.
+Jede Änderung am Haus geschieht einmal im Kern (`code/house_core.py`, Öfen in `code/ofen.py`) und erscheint im Browser und in den
+Plänen (in Blender erst wieder, wenn es neu gebaut wird).
 
 ## Tests
 
 - Einmalig: `python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt` und
   `cd web && npm install`
 - Schnell (nach jeder Änderung, ≤ 60 s): `bash scripts/check.sh quick` – Python-Tests ohne
-  Blender (`pytest -m "not slow"`) und Vitest, mit Zeit pro Teil
-- Vollständig: `bash scripts/check.sh full` – alle Python-Tests (der Paritätstest startet Blender
-  selbst im Hintergrund), Vitest und alle Playwright-Tests (Screenshots nach `tmp/web/`); die
+  die langsamen (`pytest -m "not slow"`) und Vitest, mit Zeit pro Teil
+- Vollständig: `bash scripts/check.sh full` – alle Python-Tests (auch die langsamen,
+  die die Pläne neu erzeugen), Vitest und alle Playwright-Tests (Screenshots nach `tmp/web/`); die
   Bildstrecke entlang des Rundgangs nur auf Wunsch: `cd web && npx playwright test --grep @eye`
 - Eine Änderung ansehen: `.venv/bin/python code/show.py EG_Haustuer` öffnet den Browser auf dem
   Dev-Server mit Blick auf die genannten Objekte (außen von der nächsten Fassade, innen von oben

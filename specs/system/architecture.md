@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-14
+edited: 2026-11-15
 ---
 
 # Architecture: Frechenlehen house model
@@ -15,6 +15,9 @@ The house is described once, in a **pure-Python core** (`code/house_core.py` plu
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
 - `build_house.py` builds the Blender scene. Blender renders the stills and the film from it.
+  **Dormant** since issue #35: kept and compiled by `tests/test_blender_scripts.py`, but not
+  run or maintained; `frechenlehen.blend` is frozen at `7805879` (last parity-green full check).
+  Re-enabling: `CLAUDE.md` › Running › Blender backend.
 - `export_gltf.py` writes a `.glb` for the three.js **viewer** in `web/`. GitHub Pages
   publishes the viewer.
 - `export_plans.py` writes the six **plan sheets** for the architect to `plans/` (committed).
@@ -43,7 +46,7 @@ flowchart TB
         TO["tour.py<br/>routes, Standpunkte → camera keys"]
         SH["show.py<br/>view URL on objects"]
     end
-    subgraph blender["Blender 5.2"]
+    subgraph blender["Blender 5.2 (dormant)"]
         SC[("scene in frechenlehen.blend")]
         EV["EEVEE renderer"]
     end
@@ -77,7 +80,7 @@ flowchart TB
 | Blender MCP server | How the agent runs code in the open Blender (`execute_blender_code`). |
 | three.js 0.187 | Viewer: `WebGPURenderer` with TSL node materials. It falls back to WebGL2 automatically ([ADR-003-SKGB](../architecture/adr-003-skgb-webgpu-tsl.md)). |
 | Vite 8 | Bundler and dev server for `web/`; vanilla JS, no framework. |
-| pytest · Vitest · Playwright | Python tests, web unit tests, browser e2e (headless Chromium on the real GPU via `--use-angle=metal`, WebGL2 path). pytest runs from a repo-local `.venv` (`requirements-dev.txt`); `pytest.ini` registers the marker `slow` (Blender parity) with `--strict-markers`. Playwright starts no server of its own: project `dev` tests `/`, project `preview` the build under `/frechen_blender/` (setup project `build` runs `npm run build` first), both on the one dev server on 5377; tests tagged `@eye` are left out unless `@eye` is on the command line. `scripts/check.sh quick\|full` runs and times the two check tiers. |
+| pytest · Vitest · Playwright | Python tests, web unit tests, browser e2e (headless Chromium on the real GPU via `--use-angle=metal`, WebGL2 path). pytest runs from a repo-local `.venv` (`requirements-dev.txt`); `pytest.ini` registers the marker `slow` (plan-sheet determinism and currency) with `--strict-markers`. Playwright starts no server of its own: project `dev` tests `/`, project `preview` the build under `/frechen_blender/` (setup project `build` runs `npm run build` first), both on the one dev server on 5377; tests tagged `@eye` are left out unless `@eye` is on the command line. `scripts/check.sh quick\|full` runs and times the two check tiers. |
 | GitHub Actions + Pages | Builds the `.glb`, the plan sheets (`export_plans.py`, so Pages never serves stale `plans/`) and the viewer on push to `main` and publishes `web/dist`, plus the newest film (`film_release.py latest`) as `rundgang.mp4`, so the browser plays it (GitHub's raw files download as `application/octet-stream`). |
 | ffmpeg | Encodes the film frames to H.264 MP4. |
 
@@ -267,7 +270,7 @@ the pivot, glTF axis, radians]) and `variant` (`VARIANT`; glTF
 `extras.variant`). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
 hinged at the lining's corner, with the `SWING` that closes it.
 
-### `build_house.py` — Blender backend
+### `build_house.py` — Blender backend (dormant)
 
 It keeps only what needs Blender: `make_materials` (MAT_DEF → Principled BSDF node trees;
 wood is noise stretched along the grain → ramp → hue/value by `rnd` → bump; all texture
@@ -355,12 +358,13 @@ fov)`, the first of an entry is its standard; inside spots sit at `EYE` above th
 loops without a seam. `tests/golden/tour.json` pins the keys (`UPDATE_TOUR_GOLDEN=1` after a
 deliberate route change). The film bakes only `ROUTE`.
 
-### Other Blender scripts
+### Other Blender scripts (dormant)
 
 Each one imports the core with `sys.path` + `importlib.reload(house_core)`, so a
 long-running Blender session picks up core edits. The path is `code/` next to the open `.blend`
-(`bpy.data.filepath`), so each clone's Blender builds its own core; with no `.blend` open (the
-headless parity build) the caller's `PROJECT` (`tests/blender/snapshot.py`) gives it.
+(`bpy.data.filepath`), so each clone's Blender builds its own core; with no `.blend` open (a
+headless build; the removed parity driver `tests/blender/snapshot.py`, at `7805879`, did this) the
+caller's `PROJECT` gives it.
 
 | Script | Responsibility | Depends on |
 |---|---|---|
@@ -509,8 +513,7 @@ flowchart LR
     SH --> SHOT["shot.js URL → tmp/web/*.png<br/>(the agent reads it)"]
     SHOT -->|hidden| SH
     SHOT --> BR["show.py opens the URL in the browser"]
-    BR -->|last step| BL["Blender output changed?<br/>rebuild · save · one still"]
-    BL --> F["check.sh full<br/>all pytest · npm test · playwright"]
+    BR -->|last step| F["check.sh full<br/>all pytest · npm test · playwright"]
 ```
 
 - **`scripts/check.sh quick|full`** (bash): runs the tier's parts with `.venv/bin/python`, times
@@ -545,7 +548,8 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Decision | Alternatives considered | Why |
 |---|---|---|
 | The core's output is called **Blueprint** | "Model" | "Model" means the whole 3D house (scene, `.blend`). |
-| The **parity test** pins the Blender build to `tests/golden/blender_snapshot.json` (per object: counts, bbox, materials, `rnd` hash) and checks the saved `.blend` | Visual checks only | Moving code between core and backends can change the output silently. Deliberate changes regenerate the golden. |
+| The **parity test** pinned the Blender build to `tests/golden/blender_snapshot.json` (per object: counts, bbox, materials, `rnd` hash) and checked the saved `.blend`; removed with the Blender backend going dormant (below), last green at `7805879` | Visual checks only | Moving code between core and backends can change the output silently. Deliberate changes regenerated the golden. |
+| The **Blender backend is dormant** (issue #35): scripts kept, compiled by `tests/test_blender_scripts.py`; no rebuild, save, still or parity test; `frechenlehen.blend` frozen at `7805879` | Keep maintaining both outputs; delete the Blender scripts | Faster dev cycles (no Blender rebuild per change, two Blender starts less per full check); kept code makes re-enabling cheap. The compile check catches only syntax rot, not API drift against the core; the Blender BVH camera-clearance check is dormant too ([decision](../../DECISIONS.md#run-2026-11-15-1633-4)). |
 | Stages change by **crossfade** | Construction build-up | Smaller scope; build-up is a later candidate. |
 | A sub-model may bring **its own walls** (`bad.py`: niche wall, lintel, low wall; `gaeste_wc.py`: partition, the WC's north wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
 | Speis shelves and cabinet are **built-ins** (`EG_Speis`, stage Gebaut) | Furniture (`EG_Moebel`, Eingerichtet) | Cabinet C replaces a wall; floor-to-ceiling joinery belongs to the house like the kitchen. |
@@ -591,8 +595,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Rank sites by distance to the **camera**; indoors the height difference counts **3×** | Distance to the orbit target; plain 3D distance everywhere | The camera is where the viewer stands. Plain 3D fills slots with rooms through floor or ceiling, whose light only leaks (no shadows); outside, a vertical penalty would darken the EG windows in the overview. |
 | By day the pool is **out of the render list** (`visible = false`); the dusk variant is **prewarmed** at load | Intensity 0 by day (no recompile ever); accept the stall | Day lighting costs nothing per fragment. Without the prewarm the first dusk (e.g. the Rundgang start) stalled ~0.8 s; one compile at load is cheaper. |
 | **Two check tiers**: quick after every step (own test + `pytest -m "not slow"` + Vitest, no e2e suite), full once at the end of a change and at archive | The full suite after every step | A `[web]` step cost ≥ 7 min of waiting; the step's own test covers the change, the Show covers the look, the final full run catches regressions. |
-| Blender parity is a **`slow`** test, outside the quick check | Keep it in quick (8 s) | It starts Blender twice and needs the saved `.blend`, which is stale in the middle of a change. |
-| Core changes are checked by a **Show** per step; one Blender still at the end when the Blender output changed; Blender-only steps keep per-step stills | A Blender still per step | The browser shows the same core; bpy-only changes aren't visible in the browser. |
+| Core changes are checked by a **Show** per step (Blender stills dormant with the backend) | A Blender still per step | The browser shows the same core; bpy-only changes aren't visible in the browser. |
 | The **view is computed in Python from the Blueprint** (`show.py`) | A viewer `?focus=` parameter; hand-written URLs | No viewer change; the bounding boxes come from the core (ADR-001-XEWL); testable with pytest. |
 | Framing rule: outside → nearest facade, inside → from above with the storeys above cut away; `--from` to override | Named views per room; ray-casting for occlusion | Simple and predictable; covers doors, windows, facades and rooms. |
 | The storey cut follows the **box centre height**, not the collection | The viewer's `cutLevel` by collection | `view()` gets only a box, and `--at` points have no collection; no object is cut by its own level today. |
@@ -619,9 +622,9 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 
 - **Source of truth:** the core. The constants and builder calls in `code/house_core.py` are
   the model's data; the backends and the viewer repeat none of them.
-- **Generated, committed:** `frechenlehen.blend` (must equal the current build), the two newest
+- **Generated, committed:** `frechenlehen.blend` (frozen at `7805879`, Blender dormant), the two newest
   Rundgang films `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (~88 MB each), `docs/images/*.png`,
-  `plans/*.svg` (must equal a fresh export), `tests/golden/blender_snapshot.json`.
+  `plans/*.svg` (must equal a fresh export).
 - **Generated, git-ignored:** `web/public/frechenlehen.glb` (`npm run blueprint`, run before
   `dev`, `build` and `test`, and by the dev server after each saved `code/*.py`), `web/dist/`,
   the test environment `.venv/`.
@@ -630,13 +633,14 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 ## System boundaries and external systems
 
 - **Input:** `input/` (PDFs, rendered plan PNGs, colour swatches, photos).
-- **Output:** the `.blend`, the MP4, the README images and the viewer page.
-- **External tools:** Blender, the Blender MCP add-on, ffmpeg, Node/npm (three.js, Vite and
-  the test tools from npm), GitHub Actions and Pages.
+- **Output:** the MP4, the plan sheets, the README images and the viewer page.
+- **External tools:** ffmpeg, Node/npm (three.js, Vite and
+  the test tools from npm), GitHub Actions and Pages; Blender and its MCP add-on only once the
+  Blender backend is re-enabled.
 
 ## Infrastructure
 
-Model work runs locally on the owner's Mac (arm64). A headless film render is
+Model work runs locally on the owner's Mac (arm64). A headless Blender film render (dormant) is
 `Blender -b frechenlehen.blend -a`, at about 1 s per frame, one frame per camera key. The MP4 is
 linked raw from GitHub. `.github/workflows/pages.yml` builds on `ubuntu-latest`
 (Python 3.13, Node 24) and deploys `web/dist` to `https://tillg.github.io/frechen_blender/`
