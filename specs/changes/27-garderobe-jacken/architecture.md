@@ -1,7 +1,7 @@
 ---
 feature: 27-garderobe-jacken
 title: "Architecture: Garderobe für viele Jacken"
-status: proposed
+status: applying
 order: 3
 created: 2026-11-15
 edited: 2026-11-15

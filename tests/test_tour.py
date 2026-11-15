@@ -299,3 +299,22 @@ def test_routes_clear_the_speis_and_essen_furniture():
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
             assert gap(f[:3]) >= 0.25, (name, f[:3])
+
+
+def test_routes_and_spots_clear_the_garderobe():
+    """Issue #27: every camera key of every route and every Standpunkt keeps 0.25 m from the Parts of the
+    Garderobe by the Gäste-WC (hook board, hooks, hat shelf, rod, shoe shelf) and its coats and shoes."""
+    bp = house_core.build()
+    boxes = []
+    for o in ("Garderobe", "Kleidung"):
+        g = bp.geo[("EG", "EG_" + o)]
+        for first, n in bp.parts[("EG", "EG_" + o)]:
+            vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+            boxes.append(([min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]))
+    assert len(boxes) > 50
+    gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
+    for s in tour.SPOTS:
+        assert gap(s[3]) >= 0.25, s[0]
