@@ -38,7 +38,7 @@ edited: 2026-11-15
     wall, where cabinet C stands); four spots in a strip under the Küche hood
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
-    threshold), the Bäder (the Gästebad with its WC niche and shower, the Bad Nadine & Till with its shower) and
+    threshold), the Bäder (the Gästebad with its WC niche and shower, the Bad Nadine & Till with its two showers) and
     all four WCs (and the Garderobe beside the Gäste-WC); in the Bad Großeltern a limestone strip as wide as its WC along the west wall
     (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip and in its
     niche's Schrank)
@@ -138,9 +138,9 @@ edited: 2026-11-15
   - the six washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
     52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
-    (100 × 47) and the OG Bäder (120 × 47 in the Gästebad, 100 × 47 in Nadine & Till's under a
-    mirror 110 × 85 in the same wooden frame), einzeln in the back hall (40 × 28), the OG WC 2,30
-    (50 × 40) and the OG Flur (60 × 47)
+    (100 × 47) and the Gästebad (120 × 47), einzeln in the back hall (40 × 28), the OG WC 2,30
+    (50 × 40), the OG Flur (60 × 47) and the Bad Nadine & Till (60 × 47 under a mirror 80 × 85 in
+    the wooden frame)
   - Gästebad at the end of the OG Flur (NW; also a sub-model page with its four walls and
     dimensions), split along its south wall like the EG Gäste-WC below it: a 10 cm partition over
     the EG one; west of it an open WC niche 101 wide (no wall, no door; toilet centred, Taubenblau
@@ -150,13 +150,14 @@ edited: 2026-11-15
     a mirror 140 × 95 in a 10 cm wooden frame from 1.17
   - Bad Nadine & Till (OG, S, between Waschküche and Schlafzimmer; also a sub-model page with its
     four walls, its limestone floor and dimensions): the door at the south end of the east wall,
-    open 90° into the Bad; the toilet in the NE corner facing the south window (seen diagonally), on
-    Taubenblau tiles on the north and east wall, a Wandlampe over the cistern; a walk-in shower
-    213 × 98 along the north wall to the window's east jamb, no tray (the limestone floor runs
-    through, a drain), entrance 60 at the west wall, glass 153 and a glass end towards the toilet,
-    its west and north wall in limestone slabs to 2 m like the Bad Großeltern's; the Waschbecken
-    doppelt 100 west of the window (15 cm from its reveal) under the wood-framed mirror with four
-    Wandlampen, one more left of the window
+    open 90° into the Bad; opposite, along the west (back) wall, two walk-in showers on one strip
+    90 deep over the wall's full 2.22 (no tray: the limestone floor runs through, a drain each), a
+    head in each back corner, a glass 80 per shower from its side wall and a 60 passage between them
+    in the middle; the strip's walls in limestone slabs to 2 m like the Bad Großeltern's, on the north
+    wall (the Waschküche partition, whose top metre is to be glazed) only to 1.20, and nothing else on
+    that wall above 1.20; the toilet on the north wall between glass and basin on Taubenblau tiles
+    (north and east wall); the Waschbecken einzeln 60 on the east wall north of the door under the
+    wood-framed mirror 80 × 85 with two Wandlampen, one more left of the window
   - the four WCs (the WC in the Bad Großeltern's niche, the Gäste-WC, the WC 2,30 and the Gästebad's WC niche), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
     row, floor-standing toilet with a close-coupled cistern; in the WC 2,30 (next to the

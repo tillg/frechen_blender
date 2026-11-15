@@ -8,7 +8,7 @@ const file = new URL('../public/elternbad.glb', import.meta.url);
 const glb = existsSync(file) ? readFileSync(file) : null;
 const DIMS = glb ? JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString()).scenes[0].extras.dims : [];
 
-test('Bad Nadine & Till page draws shower, toilet and basin with the core dimensions, without errors', async ({ page }) => {
+test('Bad Nadine & Till page draws showers, toilet and basin with the core dimensions, without errors', async ({ page }) => {
   const errors = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
@@ -17,7 +17,7 @@ test('Bad Nadine & Till page draws shower, toilet and basin with the core dimens
   expect(await page.evaluate(() => window.__elternbad.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(10);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['Dusche 213 × 98', 'Glas 153', '60 offen', 'Waschbecken 100', 'Spiegel 110 × 85', 'Tür 93', 'Fenster 88']) {
+  for (const t of ['Duschen 90', 'Durchgang 60', 'Waschbecken 60', 'Spiegel 80 × 85', 'Tür 93', 'Fenster 88']) {   // #33
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Von der Tür', 'Gerendert']]) {
