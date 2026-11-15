@@ -106,9 +106,12 @@ edited: 2026-11-15
     east). The WC has a new 76 cm door in the north wall, its leaf opening outward into the back
     hall, hinged at the partition, standing open at 90°; the toilet centred on the south wall,
     40 cm free in front of it; Taubenblau tiles in the WC only. The Garderobe is open through the
-    old 80 cm opening: a spruce bench 35 × 110 cm at 45 cm from wall to wall with scrolled arms,
-    a hook board with six iron hooks at 1.65 m and a hat shelf at 1.85 m on three brackets, after
-    `garderobe mallnitz.jpeg`. The WC's hand basin, a Waschbecken einzeln 40/28, stands outside, centred on the back
+    old 80 cm opening, without a bench: on its left (east) wall a spruce hook board over the
+    whole wall with 23 iron hooks in two staggered rows (1.50 / 1.65 m) and a hat shelf at
+    1.95 m on three brackets, after `garderobe mallnitz.jpeg`; across its back end (south wall)
+    a steel Kleiderstange from wall to wall at 1.78 m with five coats on wooden hangers, under
+    them a shoe shelf 33 cm deep with two levels of 20 cm and a dozen shoes (6 pairs; coats and
+    shoes are furniture, stage Eingerichtet, not on the plan sheets). The WC's hand basin, a Waschbecken einzeln 40/28, stands outside, centred on the back
     hall's east wall between the WC wall and the Windfang door (top 85 cm), Taubenblau tiles
     behind it up to the door's architrave and a mirror 40 × 60 cm in a 7 cm pine frame from
     1.20 m. Back door, WC door and Windfang door swing to show where they get in each other's
