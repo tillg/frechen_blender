@@ -14,7 +14,7 @@ repo's `CLAUDE.md` and `specs/system/`; this page only names what the workflow u
 | Inputs | `input/*.pdf`, `input/grundriss_eg/og.png`, detail photos `input/<component>.png` | Plans and reference pictures. |
 | Pure-Python tests | `tests/`, `.venv/bin/python -m pytest -q` from the repo root | No bpy needed, no test starts Blender; tests marked `slow` re-export the plan sheets. |
 | Web viewer | `web/`: three.js; `npm test` (unit), `npx playwright test` (e2e) | The one dev server on 5377 (`CLAUDE.md`). |
-| Scratch output | `tmp/` (gitignored): stills in `tmp/details/`, film frames in `tmp/film/`, logs | |
+| Scratch output | `tmp/` (gitignored): viewer screenshots in `tmp/web/`, film frames in `tmp/film_web/`, logs | |
 
 Environment: a repo-local `.venv` (`python3 -m venv .venv && .venv/bin/pip install -r
 requirements-dev.txt`) and `cd web && npm install`.
