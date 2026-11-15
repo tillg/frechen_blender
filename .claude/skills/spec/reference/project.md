@@ -8,10 +8,11 @@ repo's `CLAUDE.md` and `specs/system/`; this page only names what the workflow u
 
 | Thing | Path | Notes |
 |---|---|---|
-| Build scripts (run inside Blender) | `code/build_house.py`, `paint.py`, `garden.py`, `film.py`, `windrose.py` | Run via the Blender MCP server, always in this order (see `CLAUDE.md` › Running). The scripts are the source of truth; nothing is hand-edited in the `.blend`. |
-| Blender file | `frechenlehen.blend` | Saved after a rebuild; a headless render reads the saved file. |
+| Core | `code/house_core.py` and its sub-model modules | Pure Python; the backends `export_gltf.py` (viewer) and `export_plans.py` (plan sheets) are live. |
+| Blender scripts (dormant, issue #35) | `code/build_house.py`, `fire.py`, `paint.py`, `windrose.py`, `garden.py`, `film.py` | Not run by the workflow; `tests/test_blender_scripts.py` only compiles them. Re-enabling: `CLAUDE.md` › Running › Blender backend. |
+| Blender file | `frechenlehen.blend` | Frozen at `7805879` (last parity-green build); not rebuilt. |
 | Inputs | `input/*.pdf`, `input/grundriss_eg/og.png`, detail photos `input/<component>.png` | Plans and reference pictures. |
-| Pure-Python tests | `tests/`, `.venv/bin/python -m pytest -q` from the repo root | No bpy needed; tests marked `slow` start Blender. |
+| Pure-Python tests | `tests/`, `.venv/bin/python -m pytest -q` from the repo root | No bpy needed, no test starts Blender; tests marked `slow` re-export the plan sheets. |
 | Web viewer | `web/`: three.js; `npm test` (unit), `npx playwright test` (e2e) | The one dev server on 5377 (`CLAUDE.md`). |
 | Scratch output | `tmp/` (gitignored): stills in `tmp/details/`, film frames in `tmp/film/`, logs | |
 
@@ -34,9 +35,7 @@ requirements-dev.txt`) and `cd web && npm install`.
 **Final check** (once after the last plan step, before `status: applied`; at `/spec:archive`; on
 request):
 
-1. if the change touched the Blender output: rebuild via the Blender MCP (`CLAUDE.md` › Running),
-   save the `.blend`, render one still and read it (the parity test needs the saved build);
-2. `bash scripts/check.sh full` (all pytest incl. `slow`, `npm test`, all Playwright projects
+1. `bash scripts/check.sh full` (all pytest incl. `slow` (plan sheets), `npm test`, all Playwright projects
    except `@eye`; about 7 min for Playwright; a viewer tab open in the browser slows it and the frame-rate test). Known bugs in `specs/bugs/` don't count as new
    failures.
 
@@ -46,7 +45,7 @@ request):
 |---|---|---|
 | `[python]` | the new pytest test + `check.sh quick` | core change visible in the viewer → Show |
 | `[web]` | the new Vitest test or Playwright spec alone + `check.sh quick` | screenshots at 1×; Show for a visible change |
-| `[blender]` | rebuild via MCP in the order of `CLAUDE.md` › Running + `check.sh quick` | a still from a temporary camera to `tmp/details/`, read it (then remove the camera, restore `scene.camera`); film route: camera clearance check |
+| `[blender]` | **dormant** (issue #35): no step of this kind until Blender is re-enabled (`CLAUDE.md` › Running › Blender backend); then: rebuild via MCP + `check.sh quick` | then: a still from a temporary camera to `tmp/details/`; film route: camera clearance check |
 | `[docs]` / `[config]` | the mechanical check in `Verify:` | — |
 
 ## Build and test commands
@@ -56,10 +55,8 @@ request):
 | Quick tier | `bash scripts/check.sh quick` | Log in `tmp/check-<ts>.log`; warns above 60 s. |
 | Full tier | `bash scripts/check.sh full` | Same log; exits non-zero on any failure. |
 | `@eye` stills | `cd web && npx playwright test --grep @eye` | Pictures for a human; not in the default run. |
-| Rebuild the model | Blender MCP: exec `build_house`, `fire`, `paint`, `windrose`, `garden`, `film`, then save | See `CLAUDE.md` › Running. |
-| Still | Render from a temporary camera to `tmp/details/`, read the image, then remove the camera and restore `scene.camera` | For Blender-only changes per step; once in the final check otherwise. |
-| Film camera clearance | Sample every frame: BVH `find_nearest` ≥ 0.25 m plus `ray_cast` between consecutive frames | After any change to the route or to geometry along it. |
-| Film render | headless Blender `-b frechenlehen.blend -a`, logged to `tmp/` | Long-running: follow `CLAUDE.md` › Working rules. |
+| Viewer film | `just film` (capture of the browser Rundgang, encode, publish) | Long-running: follow `CLAUDE.md` › Working rules. |
+| Rebuild, still, Blender film camera clearance, Blender film render | dormant with the Blender backend | `CLAUDE.md` › Running › Blender backend; route clearance meanwhile only by `tests/test_tour.py`. |
 
 The baseline before the first step of a change is the final check.
 
@@ -80,6 +77,6 @@ Questions `/spec:grill` puts on the frontier (skip what the artifacts already se
 - Which plan or photo in `input/` is the source for this? Where do they disagree?
 - Does it change coordinates or shared constants other builders rely on?
 - Coplanar faces with existing parts? Shared `rnd` value needed?
-- Does the film camera still clear all geometry?
-- Which still(s) prove it — from where, at what detail?
-- Does it touch the Blender build and the web viewer alike (shared core)?
+- Does the Rundgang camera still clear all geometry (`tests/test_tour.py` covers Wandlampen and Alternativ furniture only)?
+- Which Show screenshot(s) prove it — from where, at what detail?
+- Does it touch the viewer and the plan sheets alike (shared core)?
