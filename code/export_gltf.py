@@ -19,7 +19,7 @@ import json, math, os, struct, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import fire, house_core, mesh_ops, tour  # noqa: E402
+import fire, house_core, mesh_ops, tour, vorlagen  # noqa: E402
 
 
 def yup(p):
@@ -192,6 +192,10 @@ def export(path, bp=None):
                        for n, r in tour.ROUTES[1:]],             # the viewer's shorter walks
             "spots": [{"name": n, "group": g, "entries": list(e), "cam": list(c), "at": list(a), "fov": f}
                       for n, g, e, c, a, f in tour.SPOTS],       # the viewer's Standpunkte
+            # the Vorlagen markers (code/vorlagen.py, web/src/markers.js) and the walls that hide them
+            "vorlagen": [{"key": b["key"], "title": b["title"], "at": list(b["at"])} for b in vorlagen.BEREICHE if b["at"]],
+            "vorlagen_walls": [name for (_, name) in bp.geo if name.endswith(house_core.PLAN["wall_suffix"])
+                               or name in house_core.PLAN["wall_objects"]],
         })
     if bp.dims:
         extras["dims"] = jsonable(bp.dims)

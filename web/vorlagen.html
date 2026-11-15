@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Frechenlehen – Fotos &amp; Vorlagen</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root { --paper: #f3efe6; --ink: #2b2926; --line: rgba(43, 41, 38, .18); }
+      html, body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.45 system-ui, sans-serif; }
+      main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+      header h1 { margin: 0; font: 400 34px/1.1 Georgia, 'Times New Roman', serif; letter-spacing: .02em; }
+      header p { margin: 4px 0 0; font: italic 15px Georgia, serif; opacity: .75; }
+      nav { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 14px 0 22px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+      a { color: inherit; }
+      nav a { text-decoration: none; border-bottom: 1px solid var(--line); }
+      nav a:hover, nav a[aria-current] { border-color: var(--ink); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+      figure { margin: 0; background: #fbf9f4; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+      figure a { display: block; text-decoration: none; }
+      figure img { display: block; width: 100%; height: 220px; object-fit: cover; background: #e6e0d4; }
+      figcaption { padding: 8px 12px 10px; }
+      figcaption small { display: block; opacity: .55; font-size: 12px; word-break: break-all; }
+      .bereich figcaption strong { font: 400 19px Georgia, serif; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header><h1>Fotos &amp; Vorlagen</h1><p></p></header>
+      <nav aria-label="Bereiche"></nav>
+      <section class="grid"></section>
+    </main>
+    <script type="module" src="/src/vorlagen.js"></script>
+  </body>
+</html>

@@ -351,6 +351,20 @@ fov)`, the first of an entry is its standard; inside spots sit at `EYE` above th
 loops without a seam. `tests/golden/tour.json` pins the keys (`UPDATE_TOUR_GOLDEN=1` after a
 deliberate route change). The film bakes only `ROUTE`.
 
+### `vorlagen.py` — the reference pictures by Bereich
+
+A third pure-Python module beside the core (ADR-001-XEWL): it imports `house_core` (for `Z_OG`);
+the core never imports it. `BEREICHE` lists per Bereich its `key`, `title`, the `PLAN_ROOMS` room
+it lies in, the marker `at` (house coordinates, `None` for Pläne) and its `fotos` (`src` under
+`input/`, copy `file`, `caption`). `--copy` writes the downsized copies with macOS `sips` (longest
+side ≤ `MAX_PX` 1600, JPEG 80) to `web/public/vorlagen/<key>/` (committed: CI has no `sips`);
+`vorlagen.py <out.json>` writes the manifest for the pages (`npm run blueprint` →
+`web/public/vorlagen.json`, git-ignored). `export_gltf.py` writes the anchored Bereiche to
+`scene.extras.vorlagen` and the wall objects (`PLAN` wall suffix and `wall_objects`) to
+`vorlagen_walls`. `tests/test_vorlagen.py` checks that every raster image of `input/` is assigned
+exactly once and copied, and that every anchor stands in free air in its room (no wall Part between
+it and the room's `PLAN_ROOMS` anchor). No geometry: plan sheets, goldens and route are untouched.
+
 ### Other Blender scripts (dormant)
 
 Each one imports the core with `sys.path` + `importlib.reload(house_core)`, so a
@@ -395,6 +409,13 @@ sequenceDiagram
   emit, image (`texture()` over `positionLocal` / `size`, loaded in the background; a missing
   file is logged). The colour is `mix(paper, clay, …)` → `mix(clay, detail, uDetail)`. In Skizze the
   surfaces are paper and write depth, so the ink lines are hidden-line.
+- **`markers.js`** (Vorlagen). One `<a target="_blank">` per anchored Bereich of
+  `scene.extras.vorlagen`, placed by a CSS transform at its projected anchor; `update(camera, state)`
+  runs right before each `renderer.render` (so after every view change, resize, cutaway or stage
+  switch), `hide()` when a plan sheet opens. `markerVisible()` (pure, Vitest) decides by storey,
+  distance, cutaway, route, `hires` and plan; then one `Raycaster` ray from the camera to the anchor
+  against the visible `vorlagen_walls` objects hides it behind a wall. `vorlagen.js` +
+  `vorlagen-data.js` render `vorlagen.html` from `public/vorlagen.json` (index or `?b=<key>`).
 - **`ink.js`.** `EdgesGeometry` (30°) per mesh except `SMOOTH` and furniture objects, merged into one
   `LineSegments` per collection.
 - **`lighting.js`.** Day: sun from Blender's angle, hemisphere, sky. Dusk: low warm sun,
@@ -604,6 +625,9 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | **One basin builder `waschbecken()`** in the core for all six washbasins, with its own `random.Random(16)` per call (`bad.py` passes one drawn from its stream) | A sub-model module; one builder per kind; the global stream | One design in six places is one function. Basin edits shift no other part's `rnd`. |
 | Waschbeckenständer in **`Metall`** (metal 1.0) | `Stahl` | Chrome is a mirror metal; the viewer lights metal ≥ 0.5 with an env map, so it renders bright. |
 | **`Keramik` neutral white** (0.95, 0.95, 0.95) | The former slightly warm (0.90, 0.90, 0.88) | The basins should be "strahlend weiß". The warm look in the house's Gebaut/Eingerichtet stages is the evening light, which stays. |
+| **Vorlagen manifest** in `code/vorlagen.py`, exported to glb extras and a small JSON; one page `vorlagen.html?b=<key>` | A list in the web page; the pages parsing the 39 MB glb; one HTML per Bereich | One source (ADR-001-XEWL); the pages stay light; a new Bereich needs no new file. |
+| Vorlagen **markers as DOM links** over the canvas, hidden by a ray against the wall objects | Sprites in the scene | Real links (href, new tab, cursor, testable in the production build), no click-vs-orbit handling; furniture does not hide a marker. |
+| **Every raster image of `input/` assigned**, copies ≤ 1600 px committed | An exclusion list; originals; Pillow at build | "Alle Fotos" without a list to maintain; the originals sum to ~150 MB; CI has no `sips`. |
 | **A3, 1:100**, one view per sheet, mm `viewBox`; **model-state hash**, no date | The architect's 1:128 sheet; a date or git SHA | True scale at 100 %; a date breaks determinism, the SHA is unknown before the commit. |
 
 ## Data
