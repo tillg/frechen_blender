@@ -42,6 +42,8 @@ Choices made while nobody was there to ask are logged here
   - [23:10 — #31 bug: duplicates found by a 16 × 16 average hash (> 16 of 256 bits apart); two pairs, the larger copy kept, captions merged, the others in `DOPPELT`](#run-2026-11-15-1633-30)
   - [23:40 — #26: the hood as an island hood hung from the ceiling over the Halbinsel's cooktop; lip 65 above it; the Wamsler's pipe bends into the east wall at 1.80](#run-2026-11-15-1633-31)
   - [23:40 — #26: the hood and Haubenspots tests rewritten to the new place](#run-2026-11-15-1633-32)
+  - [00:20 — #30: an Oberlicht 1.00 high under the ceiling, x 5.69 .. 8.49, pine lining of the full wall depth, two mullions (one on the shower glass line), Milchglas](#run-2026-11-15-1633-33)
+  - [00:20 — #30: the four lamps over the Waschküche table lowered to 1.10 under the glazing](#run-2026-11-15-1633-34)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -398,3 +400,23 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the issue itself asks for the move; the new tests keep every property of the old ones that still holds.
 - **Alternatives:** keep the old tests (they cannot hold after the issue).
 - **Consequences:** the comment "right of the hood" on Wandlampe 8 in `test_eg_wandlampen` becomes stale; reworded to "right of the Wamsler". `web/src/lighting.test.js` pins the six lit sites seen from the Stube: the hood's light (site 2) moved 1.4 m away, the Windfang's lamp (site 31) takes its place.
+
+## 00:20 — #30: an Oberlicht 1.00 high under the ceiling, x 5.69 .. 8.49, pine lining of the full wall depth, two mullions (one on the shower glass line), Milchglas {#run-2026-11-15-1633-33}
+
+- **Status:** open
+- **Context:** issue #30 („Diese soll oben, unter der Decke 1 m hohes Glas haben. So kommt Licht vom Bad … in die Waschküche“). The partition is the Bad Nadine & Till's north wall (x 5.59 .. 8.59, y 2.62 .. 2.79, ceiling 2.20). On the Bad side only the north shower pane (x 6.49, to 2.0, 4 mm into the wall) and its rail reach above 1.20; on the Waschküche side the four lamps over the table (rosettes at 1.70).
+- **Question:** span, frame, mullions, glass, and what happens to the shower pane?
+- **Decision:** opening sill 1.20 up to the ceiling (no lintel), 10 cm plaster piers to the side walls (x 5.69 .. 8.49); a pine (`Innentuer`, as the interior doors) lining of the full wall depth: sill, head, jambs 5 cm, two mullions 6 cm at x 6.49 (the shower glass line: the pane and its rail end on it) and 7.49, panes 0.72 / 0.94 / 0.92 clear; glazing beads 2 × 2 cm both sides; `Milchglas` 8 mm in the wall's middle; one `rnd`. A dedicated builder `elternbad.oberlicht()`, called by `build_og()` and the sub-model's `waende()`; the opening as a `wall()` kind `I` op.
+- **Why:** satin glass passes the light and keeps the showers and the toilet private from the Waschküche (eye height 1.6 looks down into the Bad through clear glass); a full-depth lining gives the shower pane something to end on; `W` would build exterior larch sashes.
+- **Alternatives:** clear `Glas` (more view, no privacy); glass corner to corner; stop the shower pane at 1.20 (an odd half pane).
+- **Consequences:** the OG plan's cut (1.55) now cuts the partition as a window (frame + glass); `og.svg` regenerated.
+
+## 00:20 — #30: the four lamps over the Waschküche table lowered to 1.10 under the glazing {#run-2026-11-15-1633-34}
+
+- **Status:** open
+- **Context:** the four Wandlampen on the partition's Waschküche side (rosettes at 1.70, #19) would hang in front of the glass. West wall: cupboard and shower cabin; east: washer tower and basin; north: door and cabin — no free wall.
+- **Question:** where do the four lamps go?
+- **Decision:** they stay over the table at their x, rosette at `waschkueche.LAMPE_H` = 1.10: lamp top 1.185 (under the sill 1.20), shade rim 0.98, 23 cm over the table top (0.75).
+- **Why:** they light the work surface, where they belong; the glazing above stays clear.
+- **Alternatives:** move them to other walls (none free); ceiling lights (new kind of fixture); drop them (room darker at dusk).
+- **Consequences:** `test_wandlampen_og_placements` pins the new height (the issue asks for the move); still 31 OG lamps.
