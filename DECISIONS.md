@@ -34,6 +34,7 @@ Choices made while nobody was there to ask are logged here
   - [21:07 — #29: the cabin's glass door built closed (no PIVOT/SWING), limestone on floor patch and west wall, one lamp over the mirror in the tower lamp's slot](#run-2026-11-15-1633-22)
   - [21:07 — #29: a module `code/waschkueche.py` without a sub-model page](#run-2026-11-15-1633-23)
   - [21:45 — #29: the user's change: cabin in the NW corner right of the door, two inward-folding glass doors, 20 cm to the cupboard; the room door opens 90°](#run-2026-11-15-1633-24)
+  - [22:15 — Skip the baseline full check for stacked issues](#run-2026-11-15-1633-25)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -65,7 +66,7 @@ Choices made while nobody was there to ask are logged here
   #33: branch issue/33-zwei-duschen from issue/31-fotos-anzeigen, PR https://github.com/tillg/frechen_blender/pull/39 (archived on the branch; full check: 3 reds, two pinned lamp count / label fixed and rerun green, the ~30 fps test flaky, green alone).
   19:55: on the user's request ("merge the pending PRs to main") PRs #36–#39 were merged into main (13692f8, c5b0f1a, 337cf95, 9290f63), branches deleted, issues #35 #34 #31 #33 [done]. Later PRs target main and wait for the user.
   #32: branch issue/32-dusche-badewanne from issue/33-zwei-duschen (now in main), PR https://github.com/tillg/frechen_blender/pull/41 (base main; archived on the branch; full check 110/111, the red a pinned old label, fixed, green alone).
-  #29: branch issue/29-waschkueche-becken-dusche from issue/32-dusche-badewanne, PR https://github.com/tillg/frechen_blender/pull/42 (archived on the branch; full check 109/111: `bad.spec.js:49` green alone, the ~30 fps test load-flaky).
+  #29: branch issue/29-waschkueche-becken-dusche from issue/32-dusche-badewanne, PR https://github.com/tillg/frechen_blender/pull/42 (archived on the branch; full check 109/111: `bad.spec.js:49` green alone, the ~30 fps test load-flaky). After the user's change (-24, a post-archive change on the branch, system docs updated in place): full check 111/111.
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -303,3 +304,14 @@ Choices made while nobody was there to ask are logged here
 - **Why:** outward-swinging leaves 1.09 wide could open only about 20° (the cupboard 20 cm away, the open room door 46 cm away); inward-folding panels need no room outside. A 90° leaf is how the house already opens doors where a corner is too close (CLAUDE.md › Interior doors).
 - **Alternatives:** hinged outward doors (blocked as above); re-hinge the room door at the east jamb (its leaf would hit the basin); open the room door into the Flur (the Flur basin and the WC door are in the way).
 - **Consequences:** the room door's leaf stands into the room; the cabin is outside its sweep; `test_waschkueche_open_cupboard…` finds the leaf by its 90° position; the "Hauswirtschaftsraum" plan label stays over the table.
+
+## 22:15 — Skip the baseline full check for stacked issues {#run-2026-11-15-1633-25}
+
+- **Status:** open
+- **Overrides:** `/spec:apply` step 3 and `.claude/skills/spec/reference/project.md` — "The baseline before the first step of a change is the final check."
+- **Context:** the user asked to find where the time goes (`tmp/timing/report_2026-11-15.md`): a full check takes 12–14 min (92 % Playwright, `workers: 1`); the baselines of #34, #31 and #32 cost 33 min although each base branch's final check had just run.
+- **Question:** keep a full baseline per issue, or rely on the previous worker's final check?
+- **Decision:** from #28 on, an issue stacked on the previous issue's branch uses `check.sh quick` as its baseline; the final full check at the end stays mandatory.
+- **Why:** the base was verified minutes before; the quick tier still catches a broken base. ~5 min saved per issue.
+- **Alternatives:** keep the full baseline (safer when the previous final check was not re-run after a last fix, as in #33/#32); run Playwright with more workers (bigger saving, but a test-config change the user should decide on tomorrow — in the report).
+- **Consequences:** a red left by the previous issue shows up only in the next final check; the worker then fixes it as its own commit. Revisit with the timing report.
