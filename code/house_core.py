@@ -1404,7 +1404,7 @@ GAESTE_WC_EG = (gaeste_wc.WI, gaeste_wc.WO, gaeste_wc.YS, gaeste_wc.YN)    # WC 
 TRENNWAND_EG = (gaeste_wc.PA, gaeste_wc.PB, gaeste_wc.YS, gaeste_wc.YN)    # none under their partition
 BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
                                          # lays its own floor (code/bad.py): left out of the EG's
-# OG Gästebad (room, WC niche, shower niche; none under their partition) and Bad Nadine & Till
+# OG Gästebad (room, WC niche, shower niche; none under their partition), Bad Nadine & Till and Waschküche
 BATHS_OG = [(gaestebad.WI, gaestebad.WO, gaestebad.YG, gaestebad.YN), (gaestebad.WI, gaestebad.PA, gaestebad.YS, gaestebad.YG),
             (gaestebad.PA, gaestebad.WO, gaestebad.YS, gaestebad.YG), elternbad.ROOM,   # Gästebad: the slabs end under its glass
             waschkueche.ROOM]                    # the Waschküche (#28), its shower cabin's floor included
