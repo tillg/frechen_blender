@@ -30,6 +30,9 @@ Choices made while nobody was there to ask are logged here
   - [20:45 — #32: the user's second addition: the shower glass 10 cm longer, to y 6.34; the way in 50 cm](#run-2026-11-15-1633-18)
   - [21:10 — #32: the user's third addition: a freestanding slipper tub after today's photo, head end to the shower, a glass pane between them; a new Fotos-Bereich "Gästebad"](#run-2026-11-15-1633-19)
   - [21:25 — #32: the user's fourth addition: the tub's tap out of the outer wall at the foot end, no standpipe](#run-2026-11-15-1633-20)
+  - [21:07 — #29: shower cabin on the Waschküche's west wall north of the table, basin 60 on the east wall north of the machines; the basket cupboard shortened to two baskets per shelf](#run-2026-11-15-1633-21)
+  - [21:07 — #29: the cabin's glass door built closed (no PIVOT/SWING), limestone on floor patch and west wall, one lamp over the mirror in the tower lamp's slot](#run-2026-11-15-1633-22)
+  - [21:07 — #29: a module `code/waschkueche.py` without a sub-model page](#run-2026-11-15-1633-23)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -256,3 +259,34 @@ Choices made while nobody was there to ask are logged here
 - **Why:** "an der anderen Seite" = the other end from the head end (the foot end); "an der Außenwand" = the west wall; the north wall at the foot is an inner wall.
 - **Alternatives:** the tap on the north wall behind the foot end (inner wall, not what the user said).
 - **Consequences:** `TAP` replaces `FY`; a test pins the tap on the outer wall at the foot end and nothing on the floor east of the tub.
+
+## 21:07 — #29: shower cabin on the Waschküche's west wall north of the table, basin 60 on the east wall north of the machines; the basket cupboard shortened to two baskets per shelf {#run-2026-11-15-1633-21}
+
+- **Status:** open
+- **Overrides:** `CLAUDE.md` › Working rules — never make tests pass by changing them (`test_waschkueche_open_cupboard_with_laundry_baskets_on_the_west_wall` pins three baskets per shelf; the shortened cupboard holds two)
+- **Context:** `29-waschkueche-becken-dusche`; issue #29 leaves the positions open („so wie du denkst“). The room (x 5.59 .. 8.59, y 2.79 .. 6.06, no window) is full: table on the whole south wall (to y 3.59), cupboard on the west wall (y 3.61 .. 5.95), washer, washer + dryer on the east wall (y 3.61 .. 4.85), door x 7.15 .. 8.17 in the north wall with its leaf open flat to the west (sweep r ≈ 1.0 about x 7.175). No free 1.10 × 1.10 square exists; the south wall is to stay free above 1.20 (#30 glazes it).
+- **Question:** where do cabin and basin go, and what gives way?
+- **Decision:** cabin outer x 5.59 .. 6.69, y 3.61 .. 4.71 (against the west wall, its south glass along the table's front edge); the cupboard keeps its place on the west wall, now y 4.73 .. 5.95, two baskets per shelf (6 instead of 9); basin 60 × 47 on the east wall centred y 5.28 (north of the tower, ≥ 5 cm outside the leaf's sweep), Taubenblau tiles 84 wide behind it, wood mirror 80 × 85 above.
+- **Why:** keeps door, leaf, table and machines; the cabin's door faces the 1.28 m free middle of the room; nothing on the south wall; basin by the door like the WC 2,30's.
+- **Alternatives:** NW corner (needs the room door at 90°, which would stand between door and cabin and block an east cabin door); SW/SE corner on the south wall (against #30); moving the machines to the west wall (larger rearrangement); shortening the table (its west part would still be blocked).
+- **Consequences:** the table's west 1.10 m is only reachable from the east; #28 (tile floor) must absorb or leave out the cabin's floor rectangle `waschkueche.DUSCHE` (else coplanar slabs).
+
+## 21:07 — #29: the cabin's glass door built closed (no PIVOT/SWING), limestone on floor patch and west wall, one lamp over the mirror in the tower lamp's slot {#run-2026-11-15-1633-22}
+
+- **Status:** open
+- **Context:** `29-waschkueche-becken-dusche`; the issue asks for glass walls, one an opening door; animation and cladding are open.
+- **Question:** animate the door? Limestone or blue tiles in the shower? Lamps over the mirror?
+- **Decision:** the door (60 wide, north part of the east glass, hinged north, opening out) is built closed with two hinges and a bar handle each side, no PIVOT/SWING; floor patch and west wall in limestone to 2.0 like the house's other showers; one Wandlampe centred over the mirror at 2.10, in the `WANDLAMPEN_OG` slot of the tower lamp it replaces (entries may now carry their height).
+- **Why:** an animated leaf adds viewer clocks and tests for little; limestone matches every other shower; the slot keeps `WALL_LIGHTS` order (viewer lighting tests index it).
+- **Alternatives:** PIVOT + SWING leaf; Taubenblau tiles in the shower; two lamps like the Gästebad's 80 mirror (appended, shifting the light order).
+- **Consequences:** none beyond the model; animation can be added later.
+
+## 21:07 — #29: a module `code/waschkueche.py` without a sub-model page {#run-2026-11-15-1633-23}
+
+- **Status:** open
+- **Context:** `29-waschkueche-becken-dusche`; the brief allows a builder in house_core or a module.
+- **Question:** where does the code live?
+- **Decision:** `code/waschkueche.py` (constants `DUSCHE`, `BY`, …, builder `waschkueche_neu(c, z)`), house only.
+- **Why:** #28 (floor) and #30 (south wall glazing) need the cabin's and the room's numbers; same shape as `elternbad.py`.
+- **Alternatives:** functions in house_core (no reload entry, but the core grows); a sub-model page (not required).
+- **Consequences:** reload entries in `build_house.py` and `garden.py`; CLAUDE.md lists the module.
