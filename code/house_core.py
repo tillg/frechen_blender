@@ -104,6 +104,11 @@ MAT_DEF = {
     "Weide":      dict(speck=((0.30, 0.19, 0.08), (0.62, 0.45, 0.22), 150)),     # wicker laundry baskets
     "Jeans":      dict(rgba=(0.12, 0.18, 0.30, 1), rough=0.9),               # folded clothes
     "Wolle":      dict(rgba=(0.45, 0.14, 0.10, 1), rough=0.95),
+    "Loden":      dict(rgba=(0.10, 0.14, 0.08, 1), rough=0.95),              # Garderobe (#27): coats, green loden
+    "Kamel":      dict(rgba=(0.42, 0.28, 0.14, 1), rough=0.9),               # camel
+    "Anthrazit":  dict(rgba=(0.05, 0.05, 0.055, 1), rough=0.9),              # charcoal
+    "Leder":      dict(rgba=(0.20, 0.09, 0.035, 1), rough=0.45),             # shoes: brown leather
+    "Gummi":      dict(rgba=(0.025, 0.025, 0.025, 1), rough=0.85),           # their soles
     "Gluehfaden": dict(rgba=(1.0, 0.55, 0.2, 1), emit=25.0, night=True),   # viewer: lit at dusk only
     "Messing":    dict(rgba=(0.20, 0.17, 0.09, 1), metal=0.45, rough=0.35),   # Wandlampen: antique brass
     "Opalglas":   dict(rgba=(0.92, 0.89, 0.82, 1), rough=0.25, emit=1.0, night=True),   # their shades: glow at dusk
@@ -1917,7 +1922,8 @@ def build_annex():
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
 FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
              "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse",
-             "EG_Spiegel", "OG_Spiegel"}   # the mirrors are furnishings: not on the plan sheets (#19)
+             "EG_Spiegel", "OG_Spiegel",   # the mirrors are furnishings: not on the plan sheets (#19)
+             "EG_Kleidung"}                # the Garderobe's coats and shoes (#27)
 
 
 def _grain(ax):

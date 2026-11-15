@@ -2241,8 +2241,7 @@ def test_gaeste_wc_submodel():
     (west, 101) and Garderobe (east, 94); the WC gets a new 76 opening in the north wall (17 from
     the west wall), its leaf opened outward into the Flur, 90 deg, hinged at the partition side;
     the toilet centred (50/50), 40 free in front of it (drawing: 41, its toilet 1 cm shorter); Taubenblau tiles in the WC only. The
-    Garderobe keeps the old 80 opening without a door: bench 35 x 110 at 45, wall to wall, 59 free
-    beside it, hook board, six hooks at 165, hat shelf at 185. On the Flur east wall a Waschbecken
+    Garderobe keeps the old 80 opening without a door (its furnishing: test_garderobe_jacken). On the Flur east wall a Waschbecken
     einzeln 40/28 at 85 on its Ständer (input/2026-11-12 input/), 14/40/14 on the 69 wall piece, 83 from the WC door's hinge jamb; tiles behind it to
     about 112, up to the Windfang door's architrave; a mirror 40 x 60 in a 7 cm wooden frame from 120."""
     import gaeste_wc as g
@@ -2252,7 +2251,7 @@ def test_gaeste_wc_submodel():
     assert g.WC_AT == (0.31, 5.475) and bp.garden is None
     assert {c for c, _ in bp.geo} == {"GaesteWC"}
     assert {n for _, n in bp.geo} == {"GaesteWC_Waende", "GaesteWC_Innentueren", "GaesteWC_Sanitaer", "GaesteWC_Spiegel",
-                                      "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_WC_Tuer",
+                                      "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_Kleidung", "GaesteWC_WC_Tuer",
                                       "GaesteWC_Windfangtuer", "GaesteWC_Hintertuer", "GaesteWC_Fenster_Tueren"}
     x0, y0 = g.WC_AT
     cm = lambda a, b: round(abs(b - a) * 100)
@@ -2320,25 +2319,110 @@ def test_gaeste_wc_submodel():
     assert (cm(flo[1], fhi[1]), cm(flo[2], fhi[2]), cm(0, flo[2])) == (54, 74, 120)
     assert abs((flo[1] + fhi[1]) / 2 - (ya + yb) / 2 + y0) < 1e-6
     assert fhi[1] + y0 < 7.408 - 0.07                                      # clear of the Windfang architrave
-    # Garderobe: bench 35 x 110 at 45, wall to wall, 59 free beside it; hooks at 165; hat shelf at 185
+    # Garderobe (issue #27; test_garderobe_jacken): inside the niche, no bench any more
     gar = list(_parts(bp, K("Garderobe")))
     assert all(lo[0] >= g.PB - x0 - 1e-6 and hi[0] <= 2.358 - x0 + 1e-6 for m, lo, hi in gar)
-    seat = [(lo, hi) for m, lo, hi in gar if abs(hi[2] - 0.45) < 1e-6]
-    assert len(seat) == 1
-    lo, hi = seat[0]
-    assert (cm(lo[0], hi[0]), cm(lo[1], hi[1])) == (35, 110) and abs(hi[0] - (2.358 - x0)) < 1e-6
-    assert cm(g.PB, lo[0] + x0) == 59 and cm(lo[0] + x0, g.GB) == 21
-    hooks = [(lo, hi) for m, lo, hi in gar if m == "Eisen" and abs(lo[2] - 1.65) < 0.03]
-    assert len({round((lo[1] + hi[1]) / 2, 3) for lo, hi in hooks}) == 6
-    shelf = [(lo, hi) for m, lo, hi in gar if abs(lo[2] - 1.85) < 1e-6]
-    assert len(shelf) == 1 and cm(shelf[0][0][0], shelf[0][1][0]) == 28
+    assert not [(lo, hi) for m, lo, hi in gar if abs(hi[2] - 0.45) < 1e-6]
     # everything below the ceiling; dimension lines from the core
     assert all(-1e-9 <= z <= 2.40 + 1e-9 for gg in bp.geo.values() for x, y, z in gg["v"])
     labels = [d[2] for d in bp.dims]
-    for t in ("WC 101", "10", "Garderobe 94", "Tür 76", "17", "40 frei", "59 frei", "83 frei", "Bank 35 × 110",
-              "HWB 40", "Spiegel 54 × 74"):
+    for t in ("WC 101", "10", "Garderobe 94", "Tür 76", "17", "40 frei", "83 frei", "HWB 40", "Spiegel 54 × 74"):
         assert t in labels, t
 
+
+def test_garderobe_jacken():
+    """Issue #27: the Garderobe without its bench. Walking in through the open passage in the north wall
+    (heading south), the left wall is the east wall: a wooden hook board over its whole length with
+    many iron hooks in two staggered rows (150 / 165) and the hat shelf above (195, 28 deep); at the
+    back end (the south wall) a hanging rod from wall to wall at 178; under it a shoe shelf 33 deep
+    with two levels of 20 cm."""
+    import gaeste_wc as g
+    bp = house_core.build_gaeste_wc()
+    house_core.build()                                                    # restore the registries
+    x0, y0 = g.WC_AT
+    cm = lambda a, b: round(abs(b - a) * 100)
+    gar = [(m, [lo[0] + x0, lo[1] + y0, lo[2]], [hi[0] + x0, hi[1] + y0, hi[2]])
+           for m, lo, hi in _parts(bp, ("GaesteWC", "GaesteWC_Garderobe"))]      # house coordinates
+    # no bench: nothing between the shoe shelf (top 50) and the hook board (from 1.35)
+    assert not [p for p in gar if p[1][2] < 1.30 and p[2][2] > 0.55]
+    # hook board over the whole east wall; >= 20 hooks in two rows, staggered, on the east wall
+    board = [(lo, hi) for m, lo, hi in gar if m == "FichteZ" and hi[0] - lo[0] < 0.03 and hi[1] - lo[1] > 1.0]
+    assert len(board) == 1 and abs(board[0][1][0] - 2.358) < 1e-6 and cm(board[0][0][1], board[0][1][1]) == 110
+    arms = [(lo, hi) for m, lo, hi in gar if m == "Eisen" and abs(hi[0] - lo[0] - 0.10) < 1e-6]
+    rows = {}
+    for lo, hi in arms:
+        rows.setdefault(round(lo[2] + 0.005, 2), []).append(round((lo[1] + hi[1]) / 2, 4))
+    assert sorted(rows) == [1.50, 1.65] and (len(rows[1.65]), len(rows[1.50])) == (12, 11)
+    up, dn = sorted(rows[1.65]), sorted(rows[1.50])
+    assert all(min(abs(y - u) for u in up) > 0.03 for y in dn)              # staggered
+    assert all(g.YS < y < g.YN for y in up + dn)
+    shelf = [(lo, hi) for m, lo, hi in gar if abs(lo[2] - 1.95) < 1e-6]
+    assert len(shelf) == 1 and cm(shelf[0][0][0], shelf[0][1][0]) == 28
+    # rod wall to wall across the back end, 1.70 .. 1.80 high
+    rod = [(lo, hi) for m, lo, hi in gar if m == "Stahl" and hi[0] - lo[0] > 0.8]
+    assert len(rod) == 1
+    lo, hi = rod[0]
+    assert lo[0] <= g.PB + 0.03 and hi[0] >= 2.358 - 0.03 and 1.70 <= (lo[2] + hi[2]) / 2 <= 1.80
+    assert g.YS + 0.2 < (lo[1] + hi[1]) / 2 < g.YS + 0.35
+    # shoe shelf along the south wall: boards over the whole width, 33 deep, two levels of 20 cm clear
+    boards = sorted([(lo, hi) for m, lo, hi in gar if m == "FichteX" and hi[0] - lo[0] > 0.85 and hi[1] - lo[1] > 0.3
+                     and hi[2] < 0.6],
+                    key=lambda b: b[0][2])
+    assert len(boards) == 3 and all(cm(lo[1], hi[1]) == 33 and abs(lo[1] - g.YS) < 1e-6 for lo, hi in boards)
+    assert [cm(a[1][2], b[0][2]) for a, b in zip(boards, boards[1:])] == [20, 20]
+    labels = [d[2] for d in bp.dims]
+    for t in ("Kleiderstange 94 auf 178", "Schuhregal 33 tief", "Hakenbrett 110"):
+        assert t in labels, t
+    assert not [t for t in labels if "Bank" in t]
+
+
+def test_garderobe_kleidung():
+    """Issue #27: five coats on hangers on the Garderobe's rod and a dozen shoes (6 pairs, 3 per level) in its
+    shoe shelf, object <c>_Kleidung (furniture: stage Eingerichtet, not on the plan sheets). The coats, five
+    fabrics, hang clear of the partition's Wandlampe and the east wall's hooks, their hems above the shoe
+    shelf; the shoes stand on the shelf's boards, lower than the 20 cm levels; nothing clashes with the
+    house (walls, lamps, Garderobe, the three door leaves in both states)."""
+    import gaeste_wc as g
+    assert "EG_Kleidung" in house_core.FURNITURE and ("EG", "EG_Kleidung") in BP.geo
+    kl = list(_parts(BP, ("EG", "EG_Kleidung")))
+    gar = list(_parts(BP, ("EG", "EG_Garderobe")))
+    assert all(g.PB - 1e-6 <= lo[0] and hi[0] <= g.WO + 1e-6 and g.YS - 1e-6 <= lo[1] and hi[1] <= g.YN + 1e-6
+               for m, lo, hi in kl)                                                  # inside the niche
+    fabrics = {"Loden", "Kamel", "Anthrazit", "Jeans", "Wolle"}
+    bodies = [(m, lo, hi) for m, lo, hi in kl if m in fabrics and hi[2] - lo[2] > 0.6]
+    assert len(bodies) == 5 and {m for m, lo, hi in bodies} == fabrics
+    assert len([p for p in kl if p[0] == "Kiefer"]) == 5                             # five hangers
+    coats = [(m, lo, hi) for m, lo, hi in kl if lo[2] > 0.55]
+    top = max(z + g.SHOE_T for z in g.SHOE_Z)
+    assert min(lo[2] for m, lo, hi in coats) > top + 0.05                           # hems above the shoe shelf
+    assert all(1.66 - 1e-6 <= lo[0] and hi[0] <= 2.20 for m, lo, hi in coats)       # lamp | coats | hooks
+    xs = sorted([min(lo[0] for m_, lo, hi in coats if m_ == m), max(hi[0] for m_, lo, hi in coats if m_ == m)]
+                for m in fabrics)
+    assert all(a[1] < b[0] for a, b in zip(xs, xs[1:]))                              # coats don't touch each other
+    soles = [(lo, hi) for m, lo, hi in kl if m == "Gummi" and hi[2] - lo[2] < 0.03]
+    assert len(soles) == 12
+    boards = [z + g.SHOE_T for z in g.SHOE_Z[:2]]
+    assert sorted(sum(abs(lo[2] - b) < 0.003 for lo, hi in soles) for b in boards) == [6, 6]
+    shoes = [(m, lo, hi) for m, lo, hi in kl if hi[2] < top]
+    for m, lo, hi in shoes:
+        level = max(b for b in boards if b <= lo[2] + 0.003)
+        assert hi[2] < level + 0.20 - 0.02 and hi[1] < g.YS + g.SHOE_D, (m, lo, hi)
+    # no clash with the house: walls, lamps, the Garderobe (the rod only with the hanger hooks), the leaves
+    others = [("EG", "EG_" + n) for n in ("Waende", "Wandlampen", "Fenster_Tueren", "Innentueren", "Hintertuer",
+                                         "WC_Tuer", "Windfangtuer")]
+    boxes = [(lo, hi) for k in others for m, lo, hi in _parts(BP, k)]
+    _clear(gar, boxes, "Garderobe")                                                  # hooks, rod, shelves
+    boxes += [(lo, hi) for m, lo, hi in gar if m != "Stahl"]
+    _clear([p for p in kl if p[0] != "Stahl"], boxes, "Kleidung")
+    hooks = [p for p in kl if p[0] == "Stahl"]
+    assert len(hooks) >= 5
+    _clear(hooks, [(lo, hi) for k in others for m, lo, hi in _parts(BP, k)], "Bügelhaken")
+    for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):                             # the leaves swung
+        (px, py, _), vs = BP.pivot["EG_" + n], BP.geo[("EG", "EG_" + n)]["v"]
+        a = math.radians(BP.swing["EG_" + n])
+        rot = [(px + (x - px) * math.cos(a) - (y - py) * math.sin(a),
+                py + (x - px) * math.sin(a) + (y - py) * math.cos(a), z) for x, y, z in vs]
+        _clear(kl + gar, [tuple(tuple(f(v[k] for v in rot) for k in range(3)) for f in (min, max))], n)
 
 def test_gaeste_wc_built_into_the_house():
     """The Gäste-WC sub-model stands in the house at WC_AT, unrotated, every part the same; the old
@@ -2348,8 +2432,8 @@ def test_gaeste_wc_built_into_the_house():
     sub = house_core.build_gaeste_wc()
     house_core.build()                                                    # restore the registries
     x0, y0 = g.WC_AT
-    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Garderobe", "WC_Tuer", "Windfangtuer", "Hintertuer",
-              "Fenster_Tueren"):
+    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Garderobe", "Kleidung", "WC_Tuer", "Windfangtuer",
+              "Hintertuer", "Fenster_Tueren"):
         assert _solids(sub, ("GaesteWC", "GaesteWC_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
     eg = [pts for c, pts in house_core.LEAVES if c == "EG"]
     assert not any(min(a[0], b[0]) > 1.3 and max(a[0], b[0]) < 2.3 and min(a[1], b[1]) < 6.6 and max(a[1], b[1]) > 5.5
