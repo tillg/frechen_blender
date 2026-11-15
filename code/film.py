@@ -1,6 +1,6 @@
 """Walkthrough film: keys the camera "FL_Kamera_Rundgang" with the route of tour.py (baked
 per-frame keys) and creates point lights in the collection "Innenlicht". Neither touches the
-"Haus" collection. Re-running replaces both. The Wandlampen's bulbs (WALL_LIGHTS, default layout) get a
+"Haus" collection. Re-running replaces both. The Wandlampen's bulbs (WALL_LIGHTS) get a
 small warm light in "Innenlicht" too.
 Run inside Blender: exec(open(".../code/film.py").read())
 """
@@ -31,7 +31,7 @@ def build_lights():
         ob = bpy.data.objects.new(ld.name, ld)
         ob.location = (x, y, z + ROOM_LIGHT_H)
         c.objects.link(ob)
-    bp = house_core.default_layout(house_core.build())        # the film shows the default layout
+    bp = house_core.build()
     for i, p in enumerate(bp.wall_lights):                     # the Wandlampen's lights (#19), in front of the shade
         ld = bpy.data.lights.new(f"Wandlampe_{i:02d}", "POINT")
         ld.energy, ld.color, ld.shadow_soft_size, ld.use_shadow = 30, (1.0, 0.85, 0.65), 0.03, False

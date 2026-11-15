@@ -8,7 +8,7 @@ OG walls and all heights were measured from the plans/elevations (approx. +-5 cm
 Details (doors, balconies, cladding, terrace, lamps, eaves) follow the photos in input/.
 """
 import math, random
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import ofen  # the stoves (code/ofen.py); it uses the primitives below via house_core.*
 import desk  # the Büro desk sub-model (code/desk.py), the same way
 import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
@@ -134,8 +134,6 @@ LIFT = {}     # object -> metres straight up to its other state (the desk top wi
               # viewer lifts them together on one clock
 CRANK = {}    # object -> (axis (x, y, z), degrees) it turns about its PIVOT while the lift moves
 FOLD = {}     # object -> (hinge (x, y, z), axis, degrees) it folds about meanwhile, in its own turning frame
-VARIANT = {}  # object -> "main" (only the default layout has it) or "alt" (only the EG variant Alternativ,
-              # issue #5); objects not in it are shared. Blender and the plan sheets leave "alt" out
 
 
 def local(p, piv, turn=0.0):
@@ -679,12 +677,10 @@ def build_eg():
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
-    interior(c, 5.240, 5.490, 3.73, 5.849, [(4.33, 5.249)])  # Speis / Küche: open over the aisle; its stub
-    box(c, "EG_Speis_Waende", "Putz", 5.240, 5.490, 3.13, 3.73, z0, z1, GEO[(c, "EG_Waende")]["r"][-1])   # to C:
-    VARIANT["EG_Speis_Waende"] = "main"                   # default only (#5), the wall's rnd, no draw
-    speis()                                                 # over the aisle (sliding leaf on the Küche side)
+    interior(c, 5.240, 5.490, 3.73, 5.849, [(4.33, 5.249)])  # Speis / Küche: open over the aisle (saloon leaves)
+    speis()
     vorrat()                                                # its shelves stocked (illustration)
-    speis_alt()                                             # the variant Alternativ (#5, viewer only)
+    speis_essen()                                           # C on the Essen's west wall, B's back, saloon leaves (#5)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
@@ -1068,12 +1064,10 @@ def mallnitz_front(coll, obj, P, a, b, f, s, za, zb, r, grips=()):
 
 def speis():
     """Speis after the agreed drawing input/2026-11-09 input/speis_kueche_v6.svg, from the Flur wall
-    south: shelf A (60, open), the aisle (91.9, west end free), shelf B (60, open to the aisle) and,
-    back to back with it, cabinet C (60, towards the Essen four leaf columns, each a top door, a
-    door over the upper half and three drawers below) in place of the former Speis/Essen wall;
-    all to the ceiling; the shelves spruce, C painted like the kitchen (Mallnitz fronts). The Speis
-    door: a sliding leaf on the Küche side of the wall, slid open to the south (left as seen
-    from the Küche), under its rail. Own random stream, like the sub-models."""
+    south: shelf A (60, open), the aisle (91.9, west end free) and shelf B (60, open to the aisle);
+    both to the ceiling, spruce. In place of the drawing's cabinet C back to back with B and its
+    sliding leaf: speis_essen() (the layout Alternativ, #5, the only one since #34). Own random
+    stream, like the sub-models."""
     c, o, rng = "EG", "EG_Speis", random.Random(9)
     x0, x1, top = 2.774, 5.238, Z_EG_TOP - 0.003
 
@@ -1087,49 +1081,23 @@ def speis():
 
     shelves(5.249, 5.847)                                                     # A
     shelves(3.732, 4.33)                                                      # B
-    o = "EG_Speis_C"                                                          # C: default only (#5)
-    VARIANT[o] = "main"
-    yd, yc = 3.13, 3.15                                                       # C: doors / carcass front
-    box(c, o, "Front", x0, x1, yc, 3.728, 0.10, top, rng.random())
-    box(c, o, "Fuge", x0, x1, yc + 0.06, 3.728, 0.005, 0.10, rng.random())
-    n, P = 4, frame("x")
-    for k in range(n):                       # painted Mallnitz fronts (kueche.py), cup pulls where pairs meet
-        a, b = x0 + (x1 - x0) * k / n, x0 + (x1 - x0) * (k + 1) / n
-        hx = b - 0.08 if k % 2 == 0 else a + 0.08
-        for za, zb, zk in ((1.0515, 1.995, 1.13), (2.005, top - 0.003, 2.07)):   # door over the upper half, top door
-            mallnitz_front(c, o, P, a + 0.003, b - 0.003, yd, 1, za, zb, rng.random(), [(hx, zk)])
-        for j in range(3):                                                  # the lower half: three drawers
-            za, zb = 0.105 + 0.315 * j + 0.0015, 0.105 + 0.315 * (j + 1) - 0.0015
-            mallnitz_front(c, o, P, a + 0.003, b - 0.003, yd, 1, za, zb, rng.random(), [((a + b) / 2, zb - 0.07)])
-    # sliding leaf on the Küche face (x 5.49), 1.00 wide, open over the wall south of the opening
-    ys, tc, LT, zl, LH = 3.28, 5.52, 0.04, 0.005, DOOR_H + 0.025
-    rl = 0.8 + 0.2 * rng.random()
-
-    def part(w0, w1, d0, d1, za, zb, r=rl, m="Innentuer"):
-        box(c, "EG_Speis_Schiebetuer", m, tc + d0, tc + d1, ys + w0, ys + w1, zl + za, zl + zb, r)
-
-    six_panel_leaf(part, 1.00, LH)
-    sliding_pulls(part, 1.00)
-    LEAVES.append((c, [(tc - LT / 2, ys, zl), (tc + LT / 2, ys + 1.00, zl + LH)]))
-    box(c, "EG_Speis_Schiebetuer", "Metall", 5.495, 5.56, 3.26, 5.29, zl + LH + 0.005, zl + LH + 0.045, rng.random())   # rail
-    VARIANT["EG_Speis_Schiebetuer"] = "main"                 # default only (#5)
 
 
-def speis_alt():
-    """The EG variant Alternativ (issue #5; objects flagged "alt" in VARIANT, only the viewer's
-    Erdgeschoss - Alternativ shows them): cabinet C stands against the Essen's west wall over its
-    full width, from the south wall to shelf B's back, six leaf columns of the same painted Mallnitz
-    fronts; B gets a closed back of vertical spruce boards towards the Essen; the Speis/Küche wall
-    ends at B (its stub to C is default only, speis()), and instead of the sliding leaf two
-    half-height saloon leaves without handles hang in the opening, closed (PIVOT on their jambs,
-    SWING into the Speis: the viewer swings them). Own random stream, no global draw."""
+def speis_essen():
+    """The layout Alternativ (issue #5; the only EG layout since #34): cabinet C stands against the
+    Essen's west wall over its full width, from the south wall to shelf B's back, six leaf columns
+    of painted Mallnitz fronts (kueche.py; each a top door, a door over the upper half and three
+    drawers below); B gets a closed back of vertical spruce boards towards the Essen; the Speis/Küche
+    wall ends at B, and two half-height saloon leaves without handles hang in the opening, closed
+    (PIVOT on their jambs, SWING into the Speis: the viewer swings them). Own random stream, no
+    global draw."""
     c, rng, top = "EG", random.Random(25), Z_EG_TOP - 0.003
-    o, P = "EG_Alt_Schrank", frame("y")                          # u along y, t = x
+    o, P = "EG_Essen_Schrank", frame("y")                        # u along y, t = x
     ua, ub, xw, xf = 0.417, 3.712, 2.774, 3.372                   # south wall .. B's back; wall .. fronts
     lbox(c, o, "Front", P, ua, ub, xw, xf - 0.02, 0.10, top, rng.random())
     lbox(c, o, "Fuge", P, ua, ub, xw, xf - 0.08, 0.005, 0.10, rng.random())
     n = 6
-    for k in range(n):                       # as C in speis(), cup pulls where pairs meet
+    for k in range(n):                       # cup pulls where pairs meet
         a, b = ua + (ub - ua) * k / n, ua + (ub - ua) * (k + 1) / n
         hu = b - 0.08 if k % 2 == 0 else a + 0.08
         for za, zb, zk in ((1.0515, 1.995, 1.13), (2.005, top - 0.003, 2.07)):
@@ -1137,7 +1105,7 @@ def speis_alt():
         for j in range(3):
             za, zb = 0.105 + 0.315 * j + 0.0015, 0.105 + 0.315 * (j + 1) - 0.0015
             mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, rng.random(), [((a + b) / 2, zb - 0.07)])
-    o, x0, x1 = "EG_Alt_Speis", 2.774, 5.238                     # B's back: vertical boards, 2 mm gaps
+    o, x0, x1 = "EG_Speis_Rueckwand", 2.774, 5.238              # B's back: vertical boards, 2 mm gaps
     k = round((x1 - x0) / 0.20)
     for i in range(k):
         box(c, o, "FichteZ", x0 + (x1 - x0) * i / k + 0.001, x0 + (x1 - x0) * (i + 1) / k - 0.001,
@@ -1148,7 +1116,7 @@ def speis_alt():
     W = (5.249 - 4.33 - 2 * gap - 0.006) / 2
     tops = lambda w: 1.50 + 0.15 * math.cos(math.pi / 2 * w / W)
     for s, uh, d, sw in (("S", 4.33 + gap, 1, 90.0), ("N", 5.249 - gap, -1, -90.0)):
-        o = "EG_Alt_Pendeltuer_" + s
+        o = "EG_Pendeltuer_" + s
         PIVOT[o], SWING[o], r = (xm, uh, 0.0), sw, 0.8 + 0.2 * rng.random()
         Q = lambda w, t, z, uh=uh, d=d: (xm + t, uh + d * w, z)      # leaf-local: w from the hinge
         part = lambda w0, w1, za, zb, t=T / 2, o=o, Q=Q: box(c, o, "Innentuer", *[v for pair in zip(
@@ -1163,8 +1131,6 @@ def speis_alt():
         for i in range(4):                                                         # slats, thinner
             w0 = 0.06 + (W - 0.12) * (2 * i + 1) / 9
             part(w0, w0 + (W - 0.12) / 9, zb0 + 0.12, tops(w0 + (W - 0.12) / 18) - 0.10, T / 4)
-    for o in ("EG_Alt_Schrank", "EG_Alt_Speis", "EG_Alt_Pendeltuer_S", "EG_Alt_Pendeltuer_N"):
-        VARIANT[o] = "alt"
 
 
 def vorrat():
@@ -1685,22 +1651,19 @@ WANDLAMPE_H = 1.70          # Wandlampe (#19): its wall outlet (rosette centre) 
 WANDLAMPE_SPIEGEL_H = 2.10  # the same for every lamp over a mirror: above the OG WC's (top 2.05), under the 2.20 ceiling
 WALL_LIGHTS = []            # (x, y, z) light of every Wandlampe: the viewer lights them at dusk; 50 cm out from
                             # the wall at the bulb's height, so its light doesn't burn a spot into the plaster (the shade glows itself)
-WALL_LIGHT_VARIANT = []     # parallel to WALL_LIGHTS: the layout a light belongs to ("main" / "alt", #22), None: both
 
 
-def wandlampe(coll, wx, wy, fx, fy, z, obj=None, variant=None):
+def wandlampe(coll, wx, wy, fx, fy, z):
     """Wall lamp after input/2026-11-13 input/wandlampe.png (#19): a brass rosette on the wall, the
     gooseneck arm (out, a quarter bend up, an arch over) down into a stepped brass gallery with three
     set screws, holding an opal-glass bell (maker: Ø 16, 11 high, reaching 21 from the wall). Rosette
-    centre on the wall point (wx, wy) at height z, facing (fx, fy); object obj (default <coll>_Wandlampen); its
-    light goes to WALL_LIGHTS, tagged with the layout `variant` (WALL_LIGHT_VARIANT). One fixed rnd for all
-    parts, no random draws."""
-    o, r, ax = obj or coll + "_Wandlampen", 0.5, 0.13            # ax: the shade's axis, 13 out from the wall
+    centre on the wall point (wx, wy) at height z, facing (fx, fy); object <coll>_Wandlampen; its
+    light goes to WALL_LIGHTS. One fixed rnd for all parts, no random draws."""
+    o, r, ax = coll + "_Wandlampen", 0.5, 0.13            # ax: the shade's axis, 13 out from the wall
     M = at_wall(wx, wy, fx, fy)
     W = lambda n, s, h: (*M(s, n), z + h)                        # n out of the wall, s along it, h up
     SMOOTH.add(o)
     WALL_LIGHTS.append(W(0.50, 0, -0.05))
-    WALL_LIGHT_VARIANT.append(variant)
     turned(coll, o, "Messing", W(0.0005, 0, 0), W(0.022, 0, 0),                     # rosette
            [(0.042, 0), (0.042, 0.25), (0.036, 0.35), (0.034, 0.55), (0.025, 0.7), (0.015, 0.85), (0.011, 1)], 24, r)
     turned(coll, o, "Messing", W(0.02, 0, 0), W(0.036, 0, 0), [(0.010, 0), (0.010, 0.5), (0.007, 0.7), (0.006, 1)], 12, r)
@@ -1762,7 +1725,7 @@ WANDLAMPEN_OG = [
 
 
 # the EG's Wandlampen (#22), as agreed on input/2026-11-14 input/lampen_eg_v1.svg (its numbers): (wall point x, y,
-# facing, height, layout); "main": default layout only, "alt": the variant Alternativ only. The Ofen bed's: ofen.py
+# facing, height); 11, 12 on the Essen's west wall went with the default layout (#34). The Ofen bed's: ofen.py
 
 
 def _mid(a, b):
@@ -1774,51 +1737,46 @@ def _third(a, b, k):
 
 
 WANDLAMPEN_EG = [
-    (_mid(13.324, 13.825), 6.349, 0, 1, WANDLAMPE_H, None),        # 1 Windfang: open Windfang leaf .. front door's leaf (film)
-    (_mid(14.145, 14.575), 8.576, 0, -1, WANDLAMPE_H, None),       # 2 Windfang: Bürotür's architrave .. NE corner
-    (_mid(12.546, 14.351), 5.849, 0, -1, WANDLAMPE_H, None),       # 3 Stube: the open door leaf .. east wall
-    (14.351, _mid(0.415, 1.254), -1, 0, WANDLAMPE_H, None),        # 4 Stube: SE corner, the east pier between the windows
-    (9.056, 4.64 - (4.64 - 2.938) / 3, 1, 0, WANDLAMPE_H, None), # 5 Stube: over the bench, 1/3 from the Ofen to the wall's end
-    (7.46, 5.849, 0, -1, WANDLAMPE_H, None),                     # 7 Küche: over the sink
-    (8.557, _mid(3.66, 4.26), -1, 0, WANDLAMPE_H, None),           # 8 Küche: over the Ostzeile, right of the hood
-    (_mid(4.73, 6.618), 0.415, 0, 1, WANDLAMPE_H, None),           # 10 Essen: window .. terrace door
-    (2.772, _third(0.415, 3.108, 1), 1, 0, WANDLAMPE_H, "main"),     # 11, 12 Essen: west wall, outer wall .. Schrank C
-    (2.772, _third(0.415, 3.108, 2), 1, 0, WANDLAMPE_H, "main"),
-    (_mid(3.802, 4.005), 3.715, 0, -1, WANDLAMPE_H, "alt"),        # 13, 14 Alternativ: on B's wooden back beside C, each
-    (_mid(4.623, 4.826), 3.715, 0, -1, WANDLAMPE_H, "alt"),        # centred on the board nearest the thirds (no joint)
-    (_mid(11.19, 12.25), 8.576, 0, -1, WANDLAMPE_H, None),         # 15 Flur: stair's foot .. Windfangtür
-    (_mid(5.405, 7.263), 8.576, 0, -1, WANDLAMPE_H, None),         # 16 Flur: Oma & Opa door .. Bibliothek door
-    (_mid(2.657, 4.336), 8.576, 0, -1, WANDLAMPE_H, None),         # 17 Flur: back Windfang .. Oma & Opa door
-    (_third(2.657, 6.03, 1), 6.349, 0, 1, WANDLAMPE_H, None),        # 18, 19 Flur: back Windfang's wall .. Küche door
-    (_third(2.657, 6.03, 2), 6.349, 0, 1, WANDLAMPE_H, None),
-    (_mid(7.03, 9.54), 6.349, 0, 1, WANDLAMPE_H, None),            # 20 Flur: Küche door .. the Ofen's back door
-    (_third(9.351, 12.947, 1), 8.876, 0, 1, WANDLAMPE_H, None),      # 21, 22 Bibliothek: stub behind the Werkstattofen .. Bürotür
-    (_third(9.351, 12.947, 2), 8.876, 0, 1, WANDLAMPE_H, None),
-    (_mid(8.352, 9.051), 8.876, 0, 1, WANDLAMPE_H, None),          # 23 Bibliothek: left of the door to the Flur
-    (6.174, _third(8.876, 11.918, 1), 1, 0, WANDLAMPE_H, None),      # 24, 25 Bibliothek: west wall .. the vitrine
-    (6.174, _third(8.876, 11.918, 2), 1, 0, WANDLAMPE_H, None),
-    (_mid(7.852, 9.051), 12.473, 0, -1, WANDLAMPE_H, None),        # 26 Bibliothek: north window .. fireplace stub
-    (2.657, _mid(8.876, 9.856), 1, 0, WANDLAMPE_H, None),          # 27 Oma & Opa: the stub right of the door
-    (_mid(2.657, 3.866), 12.473, 0, -1, WANDLAMPE_H, None),        # 28 Oma & Opa: the stub .. balcony door
-    (0.31, _mid(9.95, 10.923), 1, 0, WANDLAMPE_H, None),           # 29 Bad: sliding leaves .. limestone shower wall
-    (0.792, 8.656, 0, 1, WANDLAMPE_H, None),                     # 30 WC Großeltern: over the cistern
-    (1.394, _mid(9.256, 9.856), 1, 0, WANDLAMPE_H, None),          # 31 Schrank: its right wall, in front of the shelves
-    (2.358, 7.0655, -1, 0, WANDLAMPE_SPIEGEL_H, None),           # 32 back hall: over the mirror
-    (1.419, _third(5.475, 6.574, 1), 1, 0, WANDLAMPE_H, None),       # 33, 34 Garderobe: the partition, opposite the hooks
-    (1.419, _third(5.475, 6.574, 2), 1, 0, WANDLAMPE_H, None),
-    (0.8145, 5.475, 0, 1, WANDLAMPE_H, None),                    # 35 Gäste-WC: over the cistern
-    (0.31, _mid(6.723, 7.408), 1, 0, WANDLAMPE_H, None),           # 36 back hall: WC door .. back door
+    (_mid(13.324, 13.825), 6.349, 0, 1, WANDLAMPE_H),        # 1 Windfang: open Windfang leaf .. front door's leaf (film)
+    (_mid(14.145, 14.575), 8.576, 0, -1, WANDLAMPE_H),       # 2 Windfang: Bürotür's architrave .. NE corner
+    (_mid(12.546, 14.351), 5.849, 0, -1, WANDLAMPE_H),       # 3 Stube: the open door leaf .. east wall
+    (14.351, _mid(0.415, 1.254), -1, 0, WANDLAMPE_H),        # 4 Stube: SE corner, the east pier between the windows
+    (9.056, 4.64 - (4.64 - 2.938) / 3, 1, 0, WANDLAMPE_H), # 5 Stube: over the bench, 1/3 from the Ofen to the wall's end
+    (7.46, 5.849, 0, -1, WANDLAMPE_H),                     # 7 Küche: over the sink
+    (8.557, _mid(3.66, 4.26), -1, 0, WANDLAMPE_H),           # 8 Küche: over the Ostzeile, right of the hood
+    (_mid(4.73, 6.618), 0.415, 0, 1, WANDLAMPE_H),           # 10 Essen: window .. terrace door
+    (_mid(3.802, 4.005), 3.715, 0, -1, WANDLAMPE_H),               # 13, 14 Essen: on B's wooden back beside C, each
+    (_mid(4.623, 4.826), 3.715, 0, -1, WANDLAMPE_H),               # centred on the board nearest the thirds (no joint)
+    (_mid(11.19, 12.25), 8.576, 0, -1, WANDLAMPE_H),         # 15 Flur: stair's foot .. Windfangtür
+    (_mid(5.405, 7.263), 8.576, 0, -1, WANDLAMPE_H),         # 16 Flur: Oma & Opa door .. Bibliothek door
+    (_mid(2.657, 4.336), 8.576, 0, -1, WANDLAMPE_H),         # 17 Flur: back Windfang .. Oma & Opa door
+    (_third(2.657, 6.03, 1), 6.349, 0, 1, WANDLAMPE_H),        # 18, 19 Flur: back Windfang's wall .. Küche door
+    (_third(2.657, 6.03, 2), 6.349, 0, 1, WANDLAMPE_H),
+    (_mid(7.03, 9.54), 6.349, 0, 1, WANDLAMPE_H),            # 20 Flur: Küche door .. the Ofen's back door
+    (_third(9.351, 12.947, 1), 8.876, 0, 1, WANDLAMPE_H),      # 21, 22 Bibliothek: stub behind the Werkstattofen .. Bürotür
+    (_third(9.351, 12.947, 2), 8.876, 0, 1, WANDLAMPE_H),
+    (_mid(8.352, 9.051), 8.876, 0, 1, WANDLAMPE_H),          # 23 Bibliothek: left of the door to the Flur
+    (6.174, _third(8.876, 11.918, 1), 1, 0, WANDLAMPE_H),      # 24, 25 Bibliothek: west wall .. the vitrine
+    (6.174, _third(8.876, 11.918, 2), 1, 0, WANDLAMPE_H),
+    (_mid(7.852, 9.051), 12.473, 0, -1, WANDLAMPE_H),        # 26 Bibliothek: north window .. fireplace stub
+    (2.657, _mid(8.876, 9.856), 1, 0, WANDLAMPE_H),          # 27 Oma & Opa: the stub right of the door
+    (_mid(2.657, 3.866), 12.473, 0, -1, WANDLAMPE_H),        # 28 Oma & Opa: the stub .. balcony door
+    (0.31, _mid(9.95, 10.923), 1, 0, WANDLAMPE_H),           # 29 Bad: sliding leaves .. limestone shower wall
+    (0.792, 8.656, 0, 1, WANDLAMPE_H),                     # 30 WC Großeltern: over the cistern
+    (1.394, _mid(9.256, 9.856), 1, 0, WANDLAMPE_H),          # 31 Schrank: its right wall, in front of the shelves
+    (2.358, 7.0655, -1, 0, WANDLAMPE_SPIEGEL_H),           # 32 back hall: over the mirror
+    (1.419, _third(5.475, 6.574, 1), 1, 0, WANDLAMPE_H),       # 33, 34 Garderobe: the partition, opposite the hooks
+    (1.419, _third(5.475, 6.574, 2), 1, 0, WANDLAMPE_H),
+    (0.8145, 5.475, 0, 1, WANDLAMPE_H),                    # 35 Gäste-WC: over the cistern
+    (0.31, _mid(6.723, 7.408), 1, 0, WANDLAMPE_H),           # 36 back hall: WC door .. back door
 ]
-WANDLAMPEN_EG_OBJ = {None: "EG_Wandlampen", "main": "EG_Wandlampen_Essen", "alt": "EG_Alt_Wandlampen"}
 
 
 def build_wandlampen():
     for wx, wy, fx, fy in WANDLAMPEN_OG:
         wandlampe("OG", wx, wy, fx, fy, Z_OG + WANDLAMPE_H)
-    for wx, wy, fx, fy, h, v in WANDLAMPEN_EG:
-        wandlampe("EG", wx, wy, fx, fy, h, WANDLAMPEN_EG_OBJ[v], v)
-        if v:
-            VARIANT[WANDLAMPEN_EG_OBJ[v]] = v
+    for wx, wy, fx, fy, h in WANDLAMPEN_EG:
+        wandlampe("EG", wx, wy, fx, fy, h)
 
 
 def build_terrace():
@@ -2470,7 +2428,6 @@ class Blueprint:
     dims: list = ()    # dimension lines [(p0, p1, text)] (Ofen sub-model only)
     outside_lights: list = ()   # OUTSIDE_LIGHTS: the wall lamps' filament centres
     wall_lights: list = ()      # WALL_LIGHTS: the Wandlampen's bulbs (lit at dusk)
-    wall_variant: list = ()     # WALL_LIGHT_VARIANT: per wall light its layout ("main" / "alt"), None: both
     fires: list = ()   # FIRES: base (centre of the flame bed, in the flame plane), u (unit along
                        # the width, normal = (-u_y, u_x) towards the viewer), w, h, d
     turn: dict = None  # TURN: object -> degrees about its pivot (None: no turned object)
@@ -2479,7 +2436,6 @@ class Blueprint:
     lift: dict = None   # LIFT: object -> metres up to its other state (None: none)
     crank: dict = None  # CRANK: object -> (axis, degrees) about its pivot while the lift moves
     fold: dict = None   # FOLD: object -> (hinge, axis, degrees) about its own hinge meanwhile
-    variant: dict = None  # VARIANT: object -> "main" / "alt" (None: no variant)
     doors: list = ()   # DOORS: every hinged leaf (plan sheets: door swings)
     plan_rooms: list = ()   # PLAN_ROOMS: the architect's room names with storey and anchor (plan sheets)
     plan: dict = None  # PLAN: the object classes of the plan sheets
@@ -2490,9 +2446,9 @@ def build():
     """Run every builder (same order and seed as always) and return the Blueprint."""
     GEO.clear(); PARTS.clear()
     OPENINGS.clear(); GABLE_WIN.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); SWING.clear(); SMOOTH.clear()
-    LIFT.clear(); CRANK.clear(); FOLD.clear(); VARIANT.clear()
+    LIFT.clear(); CRANK.clear(); FOLD.clear()
     LEAVES.clear(); DOORS.clear(); OUTSIDE_LIGHTS.clear(); FIRES.clear(); STAIRS.clear()
-    WALL_LIGHTS.clear(); WALL_LIGHT_VARIANT.clear()
+    WALL_LIGHTS.clear()
     random.seed(22)
     build_eg(); build_og(); build_slabs(); build_roof(); build_outside(); build_sanitary()
     build_cladding()
@@ -2501,27 +2457,17 @@ def build():
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT),
                      MAT_DEF, PAINT, ROOM_LIGHTS, garden_layout(), set(FURNITURE),
                      outside_lights=list(OUTSIDE_LIGHTS), fires=list(FIRES),
-                     wall_lights=list(WALL_LIGHTS), wall_variant=list(WALL_LIGHT_VARIANT), turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), lift=dict(LIFT), crank=dict(CRANK),
-                     fold=dict(FOLD), variant=dict(VARIANT), doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
-
-
-def default_layout(bp):
-    """bp without the objects of the EG variant Alternativ (VARIANT "alt", issue #5) and their
-    pivots and swings: what Blender and the plan sheets show."""
-    alt = {o for o, v in (bp.variant or {}).items() if v == "alt"}
-    keep = lambda d: {k: v for k, v in d.items() if (k[1] if isinstance(k, tuple) else k) not in alt}
-    lights = [(p, v) for p, v in zip(bp.wall_lights, bp.wall_variant or [None] * len(bp.wall_lights)) if v != "alt"]
-    return replace(bp, geo=keep(bp.geo), parts=keep(bp.parts), pivot=keep(bp.pivot), swing=keep(bp.swing or {}),
-                   wall_lights=[p for p, v in lights], wall_variant=[v for p, v in lights])
+                     wall_lights=list(WALL_LIGHTS), turn=dict(TURN), slide=dict(SLIDE), swing=dict(SWING), lift=dict(LIFT), crank=dict(CRANK),
+                     fold=dict(FOLD), doors=list(DOORS), plan_rooms=list(PLAN_ROOMS), plan=dict(PLAN), stairs=list(STAIRS))
 
 
 def build_ofen():
     """The Ofen sub-model alone (web/ofen.html): no house, no garden, plus its dimension lines."""
-    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); DOORS.clear(); WALL_LIGHTS.clear(); WALL_LIGHT_VARIANT.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); DOORS.clear(); WALL_LIGHTS.clear()
     random.seed(22)
     dims = ofen.ofen_neu()
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), {}, MAT_DEF, PAINT,
-                     [], None, set(), dims, fires=list(FIRES), wall_lights=list(WALL_LIGHTS), wall_variant=list(WALL_LIGHT_VARIANT))
+                     [], None, set(), dims, fires=list(FIRES), wall_lights=list(WALL_LIGHTS))
 
 
 def build_desk():
@@ -2539,7 +2485,7 @@ def build_desk():
 def build_kueche():
     """The Küche sub-model alone (web/kueche.html): its furnishings and the flue box at the origin
     (the room's inner NW corner), plus its dimension lines."""
-    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); WALL_LIGHTS.clear(); WALL_LIGHT_VARIANT.clear()
+    GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear(); WALL_LIGHTS.clear()
     LEAVES.clear(); DOORS.clear()
     random.seed(22)
     dims = kueche.kueche_neu()
@@ -2585,22 +2531,22 @@ def build_gaestebad():
     """The Gästebad sub-model alone (web/gaestebad.html, #18): WC niche, shower, basin and mirror with the
     pieces of the room's four walls at the origin (the room's inner SW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
-    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); WALL_LIGHTS.clear(); WALL_LIGHT_VARIANT.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); WALL_LIGHTS.clear()
     random.seed(22)
     dims = gaestebad.gaestebad_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
-                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS), wall_variant=list(WALL_LIGHT_VARIANT))
+                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS))
 
 
 def build_elternbad():
     """The Bad Nadine & Till sub-model alone (web/elternbad.html, #3): shower, toilet, basin, mirror and lamps
     with the pieces of the room's four walls at the origin (the room's inner SW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
-    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); WALL_LIGHTS.clear(); WALL_LIGHT_VARIANT.clear()
+    LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); WALL_LIGHTS.clear()
     random.seed(22)
     dims = elternbad.elternbad_neu(walls=True)
     return Blueprint({k: dict(g) for k, g in GEO.items()}, dict(PARTS), set(SMOOTH), dict(PIVOT), MAT_DEF, PAINT,
-                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS), wall_variant=list(WALL_LIGHT_VARIANT))
+                     [], None, set(), dims, wall_lights=list(WALL_LIGHTS))
 
 
 def build_schrankbett():

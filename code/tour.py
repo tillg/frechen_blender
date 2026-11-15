@@ -51,7 +51,7 @@ ROUTE = [
     turn((10.0, 5.2), L), ("hold", PAUSE),                                # the sofa and the Ofen
     turn((8.8, 1.74), L),                                                 # passage to the Essen
     ("path", [(13.1, 2.2), (11.2, 1.9), (9.6, 2.3), (8.3, 2.75), (3.9, 2.75), (3.8, 1.6)], EYE, WALK),   # end of the table, clear of
-                                                                          # the Alternativ's cabinet C on the west wall too
+                                                                          # cabinet C on the west wall too
     turn((8.0, 3.3), L), ("hold", PAUSE),                                 # passage to the Stube + Küche
     ("path", [(3.8, 1.6), (3.8, 2.72), (5.0, 2.7), (5.95, 2.72), (6.05, 3.6), (5.95, 4.79)], EYE, WALK),
     turn((3.0, 4.79)),                                                    # down the Speis aisle
