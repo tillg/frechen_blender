@@ -215,3 +215,21 @@ test('plan sheets are part of the build', async ({ request }) => {
     expect(await r.text(), s).toContain(title);
   }
 });
+
+test('Vorlagen pages are part of the build, reached from the house page, every picture loads', async ({ page }) => {
+  const failed = [], errors = [];
+  page.on('response', (r) => r.status() >= 400 && failed.push(`${r.status()} ${r.url()}`));
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(BASE);
+  await page.getByRole('link', { name: 'Fotos & Vorlagen' }).click();
+  await page.waitForURL(/\/frechen_blender\/vorlagen\.html$/);
+  await page.locator('.grid figure', { hasText: 'Garderobe' }).click();
+  await page.waitForURL(/\/frechen_blender\/vorlagen\.html\?b=garderobe$/);
+  await expect(page.locator('figcaption', { hasText: 'Toilette in Mallnitz' })).toBeVisible();
+  const ok = await page.evaluate(async () => Promise.all([...document.querySelectorAll('img')].map((i) =>
+    (i.complete ? i.naturalWidth > 0 : new Promise((r) => { i.onload = () => r(true); i.onerror = () => r(false); })))));
+  expect(ok.length).toBeGreaterThan(0);
+  expect(ok.every(Boolean)).toBe(true);
+  expect(failed).toEqual([]);
+  expect(errors).toEqual([]);
+});

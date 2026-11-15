@@ -24,7 +24,8 @@ const levelItems = (key) => (key === 'haus'
 // setPlan(key | null), setCutaway(c), onModel(key), onSpot(value), onReset(), isDusk(), toggleSun() }
 export function createUI(api) {
   const title = el('div', { className: 'fl-title' });
-  title.append(el('h1', {}, 'Frechenlehen'), el('p', {}, 'Vom Strich zum Haus'));
+  title.append(el('h1', {}, 'Frechenlehen'), el('p', {}, 'Vom Strich zum Haus'),
+    el('a', { className: 'fl-photos', href: 'vorlagen.html' }, 'Fotos & Vorlagen'));   // the reference photos by Bereich
   document.body.append(title);
 
   const tb = createToolbar({
