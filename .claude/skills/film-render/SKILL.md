@@ -1,9 +1,11 @@
 ---
 name: film-render
-description: Render the Blender Rundgang film headless (command, frame paths, mp4 naming). Use when asked to render, capture or encode the film.
+description: Make the Rundgang film — the viewer's capture (`just film`, live) or the Blender render (dormant) — with commands, frame paths and mp4 naming. Use when asked to render, capture or encode the film.
 ---
 
-Film render (headless, ~1 s/frame, 1280×720, 25 fps, EEVEE; output settings are set by `film.py` and stored in the file):
+**The Blender render is dormant** (issue #35): `frechenlehen.blend` is frozen at `7805879` and not rebuilt since, so a render from it shows the house of that commit. Re-enable Blender first (`CLAUDE.md` › Running › Blender backend). The live film is the viewer's (`just film`, below).
+
+Blender film render (dormant; headless, ~1 s/frame, 1280×720, 25 fps, EEVEE; output settings are set by `film.py` and stored in the file):
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender -b frechenlehen.blend -a > tmp/render-$(date +%Y%m%d-%H%M%S).log 2>&1

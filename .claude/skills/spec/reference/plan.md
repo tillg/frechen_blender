@@ -30,7 +30,7 @@ directory.
 | Kind | What it changes | Test first | Verify (plus the per-step check, `project.md`) |
 |---|---|---|---|
 | `[python]` | Pure-Python code under `code/` that runs without bpy (shared core, exporters) | pytest test in `tests/` | the new pytest test; a visible model change is shown in the browser |
-| `[blender]` | bpy build scripts (`build_house.py`, `paint.py`, `garden.py`, `film.py`, …) | a check run in Blender via the MCP server (object/vertex counts, clash or clearance check), else `none — visual only` | rebuild in order, then render a still to `tmp/details/` and read it; film route: camera clearance check |
+| `[blender]` | **dormant** (issue #35): bpy build scripts (`build_house.py`, `paint.py`, `garden.py`, `film.py`, …); no step of this kind until Blender is re-enabled (`CLAUDE.md` › Running › Blender backend) | then: a check run in Blender via the MCP server, else `none — visual only` | then: rebuild in order, render a still to `tmp/details/` and read it; film route: camera clearance check |
 | `[web]` | three.js viewer under `web/` | Vitest/Node unit test or Playwright spec | the new test run alone (Playwright: its spec, `-g "<case>"`), screenshots read at 1× |
 | `[docs]` / `[config]` | No runtime surface (README, settings, …) | `none — <why>` | the strongest mechanical check: a `grep` that must match, a JSON parse |
 
@@ -40,8 +40,7 @@ By kind of change:
 - **Bug fix** — a test that reproduces the bug, failing for the bug's reason.
 - **Refactor** — `Test first: existing <tests> pass before and after`; if the area has no coverage,
   the step before adds it.
-- **No test harness yet** — the first step sets one up and its verify runs one trivial test. This
-  project has no test suite yet: Blender changes are verified by rendered stills (`project.md`).
+- **No test harness yet** — the first step sets one up and its verify runs one trivial test.
 
 Order steps so each test can be written against what earlier steps built; a `[python]` core step comes
 before the `[blender]`/`[web]` steps that use it. The plan ends with a plain note (not a checkbox): "System docs
