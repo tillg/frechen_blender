@@ -195,13 +195,15 @@ flowchart LR
   adding the pieces of its four walls, the window with its shutters and the limestone floor via
   `waende()`). The door `TUER` = (0.65, 1.58) in the east wall (hinged south, `flat=False`: 90° into the
   Bad; 25 cm off the corner so the leaf with its levers clears the window lamp), the room `ROOM` and the
-  south window `FENSTER` are defined here; `build_og()` and `BATHS_OG` use them. Along the north wall the
-  walk-in shower to `SE` = 7.72 (`shower(…, tray=False)`: the floor runs through, drain and glass on its
-  0.018 top; glass on the south edge from `GA` = 6.19 and at the east end; `limestone()` on its west and
-  north wall to 2.0, the head on the slabs' face), the toilet at `TX` = 8.14 facing south with `wainscot`
-  on the north and east wall (`sides="ne"`); on the south wall the Waschbecken doppelt 100 and
-  `wood_mirror()` 110 × 85 on `BX` = 6.19 (the basin 15 cm from the window reveal), four Wandlampen over
-  it, one east of the window, one over the cistern. Own `random.Random(3)` for mirror and cladding,
+  south window `FENSTER` are defined here; `build_og()` and `BATHS_OG` use them. Along the west wall
+  (opposite the door) two walk-in showers on one strip to `XG` = 6.49 (`shower(…, tray=False)` twice, one
+  half of the wall each: the floor runs through, drain and glass on its 0.018 top; a pane from each side
+  wall to `PA`/`PB`, whose rails leave 60 clear around `YM`; the heads on the west wall's slabs `HU` = 0.30
+  from the side walls; `limestone()` on the west wall and the strip's south-wall piece to 2.0, its
+  north-wall piece to `SILL` = 1.20: the north wall is the Waschküche partition, kept free above 1.20 for
+  its future glazing), the toilet at `TX` = 7.15 on the north wall facing south with `wainscot` on the
+  north and east wall (`sides="ne"`); on the east wall north of the door the Waschbecken einzeln 60 on the
+  tiles and `wood_mirror()` 80 × 85 on `BY`, two Wandlampen over it, one east of the window. Own `random.Random(3)` for mirror and cladding,
   `random.Random(4)` for the sub-model floor. It returns its dimension lines.
 - **Limestone cladding.** `limestone(coll, along_x, face, n, ua, ub, z0, top, rng, dx, dy)` clads a
   shower wall in `<coll>_Fliesen`: a `Fuge` backing 2 mm off the wall, `Kalkstein` slabs 6..12 mm proud,

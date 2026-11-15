@@ -1,13 +1,14 @@
-"""Frechenlehen – the Bad of Nadine & Till im 1. Stock (issue #3) as a sub-model (web/elternbad.html): the OG
-Bad between Waschküche and Schlafzimmer (S, under the window of the south wall), rearranged: the door to the
-Schlafzimmer at the south end of the east wall (hinged south, open 90 deg into the Bad; 25 cm off the corner,
-so the open leaf with its levers clears the Wandlampe left of the window); the toilet where the door was (NE corner, back to
-the north wall, facing the window; Taubenblau tiles on the north and east wall); the shower in the NW corner,
-long towards the toilet to the window's east jamb, its entrance (60) on its south edge at the west wall, glass
-from there and at its toilet end, walk-in on the room's limestone floor (no tray), its west and north wall clad in limestone
-to 2.0 like the Bad Großeltern's; the Waschbecken doppelt 100 under a mirror 110 x 85 in a 10 cm wooden frame (like the
-Gästebad's, narrower: the wall to the window is 125), the basin's end 15 from the window reveal, four
-Wandlampen over it, one left of the window (seen from inside), one over the cistern.
+"""Frechenlehen – the Bad of Nadine & Till im 1. Stock (issues #3, #33) as a sub-model (web/elternbad.html): the OG
+Bad between Waschküche (N) and Schlafzimmer (E), under the window of the south wall. The door to the Schlafzimmer at the
+south end of the east wall (hinged south, open 90 deg into the Bad; 25 cm off the corner, so the open leaf with its
+levers clears the Wandlampe left of the window). Along the back wall (west, opposite the door) two walk-in showers on
+one strip 90 deep (#33): a head in each back corner (SW, NW), one pane per shower from its side wall towards the
+middle, 60 clear between the panes (the way in), the room's limestone floor running through; the strip's walls clad
+in limestone like the Bad Großeltern's, to 2.0, but on the north wall only to 1.20: that wall is the partition to the
+Waschküche, whose top metre #30 glazes, so nothing on it reaches above 1.20. The toilet on the north wall between
+the glass and the basin (Taubenblau tiles on the north wall and on the east wall down to the door); the Waschbecken
+einzeln 60 on the east wall north of the door under a mirror 80 x 85 in a 10 cm wooden frame, two Wandlampen over it,
+one left of the window (seen from inside).
 
 Pure Python like house_core.py, which imports this module: build_sanitary() calls elternbad_neu() at
 ELTERNBAD_AT on the OG floor, build_og() takes the door (TUER) from here, BATHS_OG the room (ROOM);
@@ -23,13 +24,16 @@ WI, WO, YS, YN = 5.59, 8.59, 0.40, 2.62      # room: west and east (Schlafzimmer
 ROOM = (WI, WO, YS, YN)
 FENSTER = (6.84, 7.72)                       # the window in the south wall (build_og())
 TUER = (0.65, 1.58)                          # door in the east wall, hinged south, open 90 deg into the Bad
-SS, SE = 1.64, FENSTER[1]                    # shower: south edge, east end (at the window's east jamb)
-GA = 6.19                                    # glass GA .. SE on its south edge, open WI .. GA (60): the entrance
-TX = WO - 0.45                               # toilet axis, 45 from the east wall
+XG = WI + 0.90                               # the showers' strip along the west wall: glass line
+YM = (YS + YN) / 2                           # the middle of the west wall: the way in
+PA, PB = YM - 0.30 - 0.012, YM + 0.30 + 0.012   # panes YS .. PA and PB .. YN: their rails (12) leave 60 clear
+HU = 0.30                                    # shower heads: 30 from the south and north wall
+SILL = 1.20                                  # north wall (Waschküche): nothing above 1.20, #30 glazes the top metre
+TX = XG + 0.66                               # toilet axis on the north wall
 FY = TUER[1] + 0.07 + 0.01                   # east wall tiles: from 1 cm past the door's architrave to the north wall
-BX = FENSTER[0] - 0.15 - 0.50                 # basin and mirror: the basin's end 15 from the window reveal (as before)
-BW, BD = 1.00, 0.47                          # Waschbecken doppelt
-MW, MH, MF, MZ = 1.10, 0.85, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
+BY = (FY + YN) / 2                           # basin, mirror and their lamps on the east wall, centred on the tiles
+BW, BD = 0.60, 0.47                          # Waschbecken einzeln
+MW, MH, MF, MZ = 0.80, 0.85, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
 LX = (FENSTER[1] + WO) / 2                   # Wandlampe left of the window (seen from inside)
 CLAD, ST = 2.0, 0.012                        # shower walls: limestone to 2.0 (as in the Bad Großeltern), slab face
 
@@ -65,43 +69,44 @@ def elternbad_neu(c="Elternbad", x0=0.0, y0=0.0, z=0.0, walls=False):
         waende(c, dx, dy)
     rng = random.Random(3)
 
-    # south wall: the basin between west wall and window, the mirror and four lamps above it, a lamp left of the window
-    hc.waschbecken(c, BX + dx, YS + dy, 0, 1, BW, BD, 2, z=z)
-    hc.wood_mirror(c, BX + dx, YS + dy, 0, 1, MW, MH, MF, z + MZ, rng)
-    for k in range(4):                                   # one per quarter of the mirror's width (#19)
-        hc.wandlampe(c, BX - MW / 2 + MW * (k + 0.5) / 4 + dx, YS + dy, 0, 1, z + hc.WANDLAMPE_SPIEGEL_H)
+    # east wall, north of the door: the basin on the tiles, the mirror and two lamps above it; a lamp left of the window
+    hc.waschbecken(c, WO + dx, BY + dy, -1, 0, BW, BD, 1, z=z, tile=hc.WC_TILE_T)
+    hc.wood_mirror(c, WO + dx, BY + dy, -1, 0, MW, MH, MF, z + MZ, rng)
+    for d in (-MW / 4, MW / 4):
+        hc.wandlampe(c, WO + dx, BY + d + dy, -1, 0, z + hc.WANDLAMPE_SPIEGEL_H)
     hc.wandlampe(c, LX + dx, YS + dy, 0, 1, z + hc.WANDLAMPE_H)
-    # north wall: the walk-in shower from the west wall to SE (no tray: the limestone floor runs through; limestone
-    # on its two walls from the floor up, the north wall's to the glass, the west wall's to the north slabs; the
-    # head on their face), the toilet in the NE corner on its tiles, a lamp over the cistern
-    hc.limestone(c, True, YN + dy, -1, WI + dx, SE - 0.005 + dx, z + 0.018, z + CLAD, rng)
-    hc.limestone(c, False, WI + dx, 1, SS + dy, YN - ST + dy, z + 0.018, z + CLAD, rng)
-    hc.shower(c, WI + dx, SE + dx, SS + dy, YN + dy,
-              [(GA + dx, SS + dy, SE + dx, SS + dy), (SE + dx, SS + dy, SE + dx, YN + dy)],
-              ((GA + SE) / 2 + dx, YN - ST + dy, 0, -1), z=z, tray=False)
+    # west wall: the two walk-in showers (no tray: the limestone floor runs through; limestone on the west wall and on
+    # the strip's pieces of the south and north wall, which stop at the glass; the north wall's only to SILL; the
+    # heads on the west wall's slabs), the toilet on the north wall's tiles
+    hc.limestone(c, False, WI + dx, 1, YS + dy, YN + dy, z + 0.018, z + CLAD, rng)
+    hc.limestone(c, True, YS + dy, 1, WI + ST + dx, XG - 0.005 + dx, z + 0.018, z + CLAD, rng)
+    hc.limestone(c, True, YN + dy, -1, WI + ST + dx, XG - 0.005 + dx, z + 0.018, z + SILL, rng)
+    hc.shower(c, WI + dx, XG + dx, YS + dy, YM + dy, [(XG + dx, YS + dy, XG + dx, PA + dy)],
+              (WI + ST + dx, YS + HU + dy, 1, 0), z=z, tray=False)
+    hc.shower(c, WI + dx, XG + dx, YM + dy, YN + dy, [(XG + dx, PB + dy, XG + dx, YN + dy)],
+              (WI + ST + dx, YN - HU + dy, 1, 0), z=z, tray=False)
     hc.toilet(c, TX + dx, YN + dy, 0, -1, z=z)
-    hc.wainscot(c, z, SE + 0.006 + dx, WO + dx, FY + dy, YN + dy, (WO + dx, WO + dx), sides="ne")
-    hc.wandlampe(c, TX + dx, YN + dy, 0, -1, z + hc.WANDLAMPE_H)
+    hc.wainscot(c, z, XG + 0.006 + dx, WO + dx, FY + dy, YN + dy, (WO + dx, WO + dx), sides="ne")
 
     # dimension lines (sub-model coordinates)
     S = lambda xa, ya, za, xb, yb, zb, s: ((xa - ELTERNBAD_AT[0], ya - ELTERNBAD_AT[1], za),
                                            (xb - ELTERNBAD_AT[0], yb - ELTERNBAD_AT[1], zb), s)
     f, top = 0.02, 2.10
-    ba, bb = BX - BW / 2, BX + BW / 2
-    ma, mb = BX - MW / 2, BX + MW / 2
-    return [S(WI, YN - 0.05, top, SE, YN - 0.05, top, f"Dusche {cm(WI, SE)} × {cm(SS, YN)}"),
-            S(SE, YN - 0.05, top, TX, YN - 0.05, top, cm(SE, TX)),
-            S(TX, YN - 0.05, top, WO, YN - 0.05, top, cm(TX, WO)),
-            S(WI + 0.05, SS, top, WI + 0.05, YN, top, cm(SS, YN)),
-            S(WI, SS - 0.05, f, GA, SS - 0.05, f, f"{cm(WI, GA)} offen"),
-            S(GA, SS - 0.05, f, SE, SS - 0.05, f, f"Glas {cm(GA, SE)}"),
-            S(WI, YS + BD + 0.25, f, ba, YS + BD + 0.25, f, cm(WI, ba)),
-            S(ba, YS + BD + 0.25, f, bb, YS + BD + 0.25, f, f"Waschbecken {cm(ba, bb)}"),
-            S(bb, YS + BD + 0.25, f, FENSTER[0], YS + BD + 0.25, f, cm(bb, FENSTER[0])),
-            S(ma, YS + 0.06, MZ + MH + 0.05, mb, YS + 0.06, MZ + MH + 0.05, f"Spiegel {cm(ma, mb)} × {cm(0, MH)}"),
-            S(ma - 0.05, YS + 0.06, 0.0, ma - 0.05, YS + 0.06, MZ, f"UK {cm(0, MZ)}"),
+    ba, bb = BY - BW / 2, BY + BW / 2
+    ma, mb = BY - MW / 2, BY + MW / 2
+    return [S(WI, YN - 0.05, top, XG, YN - 0.05, top, f"Duschen {cm(WI, XG)}"),
+            S(XG, YN - 0.75, f, TX, YN - 0.75, f, cm(XG, TX)),                  # in front of the toilet
+            S(TX, YN - 0.75, f, WO, YN - 0.75, f, cm(TX, WO)),
+            S(XG + 0.05, YS, f, XG + 0.05, PA, f, f"Glas {cm(YS, PA)}"),
+            S(XG + 0.05, PA + 0.012, f, XG + 0.05, PB - 0.012, f, f"Durchgang {cm(PA + 0.012, PB - 0.012)}"),
+            S(XG + 0.05, PB, f, XG + 0.05, YN, f, f"Glas {cm(PB, YN)}"),
+            S(WO - BD - 0.25, TUER[1], f, WO - BD - 0.25, ba, f, cm(TUER[1], ba)),
+            S(WO - BD - 0.25, ba, f, WO - BD - 0.25, bb, f, f"Waschbecken {cm(ba, bb)}"),
+            S(WO - BD - 0.25, bb, f, WO - BD - 0.25, YN, f, cm(bb, YN)),
+            S(WO - 0.06, ma, MZ + MH + 0.05, WO - 0.06, mb, MZ + MH + 0.05, f"Spiegel {cm(ma, mb)} × {cm(0, MH)}"),
+            S(WO - 0.06, ma - 0.05, 0.0, WO - 0.06, ma - 0.05, MZ, f"UK {cm(0, MZ)}"),
             S(FENSTER[0], YS + 0.05, top, FENSTER[1], YS + 0.05, top, f"Fenster {cm(*FENSTER)}"),
             S(WO - 0.05, YS, f, WO - 0.05, TUER[0], f, cm(YS, TUER[0])),
             S(WO - 0.05, TUER[0], f, WO - 0.05, TUER[1], f, f"Tür {cm(*TUER)}"),
-            S(WI, (SS + YS) / 2, top, WO, (SS + YS) / 2, top, cm(WI, WO)),
+            S(WI, YM, top, WO, YM, top, cm(WI, WO)),
             S(WI + 0.30, YS, top, WI + 0.30, YN, top, cm(YS, YN))]

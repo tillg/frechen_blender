@@ -212,7 +212,7 @@ test('hires=on keeps every light', async ({ page }) => {
   await page.waitForFunction(() => window.__fl?.ready === true);
   expect(await page.evaluate(() => window.__fl.hires)).toBe(true);
   const L = await page.evaluate(() => window.__fl.lights);
-  expect(L.room.length).toBe(1 + 69);                                // the Speis's fill light + every Wandlampe light (#19, #3, #22, #34)
+  expect(L.room.length).toBe(1 + 66);                                // the Speis's fill light + every Wandlampe light (#19, #3, #22, #34, #33)
   expect(L.outside.length).toBe(8);
   await page.evaluate(() => window.__fl.lookFrom(11.7, 3.2, 1.6));
   await page.waitForTimeout(600);                                    // saveView() runs 300 ms after a change
