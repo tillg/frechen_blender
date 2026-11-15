@@ -26,7 +26,7 @@ CODE = Path(__file__).resolve().parent.parent / "code"
 def test_paint_and_room_lights_live_in_the_core():
     ral9010, ral5014 = (241, 236, 225), (99, 125, 150)
     assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014, "Front": ral5014}
-    assert len(house_core.ROOM_LIGHTS) == 1 and len(BP.wall_lights) == 35 + 35 + 1   # OG, EG (#22), hood spots
+    assert len(house_core.ROOM_LIGHTS) == 1 and len(BP.wall_lights) == 35 + 33 + 1   # OG, EG (#22, #34), hood spots
     assert BP.paint == house_core.PAINT and BP.room_lights == house_core.ROOM_LIGHTS
     assert "RAL =" not in (CODE / "paint.py").read_text()
     assert "ROOM_LIGHTS =" not in (CODE / "film.py").read_text()
@@ -1034,16 +1034,16 @@ def test_kueche_and_speis_fronts_after_mallnitz():
     assert not [p for p in k if p[0] == "Metall" and len(set(map(tuple, p[3]))) >= 48]
     sink = [p for p in k if hood(p) and p[1][1] > 5.2 and p[2][2] < 0.86]
     assert len(sink) == 2 and all(p[2][0] < 7.85 for p in sink)               # the blind corner has none
-    # cabinet C of the Speis (doors at y 3.13 .. 3.15 towards the dining table; own object since #5)
-    sp = list(part_list(("EG", "EG_Speis_C")))
-    c = [p for p in sp if p[1][1] >= 3.09 and p[2][1] <= 3.728 + 1e-6]
+    # cabinet C on the Essen's west wall (doors at x 3.352 .. 3.372 towards the dining table, #5, #34)
+    c = list(part_list(("EG", "EG_Essen_Schrank")))
     assert {p[0] for p in c} == {"Front", "Metall", "Fuge"}
-    assert len([p for p in c if hood(p)]) == 4 * 5 and len([p for p in c if p[0] == "Metall"]) == 4 * 5 * 2
-    assert all(p[1][1] < 3.13 for p in c if p[0] == "Metall")
-    panels = [p for p in c if p[0] == "Front" and p[1][1] > 3.135 and p[2][1] <= 3.15 + 1e-6]
-    assert len(panels) == 4 * 5                  # per leaf column (request 2026-11-10): top door, a door
-    for i in range(4):                           # over the upper half, three drawers in the lower half
-        col = sorted((p for p in panels if 2.774 + 0.616 * i < (p[1][0] + p[2][0]) / 2 < 2.774 + 0.616 * (i + 1)),
+    assert len([p for p in c if hood(p)]) == 6 * 5 and len([p for p in c if p[0] == "Metall"]) == 6 * 5 * 2
+    assert all(p[1][0] > 3.372 - 1e-6 for p in c if p[0] == "Metall")
+    panels = [p for p in c if p[0] == "Front" and p[1][0] > 3.35 and p[2][0] <= 3.365]
+    assert len(panels) == 6 * 5                  # per leaf column (request 2026-11-10): top door, a door
+    w = (3.712 - 0.417) / 6                      # over the upper half, three drawers in the lower half
+    for i in range(6):
+        col = sorted((p for p in panels if 0.417 + w * i < (p[1][1] + p[2][1]) / 2 < 0.417 + w * (i + 1)),
                      key=lambda p: p[1][2])
         assert len(col) == 5
         top = max(p[2][2] for p in col)
@@ -1052,8 +1052,8 @@ def test_kueche_and_speis_fronts_after_mallnitz():
         assert 1.05 < door[1][2] - 0.06 < 1.06 and 1.99 < door[2][2] + 0.06 < 2.0         # panel + 6 cm frame
         hs = [p[2][2] - p[1][2] for p in drawers]
         assert max(hs) - min(hs) < 1e-6 and drawers[2][2][2] < door[1][2]
-    cups = sorted((p for p in c if hood(p)), key=lambda p: (p[1][0], p[1][2]))
-    assert len([p for p in cups if p[1][2] < 1.0]) == 12                     # one per drawer
+    cups = [p for p in c if hood(p)]
+    assert len([p for p in cups if p[1][2] < 1.0]) == 18                     # one per drawer
     besen = [p for p in k if p[2][0] < 6.01 and p[1][1] > 5.2 and p[0] == "Metall"]
     assert len(besen) == 2 and len([p for p in besen if hood(p)]) == 1        # its cup pull
 
@@ -1445,8 +1445,8 @@ def test_wandlampen_eg_placements():
     """Issue #22: the Wandlampen of the EG at the places agreed on the drawing (input/2026-11-14 input/
     lampen_eg_v1.svg; numbers as there), at WANDLAMPE_H, over the back hall's mirror at WANDLAMPE_SPIEGEL_H.
     Lamp 1 sits between the open Windfang leaf (13.324) and the front door's leaf opened by the film (13.825).
-    11, 12 belong to the default layout (EG_Wandlampen_Essen), 13, 14 to Alternativ (EG_Alt_Wandlampen),
-    their lights tagged alike; default_layout() drops the alt ones. Off the plan sheets (PLAN skip_words)."""
+    11, 12 (the Essen's west wall) went with the default layout (#34); 13, 14 hang on B's wooden back.
+    Off the plan sheets (PLAN skip_words)."""
     L, S = house_core.WANDLAMPE_H, house_core.WANDLAMPE_SPIEGEL_H
     n, s, e, w = (0, 1), (0, -1), (1, 0), (-1, 0)                         # facing: into the room
     both = [((13.5745, 6.349), L, n),                                     # 1 Windfang: south wall
@@ -1464,29 +1464,21 @@ def test_wandlampen_eg_placements():
             ((0.31, 10.4365), L, e), ((0.792, 8.656), L, n), ((1.394, 9.556), L, e),       # 29-31 Bad, WC, Schrank
             ((2.358, 7.0655), S, w),                                      # 32 back hall: over the mirror
             ((1.419, 5.8413), L, e), ((1.419, 6.2077), L, e),             # 33, 34 Garderobe
-            ((0.8145, 5.475), L, n), ((0.31, 7.0655), L, e)]              # 35, 36 Gäste-WC; back hall
-    main = [((2.772, 1.3127), L, e), ((2.772, 2.2103), L, e)]             # 11, 12 Essen: west wall
-    alt = [((3.9035, 3.715), L, s), ((4.7245, 3.715), L, s)]              # 13, 14 Alternativ: B's back, on boards
+            ((0.8145, 5.475), L, n), ((0.31, 7.0655), L, e),              # 35, 36 Gäste-WC; back hall
+            ((3.9035, 3.715), L, s), ((4.7245, 3.715), L, s)]             # 13, 14 Essen: B's back, on boards
     same = lambda a, b: math.dist(a[0], b[0]) < 0.0015 and abs(a[1] - b[1]) < 0.0015 and a[2] == b[2]
-    for key, want in ((("EG", "EG_Wandlampen"), both), (("EG", "EG_Wandlampen_Essen"), main), (("EG", "EG_Alt_Wandlampen"), alt)):
-        got = [((x, y), z, f) for (x, y), z, f in _rosettes(BP, key)]
-        miss = ([g for g in got if not any(same(g, x) for x in want)], [x for x in want if not any(same(g, x) for g in got)])
-        assert len(got) == len(want) and miss == ([], []), (key, miss)
-    assert house_core.VARIANT["EG_Wandlampen_Essen"] == "main" and house_core.VARIANT["EG_Alt_Wandlampen"] == "alt"
-    assert len(BP.wall_variant) == len(BP.wall_lights)
-    tagged = lambda bp, v: [p for p, t in zip(bp.wall_lights, bp.wall_variant) if t == v]
-    assert len(tagged(BP, "main")) == 2 and len(tagged(BP, "alt")) == 2
+    got = [((x, y), z, f) for (x, y), z, f in _rosettes(BP, ("EG", "EG_Wandlampen"))]
+    miss = ([g for g in got if not any(same(g, x) for x in both)], [x for x in both if not any(same(g, x) for g in got)])
+    assert len(got) == len(both) == 32 and miss == ([], []), miss
     near = lambda pts, xs: all(any(math.dist(p[:2], (x + 0.5 * f[0], y + 0.5 * f[1])) < 0.002 for p in pts) for (x, y), _, f in xs)
-    assert near(tagged(BP, "main"), main) and near(tagged(BP, "alt"), alt)
-    dl = house_core.default_layout(BP)
-    assert len(dl.wall_lights) == len(BP.wall_lights) - 2 and "alt" not in dl.wall_variant
+    assert near(BP.wall_lights, both)
     assert "Wandlampen" in house_core.PLAN["skip_words"]
 
 
 def test_haube_spots():
     """Issue #22: under the Küche hood's back edge (at the east wall) a Metall strip with 4 built-in spots
     (Opalglas: its material glows at dusk) evenly along it, attached under the lip (1.62); one light for the four,
-    under the hood 50 cm out from the wall like every lamp's, among the wall lights (both layouts)."""
+    under the hood 50 cm out from the wall like every lamp's, among the wall lights."""
     import kueche
     key = ("EG", "EG_Haube")
     parts = list(_parts(BP, key))
@@ -1499,29 +1491,26 @@ def test_haube_spots():
     assert all(abs((ys[k + 1] - ys[k]) - (ys[1] - ys[0])) < 1e-6 for k in range(3))                  # evenly
     assert all(slo[0] < (lo[0] + hi[0]) / 2 < shi[0] and abs(hi[2] - slo[2]) < 1e-6 for lo, hi in spots)
     xm, ym = (slo[0] + shi[0]) / 2, (slo[1] + shi[1]) / 2
-    lights = [(p, v) for p, v in zip(BP.wall_lights, BP.wall_variant) if math.dist(p[:2], (kueche.XE - 0.50, ym)) < 0.01]
-    assert len(lights) == 1 and lights[0][1] is None and lights[0][0][2] < slo[2]
-    assert kueche.XE - 0.55 < lights[0][0][0]                                      # still under the hood (front 55)
+    lights = [p for p in BP.wall_lights if math.dist(p[:2], (kueche.XE - 0.50, ym)) < 0.01]
+    assert len(lights) == 1 and lights[0][2] < slo[2]
+    assert kueche.XE - 0.55 < lights[0][0]                                      # still under the hood (front 55)
 
 
 def test_eg_lamps_clear():
-    """Issue #22: every EG lamp (both layouts, the Ofen bed's, the hood's strip excluded) hangs on solid wall
-    (B's wooden back for the Alternativ ones), clear of every EG object but walls, floors and ceilings (each
-    layout's lamps against its own layout's objects), of the door leaves as built and of the front door as
-    the film opens it (90 deg about its hinge)."""
+    """Issue #22: every EG lamp (the Ofen bed's too, the hood's strip excluded) hangs on solid wall (B's
+    wooden back for 13, 14), clear of every EG object but walls, floors and ceilings, of the door leaves as
+    built and of the front door as the film opens it (90 deg about its hinge)."""
     keys = [k for k in BP.geo if k[0] == "EG" and "Wandlampen" in k[1]]
-    assert sorted(k[1] for k in keys) == ["EG_Alt_Wandlampen", "EG_Ofen_Wandlampen", "EG_Wandlampen", "EG_Wandlampen_Essen"]
+    assert sorted(k[1] for k in keys) == ["EG_Ofen_Wandlampen", "EG_Wandlampen"]
     skip = ("_Waende", "Boden", "Decke", "Wandlampen")
     leaves = _leaf_boxes(BP, "EG", 0.0)
     px, py = 14.73, 6.528                                                  # the front door, opened by film.py
     leaves.append(((px - (7.433 - py), py + (14.65 - px), 0.0), (px - (6.532 - py), py + (14.81 - px), 2.125)))
+    others = [(lo, hi) for k in BP.geo if k[0] == "EG" and not any(w in k[1] for w in skip) for m, lo, hi in _parts(BP, k)]
     for key in keys:
-        lay = house_core.VARIANT.get(key[1])
-        others = [(lo, hi) for k in BP.geo if k[0] == "EG" and not any(w in k[1] for w in skip)
-                  and house_core.VARIANT.get(k[1], lay) == lay for m, lo, hi in _parts(BP, k)]
         _clear(list(_parts(BP, key)), others + leaves, key[1])
-        backing = ("EG", "EG_Alt_Speis") if lay == "alt" else ("EG", "EG_Waende")
         for (x, y), z, (fx, fy) in _rosettes(BP, key):
+            backing = ("EG", "EG_Speis_Rueckwand") if abs(y - 3.715) < 1e-3 else ("EG", "EG_Waende")   # 13, 14: B's back
             for s, h in ((0, 0), (0.042, 0), (-0.042, 0), (0, 0.042), (0, -0.042)):
                 p = (x - fx * 0.006 - fy * s, y - fy * 0.006 + fx * s, z + h)   # just behind the rosette
                 assert _part_at(backing, *p) is not None, (key[1], (x, y, z), p)
@@ -1941,31 +1930,25 @@ def test_kuechentuer_as_built():
 
 def test_speis_v6():
     """Speis after speis_kueche_v6.svg: from the Flur wall south shelf A (60, open), the aisle 91.9
-    (west end free), shelf B (60, open to the aisle) and back to back with it cabinet C (60, doors
-    to the Essen) in place of the Speis/Essen wall, all to the ceiling; the Speis/Küche wall ends at
-    C's front (y 3.13) and is open over the aisle; a sliding leaf on the kitchen side, slid open to
-    the south (left as seen from the Küche)."""
+    (west end free), shelf B (60, open to the aisle) and its closed back towards the Essen in
+    place of the Speis/Essen wall, all to the ceiling; the Speis/Küche wall ends at B's back (y 3.73)
+    and is open over the aisle, without a door leaf (#34: the saloon leaves, test_speis_essen)."""
     w = ("EG", "EG_Waende")
     assert _mat_at(BP, w, 4.0, 3.2, 1.0) is None                                          # Speis/Essen wall gone
-    assert _mat_at(BP, ("EG", "EG_Speis_Waende"), 5.36, 3.5, 1.0) == "Putz"               # the stub to C (#5)
+    assert _mat_at(BP, w, 5.36, 3.5, 1.0) is None and ("EG", "EG_Speis_Waende") not in BP.geo   # no stub (#34)
     assert _mat_at(BP, w, 5.36, 4.2, 1.0) == "Putz"
     assert _mat_at(BP, w, 5.36, 4.8, 1.0) is None and _mat_at(BP, w, 5.36, 3.05, 1.0) is None
-    sp = list(part_list(("EG", "EG_Speis"))) + list(part_list(("EG", "EG_Speis_C")))   # C: own object (#5)
-    assert sp and "EG_Speis" not in BP.furniture and "EG_Speis_C" not in BP.furniture
-    for ya, yb in ((5.249, 5.847), (3.732, 4.33), (3.13, 3.728)):                         # A, B, C
+    sp = list(part_list(("EG", "EG_Speis")))
+    assert sp and "EG_Speis" not in BP.furniture
+    for ya, yb in ((5.249, 5.847), (3.732, 4.33)):                                        # A, B
         band = [p for p in sp if p[1][1] >= ya - 1e-6 and p[2][1] <= yb + 1e-6]
         assert band and abs(min(p[1][1] for p in band) - ya) < 0.003 and abs(max(p[2][1] for p in band) - yb) < 0.003
         assert min(p[1][0] for p in band) < 2.78 and max(p[2][0] for p in band) > 5.23
         assert 2.39 <= max(p[2][2] for p in band) < 2.40
     assert not any(p[2][1] > 4.34 and p[1][1] < 5.24 for p in sp)                          # the aisle is free
-    doors = [p for p in sp if p[1][1] >= 3.13 - 1e-6 and p[2][1] <= 3.15 + 1e-6 and p[0] != "Metall"]
-    assert len(doors) >= 4
     assert not any(p[2][0] > 2.78 and p[1][0] < 5.24 and p[2][1] > 3.13 and p[1][1] < 5.85
                    for p in part_list(("EG", "EG_Moebel")))                                # old shelves gone
-    leaf = [l for c, l in house_core.LEAVES if c == "EG" and 5.49 < min(l[0][0], l[1][0]) < 5.6]
-    assert len(leaf) == 1
-    (a, b), = leaf
-    assert abs(min(a[1], b[1]) - 3.28) < 0.01 and abs(max(a[1], b[1]) - 4.28) < 0.01
+    assert not [l for c, l in house_core.LEAVES if c == "EG" and 5.49 < min(l[0][0], l[1][0]) < 5.6]   # no sliding leaf
 
 
 def test_bad_glass_ends_at_the_french_door_jamb():
@@ -2176,7 +2159,7 @@ def test_gaeste_wc_doors_swing():
     x0, y0 = g.WC_AT
     assert BP.swing == {"EG_Hintertuer": 90.0, "EG_WC_Tuer": 90.0, "EG_Windfangtuer": 90.0,   # back door, Windfang: hinged north
                         "EG_Buerotuer": 90.0,                                                  # (and the Büro door, code/regal.py)
-                        "EG_Alt_Pendeltuer_S": 90.0, "EG_Alt_Pendeltuer_N": -90.0}             # (and the saloon leaves, #5)
+                        "EG_Pendeltuer_S": 90.0, "EG_Pendeltuer_N": -90.0}                     # (and the saloon leaves, #5)
     assert sub.swing == {"GaesteWC_Hintertuer": 90.0, "GaesteWC_WC_Tuer": 90.0, "GaesteWC_Windfangtuer": 90.0}
     for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):
         px, py, pz = sub.pivot["GaesteWC_" + n]
@@ -2296,40 +2279,25 @@ def test_jugend_tuer_und_stockbett():
     _clear([("Fichte", lo, hi) for lo, hi in bunks], _leaf_boxes(BP, "OG", zo), "door leaf")
 
 
-def test_variant_main_objects():
-    """Issue #5: what only the default layout has is in objects of its own, flagged "main" (the
-    viewer hides them in Erdgeschoss - Alternativ): cabinet C, the Speis sliding leaf with its rail,
-    and the 60 cm stub of the Speis/Küche wall (a wall for the plan sheets: suffix _Waende)."""
-    assert {o: v for o, v in BP.variant.items() if v == "main"} == {
-        "EG_Speis_C": "main", "EG_Speis_Schiebetuer": "main", "EG_Speis_Waende": "main",
-        "EG_Wandlampen_Essen": "main"}                                  # #22: the Essen's two lamps on its west wall
-    c = list(_parts(BP, ("EG", "EG_Speis_C")))
-    assert 3.09 < min(lo[1] for m, lo, hi in c) < 3.13 + 1e-6 and abs(max(hi[1] for m, lo, hi in c) - 3.728) < 0.005   # pulls proud
-    assert not any(lo[1] < 3.70 for m, lo, hi in _parts(BP, ("EG", "EG_Speis")))                 # A and B only
-    leaf = list(_parts(BP, ("EG", "EG_Speis_Schiebetuer")))
-    assert any(m == "Metall" and hi[1] - lo[1] > 2.0 for m, lo, hi in leaf)                      # the rail
-    assert any(m == "Innentuer" for m, lo, hi in leaf)
-    stub = list(_parts(BP, ("EG", "EG_Speis_Waende")))
-    assert [(round(lo[1], 3), round(hi[1], 3)) for m, lo, hi in stub] == [(3.13, 3.73)]
-    assert not any(lo[0] < 5.49 and hi[0] > 5.24 and lo[1] < 3.73 - 1e-6 and hi[1] > 3.13
-                   for m, lo, hi in _parts(BP, ("EG", "EG_Waende")))                             # shared wall shorter
-    w, ((first, _),) = BP.geo[("EG", "EG_Waende")], BP.parts[("EG", "EG_Speis_Waende")]
-    shared = [w["r"][f] for (f, n), (m, lo, hi) in zip(BP.parts[("EG", "EG_Waende")], _parts(BP, ("EG", "EG_Waende")))
-              if lo[0] >= 5.24 - 1e-6 and hi[0] <= 5.49 + 1e-6 and lo[1] < 3.75 and hi[1] > 3.72]
-    assert shared == [BP.geo[("EG", "EG_Speis_Waende")]["r"][first]]                 # the wall's rnd: no seam
+def test_one_eg_layout():
+    """Issue #34: the EG layout Alternativ (#5) is the only one; the default layout's own objects and
+    the layout switch (VARIANT, default_layout(), the wall lights' layout tags) are gone."""
+    names = {o for c, o in BP.geo}
+    assert not names & {"EG_Speis_C", "EG_Speis_Schiebetuer", "EG_Speis_Waende", "EG_Wandlampen_Essen"}
+    assert not [o for o in names if o.startswith("EG_Alt")]
+    assert {"EG_Essen_Schrank", "EG_Speis_Rueckwand", "EG_Pendeltuer_S", "EG_Pendeltuer_N"} <= names
+    assert not hasattr(house_core, "VARIANT") and not hasattr(house_core, "default_layout")
+    assert not hasattr(BP, "variant") and not hasattr(BP, "wall_variant")
 
 
-def test_variant_alt_objects():
-    """Issue #5, the EG variant Alternativ: cabinet C on the Essen's west wall over its full width
-    (south wall to shelf B's back), B's closed back towards the Essen, and in the opening Küche ->
-    Speis two closed half-height saloon leaves (no handles) that swing into the Speis."""
-    alt = {o for o, v in BP.variant.items() if v == "alt"}
-    assert alt == {"EG_Alt_Schrank", "EG_Alt_Speis", "EG_Alt_Pendeltuer_S", "EG_Alt_Pendeltuer_N",
-                   "EG_Alt_Wandlampen"}                                 # #22: two lamps on B's back
+def test_speis_essen():
+    """Issue #5 (the layout Alternativ, the only one since #34): cabinet C on the Essen's west wall over
+    its full width (south wall to shelf B's back), B's closed back towards the Essen, and in the opening
+    Küche -> Speis two closed half-height saloon leaves (no handles) that swing into the Speis."""
     others = [p for o in ("EG_Waende", "EG_Fenster_Tueren", "EG_Stuehle", "EG_Moebel", "EG_Speis", "EG_Vorrat")
               for p in _parts(BP, ("EG", o))]
     boxes = lambda ps: [(lo, hi) for m, lo, hi in ps]
-    cab = list(_parts(BP, ("EG", "EG_Alt_Schrank")))
+    cab = list(_parts(BP, ("EG", "EG_Essen_Schrank")))
     lo = [min(p[1][k] for p in cab) for k in range(3)]
     hi = [max(p[2][k] for p in cab) for k in range(3)]
     assert 2.772 < lo[0] < 2.78 and 3.372 - 1e-6 <= hi[0] < 3.40                     # 60 deep, pulls proud
@@ -2338,13 +2306,13 @@ def test_variant_alt_objects():
     panels = [p for p in cab if p[0] == "Front" and abs(p[1][0] - 3.352) < 1e-3 and abs(p[2][0] - 3.364) < 1e-3]
     assert len(panels) == 6 * 5                                                        # six columns of five fronts
     _clear(cab, boxes(others), "Essen")
-    back = list(_parts(BP, ("EG", "EG_Alt_Speis")))
+    back = list(_parts(BP, ("EG", "EG_Speis_Rueckwand")))
     assert back and all(3.70 < a[1] and b[1] < 3.732 for m, a, b in back)
     assert min(a[0] for m, a, b in back) < 2.78 and max(b[0] for m, a, b in back) > 5.23
     _clear(back, boxes(others) + boxes(cab), "back")
     leaves = {}
     for s, sw in (("S", 90.0), ("N", -90.0)):
-        o = "EG_Alt_Pendeltuer_" + s
+        o = "EG_Pendeltuer_" + s
         assert BP.swing[o] == sw and o in BP.pivot
         ps = list(_parts(BP, ("EG", o)))
         assert ps and {m for m, a, b in ps} == {"Innentuer"}                         # wood only, no handle
@@ -2366,14 +2334,3 @@ def test_variant_alt_objects():
     yN = min(a[1] for m, a, b in leaves["N"])
     assert 0 < yN - yS <= 0.01                                                         # they meet in the middle
     assert min(a[1] for m, a, b in leaves["S"]) - 4.33 <= 0.025 and 5.249 - max(b[1] for m, a, b in leaves["N"]) <= 0.025
-
-
-def test_default_layout_leaves_the_variant_out():
-    """Blender and the plan sheets show the default layout: house_core.default_layout() drops the
-    objects of the variant Alternativ (#5) with their pivots and swings, and keeps everything else."""
-    d = house_core.default_layout(BP)
-    alt = {o for o, v in BP.variant.items() if v == "alt"}
-    assert alt and not any(o in alt for c, o in d.geo) and not any(o in alt for c, o in d.parts)
-    assert not alt & set(d.pivot) and not alt & set(d.swing)
-    assert set(BP.geo) - set(d.geo) == {("EG", o) for o in alt} and d.parts.keys() == d.geo.keys()
-    assert ("EG", "EG_Speis_C") in d.geo

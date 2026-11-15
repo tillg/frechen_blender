@@ -194,7 +194,7 @@ def test_klavierspieler_sits_on_the_piano_bench_looking_over_the_keys():
 
 def test_routes_and_spots_clear_the_wandlampen():
     """Issues #19, #22: the Wandlampen reach 21 cm from the walls at head height; every camera key of every
-    route and every Standpunkt keeps the film's clearance of 0.25 m from each lamp (OG and EG, both layouts)."""
+    route and every Standpunkt keeps the film's clearance of 0.25 m from each lamp (OG and EG)."""
     bp = house_core.build()
     lamps = []                                                            # [(lo, hi)] per lamp: its parts lie
     parts = [(g["v"], g["f"][first:first + n]) for key, g in bp.geo.items() if "Wandlampen" in key[1]   # within 20 cm,
@@ -209,7 +209,7 @@ def test_routes_and_spots_clear_the_wandlampen():
         else:
             l, h = lamps[j]
             lamps[j] = ([min(a, b) for a, b in zip(l, lo)], [max(a, b) for a, b in zip(h, hi)])
-    assert len(lamps) == 35 + 35                                          # OG; EG incl. both layouts and the Ofen bed
+    assert len(lamps) == 35 + 35 - 2                                      # OG; EG incl. the Ofen bed (#34: 11, 12 gone)
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in lamps)
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
@@ -218,13 +218,13 @@ def test_routes_and_spots_clear_the_wandlampen():
         assert gap(s[3]) >= 0.25, s[0]
 
 
-def test_routes_clear_the_alternativ_furniture():
-    """The Rundgang also runs in the EG variant Alternativ (?layout=alt, its film): every camera key of
-    every route keeps 0.25 m from the variant's objects (cabinet C over the Essen's west wall, B's back,
-    the saloon leaves, its lamps) as from everything else."""
+def test_routes_clear_the_speis_and_essen_furniture():
+    """Every camera key of every route keeps 0.25 m from the Speis / Essen built-ins of the former variant
+    Alternativ (#5, the only EG layout since #34): cabinet C over the Essen's west wall, B's back, the
+    saloon leaves, as from everything else."""
     bp = house_core.build()
     boxes = []
-    for o in [k for k, v in bp.variant.items() if v == "alt"]:
+    for o in ("EG_Essen_Schrank", "EG_Speis_Rueckwand", "EG_Pendeltuer_S", "EG_Pendeltuer_N"):
         g = bp.geo[("EG", o)]
         for first, n in bp.parts[("EG", o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]

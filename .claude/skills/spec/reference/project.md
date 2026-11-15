@@ -77,6 +77,6 @@ Questions `/spec:grill` puts on the frontier (skip what the artifacts already se
 - Which plan or photo in `input/` is the source for this? Where do they disagree?
 - Does it change coordinates or shared constants other builders rely on?
 - Coplanar faces with existing parts? Shared `rnd` value needed?
-- Does the Rundgang camera still clear all geometry (`tests/test_tour.py` covers Wandlampen and Alternativ furniture only)?
+- Does the Rundgang camera still clear all geometry (`tests/test_tour.py` covers Wandlampen and the Speis/Essen built-ins only)?
 - Which Show screenshot(s) prove it — from where, at what detail?
 - Does it touch the viewer and the plan sheets alike (shared core)?

@@ -33,7 +33,7 @@ test('Modell lists the house entries, a separator, then the sub-models by storey
   for (const [url, hook] of [PAGES[0], PAGES[1], PAGES[9]]) {
     await open(page, url, hook);
     await page.getByRole('button', { name: 'Modell', exact: true }).click();
-    expect(await withGroups(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', 'Erdgeschoss - Alternativ', '1. Stock', '—',
+    expect(await withGroups(page), url).toEqual(['Ganzes Haus', 'Erdgeschoss', '1. Stock', '—',
       '[Erdgeschoss]', 'Ofen', 'Schreibtisch', 'Bad Oma & Opa', 'Küche', 'Gäste-WC', 'Schrank im Büro',
       '[1. Stock]', 'Schrankbett', 'Gästebad', 'Bad Nadine & Till']);
   }

@@ -7,7 +7,7 @@
 import './ui.css';
 
 // the model entries: the house entries switch the cutaway in place, the sub-models are pages, listed by storey
-export const HOUSE = [['haus', 'Ganzes Haus', 'all'], ['eg', 'Erdgeschoss', 'eg'], ['eg_alt', 'Erdgeschoss - Alternativ', 'eg_alt'], ['og', '1. Stock', 'noroof']];
+export const HOUSE = [['haus', 'Ganzes Haus', 'all'], ['eg', 'Erdgeschoss', 'eg'], ['og', '1. Stock', 'noroof']];
 export const PAGES = [['ofen', 'Ofen', 'ofen.html', 'eg'], ['desk', 'Schreibtisch', 'desk.html', 'eg'], ['bad', 'Bad Oma & Opa', 'bad.html', 'eg'],
   ['kueche', 'Küche', 'kueche.html', 'eg'], ['gaeste_wc', 'Gäste-WC', 'gaeste_wc.html', 'eg'],
   ['regal', 'Schrank im Büro', 'regal.html', 'eg'], ['schrankbett', 'Schrankbett', 'schrankbett.html', 'og'],

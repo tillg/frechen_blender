@@ -58,9 +58,9 @@ export function slidingNodes(objects, rand = Math.random) {
 export function swingingNodes(objects, rand = Math.random) {
   const nodes = objects.filter((o) => o.userData.swing).map((obj) => ({ obj, home: obj.quaternion.clone(),
     by: obj.userData.swing }));
-  // clocks: the Büro door its own; the leaves of a layout variant (extras.variant, #5) one of their
-  // own, so the leaves hidden in a layout take no slot of the others; the rest share one
-  const group = nodes.map((n) => (n.obj.name.endsWith('_Buerotuer') ? 'buero' : n.obj.userData.variant ?? ''));
+  // clocks: the Büro door its own; the saloon leaves (EG_Pendeltuer_*, #5) one of their own, so they
+  // take no slot of the back hall's doors; the rest share one
+  const group = nodes.map((n) => (n.obj.name.endsWith('_Buerotuer') ? 'buero' : n.obj.name.includes('_Pendeltuer') ? 'pendel' : ''));
   const clocks = Object.fromEntries([...new Set(group)].map((g) => [g, createSlides(group.filter((x) => x === g).length,
     rand, g === 'buero' ? BUERO_PERIOD : DOOR_PERIOD, g === 'buero' ? BUERO_SWING : DOOR_SWING)]));
   const tick = (t) => {
