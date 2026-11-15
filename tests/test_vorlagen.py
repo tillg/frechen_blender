@@ -21,7 +21,7 @@ def test_every_input_image_is_assigned_once():
     files = sorted(nfc(str(p.relative_to(ROOT / "input"))) for p in (ROOT / "input").rglob("*")
                    if p.suffix.lower() in RASTER)
     srcs = [nfc(f["src"]) for b in vorlagen.BEREICHE for f in b["fotos"]]
-    assert len(files) == 55
+    assert len(files) == 56
     assert sorted(srcs) == files                      # each one exactly once, none missing or extra
     keys = [b["key"] for b in vorlagen.BEREICHE]
     assert len(set(keys)) == len(keys)
@@ -42,6 +42,7 @@ def test_issue_examples():
     assert {"garderobe mallnitz.jpeg", "toilette mallnitz.jpeg"} <= src("garderobe")
     assert "ofen_stuben.jpg" in src("stube")
     assert {"waschbecken_einzeln.jpeg", "waschbecken_staender.png", "wandlampe.png"} <= src("haus")
+    assert src("gaestebad") == {"badewanne.webp"} and b["gaestebad"]["room"] == ("Bad", "OG")   # #32: the tub
 
 
 def part_boxes(names):
@@ -79,7 +80,9 @@ def test_anchors_in_free_air_in_their_room():
     label anchor of PLAN_ROOMS); the Außen marker outside the house; Pläne has none."""
     boxes = part_boxes(lambda n: True)
     walls = part_boxes(lambda n: n.endswith(house_core.PLAN["wall_suffix"]))
-    rooms = {(n, s): (x, y) for n, s, x, y in house_core.PLAN_ROOMS}
+    rooms = {}                                        # a name can stand twice in a storey (the OG's two "Bad")
+    for n, s, x, y in house_core.PLAN_ROOMS:
+        rooms.setdefault((n, s), []).append((x, y))
     m = 0.15
     for b in vorlagen.BEREICHE:
         at = b["at"]
@@ -98,8 +101,7 @@ def test_anchors_in_free_air_in_their_room():
         name, storey = b["room"]
         z0 = 0.0 if storey == "EG" else house_core.Z_OG
         assert z0 + 1.0 < z < z0 + 2.2, b["key"]
-        rx, ry = rooms[(name, storey)]
-        assert not any(crosses(at, (rx, ry, z), w) for w in walls), b["key"]
+        assert any(not any(crosses(at, (rx, ry, z), w) for w in walls) for rx, ry in rooms[(name, storey)]), b["key"]
 
 
 def jpeg_size(path):

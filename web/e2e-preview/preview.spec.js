@@ -178,7 +178,7 @@ test('gaestebad page is part of the build', async ({ page }) => {
   await page.goto(BASE);
   await choose(page, 'Modell', 'Gästebad');
   await page.waitForURL(/\/frechen_blender\/gaestebad\.html$/);
-  await expect(page.locator('.dim', { hasText: 'Glas 65' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.dim', { hasText: 'Wanne 165 × 75' })).toBeVisible({ timeout: 30_000 });
   expect(failed).toEqual([]);
   expect(errors).toEqual([]);
   expect(glb).toBe(1);

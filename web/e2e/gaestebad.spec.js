@@ -8,7 +8,7 @@ const file = new URL('../public/gaestebad.glb', import.meta.url);
 const glb = existsSync(file) ? readFileSync(file) : null;
 const DIMS = glb ? JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString()).scenes[0].extras.dims : [];
 
-test('Gästebad page draws WC niche, shower and basin with the core dimensions, without errors', async ({ page }) => {
+test('Gästebad page draws shower, tub, WC niche and basin with the core dimensions, without errors', async ({ page }) => {
   const errors = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
@@ -17,7 +17,7 @@ test('Gästebad page draws WC niche, shower and basin with the core dimensions, 
   expect(await page.evaluate(() => window.__gaestebad.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(10);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['WC 101', 'Dusche 115 × 139', 'Glas 65', '50 offen', 'Waschbecken 120', 'Spiegel 140 × 85', 'Tür 81']) {
+  for (const t of ['WC 125', 'Dusche 101 × 141', 'Glas 88', 'Durchgang 53', 'Wanne 165 × 75', 'Waschbecken 60', 'Spiegel 80 × 85', 'Tür 81']) {
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Von der Tür', 'Gerendert']]) {

@@ -24,6 +24,12 @@ Choices made while nobody was there to ask are logged here
   - [19:01 — #33: shower strip 90 deep along the west wall; the north wall is the Waschküche partition, kept free above 1.20](#run-2026-11-15-1633-12)
   - [19:01 — #33: basin single 60 (was double 100) with mirror 80 × 85 on the east wall; toilet on the north wall; 3 lamps instead of 6](#run-2026-11-15-1633-13)
   - [19:01 — #33: rewrite the old Elternbad layout tests; the Rundgang stops in front of the glass](#run-2026-11-15-1633-14)
+  - [19:36 — #32: shower SW, tub 180 × 75 along the west wall under the window, partition shortened to 6.15, WC niche to the SE, basin 60 on the north wall; 4 lamps instead of 5](#run-2026-11-15-1633-15)
+  - [19:36 — #32: the tub built in, white ceramic shell with a limestone apron](#run-2026-11-15-1633-16)
+  - [20:20 — #32: the user's addition: limestone shower floor and walls, glass instead of the partition, 9 cm further forward; tub 170](#run-2026-11-15-1633-17)
+  - [20:45 — #32: the user's second addition: the shower glass 10 cm longer, to y 6.34; the way in 50 cm](#run-2026-11-15-1633-18)
+  - [21:10 — #32: the user's third addition: a freestanding slipper tub after today's photo, head end to the shower, a glass pane between them; a new Fotos-Bereich "Gästebad"](#run-2026-11-15-1633-19)
+  - [21:25 — #32: the user's fourth addition: the tub's tap out of the outer wall at the foot end, no standpipe](#run-2026-11-15-1633-20)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -53,6 +59,8 @@ Choices made while nobody was there to ask are logged here
   #34: branch issue/34-alternativ-layout-standard from issue/35-nur-noch-threejs, PR https://github.com/tillg/frechen_blender/pull/37 (archived on the branch; full check: one red, `tour.spec.js` › ~30 fps lower bound, flaky under load, fails 2/5 on the base branch too).
   #31: branch issue/31-fotos-anzeigen from issue/34-alternativ-layout-standard, PR https://github.com/tillg/frechen_blender/pull/38 (archived on the branch; full check green).
   #33: branch issue/33-zwei-duschen from issue/31-fotos-anzeigen, PR https://github.com/tillg/frechen_blender/pull/39 (archived on the branch; full check: 3 reds, two pinned lamp count / label fixed and rerun green, the ~30 fps test flaky, green alone).
+  19:55: on the user's request ("merge the pending PRs to main") PRs #36–#39 were merged into main (13692f8, c5b0f1a, 337cf95, 9290f63), branches deleted, issues #35 #34 #31 #33 [done]. Later PRs target main and wait for the user.
+  #32: branch issue/32-dusche-badewanne from issue/33-zwei-duschen (now in main), PR https://github.com/tillg/frechen_blender/pull/41 (base main; archived on the branch; full check 110/111, the red a pinned old label, fixed, green alone).
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -185,3 +193,66 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the issue invalidates what they pin; a 60 passage leaves only ±5 cm for the 0.25 m camera clearance, which the route's smoothing could break.
 - **Alternatives:** walk through the passage (risky clearance); leave the route (camera inside the glass).
 - **Consequences:** tour goldens regenerated.
+  #32: the Gästebad's layout tests (`test_gaestebad_og_walls`, `test_gaestebad_og_shower`, `test_gaestebad_submodel`, the OG wall-light counts, `web/e2e/gaestebad.spec.js` labels; after the user's addition (-17) also the partition and the ceramic tray they pinned) rewritten for shower + tub; the Rundgang route unchanged (it only peeks in from the Flur), a new test keeps it ≥ 0.25 m from the Gästebad's Parts.
+
+## 19:36 — #32: shower SW, tub 180 × 75 along the west wall under the window, partition shortened to 6.15, WC niche to the SE, basin 60 on the north wall; 4 lamps instead of 5 {#run-2026-11-15-1633-15}
+
+- **Status:** open
+- **Context:** issue #32: the OG Gästebad (x 0.31 .. 2.57, y 5.46 .. 8.57) gets a bathtub besides the shower. Entering through the Flur door (east wall, y 7.66 .. 8.47, leaf open flat against the east wall down to y 6.91) one faces the west wall (outer wall): a small high window (y 5.72 .. 6.32, sill 1.48) and the big window (y 6.77 .. 7.76, sill 0.75). The user wants the shower on the left (south) and the tub to its right along the back wall, with a view out of the window from the tub; basin and toilet "sensibly".
+- **Question:** where do shower, tub, toilet and basin go, and what happens to the partition (over the EG Gäste-WC's) and the WC niche?
+- **Decision:** shower in the SW corner, 101 × 131 (west wall to the partition, south wall to the tub), walk-in on the old tray, head on the south wall; tub 180 × 75 built in along the west wall from the big window's south edge (y 6.77) to the north wall, rim 0.58 under the 0.75 sill, back rest at the north end so one looks out of the window ahead to the right. The partition stays over the EG one but ends at y 6.15 (was 6.54), so the shower opens east between it and the tub (62 cm). The WC niche moves east of the partition (115 wide, toilet centred, Taubenblau tiles on its three walls). Basin single 60 × 47 on the north wall between tub and door (x 1.15 .. 1.75) with a wood mirror 80 × 85; lamps: two over the mirror, one over the tub's head end, one over the toilet (4; the west-wall lamp would now hang in the shower).
+- **Why:** follows the issue's arrangement literally; the partition keeps the WC out of sight from the door and still stands over the EG one; the north wall is the only free wall for the basin (east wall: door and leaf; south: shower and WC).
+- **Alternatives:** tub 170 from the north wall and the shower closed by glass to the north (a 42 cm throat to its entrance); no partition, toilet in the open room (WC seen from the door); basin double 120 (does not fit beside the tub).
+- **Consequences:** OG wall-light count 32 → 31 (pinned in several tests, `lighting.test.js`, `stages.spec.js`); BATHS_OG follows `YP`; plan sheets re-exported.
+
+## 19:36 — #32: the tub built in, white ceramic shell with a limestone apron {#run-2026-11-15-1633-16}
+
+- **Status:** open
+- **Context:** the issue leaves the tub's look open (no reference photo in `input/`); the tub stands between two walls (west, north) and the shower.
+- **Question:** freestanding tub or built in?
+- **Decision:** built in: a white `Keramik` shell (rim 6 cm, bottom at 0.15, rim top 0.58), its apron (east face) and south end (towards the shower) clad with the house's limestone (`hc.limestone()`, as in the Bäder's showers); a chrome deck mixer with spout on the south rim, drain at that end, the back rest end to the north. Own `random.Random(32)`.
+- **Why:** a freestanding tub wedged against two walls and the shower looks wrong and wastes the 75 cm; the limestone ties it to the house's walk-in showers; materials reused from `MAT_DEF`.
+- **Alternatives:** freestanding white tub on feet; Taubenblau tiles on the apron (they mark the WCs).
+- **Consequences:** none beyond the new Parts in `<c>_Sanitaer` / `<c>_Fliesen`.
+  Superseded by -19 (the user asked for the freestanding tub of today's photo).
+
+## 20:20 — #32: the user's addition: limestone shower floor and walls, glass instead of the partition, 9 cm further forward; tub 170 {#run-2026-11-15-1633-17}
+
+- **Status:** open
+- **Context:** during the run the user added (via the coordinator): „Die Dusche im oberen Gästebad sollte als Boden auch die Stein fließen haben und auch die Wände die hintere und die Seite Wand sollten mit Stein fließen ausgelegt werden. Und die Wand zwischen Dusche und Toilette sollte durch eine Glaswand ersetzt werden, die etwas weiter nach vorne geht als die jetzige Wand.“ The layout of -15 has the shower in the SW corner, the partition (to y 6.15) between it and the WC niche, the tub from y 6.77.
+- **Question:** which walls are "hintere" and "Seite"; how far is "etwas weiter nach vorne"; how does the shower keep its entrance when the glass reaches further towards the tub?
+- **Decision:** floor: no ceramic tray, the room's limestone runs through (`tray=False`, as in the Bäder S and Großeltern); limestone to 2.0 on the back wall (west, around the small window: up to its sill 1.48 over the full width, above only beside it) and on the side wall (south, with the head, on the slabs); the partition goes, a glass wall stands on its west face line (x 1.319) from the south wall to y 6.24 (9 cm further forward than the wall's 6.15); the WC niche, now glass to the east wall, keeps the toilet centred between glass and wall. To keep the shower's entrance ≥ 60 cm clear between the glass and the tub, the tub is 170 (y 6.87 .. 8.57) instead of 180; the window still spans 89 cm of it.
+- **Why:** "hintere Wand" = the back wall of -15 (west), "Seite" = the shower's other wall (south; the east side is the glass); a few cm forward is what "etwas" says, and more would close the way in; 170 × 75 is a standard tub.
+- **Alternatives:** keep the 180 tub with a 50 cm entrance; glass further forward with a door; keep the partition and add glass in front of it.
+- **Consequences:** the partition over the EG one is gone (its test rewritten, appended to -14); `BATHS_OG` splits the Gästebad at the glass line (one rectangle put the WC 2,30's floor probe on a joint); one draw less from `Random(18)` (the mirror's rnd changes).
+
+## 20:45 — #32: the user's second addition: the shower glass 10 cm longer, to y 6.34; the way in 50 cm {#run-2026-11-15-1633-18}
+
+- **Status:** open
+- **Context:** the user (via the coordinator): „das glas der Dusche im oben Gästebad bitte noch 10cm länger“. The glass of -17 ran from the south wall to y 6.24, leaving 60 cm to the tub; a test pinned ≥ 60.
+- **Question:** lengthen the glass at the cost of the way in, or keep 60 cm by shortening the tub to 160?
+- **Decision:** the glass ends at y 6.34 (88 long); the tub stays 170, so the way into the shower is 50 cm (51.5 to the shower edge, 50.4 between glass rail and tub cap). The clearance test's bound goes from 60 to 50.
+- **Why:** the user asked for exactly this; 50 cm is a usual minimum for a walk-in opening; a 160 tub is short to lie in, and the user did not ask to change it.
+- **Alternatives:** tub 160 with 60 cm kept; a hinged glass door.
+- **Consequences:** `test_gaestebad_clearances` bound 60 → 50 (the user's request supersedes the earlier own choice); labels "Glas 88", "Durchgang 52"; toilet lamp at y 5.90.
+
+## 21:10 — #32: the user's third addition: a freestanding slipper tub after today's photo, head end to the shower, a glass pane between them; a new Fotos-Bereich "Gästebad" {#run-2026-11-15-1633-19}
+
+- **Status:** open
+- **Context:** the user (via the coordinator): „Und die Badewanne ersetzen durch eine wie im heutigen input directory. Mit dem Kopfende zur Dusche. Und zwischen der Dusche und der Badewanne auch eine Glasscheibe“. The photo `input/2026-11-15 input/badewanne.webp`: a white freestanding slipper tub on four claw feet, rolled rim, one end raised as a back rest, a floor-standing chrome filler. The tub of -16/-17 was built in (limestone apron), 170 from y 6.87. #31's photo pages assign every image of `input/` to one Bereich; none holds the OG Gästebad.
+- **Question:** size and heights of the tub; where the pane and the filler go; which Bereich gets the photo.
+- **Decision:** slipper tub 165 × 75 (body; the rolled rim 1.2 cm wider), 3.5 cm off the west wall, from y 6.89 to 8.54; rim at the head end (south, to the shower) 74, at the foot end 60 — both under the window's 75 sill, so the window stays free (the photo's head end is higher; here the sill limits it); four claw feet as turned white parts; filler beside the tub on the east at y 7.40 (short of the basin's 60 cm front zone), its gooseneck over the rim; drain at the foot end. A glass pane at y 6.865 from the west wall's slabs to 5 cm past the tub's east side; the shower's north edge moves 1 cm (6.855 → 6.865) to keep the way in at 50 cm (now measured to the pane's rail). The basin moves 1 cm east (1.45 → 1.46) to stay 5 cm from the wider tub. The photo goes to a new Bereich "Gästebad" (room "Bad" OG, marker in the room); `test_anchors_in_free_air_in_their_room` keyed PLAN_ROOMS by (name, storey), which holds the OG's two "Bad" only once — it now accepts any room of that name. The photo is copied by `vorlagen.py --copy`; the other new file in that folder (`waschtisch.avif`) is not part of #32 and stays untracked.
+- **Why:** the user's words; 165 fits the 1.69 m between pane and north wall with air on both ends; a rim above the sill would cover the window the user wants to look out of.
+- **Alternatives:** tub 170 touching pane and wall; head end 80 as in the photo (over the sill); the photo under "Ganzes Haus" (it is not house-wide).
+- **Consequences:** the limestone apron and the built-in shell are gone; "Kopfende 74", "Rand 60", "Wanne 165 × 75", "Dusche 101 × 141", "Durchgang 53"; 56 pictures in `input/`.
+  The floor-standing filler was replaced by -20.
+
+## 21:25 — #32: the user's fourth addition: the tub's tap out of the outer wall at the foot end, no standpipe {#run-2026-11-15-1633-20}
+
+- **Status:** open
+- **Context:** the user (via the coordinator): „Und bei der Badewanne im Gästebad soll das Wasser also der Wasserhahn aus der Wand an der anderen Seite kommen also an der Außenwand nicht diese Stange, die mitten im Raum steht“. -19 had a floor-standing filler east of the tub.
+- **Question:** which wall and where on it?
+- **Decision:** a chrome wall tap on the west wall (the outer wall the tub stands along) at the foot end (y = tub end − 35 cm, 17 cm above the foot rim, under no window: the big window ends at 7.76): rosette, mixer body with lever, spout reaching 20 cm over the rim; a hand shower on a wall holder above it. Nothing stands on the floor beside the tub.
+- **Why:** "an der anderen Seite" = the other end from the head end (the foot end); "an der Außenwand" = the west wall; the north wall at the foot is an inner wall.
+- **Alternatives:** the tap on the north wall behind the foot end (inner wall, not what the user said).
+- **Consequences:** `TAP` replaces `FY`; a test pins the tap on the outer wall at the foot end and nothing on the floor east of the tub.

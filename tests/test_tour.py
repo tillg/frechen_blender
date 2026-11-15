@@ -101,6 +101,28 @@ def test_routes_and_spots_clear_the_elternbad():
         assert gap(s[3]) >= 0.25, s[0]
 
 
+
+def test_routes_and_spots_clear_the_gaestebad():
+    """Issue #32: every camera key of every route and every Standpunkt keeps 0.25 m from the Parts the Gästebad
+    brings (shower, glass, tub, toilet, basin, mirror, tiles, limestone, lamps; code/gaestebad.py)."""
+    bp = house_core.build()
+    boxes = []
+    for o in ("Sanitaer", "Fliesen", "Spiegel", "Wandlampen", "Waende"):
+        g = bp.geo[("OG", "OG_" + o)]
+        for first, n in bp.parts[("OG", "OG_" + o)]:
+            vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+            lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
+            if 0.30 < lo[0] and hi[0] < 2.575 and 5.44 < lo[1] and hi[1] < 8.575 and (o != "Waende" or hi[0] - lo[0] < 0.2):
+                boxes.append((lo, hi))
+    assert len(boxes) > 100 and any(lo[1] > 6.85 and hi[0] < 1.12 and hi[2] > house_core.Z_OG + 0.7
+                                    for lo, hi in boxes)                     # the tub is among them
+    gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
+    for s in tour.SPOTS:
+        assert gap(s[3]) >= 0.25, s[0]
+
 # ---------------------------------------------------------------- routes and Standpunkte (viewer)
 import house_core  # noqa: E402
 
@@ -232,7 +254,7 @@ def test_routes_and_spots_clear_the_wandlampen():
         else:
             l, h = lamps[j]
             lamps[j] = ([min(a, b) for a, b in zip(l, lo)], [max(a, b) for a, b in zip(h, hi)])
-    assert len(lamps) == 32 + 35 - 2                                      # OG (#33: 3 fewer); EG incl. the Ofen bed (#34: 11, 12 gone)
+    assert len(lamps) == 31 + 35 - 2                                      # OG (#33: 3 fewer, #32: 1); EG incl. the Ofen bed (#34: 11, 12 gone)
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in lamps)
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
