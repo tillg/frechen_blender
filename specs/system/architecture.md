@@ -179,15 +179,22 @@ flowchart LR
 - **Gästebad.** `code/gaestebad.py` the same way: `gaestebad_neu(c, x0, y0, z=0, walls=False)` builds the
   OG Bad at the end of the Flur into collection `c` with the room's inner SW corner at (x0, y0) on floor
   z (`OG` at `GAESTEBAD_AT` = (0.31, 5.46), called from `build_sanitary()`; or `Gaestebad` at the
-  origin, `walls=True` adding the pieces of its four walls via `waende()`). Along the south wall: the
-  10 cm partition `PA..PB` (= `gaeste_wc.PA/PB`, over the EG Gäste-WC's) to `YP` = 6.54; west of it the
-  open WC niche (toilet centred, `wainscot` on its three walls, no wall or door to the Bad), east of
-  it the walk-in shower to `SN` = 6.85, 5 cm short of the Flur door's leaf open flat against the east
-  wall, its glass from `GA` = 1.92 to the east wall, the head behind it. On the north wall the
-  Waschbecken doppelt 120 centred (`BX`), above it `wood_mirror()` 140 × 95 from 1.17. The Flur door
-  (`TUER`) is defined here; `build_og()` uses it. Own `random.Random(18)` for partition and mirror;
-  toilet and shower draw from the global stream. The floor stays the core's limestone (`BATHS_OG`:
-  room, WC niche, shower niche, none under the partition). It returns its dimension lines.
+  origin, `walls=True` adding the pieces of its four walls via `waende()`). Along the back (west) wall:
+  the walk-in shower in the SW corner to `SN` = 6.865 (`hc.shower(tray=False)`; `hc.limestone()` to
+  `CLAD` 2.0 on the west wall, above the small window's sill `WS` only beside it, and on the south wall
+  to the glass; the head on the slabs), a glass wall on `PA` (= `gaeste_wc.PA`, where the partition over
+  the EG Gäste-WC's stood) from the south wall to `YG` = 6.34, a glass pane at `SN` from the west wall's
+  slabs to `GX`; north of it `wanne()`, the freestanding slipper tub (`TL` × `TW` = 1.65 × 0.75 from `YT`,
+  3.5 cm off the west wall): 48 closed 8-vertex wall segments and as many rolled-rim segments (`hc.add`)
+  round a superellipse that narrows to the bottom, the rim rising from `FOOT` 0.60 (north) to `HEAD`
+  0.74 (south, to the shower; both under the window's 0.75 sill), an inner floor prism, four turned claw
+  feet, the chrome tap with spout and hand shower on the west wall at `TAP` (foot end), own
+  `random.Random(32)`. East of the glass the open WC (toilet centred on `TX`, `wainscot(sides="se")`).
+  On the north wall the Waschbecken einzeln 60 at `BX` = 1.46, above it `wood_mirror()` 80 × 85 from
+  1.17. The Flur door (`TUER`) is defined here; `build_og()` uses it. Own `random.Random(18)` for
+  mirror and shower limestone. The floor stays the core's limestone (`BATHS_OG`: north of `YG` one
+  rectangle, south of it shower and WC apart, the slabs ending under the glass). It returns its
+  dimension lines.
 - **Bad Nadine & Till.** `code/elternbad.py` the same way: `elternbad_neu(c, x0, y0, z=0, walls=False)`
   builds the OG Bad between Waschküche and Schlafzimmer into collection `c` with the room's inner SW
   corner at (x0, y0) on floor z (`OG` at `ELTERNBAD_AT` = (5.59, 0.40), called last in `build_sanitary()`
