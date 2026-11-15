@@ -38,7 +38,7 @@ edited: 2026-11-15
     wall, where cabinet C stands); four spots in a strip under the Küche hood
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
-    threshold), the Bäder (the Gästebad with its WC niche and shower, the Bad Nadine & Till with its two showers) and
+    threshold), the Bäder (the Gästebad with its WC, shower and tub, the Bad Nadine & Till with its two showers) and
     all four WCs (and the Garderobe beside the Gäste-WC); in the Bad Großeltern a limestone strip as wide as its WC along the west wall
     (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip and in its
     niche's Schrank)
@@ -138,16 +138,22 @@ edited: 2026-11-15
   - the six washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
     52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
-    (100 × 47) and the Gästebad (120 × 47), einzeln in the back hall (40 × 28), the OG WC 2,30
-    (50 × 40), the OG Flur (60 × 47) and the Bad Nadine & Till (60 × 47 under a mirror 80 × 85 in
-    the wooden frame)
+    (100 × 47), einzeln in the back hall (40 × 28), the OG WC 2,30 (50 × 40), the OG Flur
+    (60 × 47), the Gästebad and the Bad Nadine & Till (60 × 47 under a mirror 80 × 85 in the
+    wooden frame)
   - Gästebad at the end of the OG Flur (NW; also a sub-model page with its four walls and
-    dimensions), split along its south wall like the EG Gäste-WC below it: a 10 cm partition over
-    the EG one; west of it an open WC niche 101 wide (no wall, no door; toilet centred, Taubenblau
-    tiles); east of it a walk-in shower 115 × 139, reaching to 5 cm short of the Flur door's leaf
-    (open flat against the east wall), a 65 cm glass on its north edge from the east wall, 50 cm
-    open beside the partition, no door; the Waschbecken doppelt 120 centred on the north wall under
-    a mirror 140 × 95 in a 10 cm wooden frame from 1.17
+    dimensions): from the Flur door one faces the back (west, outer) wall; on the left the walk-in
+    shower 101 × 141 in the SW corner on the room's limestone floor, its back and side wall in
+    limestone to 2.0 (the small window left free), the head on the south wall; a glass wall 88
+    between shower and WC (where the partition over the EG one stood, reaching 19 cm further
+    forward than it did) and a glass pane between shower and tub, the way in (50 cm) between them;
+    to the right along the back wall under the big window the freestanding slipper tub 165 × 75
+    on four claw feet after `input/2026-11-15 input/badewanne.webp`, its raised head end (74) to
+    the shower, the foot end 60 (both under the 75 sill, so one looks out of the window from it),
+    the chrome tap with hand shower out of the outer wall at the foot end; east of the glass the
+    open WC (toilet centred, Taubenblau tiles on the south and east wall); the Waschbecken einzeln
+    60 on the north wall between tub and door under a mirror 80 × 85 in a 10 cm wooden frame from
+    1.17
   - Bad Nadine & Till (OG, S, between Waschküche and Schlafzimmer; also a sub-model page with its
     four walls, its limestone floor and dimensions): the door at the south end of the east wall,
     open 90° into the Bad; opposite, along the west (back) wall, two walk-in showers on one strip
@@ -158,7 +164,7 @@ edited: 2026-11-15
     that wall above 1.20; the toilet on the north wall between glass and basin on Taubenblau tiles
     (north and east wall); the Waschbecken einzeln 60 on the east wall north of the door under the
     wood-framed mirror 80 × 85 with two Wandlampen, one more left of the window
-  - the four WCs (the WC in the Bad Großeltern's niche, the Gäste-WC, the WC 2,30 and the Gästebad's WC niche), after
+  - the four WCs (the WC in the Bad Großeltern's niche, the Gäste-WC, the WC 2,30 and the Gästebad's WC, tiled on its south and east wall only), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
     row, floor-standing toilet with a close-coupled cistern; in the WC 2,30 (next to the
     Waschküche) a Waschbecken einzeln 50 × 40 under a mirror in a black frame, clear of the open
@@ -291,8 +297,8 @@ Blender backend. What the scripts make:
   dusk lighting is compiled once at load, so the first dusk doesn't stall. `?hires=on` (the
   film capture, `tmp/threejs_film.mjs`, always sets it) switches all of these shortcuts off.
 - **Fotos & Vorlagen** (`vorlagen.html`): every raster image of `input/` the model was built after,
-  sorted into nine Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC, Haupteingang & Windfang,
-  Bibliothek & Büro, Bad Oma & Opa, Außen & Garten, Ganzes Haus = elements found all over the house,
+  sorted into ten Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC, Haupteingang & Windfang,
+  Bibliothek & Büro, Bad Oma & Opa, Gästebad, Außen & Garten, Ganzes Haus = elements found all over the house,
   Pläne); without `?b=` an index (cover picture and count per Bereich), with `?b=<key>` the
   Bereich's pictures with German captions, a click opens the copy (≤ 1600 px). Every page links the
   3D house, the index and every Bereich; the house page links the index under its title ("Fotos &

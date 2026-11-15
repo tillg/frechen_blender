@@ -1,12 +1,13 @@
 """Frechenlehen – the Gästebad im 1. Stock (issue #18) as a sub-model (web/gaestebad.html): the OG Bad at
 the end of the Flur (NW; the architect's "Bad 6,98 m²" with "WC 2,26 m²"). Issue #32: coming in through the
 Flur door (east wall) one faces the back wall (west, the outer wall): on the left, in the SW corner, a
-walk-in shower 101 x 140 (west wall to the glass, south wall to the tub) on the room's limestone floor, its
-back (west) and side (south) wall in limestone to 2.0, the head on the south wall; to its right a bathtub
-170 x 75 built in along the back wall under the big window (rim 58 below its 75 sill: lying in the tub,
-back to the north wall, one looks out of it), a white ceramic shell in a limestone apron. Between shower
-and WC a glass wall (where the partition over the EG Gäste-WC's stood, code/gaeste_wc.py) from the south
-wall to YG, a little further forward than that wall reached; north of it the way into the shower. East of
+walk-in shower 101 x 141 (west wall to the glass, south wall to a glass pane) on the room's limestone floor,
+its back (west) and side (south) wall in limestone to 2.0, the head on the south wall; to its right, behind
+the pane, a freestanding slipper tub 165 x 75 on claw feet along the back wall under the big window (after
+input/2026-11-15 input/badewanne.webp: the raised head end 74 to the shower, the foot end 60, both under
+the 75 sill, so one looks out of it; the tap out of the outer wall at the foot end). Between shower and WC
+a glass wall (where the partition over the EG Gäste-WC's stood, code/gaeste_wc.py) from the south wall to
+YG, 19 cm further forward than that wall reached; north of it the way into the shower. East of
 it the open WC (toilet centred on the south wall, facing north; Taubenblau tiles on the south and east
 wall); the Waschbecken einzeln 60 on the north wall between tub and door under a mirror 80 x 85 in a 10 cm
 wooden frame (like the OG Flur's).
