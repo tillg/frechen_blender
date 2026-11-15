@@ -254,7 +254,7 @@ def test_gaeste_wc_export(tmp_path):
     jlen = struct.unpack_from("<I", data, 12)[0]
     g = json.loads(data[20:20 + jlen])
     assert {n["name"] for n in g["nodes"]} == {"GaesteWC_Waende", "GaesteWC_Innentueren", "GaesteWC_Sanitaer", "GaesteWC_Spiegel",
-                                              "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_WC_Tuer",
+                                              "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_Kleidung", "GaesteWC_WC_Tuer",
                                               "GaesteWC_Windfangtuer", "GaesteWC_Hintertuer", "GaesteWC_Fenster_Tueren"}
     assert not any("slide" in n["extras"] for n in g["nodes"])
     swing = {n["name"]: round(n["extras"]["swing"], 6) for n in g["nodes"] if "swing" in n["extras"]}   # radians about glTF y
