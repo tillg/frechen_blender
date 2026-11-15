@@ -1,8 +1,8 @@
 // Gästebad sub-model page (gaestebad.html): the OG Bad at the end of the Flur of house_core.build_gaestebad()
 // (code/gaestebad.py, issue #18) with the pieces of its four walls, drawn by submodel.js. Model origin:
 // the room's inner SW corner; the room spans x 0..2.26, y 0..3.11 (#32): the shower in the SW corner (x 0..1.01,
-// to y 1.30), the tub along the west wall (x 0..0.75, y 1.31..3.11) under the window, the WC niche east of the
-// partition (x 1.11..2.26, to y 0.69), the basin on the north wall between the tub and the door.
+// to y 1.40, limestone walls), the tub along the west wall (x 0..0.75, y 1.41..3.11) under the window, the glass
+// wall (x 1.01, to y 0.78) and east of it the WC, the basin on the north wall between the tub and the door.
 import { startSubmodel } from './submodel.js';
 
 await startSubmodel({

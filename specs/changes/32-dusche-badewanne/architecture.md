@@ -20,6 +20,13 @@ toilet axis `TX` east of the partition, basin `BX`/`BW` 60, mirror `MW` 80. `hc.
 `hc.wood_mirror` + 2 `hc.wandlampe` on the north wall, one lamp over the tub's head end, one over the
 toilet. `BATHS_OG` follows `YP` unchanged in code. No core primitive changes.
 
+After the user's addition (run-2026-11-15-1633-17): the partition box goes, `YP` becomes `YG` 6.24 (the
+glass end), `hc.shower(..., [(PA, YS, PA, YG)], tray=False)` brings the glass; `hc.limestone()` three times on
+the west wall (to the small window's sill `WS` over the full width, above only beside it) and once on the
+south wall to the glass, from `Random(18)`; the head sits on the slabs; `YT` 6.87 (tub 170); `TX` centred
+between glass and east wall; `wainscot(sides="se")`; `BATHS_OG` in `house_core.py` splits the Gästebad at
+the glass line (one rectangle north of `YG`, shower and WC south of it).
+
 ```mermaid
 flowchart LR
     K[gaestebad.py constants] --> N[gaestebad_neu]

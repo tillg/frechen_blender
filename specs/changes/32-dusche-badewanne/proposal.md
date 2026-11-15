@@ -44,6 +44,15 @@ Toilette hinkommen."
   the open leaf; the door's opening stays free.
 - Every Rundgang key and Standpunkt keeps ≥ 0.25 m from the Gästebad's Parts.
 
+**The user's addition during apply** (run-2026-11-15-1633-17): „Die Dusche im oberen Gästebad sollte als
+Boden auch die Stein fließen haben und auch die Wände die hintere und die Seite Wand sollten mit Stein
+fließen ausgelegt werden. Und die Wand zwischen Dusche und Toilette sollte durch eine Glaswand ersetzt
+werden, die etwas weiter nach vorne geht als die jetzige Wand.“ So: no ceramic tray (the limestone floor
+runs through), the shower's west and south wall in limestone to 2.0 (the small window left free), the
+partition replaced by a glass wall to y 6.24 (9 cm further forward); the tub becomes 170 (from y 6.87) so
+the entrance north of the glass stays ≥ 60 clear; the shower becomes 101 × 140, the WC 125 wide. This
+supersedes the numbers above where they differ.
+
 ## Open questions
 
-none — decided and logged in `DECISIONS.md` (run-2026-11-15-1633-15, -16; unattended run).
+none — decided and logged in `DECISIONS.md` (run-2026-11-15-1633-15, -16, -17; unattended run).
