@@ -5,7 +5,8 @@ levers clears the Wandlampe left of the window). Along the back wall (west, oppo
 one strip 90 deep (#33): a head in each back corner (SW, NW), one pane per shower from its side wall towards the
 middle, 60 clear between the panes (the way in), the room's limestone floor running through; the strip's walls clad
 in limestone like the Bad Großeltern's, to 2.0, but on the north wall only to 1.20: that wall is the partition to the
-Waschküche, whose top metre #30 glazes, so nothing on it reaches above 1.20. The toilet on the north wall between
+Waschküche, whose top metre is the Oberlicht (#30, oberlicht(): Milchglas in a pine lining from 1.20 to the ceiling,
+the north pane ending on its first mullion), so nothing else on it reaches above 1.20. The toilet on the north wall between
 the glass and the basin (Taubenblau tiles on the north wall and on the east wall down to the door); the Waschbecken
 einzeln 60 on the east wall north of the door under a mirror 80 x 85 in a 10 cm wooden frame, two Wandlampen over it,
 one left of the window (seen from inside).
@@ -28,7 +29,9 @@ XG = WI + 0.90                               # the showers' strip along the west
 YM = (YS + YN) / 2                           # the middle of the west wall: the way in
 PA, PB = YM - 0.30 - 0.012, YM + 0.30 + 0.012   # panes YS .. PA and PB .. YN: their rails (12) leave 60 clear
 HU = 0.30                                    # shower heads: 30 from the south and north wall
-SILL = 1.20                                  # north wall (Waschküche): nothing above 1.20, #30 glazes the top metre
+SILL = 1.20                                  # north wall (Waschküche): nothing above 1.20, the Oberlicht's sill (#30)
+OBERLICHT = (WI + 0.10, WO - 0.10)           # the Oberlicht in the north wall: SILL up to the ceiling, 10 cm piers
+PFOSTEN = (XG, XG + 1.0)                     # its two mullions: the first on the shower glass line (the pane ends on it)
 TX = XG + 0.66                               # toilet axis on the north wall
 FY = TUER[1] + 0.07 + 0.01                   # east wall tiles: from 1 cm past the door's architrave to the north wall
 BY = (FY + YN) / 2                           # basin, mirror and their lamps on the east wall, centred on the tiles
@@ -51,12 +54,40 @@ def waende(c, dx, dy):
     hc.wall(c, 5.44 + dx, 8.72 + dx, 0.0 + dy, YS + dy, 0.0, H,
             [(FENSTER[0] + dx, FENSTER[1] + dx, 3.62 - zo, 4.60 - zo, "W", 1)], out=-1)
     hc.interior(c, 5.44 + dx, WI + dx, YS + dy, 2.79 + dy, (), 0.0, H)
-    hc.interior(c, WI + dx, WO + dx, YN + dy, 2.79 + dy, (), 0.0, H)
+    hc.interior(c, WI + dx, WO + dx, YN + dy, 2.79 + dy, (), 0.0, H,
+                ops=[(OBERLICHT[0] + dx, OBERLICHT[1] + dx, SILL, H, "I")])                # the Oberlicht (#30)
+    oberlicht(c, dx, dy, 0.0, H)
     hc.interior(c, WO + dx, 8.72 + dx, YS + dy, 2.79 + dy, [(TUER[0] + dy, TUER[1] + dy, -1, "a", False)], 0.0, H)
     rng = random.Random(4)
     hc.box(c, c + "_Boden", "Fuge", WI + dx, WO + dx, YS + dy, YN + dy, 0.0, 0.002, rng.random())
     hc.tiles(c, c + "_Bodenbelag", "Kalkstein", WI + dx, WO + dx, YS + dy, YN + dy, 0.002, 0.018, [0.5, 0.4, 0.55, 0.45],
              (0.35, 0.8), 0.006, (), rng)
+
+
+def oberlicht(c, dx, dy, z0, z1):
+    """The Oberlicht (#30) in the north wall's opening (OBERLICHT, cut by the caller as a wall() kind "I" op from
+    z0 + SILL to the ceiling z1): a pine lining of the full wall depth (sill and jambs 5 cm, the mullions PFOSTEN
+    6 cm, a head board 7 cm under the ceiling), in each of the three fields Milchglas 8 mm in the wall's middle held
+    by beads 2 x 2 cm on both sides. Object <c>_Innentueren with the doors' linings: for the plans a built-in, whose
+    head board, cut at their room height (2.15), parts the two rooms on the wall line. One rnd for all (the members
+    touch, the beads overlap at their corners)."""
+    o, r = c + "_Innentueren", random.Random(30).random()
+    (a, b), zs, (t0, t1) = OBERLICHT, z0 + SILL, (YN + dy, 2.79 + dy)
+    FW, HW, PW, GL, GT, tm = 0.05, 0.07, 0.06, 0.02, 0.004, (t0 + t1) / 2
+    B = lambda m, xa, xb, ya, yb, za, zb: hc.box(c, o, m, xa + dx, xb + dx, ya, yb, za, zb, r)
+    za, zb = zs + FW, z1 - HW
+    B("Innentuer", a, b, t0, t1, zs, za)                                        # sill
+    B("Innentuer", a, b, t0, t1, zb, z1)                                        # head, under the ceiling
+    members = [(a, a + FW)] + [(p - PW / 2, p + PW / 2) for p in PFOSTEN] + [(b - FW, b)]
+    for ma, mb in members:                                                      # jambs, mullions
+        B("Innentuer", ma, mb, t0, t1, za, zb)
+    for (_, pa), (pb, _) in zip(members, members[1:]):                          # the fields
+        B("Milchglas", pa, pb, tm - GT, tm + GT, za, zb)
+        for s0, s1 in ((tm + GT, tm + GT + GL), (tm - GT - GL, tm - GT)):       # beads, both sides
+            B("Innentuer", pa, pb, s0, s1, za, za + GL)
+            B("Innentuer", pa, pb, s0, s1, zb - GL, zb)
+            B("Innentuer", pa, pa + GL, s0, s1, za + GL, zb - GL)
+            B("Innentuer", pb - GL, pb, s0, s1, za + GL, zb - GL)
 
 
 def elternbad_neu(c="Elternbad", x0=0.0, y0=0.0, z=0.0, walls=False):

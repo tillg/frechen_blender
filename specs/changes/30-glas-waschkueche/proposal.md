@@ -1,7 +1,7 @@
 ---
 feature: 30-glas-waschkueche
 title: "Proposal: glazed top metre in the Bad / Waschküche partition"
-status: proposed
+status: applying
 order: 1
 created: 2026-11-16
 edited: 2026-11-16
