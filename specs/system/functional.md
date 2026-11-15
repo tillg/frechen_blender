@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-14
+edited: 2026-11-15
 ---
 
 # Functional: Frechenlehen house model
@@ -202,7 +202,12 @@ change; the same model always gives byte-identical files.
 - **Title block:** Frechenlehen, sheet name, M 1:100, the model state (hash); scale bar; north
   arrow on the floor plans. The viewer shows the same sheets under Darstellung › Pläne.
 
-### Blender only
+### Blender only (dormant)
+
+Since issue #35 the Blender backend is not run or maintained (faster dev cycles); the scripts
+stay and compile in a test (`tests/test_blender_scripts.py`), `frechenlehen.blend` is frozen at
+`7805879`, the last full check with the parity test green. Re-enabling: `CLAUDE.md` › Running ›
+Blender backend. What the scripts make:
 
 - `build_house.py`: room names on the floors, the plan PNGs as hidden reference planes,
   sun/world/README camera.
@@ -298,7 +303,7 @@ change; the same model always gives byte-identical files.
   seconds per part, non-zero exit on any failure):
   - `quick` — `pytest -m "not slow"` and Vitest, about 15 s (warns above 60 s); after every
     change, together with the change's own new test run alone.
-  - `full` — all pytest incl. the `slow` Blender parity tests, `npm test`, all Playwright
+  - `full` — all pytest incl. the `slow` plan-sheet tests, `npm test`, all Playwright
     projects, about 6–7 min; once at the end of a change, at archive, on request.
 - Python tests run in a repo-local `.venv` (`requirements-dev.txt`).
 - The Playwright `@eye` test (stills along the Rundgang, for a human to look at) is not in the
@@ -319,17 +324,14 @@ change; the same model always gives byte-identical files.
 sequenceDiagram
     actor Owner
     participant Agent as Claude
-    participant B as Blender (MCP)
     participant W as Viewer
     Owner->>Agent: "the balcony should look like this photo"
     Agent->>Agent: edit code/house_core.py, own test + check.sh quick
     Agent->>W: show.py → view URL, shot.js → tmp/web/*.png
     Agent->>Agent: look at the screenshot, iterate
     Agent->>Owner: browser tab at the change (show.py)
-    Agent->>B: last step: run build_house, fire, paint, windrose, garden, film
-    Agent->>B: render one still from temp camera → tmp/details/, save .blend
-    Agent->>Agent: check.sh full
-    Agent->>Owner: links, still / README views / new film
+    Agent->>Agent: export_plans.py → plans/, check.sh full
+    Agent->>Owner: links, screenshots / README views / new film
 ```
 
 ```mermaid
@@ -349,16 +351,16 @@ sequenceDiagram
 
 | In | Out |
 |---|---|
-| `input/*.pdf`, `grundriss_*.png` (plans) | `frechenlehen.blend` |
+| `input/*.pdf`, `grundriss_*.png` (plans) | `frechenlehen.blend` (frozen at `7805879`, Blender dormant) |
 | `input/*.png/jpg` detail photos, named after their component | `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (the two newest films) |
 | | `plans/*.svg` plan sheets for the architect (committed) |
 | `input/farben_*.png` colour references | `docs/images/ansicht_*.png` (README views) |
-| | `tmp/details/*.png` check stills, `tmp/web/*.png` viewer screenshots, `tmp/check-*.log` check logs |
+| | `tmp/web/*.png` viewer screenshots, `tmp/check-*.log` check logs |
 | | `web/public/frechenlehen.glb` (generated), `web/dist/` → GitHub Pages |
 
 ## States and transitions
 
-The model has no runtime state. In Blender the one animated part is the entrance door
+The model has no runtime state. In Blender (dormant) the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
 the Bad's sliding leaves, the back hall's three doors and the Büro door move on their own clocks (each one at its
 built or its other state, or on the way); otherwise the state is the model entry (cutaway all / noroof / eg or a sub-model), the Darstellung
