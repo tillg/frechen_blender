@@ -386,7 +386,7 @@ Choices made while nobody was there to ask are logged here
 - **Decision:** the same old-form steel hood (rolled lip, straight skirt, rail, canopy narrowing to a stack), made symmetric as an island hood hung from the ceiling, centred on the cooktop, 90 × 60 (cooktop 77 × 46), lip 65 cm above the cooktop (1.555), the stack 2 cm into the ceiling; the rail on the north (cook's) side; the four Haubenspots (#22) in a strip along its middle under the lip, the one light under its centre. The pipe (Ø 12, black) rises from the flue collar to 1.80, bends 90° into the east wall there, a rosette (Ø 20) on the wall face. Nothing else above the Wamsler.
 - **Why:** the cooktop is not at a wall, so no wall chimney hood; 65 cm is the usual clearance; the old form keeps the look the user agreed to on 2026-11-10; 1.80 is "weiter oben" and stays under the Abzug's level.
 - **Alternatives:** wall chimney hood on the east wall (not over the cooktop); a flat ceiling extractor (other look); lip at 70–75 cm (keep in mind if the Standpunkt view suffers).
-- **Consequences:** the Rundgang passes 0.29 m from the hood's south face (guarded by `test_routes_and_spots_clear_the_kueche_hood`); the agreed drawing `speis_kueche_svg.py` does not show the hood and stays as it is.
+- **Consequences:** the Rundgang passes 0.29 m from the hood's south face (guarded by `test_routes_and_spots_clear_the_kueche_hood`); the agreed drawing `speis_kueche_svg.py` does not show the hood and stays as it is. The Küche Standpunkt looked across the cooktop and the hood filled the top third of its view (`tmp/web/26-spot-60.png`): moved to (6.2, 3.3, 1.6) → (8.5, 4.8, 1.1), west of the Halbinsel, seeing sink run, Wamsler with its pipe, Ostzeile, cooktop and hood.
 
 ## 23:40 — #26: the hood and Haubenspots tests rewritten to the new place {#run-2026-11-15-1633-32}
 
@@ -396,4 +396,4 @@ Choices made while nobody was there to ask are logged here
 - **Decision:** replace them by `test_kueche_hood_over_the_cooktop` (centred on the cooktop, lip 65 above it, skirt, rail, a single tapering canopy, stack into the ceiling, clear of the Küche's parts) and a rewritten `test_haube_spots` (one strip, 4 evenly spaced spots under it, one light under the hood's centre); add `test_nothing_above_the_wamsler_but_its_pipe` and `test_wamsler_pipe_into_the_wall_higher_up`.
 - **Why:** the issue itself asks for the move; the new tests keep every property of the old ones that still holds.
 - **Alternatives:** keep the old tests (they cannot hold after the issue).
-- **Consequences:** the comment "right of the hood" on Wandlampe 8 in `test_eg_wandlampen` becomes stale; reworded to "right of the Wamsler".
+- **Consequences:** the comment "right of the hood" on Wandlampe 8 in `test_eg_wandlampen` becomes stale; reworded to "right of the Wamsler". `web/src/lighting.test.js` pins the six lit sites seen from the Stube: the hood's light (site 2) moved 1.4 m away, the Windfang's lamp (site 31) takes its place.
