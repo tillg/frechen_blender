@@ -1215,17 +1215,19 @@ def test_kueche_and_speis_fronts_after_mallnitz():
     # cabinet C on the Essen's west wall (doors at x 3.352 .. 3.372 towards the dining table, #5, #34)
     c = list(part_list(("EG", "EG_Essen_Schrank")))
     assert {p[0] for p in c} == {"Front", "Metall", "Fuge"}
-    assert len([p for p in c if hood(p)]) == 6 * 5 and len([p for p in c if p[0] == "Metall"]) == 6 * 5 * 2
+    assert len([p for p in c if hood(p)]) == 6 * 5 - 2 and len([p for p in c if p[0] == "Metall"]) == (6 * 5 - 2) * 2
     assert all(p[1][0] > 3.372 - 1e-6 for p in c if p[0] == "Metall")
     panels = [p for p in c if p[0] == "Front" and p[1][0] > 3.35 and p[2][0] <= 3.365]
-    assert len(panels) == 6 * 5                  # per leaf column (request 2026-11-10): top door, a door
+    assert len(panels) == 6 * 5 - 2              # per leaf column (request 2026-11-10): top door, a door
     w = (3.712 - 0.417) / 6                      # over the upper half, three drawers in the lower half
-    for i in range(6):
+    for i in range(6):                           # (columns 1, 2: the upper half open, #34 follow-up)
         col = sorted((p for p in panels if 0.417 + w * i < (p[1][1] + p[2][1]) / 2 < 0.417 + w * (i + 1)),
                      key=lambda p: p[1][2])
-        assert len(col) == 5
+        assert len(col) == (4 if i in (1, 2) else 5)
         top = max(p[2][2] for p in col)
-        assert col[4][1][2] > 2.0 and top > 2.25                              # top door as before (its panel)
+        assert col[-1][1][2] > 2.0 and top > 2.25                             # top door as before (its panel)
+        if i in (1, 2):
+            continue
         door, drawers = col[3], col[:3]
         assert 1.05 < door[1][2] - 0.06 < 1.06 and 1.99 < door[2][2] + 0.06 < 2.0         # panel + 6 cm frame
         hs = [p[2][2] - p[1][2] for p in drawers]
@@ -2712,6 +2714,45 @@ def test_jugend_tuer_und_stockbett():
     _clear([("Fichte", lo, hi) for lo, hi in bunks], _leaf_boxes(BP, "OG", zo), "door leaf")
 
 
+def test_essen_schrank_open_shelves_with_plates_and_glasses():
+    """#34 follow-up (user 2026-11-16): about a quarter of cabinet C's doors are gone - the door over the upper half
+    of the two columns on the dining table's axis (columns 1 and 2 from the south: 2 of 12 doors, about a quarter
+    of the doors' front area). Behind them an open niche: the carcass hollow, painted sides, back, a divider and two
+    shelf boards per column; on them, as furniture (EG_Geschirr), stacks of white plates and rows of glasses."""
+    cab = list(_parts(BP, ("EG", "EG_Essen_Schrank")))
+    ua, ub, xw, xf = 0.417, 3.712, 2.774, 3.372
+    w = (ub - ua) / 6
+    panels = [(lo, hi) for m, lo, hi in cab if m == "Front" and abs(lo[0] - 3.352) < 1e-3 and abs(hi[0] - 3.364) < 1e-3]
+    doors = [(lo, hi) for lo, hi in panels if hi[2] > 1.1]                     # (panels inside a 6 cm frame)
+    assert len(doors) == 10                                                     # 12 doors, 2 left out
+    field = lambda lo, hi: (hi[1] - lo[1] + 0.12) * (hi[2] - lo[2] + 0.12)
+    gone = 2 * (w - 0.006) * (1.995 - 1.0515)
+    assert 0.2 < gone / (gone + sum(field(lo, hi) for lo, hi in doors)) < 0.3      # about a quarter of the door area
+    ya, yb, za, zb = ua + w, ua + 3 * w, 1.0515, 1.995                         # the open fields
+    table = list(_parts(BP, ("EG", "EG_Tisch")))
+    ty = (min(lo[1] for m, lo, hi in table) + max(hi[1] for m, lo, hi in table)) / 2
+    assert abs((ya + yb) / 2 - ty) < 0.05                                       # on the table's axis
+    assert not [lo for lo, hi in panels if lo[1] < yb and hi[1] > ya and lo[2] < zb and hi[2] > za]
+    inside = lambda pt, ps: [p for p in ps if all(p[1][k] - 1e-6 <= pt[k] <= p[2][k] + 1e-6 for k in range(3))]
+    for y in (ua + 1.5 * w, ua + 2.5 * w):                                      # hollow: open from the front ...
+        for z in (1.20, 1.50, 1.85):
+            assert not inside((3.30, y, z), cab), (y, z)
+        assert inside((2.78, y, 1.50), cab) and inside((3.30, y, 1.06), cab)    # ... a back and a bottom
+        boards = [(lo, hi) for m, lo, hi in cab if m == "Front" and lo[1] < y < hi[1] and 1.1 < lo[2] < 1.9
+                  and hi[2] - lo[2] < 0.03 and hi[0] - lo[0] > 0.45]
+        assert len(boards) == 2                                                 # two shelves
+    assert inside((3.30, ua + 2 * w, 1.50), cab)                                # the divider between the columns
+    assert "EG_Geschirr" in house_core.FURNITURE and "EG_Essen_Schrank" not in house_core.FURNITURE
+    dish = list(_parts(BP, ("EG", "EG_Geschirr")))
+    assert {m for m, lo, hi in dish} == {"Keramik", "Glas"}
+    assert all(ya < lo[1] and hi[1] < yb and xw < lo[0] and hi[0] < xf - 0.02 and za < lo[2] and hi[2] < zb
+               for m, lo, hi in dish)                                            # in the open fields
+    plates = [(lo, hi) for m, lo, hi in dish if m == "Keramik" and hi[0] - lo[0] > 0.18 and hi[2] - lo[2] < 0.02]
+    glasses = [(lo, hi) for m, lo, hi in dish if m == "Glas" and hi[0] - lo[0] < 0.10 and hi[2] - lo[2] > 0.07]
+    assert len(plates) >= 20 and len(glasses) >= 12
+    _clear(dish, [(lo, hi) for m, lo, hi in cab], "Geschirr")
+
+
 def test_one_eg_layout():
     """Issue #34: the EG layout Alternativ (#5) is the only one; the default layout's own objects and
     the layout switch (VARIANT, default_layout(), the wall lights' layout tags) are gone."""
@@ -2737,7 +2778,7 @@ def test_speis_essen():
     assert 0.415 < lo[1] < 0.42 and 3.70 < hi[1] < 3.73 and 2.39 <= hi[2] < 2.40       # full width, to the ceiling
     assert {m for m, a, b in cab} == {"Front", "Metall", "Fuge"}
     panels = [p for p in cab if p[0] == "Front" and abs(p[1][0] - 3.352) < 1e-3 and abs(p[2][0] - 3.364) < 1e-3]
-    assert len(panels) == 6 * 5                                                        # six columns of five fronts
+    assert len(panels) == 6 * 5 - 2                                    # six columns of five fronts, two fields open
     _clear(cab, boxes(others), "Essen")
     back = list(_parts(BP, ("EG", "EG_Speis_Rueckwand")))
     assert back and all(3.70 < a[1] and b[1] < 3.732 for m, a, b in back)

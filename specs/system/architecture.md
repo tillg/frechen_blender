@@ -132,7 +132,9 @@ flowchart LR
   Positions are written in house coordinates (those of `input/2026-11-09 input/speis_kueche_v6.svg`)
   and shifted; own `random.Random(14)`. The room's walls, the kitchen door and the Speis
   (`speis()`: shelves A/B, own `random.Random(9)`; `speis_essen()`, own `random.Random(25)`:
-  `EG_Essen_Schrank` (cabinet C on the Essen west wall, y 0.417–3.712, six columns),
+  `EG_Essen_Schrank` (cabinet C on the Essen west wall, `ESSEN_SCHRANK` y 0.417–3.712, six columns, columns
+  `OPEN` with the upper half `NICHE` open, shelves `SHELVES`; stocked by `geschirr()`: `EG_Geschirr`, furniture,
+  own `random.Random(26)`),
   `EG_Speis_Rueckwand` (B's back, vertical spruce boards) and the saloon leaves
   `EG_Pendeltuer_S`/`_N` (half height, built closed, `PIVOT` + `SWING` ±90° into the Speis; neither
   in `LEAVES` nor `DOORS`)) stay in `house_core`. The Speis/Küche wall ends at B; the opening over

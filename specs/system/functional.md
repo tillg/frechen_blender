@@ -70,7 +70,8 @@ edited: 2026-11-16
     flour, jars of tomato sauce and pickles, cans, now and then a grey plastic crate with a lid);
     cabinet C (60 cm) over the full west wall of the Essen, to the ceiling, with the kitchen's
     painted Mallnitz fronts and cup pulls, six leaf columns, each a top door, a door over the upper
-    half and three drawers below; the wall to the Küche ends at B, and in the opening over the
+    half and three drawers below; in the two columns on the dining table's axis the upper half open
+    (no door): shelves with stacks of white plates, tumblers and wine glasses (furniture); the wall to the Küche ends at B, and in the opening over the
     aisle two half-height saloon leaves (curved top rail, slats, no handles) that swing into the Speis
   - dining table after tisch-briol.png, one table 2.00 m long: board top, legs splayed on a flat
     foot frame with corner blocks; 8 chairs (3 per long side, one at each end)
