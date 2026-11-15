@@ -2288,7 +2288,7 @@ PLAN_ROOMS = [
     ("Heizung", "EG", 0.35, 1.5),
     ("Schlafen bzw. Yoga", "OG", 3.2, 10.6), ("Schlafen", "OG", 7.6, 10.6), ("Schlafen", "OG", 11.9, 10.6),
     ("Flur", "OG", 6.0, 7.4), ("Bad", "OG", 1.4, 7.6), ("Schlafen", "OG", 4.1, 3.2),
-    ("Bad", "OG", 7.1, 1.5), ("Hauswirtschaftsraum", "OG", 7.1, 4.4), ("WC", "OG", 9.32, 5.0),
+    ("Bad", "OG", 7.1, 1.5), ("Hauswirtschaftsraum", "OG", 7.1, 3.2), ("WC", "OG", 9.32, 5.0),
     ("Schlafen", "OG", 12.6, 2.5),
 ]
 
