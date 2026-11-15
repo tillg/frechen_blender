@@ -46,6 +46,8 @@ Choices made while nobody was there to ask are logged here
   - [00:20 — #30: the four lamps over the Waschküche table lowered to 1.10 under the glazing](#run-2026-11-15-1633-34)
   - [01:15 — #26 follow-up: the Wamsler's pipe from the left (north) of its top, up to 1.95 and north into the Abzug, the Kaminschacht](#run-2026-11-15-1633-35)
   - [01:15 — #26 follow-up: #26's pipe tests rewritten to the Kaminschacht](#run-2026-11-15-1633-36)
+  - [01:35 — #34 follow-up: cabinet C's upper door in the two columns on the table's axis left out; shelves with plates and glasses (`EG_Geschirr`)](#run-2026-11-15-1633-37)
+  - [01:35 — #34 follow-up: the cabinet C front counts in two tests lowered by the two open fields](#run-2026-11-15-1633-38)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -443,4 +445,24 @@ Choices made while nobody was there to ask are logged here
 - **Decision:** `test_wamsler_pipe_into_the_wall_higher_up` replaced by `test_wamsler_pipe_from_its_left_into_the_kaminschacht` (Ø 12, collar on the north half, bend 1.80 < z ≤ 2.00, elbow, leg along y into the Abzug, rosette on its face within it and above its underside, clear of Küche, hood, walls, lamps, windows); `_wamsler_pipe()` classifies along y; the "nothing above" test expects 2 parts over the footprint (riser, start of the leg; the rosette now lies outside it); the sealed-against test takes the Herd's extent from its parts below 0.95.
 - **Why:** the user's follow-up asks for the move; every property of the old tests that still holds is kept.
 - **Alternatives:** keep the old tests (cannot hold after the follow-up).
+- **Consequences:** none beyond the tests.
+
+## 01:35 — #34 follow-up: cabinet C's upper door in the two columns on the table's axis left out; shelves with plates and glasses (`EG_Geschirr`) {#run-2026-11-15-1633-37}
+
+- **Status:** open
+- **Context:** the user: „der große, blaue Schrank am Ende vom Esstisch. Dieser sollte nicht nur verschlossene Türen haben, sondern ungefähr ein Viertel. Der Türen sollten offen sein also keine Türen da sein. D.h. da sieht man dann offene Regale mit wahrscheinlich Tellern und Gläsern, die dort verräumt sind.“ Cabinet C (`EG_Essen_Schrank`, #34) has six columns, each a top door (2.0 .. 2.39), a door over the upper half (1.05 .. 2.0) and three drawers: 12 doors, 18 drawers. The table's axis is y 1.545, the boundary of columns 1 and 2 (from the south) at 1.515; the carcass was one solid block.
+- **Question:** which doors, and what is behind them?
+- **Decision:** the door over the upper half of columns 1 and 2 left out: 2 of 12 doors, 24 % of the doors' front area, at eye height, centred on the table's axis (3 cm off). Behind them a niche built of closed Parts of the painted carcass (bottom and top boards, sides, back, a divider on the column line, two shelf boards per column at 1.37 and 1.675, 2 cm behind the carcass front); the other doors and pulls unchanged, the random stream unchanged (the open fields still draw). In it, as furniture (`EG_Geschirr`, stage Eingerichtet, own `random.Random(26)`): on the bottom two plate stacks per column (dinner Ø 26 × 10 + dessert Ø 20 × 8; soup Ø 23 × 7 + dessert × 6), each plate a foot and a disc in `Keramik`; on the middle shelf two rows of tumblers, on the top shelf two rows of wine glasses (foot, stem, bowl), all in `Glas`.
+- **Why:** "ungefähr ein Viertel" read by area: the two large fields are a quarter of the door area, three fields by count would break the paired columns (shared pulls); on the table's axis they face the diners; plates below, glasses above as in a dresser.
+- **Alternatives:** 3 of 12 doors by count (an odd column next to the niche); both doors of a pair (a third of the door area, glasses up at 2.0–2.39 out of reach); the middle pair, columns 2 and 3 (55 cm off the table's axis).
+- **Consequences:** the EG cut at 1.80 now passes through the niche; `eg.svg` (and the sheets' state hash) regenerated. The Rundgang keeps ≥ 0.25 m (test extended by `EG_Geschirr`).
+
+## 01:35 — #34 follow-up: the cabinet C front counts in two tests lowered by the two open fields {#run-2026-11-15-1633-38}
+
+- **Status:** open
+- **Context:** `test_kueche_and_speis_fronts_after_mallnitz` (30 fronts, 30 pulls, five fronts per column) and `test_speis_essen` (30 panels) pin every field closed.
+- **Question:** may they be changed?
+- **Decision:** 28 fronts / pulls, four fronts in columns 1 and 2 (the door-height check only for the closed columns); the new `test_essen_schrank_open_shelves_with_plates_and_glasses` covers the open niche (10 doors left, a quarter of the door area, on the table's axis, hollow with back, bottom, divider and two shelves per column, dishes inside, clear of the carcass).
+- **Why:** the user's request removes the doors; all other assertions stay.
+- **Alternatives:** none that keeps the request.
 - **Consequences:** none beyond the tests.

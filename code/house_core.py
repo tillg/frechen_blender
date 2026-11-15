@@ -687,6 +687,7 @@ def build_eg():
     speis()
     vorrat()                                                # its shelves stocked (illustration)
     speis_essen()                                           # C on the Essen's west wall, B's back, saloon leaves (#5)
+    geschirr()                                              # C's open niche stocked (#34 follow-up)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
@@ -1091,25 +1092,45 @@ def speis():
     shelves(3.732, 4.33)                                                      # B
 
 
+ESSEN_SCHRANK = (0.417, 3.712, 2.774, 3.372)     # cabinet C: y from, to (south wall .. B's back); x wall, fronts
+OPEN, NICHE = (1, 2), (1.05, 2.0)                # its columns with the upper half open (#34 follow-up), z of that half
+SHELVES = (1.37, 1.675)                          # the niche's shelf boards (underside)
+
+
 def speis_essen():
     """The layout Alternativ (issue #5; the only EG layout since #34): cabinet C stands against the
     Essen's west wall over its full width, from the south wall to shelf B's back, six leaf columns
     of painted Mallnitz fronts (kueche.py; each a top door, a door over the upper half and three
-    drawers below); B gets a closed back of vertical spruce boards towards the Essen; the Speis/Küche
+    drawers below); in the two columns on the dining table's axis the upper half open (no door, #34
+    follow-up): a niche with two shelves per column, stocked by geschirr(); B gets a closed back of
+    vertical spruce boards towards the Essen; the Speis/Küche
     wall ends at B, and two half-height saloon leaves without handles hang in the opening, closed
     (PIVOT on their jambs, SWING into the Speis: the viewer swings them). Own random stream, no
     global draw."""
     c, rng, top = "EG", random.Random(25), Z_EG_TOP - 0.003
     o, P = "EG_Essen_Schrank", frame("y")                        # u along y, t = x
-    ua, ub, xw, xf = 0.417, 3.712, 2.774, 3.372                   # south wall .. B's back; wall .. fronts
-    lbox(c, o, "Front", P, ua, ub, xw, xf - 0.02, 0.10, top, rng.random())
+    ua, ub, xw, xf = ESSEN_SCHRANK                               # south wall .. B's back; wall .. fronts
+    n, d, rc = 6, 0.019, rng.random()                            # columns, board thickness
+    na, nb = ua + (ub - ua) * OPEN[0] / n, ua + (ub - ua) * (OPEN[-1] + 1) / n
+    for u0, u1, z0, z1 in ((ua, ub, 0.10, NICHE[0] + d), (ua, ub, NICHE[1] - d, top),     # carcass round the niche
+                           (ua, na + d / 2, NICHE[0] + d, NICHE[1] - d), (nb - d / 2, ub, NICHE[0] + d, NICHE[1] - d)):
+        lbox(c, o, "Front", P, u0, u1, xw, xf - 0.02, z0, z1, rc)
+    lbox(c, o, "Front", P, na + d / 2, nb - d / 2, xw, xw + d, NICHE[0] + d, NICHE[1] - d, rc)   # its back
+    for k in OPEN[1:]:                                                                        # dividers
+        um = ua + (ub - ua) * k / n
+        lbox(c, o, "Front", P, um - d / 2, um + d / 2, xw + d, xf - 0.02, NICHE[0] + d, NICHE[1] - d, rc)
+    for k in OPEN:                                                                            # shelf boards
+        u0, u1 = ua + (ub - ua) * k / n + d / 2, ua + (ub - ua) * (k + 1) / n - d / 2
+        for z in SHELVES:
+            lbox(c, o, "Front", P, u0, u1, xw + d, xf - 0.04, z, z + d, rc)
     lbox(c, o, "Fuge", P, ua, ub, xw, xf - 0.08, 0.005, 0.10, rng.random())
-    n = 6
     for k in range(n):                       # cup pulls where pairs meet
         a, b = ua + (ub - ua) * k / n, ua + (ub - ua) * (k + 1) / n
         hu = b - 0.08 if k % 2 == 0 else a + 0.08
-        for za, zb, zk in ((1.0515, 1.995, 1.13), (2.005, top - 0.003, 2.07)):
-            mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, rng.random(), [(hu, zk)])
+        for za, zb, zk in ((NICHE[0] + 0.0015, NICHE[1] - 0.005, 1.13), (2.005, top - 0.003, 2.07)):
+            r = rng.random()                 # drawn also for an open field: the stream stays as it was
+            if not (k in OPEN and zk < 2):
+                mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, r, [(hu, zk)])
         for j in range(3):
             za, zb = 0.105 + 0.315 * j + 0.0015, 0.105 + 0.315 * (j + 1) - 0.0015
             mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, rng.random(), [((a + b) / 2, zb - 0.07)])
@@ -1139,6 +1160,40 @@ def speis_essen():
         for i in range(4):                                                         # slats, thinner
             w0 = 0.06 + (W - 0.12) * (2 * i + 1) / 9
             part(w0, w0 + (W - 0.12) / 9, zb0 + 0.12, tops(w0 + (W - 0.12) / 18) - 0.10, T / 4)
+
+
+def geschirr():
+    """Cabinet C's open niche stocked (#34 follow-up, user 2026-11-16): on the bottom stacks of white plates (dinner
+    Ø 26 and dessert Ø 20 in the one column, soup Ø 23 and dessert in the other), on the middle shelf two rows of
+    tumblers, on the top shelf two rows of wine glasses (foot, stem, bowl). Loose things (FURNITURE), own random
+    stream."""
+    c, o, rng = "EG", "EG_Geschirr", random.Random(26)
+    ua, ub, xw, xf = ESSEN_SCHRANK
+    n, d = 6, 0.019
+    ring = lambda cx, cy, r, k=16: [(cx + r * math.cos(2 * math.pi * (i + 0.5) / k), cy + r * math.sin(2 * math.pi * (i + 0.5) / k))
+                                    for i in range(k)]
+    floors = (NICHE[0] + d, SHELVES[0] + d, SHELVES[1] + d)                  # what the things stand on
+    xm = (xw + d + xf - 0.04) / 2                                            # middle of the niche's depth
+    for j, k in enumerate(OPEN):
+        y0, y1 = ua + (ub - ua) * k / n + d / 2, ua + (ub - ua) * (k + 1) / n - d / 2
+        y, z = y0 + 0.02, floors[0] + 0.001
+        for rad, cnt, step in ((0.13, 10, 0.014), (0.10, 8, 0.014)) if j == 0 else ((0.115, 7, 0.022), (0.10, 6, 0.014)):
+            r, cy = rng.random(), y + rad                                    # a stack: per plate a foot and the plate
+            for i in range(cnt):
+                zp = z + i * step
+                xy_prism(c, o, "Keramik", ring(xm, cy, rad * 0.6), zp, zp + 0.004, r)
+                xy_prism(c, o, "Keramik", ring(xm, cy, rad), zp + 0.004, zp + step, r)
+            y = cy + rad + 0.03
+        for row, xc in enumerate((xm + 0.10, xm - 0.02)):                   # two rows, the back one shifted
+            yc = y0 + 0.05 + 0.04 * row
+            while yc < y1 - 0.045:
+                r, z = rng.random(), floors[1] + 0.001                       # a tumbler
+                xy_prism(c, o, "Glas", ring(xc, yc, 0.037, 12), z, z + 0.10, r)
+                r, z = rng.random(), floors[2] + 0.001                       # a wine glass
+                xy_prism(c, o, "Glas", ring(xc, yc, 0.032, 12), z, z + 0.004, r)
+                xy_prism(c, o, "Glas", ring(xc, yc, 0.004, 6), z + 0.004, z + 0.09, r)
+                xy_prism(c, o, "Glas", ring(xc, yc, 0.040, 12), z + 0.09, z + 0.19, r)
+                yc += 0.09
 
 
 def vorrat():
@@ -1923,7 +1978,7 @@ def build_annex():
 # Loose furniture appears in the viewer's last stage "Eingerichtet" (Blueprint.furniture); the
 # built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
-FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
+FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "EG_Geschirr", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
              "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse",
              "EG_Spiegel", "OG_Spiegel",   # the mirrors are furnishings: not on the plan sheets (#19)
              "EG_Kleidung"}                # the Garderobe's coats and shoes (#27)
