@@ -38,6 +38,7 @@ Choices made while nobody was there to ask are logged here
   - [22:05 — #28: the whole Waschküche on the OG baths' limestone (`waschkueche.ROOM` in `BATHS_OG`); the cabin's own patch dropped; three oak assertions of #29 flipped](#run-2026-11-15-1633-26)
   - [22:27 — #27: "left wall" = east wall, "back end" = south wall; hooks over the whole east wall, the coats between Wandlampe 33 and the hook tips](#run-2026-11-15-1633-27)
   - [22:27 — #27: a dozen shoes = 6 pairs; coats and shoes as furniture `EG_Kleidung` with new fabric materials; the bench assertions replaced](#run-2026-11-15-1633-28)
+  - [23:06 — #29 follow-up: one tweak branch for two user follow-ups, committed; the washer tower 4 cm from the table, the basin 15 cm from the tower](#run-2026-11-15-1633-29)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -350,3 +351,14 @@ Choices made while nobody was there to ask are logged here
 - **Why:** literal reading; 4 pairs per 90 cm level would be crowded. Furniture keeps loose items off the architect's plans.
 - **Alternatives:** 12 pairs (would need 4 levels or overlapping shoes); coats inside `_Garderobe` (on the plan sheets).
 - **Consequences:** five new `FL_*` materials in the viewer; the plan sheet `eg.svg` changes (bench gone, rod and shoe shelf in).
+
+## 23:06 — #29 follow-up: one tweak branch for two user follow-ups, committed; the washer tower 4 cm from the table, the basin 15 cm from the tower {#run-2026-11-15-1633-29}
+
+- **Status:** open
+- **Overrides:** `/spec:tweak` — unattended: "don't commit" (here: one commit per follow-up, as #35/#28 did, decision 3); the tweak is on a branch `fix/waschkueche-zwei-maschinen` without an issue of its own.
+- **Context:** the user, after PR #42/#45: „In der Waschküche reichen zwei Waschmaschinen. Also bitte behalte den Turm an Waschmaschinen und nimm die dritte, die daneben steht weg. Dadurch können die beiden Waschmaschinen, die übereinander stehen, etwas näher an den Tisch verrutschen, und das Waschbecken kann auch noch etwas in diese Richtung und von der Tür weg.“ The tower stood at y 4.23 .. 4.85, the third machine at 3.61 .. 4.21 next to the table (to y 3.592); the basin on `BY` = 5.28. In the same branch the bug „die Toilette aus Mallnitz ist doppelt auf der Seite“ (Fotos & Vorlagen, #31).
+- **Question:** how far do tower and basin move?
+- **Decision:** the tower takes the third machine's place: y 3.632 .. 4.252, 4 cm from the table (enough to pull it out). The basin keeps its old relation to the tower: tiles 3 cm, basin 15 cm from it, `BY` = 4.70 (58 cm further from the door). Mirror and lamp move with it. One branch from `issue/27-garderobe-jacken`, one commit per follow-up, PR with `Refs #29, Refs #31`, no labels.
+- **Why:** "etwas näher an den Tisch" = as close as the old third machine stood; the basin keeps the spacing that was agreed in #29 and gains the most distance from the door.
+- **Alternatives:** centre the basin between tower and cabin (y ≈ 4.98, closer to the door than the user wants); a bigger gap to the table (the tower would block less of the table end, but the user asked for "näher").
+- **Consequences:** the tour clearance test now also covers the tower (green: the Waschküche Standpunkt at (8.25, 3.3) keeps 33 cm). `og.svg` changes.
