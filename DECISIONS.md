@@ -60,7 +60,7 @@ Choices made while nobody was there to ask are logged here
   #31: branch issue/31-fotos-anzeigen from issue/34-alternativ-layout-standard, PR https://github.com/tillg/frechen_blender/pull/38 (archived on the branch; full check green).
   #33: branch issue/33-zwei-duschen from issue/31-fotos-anzeigen, PR https://github.com/tillg/frechen_blender/pull/39 (archived on the branch; full check: 3 reds, two pinned lamp count / label fixed and rerun green, the ~30 fps test flaky, green alone).
   19:55: on the user's request ("merge the pending PRs to main") PRs #36–#39 were merged into main (13692f8, c5b0f1a, 337cf95, 9290f63), branches deleted, issues #35 #34 #31 #33 [done]. Later PRs target main and wait for the user.
-  #32: branch issue/32-dusche-badewanne from issue/33-zwei-duschen (now in main), PR base main.
+  #32: branch issue/32-dusche-badewanne from issue/33-zwei-duschen (now in main), PR https://github.com/tillg/frechen_blender/pull/41 (base main; archived on the branch; full check 110/111, the red a pinned old label, fixed, green alone).
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
