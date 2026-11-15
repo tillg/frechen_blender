@@ -1,7 +1,7 @@
 ---
 feature: 29-waschkueche-becken-dusche
 title: "Proposal: basin and shower in the Waschküche"
-status: proposed
+status: applied
 order: 1
 created: 2026-11-15
 edited: 2026-11-15

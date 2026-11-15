@@ -123,6 +123,27 @@ def test_routes_and_spots_clear_the_gaestebad():
     for s in tour.SPOTS:
         assert gap(s[3]) >= 0.25, s[0]
 
+def test_routes_and_spots_clear_the_waschkueche():
+    """Issue #29: every camera key of every route and every Standpunkt keeps 0.25 m from the Parts the Waschküche's
+    shower cabin and basin bring (glass, rails, grips, head, limestone, basin, tiles, mirror, its lamp)."""
+    bp = house_core.build()
+    boxes = []
+    for o in ("Sanitaer", "Fliesen", "Spiegel", "Wandlampen"):
+        g = bp.geo[("OG", "OG_" + o)]
+        for first, n in bp.parts[("OG", "OG_" + o)]:
+            vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+            lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
+            if 5.58 < lo[0] and hi[0] < 8.6 and 2.8 < lo[1] and hi[1] < 6.06:
+                boxes.append((lo, hi))
+    assert len(boxes) > 100 and any(lo[0] < 6.0 for lo, hi in boxes) and any(lo[0] > 8.0 for lo, hi in boxes)   # cabin, basin
+    gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
+    for s in tour.SPOTS:
+        assert gap(s[3]) >= 0.25, s[0]
+
+
 # ---------------------------------------------------------------- routes and Standpunkte (viewer)
 import house_core  # noqa: E402
 
