@@ -36,6 +36,8 @@ Choices made while nobody was there to ask are logged here
   - [21:45 — #29: the user's change: cabin in the NW corner right of the door, two inward-folding glass doors, 20 cm to the cupboard; the room door opens 90°](#run-2026-11-15-1633-24)
   - [22:15 — Skip the baseline full check for stacked issues](#run-2026-11-15-1633-25)
   - [22:05 — #28: the whole Waschküche on the OG baths' limestone (`waschkueche.ROOM` in `BATHS_OG`); the cabin's own patch dropped; three oak assertions of #29 flipped](#run-2026-11-15-1633-26)
+  - [22:27 — #27: "left wall" = east wall, "back end" = south wall; hooks over the whole east wall, the coats between Wandlampe 33 and the hook tips](#run-2026-11-15-1633-27)
+  - [22:27 — #27: a dozen shoes = 6 pairs; coats and shoes as furniture `EG_Kleidung` with new fabric materials; the bench assertions replaced](#run-2026-11-15-1633-28)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -327,3 +329,23 @@ Choices made while nobody was there to ask are logged here
 - **Why:** "Fliesenboden" in this house is the limestone of the baths (README: Kalksteinplatten); a second tile kind would be a new material nobody asked for. One rectangle instead of room + patch: `floor_cover` does not subtract corridor rects from each other, so both would z-fight.
 - **Alternatives:** Taubenblau metro tiles (wall tiles, not floor); keep the patch and lay the room around it as an exclusion (more code, same picture).
 - **Consequences:** the room floor rises 4 mm (oak top +0.014 → stone +0.018); the room door's leaf (bottom +0.010) dips 8 mm into it, as the Elternbad door does already. Plans: the elevations' painter order changed with the floor parts (no visible content change in `og.svg`). #30 can use `waschkueche.ROOM`.
+
+## 22:27 — #27: "left wall" = east wall, "back end" = south wall; hooks over the whole east wall, the coats between Wandlampe 33 and the hook tips {#run-2026-11-15-1633-27}
+
+- **Status:** open
+- **Context:** `27-garderobe-jacken`, issue #27 (Garderobe ohne Bank, viele Haken links, Kleiderstange hinten mit fünf Mänteln, Schuhregal darunter). The niche is x 1.419 .. 2.358, y 5.475 .. 6.574; its open passage is in the north wall, so walking in you head south. The issue does not say how far the hooks run or how the coats share the 94 cm with the lamps on the partition and the hooks.
+- **Question:** which walls, and how to fit hooks, rod coats and Wandlampe 33 (on the partition at y 5.84, 1.70, inside the coat zone)?
+- **Decision:** left = east wall (hook board, as the old one), back end = south wall. Hook board over the whole east wall (1.35 .. 2.00), 23 hooks in two staggered rows (1.50 / 1.65), hat shelf raised to 1.95 so the upper row clears its brackets (now 14 deep). Rod 1.78 high, 27 cm from the south wall, wall to wall (Stahl); five coats at x 1.66 .. 2.16, i.e. clear of the lamp (≤ 1.63) and 8 cm clear of the hook tips (≥ 2.238). Shoe shelf 33 deep along the south wall, boards at 4 / 26 / 48 cm (two 20 cm levels). Wandlampen 33/34 stay.
+- **Why:** "viele viele Haken" needs the whole wall; jackets on hooks hang flat by the wall beside the coats. The lamp positions come from the agreed lamp plan.
+- **Alternatives:** hooks only in front of the coat zone (≈ 55 cm, ~12 hooks); move lamp 33 north (coats could spread over the full width, but the lamp plan changes).
+- **Consequences:** the coats hang tightly (10 cm pitch). If the lamp is to move later, the coats can spread.
+
+## 22:27 — #27: a dozen shoes = 6 pairs; coats and shoes as furniture `EG_Kleidung` with new fabric materials; the bench assertions replaced {#run-2026-11-15-1633-28}
+
+- **Status:** open
+- **Context:** `27-garderobe-jacken`: „ein Dutzend Schuhe“; `test_gaeste_wc_submodel` and `web/e2e/gaeste_wc.spec.js` pin the bench (35 × 110 at 45, "59 frei", "Bank 35 × 110", six hooks at 165, hat shelf at 185).
+- **Question:** 12 shoes or 12 pairs; where the illustrating items live; what happens to the tests that pin the bench?
+- **Decision:** 12 shoes = 6 pairs, 3 per level (Halbschuhe, Turnschuhe, Stiefel). Coats and shoes in a new object `<c>_Kleidung`, in `FURNITURE` (stage Eingerichtet, not on the plan sheets), from their own `random.Random(27)` with explicit `rnd`. New materials `Loden`, `Kamel`, `Anthrazit`, `Leder`, `Gummi`; `Jeans`, `Wolle`, `Leinen` reused. The bench/six-hooks/185 assertions are replaced by assertions of the new layout (the issue removes the bench).
+- **Why:** literal reading; 4 pairs per 90 cm level would be crowded. Furniture keeps loose items off the architect's plans.
+- **Alternatives:** 12 pairs (would need 4 levels or overlapping shoes); coats inside `_Garderobe` (on the plan sheets).
+- **Consequences:** five new `FL_*` materials in the viewer; the plan sheet `eg.svg` changes (bench gone, rod and shoe shelf in).
