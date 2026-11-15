@@ -35,6 +35,7 @@ Choices made while nobody was there to ask are logged here
   - [21:07 — #29: a module `code/waschkueche.py` without a sub-model page](#run-2026-11-15-1633-23)
   - [21:45 — #29: the user's change: cabin in the NW corner right of the door, two inward-folding glass doors, 20 cm to the cupboard; the room door opens 90°](#run-2026-11-15-1633-24)
   - [22:15 — Skip the baseline full check for stacked issues](#run-2026-11-15-1633-25)
+  - [22:05 — #28: the whole Waschküche on the OG baths' limestone (`waschkueche.ROOM` in `BATHS_OG`); the cabin's own patch dropped; three oak assertions of #29 flipped](#run-2026-11-15-1633-26)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -315,3 +316,13 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the base was verified minutes before; the quick tier still catches a broken base. ~5 min saved per issue.
 - **Alternatives:** keep the full baseline (safer when the previous final check was not re-run after a last fix, as in #33/#32); run Playwright with more workers (bigger saving, but a test-config change the user should decide on tomorrow — in the report).
 - **Consequences:** a red left by the previous issue shows up only in the next final check; the worker then fixes it as its own commit. Revisit with the timing report.
+
+## 22:05 — #28: the whole Waschküche on the OG baths' limestone (`waschkueche.ROOM` in `BATHS_OG`); the cabin's own patch dropped; three oak assertions of #29 flipped {#run-2026-11-15-1633-26}
+
+- **Status:** open
+- **Context:** issue #28: „Die Waschküche soll keinen Holzboden bekommen, sondern einen Fliesenboden.“ The house has one tile floor, the limestone of the EG Flur and all baths/WCs (`floor_cover()`); #29 laid a limestone rectangle under the shower cabin only (`waschkueche.DUSCHE`), oak around it. Three assertions (`test_waschkueche_shower_cabin`: oak points around the cabin and "stone only inside it"; `test_bathrooms_have_limestone…`: HWR point (7.0, 4.0) oak) pin the old floor.
+- **Question:** which tile, how to avoid two coplanar slab layers at the cabin, and what to do with the tests that pin oak?
+- **Decision:** the bathrooms' limestone, laid over the room's inner outline `ROOM` = (5.59, 8.59, 2.79, 6.06) (new constant in `waschkueche.py`, added to `BATHS_OG` like `elternbad.ROOM`); the cabin's patch `[waschkueche.DUSCHE]` leaves the `floor_cover` call, so the cabin floor is part of the one tiling. The three oak assertions are flipped to limestone at equal strength (the requirement they pinned is superseded by the issue); a new test pins the whole room (no oak, none under walls, ≥ 95 % covered, no overlapping slabs, continuous across the cabin outline). Done as a `/spec:tweak` that commits (as #35, decision 3).
+- **Why:** "Fliesenboden" in this house is the limestone of the baths (README: Kalksteinplatten); a second tile kind would be a new material nobody asked for. One rectangle instead of room + patch: `floor_cover` does not subtract corridor rects from each other, so both would z-fight.
+- **Alternatives:** Taubenblau metro tiles (wall tiles, not floor); keep the patch and lay the room around it as an exclusion (more code, same picture).
+- **Consequences:** the room floor rises 4 mm (oak top +0.014 → stone +0.018); the room door's leaf (bottom +0.010) dips 8 mm into it, as the Elternbad door does already. Plans: the elevations' painter order changed with the floor parts (no visible content change in `og.svg`). #30 can use `waschkueche.ROOM`.

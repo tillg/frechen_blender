@@ -3,19 +3,20 @@
 washer + dryer on the east wall and the door in the north wall (opened 90°, its leaf at x 7.15). Added here: a
 floor-level shower cabin 1.10 x 1.10 in the NW corner, right of the door as one comes in (DUSCHE, outer outline;
 the user: „Gleich rechts in dem Eck … mit zwei Glaswänden, die man aufklappen kann. Und dann noch ein Spalt von
-20 cm bis zu dem Schrank.“): limestone slabs on its floor only, in the plane of the bathroom floors (no tray;
-house_core lays them with the floor cover), limestone on the west and north wall to 2.0, the head on the west wall,
+20 cm bis zu dem Schrank.“): its floor the room's limestone (#28: the whole room, in the plane of the bathroom
+floors; no tray; house_core lays it with the floor cover), limestone on the west and north wall to 2.0, the head on the west wall,
 the drain in the middle; its south and east side each a bifold glass door folding into the cabin (built closed);
 the cupboard ends 20 cm before it. On the east wall north of the machines a Waschbecken einzeln 60 on Taubenblau
 tiles under a mirror 80 x 85 in a 10 cm wooden frame. Nothing on the south wall: #30 glazes its top metre.
 
 Pure Python like house_core.py, which imports this module: build_sanitary() calls waschkueche_neu() on the OG
-floor; build_slabs() takes DUSCHE for the floor cover, build_furniture() ends the cupboard 20 cm before it.
+floor; build_slabs() takes ROOM for the floor cover (via BATHS_OG), build_furniture() ends the cupboard 20 cm before it.
 """
 import random
 import house_core as hc
 
-WI, WO, YN = 5.59, 8.59, 6.06                # room: west, east and north (Flur) faces (south 2.79: the Bad partition)
+WI, WO, YS, YN = 5.59, 8.59, 2.79, 6.06      # room: west, east, south (the Bad partition) and north (Flur) faces
+ROOM = (WI, WO, YS, YN)                      # its limestone floor (#28): house_core's floor cover, BATHS_OG
 DUSCHE = (WI, 6.69, 4.96, YN)                # shower cabin, outer: the NW corner, right of the door as one comes in
 GT, ST = 0.008, 0.012                        # glass thickness; the limestone slabs' face off the wall
 GAP = 0.005                                  # the glass doors' gaps: to the profile, the floor, the other door
