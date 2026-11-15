@@ -1,12 +1,12 @@
 """Frechenlehen – basin and shower in the Waschküche im 1. Stock (issue #29). The room (x 5.59 .. 8.59, y 2.79 ..
-6.06, no window) holds the table along the whole south wall, the basket cupboard on the west wall, washer and
-washer + dryer on the east wall and the door in the north wall (opened 90°, its leaf at x 7.15). Added here: a
+6.06, no window) holds the table along the whole south wall, the basket cupboard on the west wall, the washer
+tower (washer + dryer, 4 cm from the table) on the east wall and the door in the north wall (opened 90°, its leaf at x 7.15). Added here: a
 floor-level shower cabin 1.10 x 1.10 in the NW corner, right of the door as one comes in (DUSCHE, outer outline;
 the user: „Gleich rechts in dem Eck … mit zwei Glaswänden, die man aufklappen kann. Und dann noch ein Spalt von
 20 cm bis zu dem Schrank.“): its floor the room's limestone (#28: the whole room, in the plane of the bathroom
 floors; no tray; house_core lays it with the floor cover), limestone on the west and north wall to 2.0, the head on the west wall,
 the drain in the middle; its south and east side each a bifold glass door folding into the cabin (built closed);
-the cupboard ends 20 cm before it. On the east wall north of the machines a Waschbecken einzeln 60 on Taubenblau
+the cupboard ends 20 cm before it. On the east wall north of the tower a Waschbecken einzeln 60 on Taubenblau
 tiles under a mirror 80 x 85 in a 10 cm wooden frame. Nothing on the south wall: #30 glazes its top metre.
 
 Pure Python like house_core.py, which imports this module: build_sanitary() calls waschkueche_neu() on the OG
@@ -20,8 +20,8 @@ ROOM = (WI, WO, YS, YN)                      # its limestone floor (#28): house_
 DUSCHE = (WI, 6.69, 4.96, YN)                # shower cabin, outer: the NW corner, right of the door as one comes in
 GT, ST = 0.008, 0.012                        # glass thickness; the limestone slabs' face off the wall
 GAP = 0.005                                  # the glass doors' gaps: to the profile, the floor, the other door
-BY = 5.28                                    # basin, tiles, mirror, lamp: their axis on the east wall, north of
-                                             # the washer tower (4.85), 5+ cm outside the room door leaf's sweep
+BY = 4.70                                    # basin, tiles, mirror, lamp: their axis on the east wall, north of
+                                             # the washer tower (4.252): tiles 3 cm, basin 15 cm from it
 BW, BD = 0.60, 0.47                          # Waschbecken einzeln
 MW, MH, MF, MZ = 0.80, 0.85, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
 

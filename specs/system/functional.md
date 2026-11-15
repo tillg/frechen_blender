@@ -176,14 +176,14 @@ edited: 2026-11-15
     60 × 47 on Taubenblau WC tiles
     reaching 15 cm beyond it on either side, above them a mirror 110 × 95 in a 10 cm wooden frame
     (`wood_mirror()`, as the back hall's 54 × 74 with 7 cm)
-  - Waschküche: two front loaders at the east wall, a dryer stacked on the north one; a table
+  - Waschküche: a washer tower at the east wall (a dryer stacked on the front loader), 4 cm from the table; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the
     right wall from the door (west) an open spruce cupboard, 2.0 m high, continuous shelves
     without dividers, two coarsely woven wicker laundry baskets (stakes and weavers) per shelf; 20 cm
     beyond it, in the NW corner right of the door, a floor-level shower cabin 1.10 × 1.10 (limestone
     floor, west and north wall; its south and east side each a glass bifold door folding inward; the
     room door opens 90° to clear it); on the east wall north of
-    the machines a Waschbecken einzeln 60 × 47 on Taubenblau tiles under a mirror 80 × 85 in a 10 cm
+    the tower (15 cm from it) a Waschbecken einzeln 60 × 47 on Taubenblau tiles under a mirror 80 × 85 in a 10 cm
     wooden frame with one Wandlampe; nothing on the south wall above 1.20
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
   door outside, panel door between the rooms.

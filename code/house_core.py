@@ -2253,9 +2253,8 @@ def build_furniture():
     bed("OG", 3.37, 5.438, 1.01, 2.87, "E", zo, n=2)
     nightstand("OG", 5.02, 5.438, 2.89, 3.37, zo)
     nightstand("OG", 5.02, 5.438, 0.53, 0.99, zo)
-    machine("OG", 7.97, 8.588, 4.23, 4.85, zo)
-    machine("OG", 7.97, 8.588, 4.23, 4.85, zo + 0.838)                   # dryer on the washer
-    machine("OG", 7.97, 8.588, 3.61, 4.21, zo)
+    machine("OG", 7.97, 8.588, 3.632, 4.252, zo)                       # the tower only, 4 cm from the table
+    machine("OG", 7.97, 8.588, 3.632, 4.252, zo + 0.838)               # dryer on the washer
     desk.desk("OG", 5.592, 8.588, 2.792, 3.592, zo)                     # full width of the back wall
     folded_stack("OG", 6.45, 3.20, zo + 0.75, ("Jeans", "Jeans", "Wolle", "Bettwaesche", "Creme", "Leinen"))
     folded_stack("OG", 7.15, 3.20, zo + 0.75, ("Bettwaesche", "Creme", "Bettwaesche", "Leinen", "Bettwaesche"))
