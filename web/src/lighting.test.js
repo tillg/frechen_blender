@@ -102,7 +102,7 @@ test('update() moves the pool to the sites nearest the camera, storey-aware indo
   L.update(new THREE.Vector3(11.7, 1.6, -3.2), true);                 // Stube: all EG, its Wandlampen (#22)
   L.roomLights.forEach((l, i) => expect(l).toBe(rooms[i]));
   L.outsideLights.forEach((l, i) => expect(l).toBe(outs[i]));
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([35, 33, 34, 1, 2, 37].map(roomSite)));   // 1: the Ofen bed's, 2: the hood's spots
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([35, 33, 34, 1, 31, 37].map(roomSite)));   // 1: the Ofen bed's, 31: Windfang (the hood's spots, 2, moved over the Halbinsel, #26)
   L.update(new THREE.Vector3(11.1, 4.3, -6.3), true);                 // OG Galerie: all OG, Wandlampen only
   expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([23, 12, 13, 7, 24, 11].map(roomSite)));
   L.update(new THREE.Vector3(7.1, 4.3, -4.4), true);                  // Waschküche: its five lamps and the WC's

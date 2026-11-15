@@ -1,7 +1,7 @@
 ---
 feature: 26-haube-induktion
 title: "Architecture: the hood over the cooktop, the Wamsler's pipe higher into the wall"
-status: proposed
+status: applied
 order: 3
 created: 2026-11-15
 edited: 2026-11-15

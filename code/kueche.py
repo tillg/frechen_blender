@@ -2,8 +2,8 @@
 input/2026-11-09 input/speis_kueche_v6.svg (the kitchen door measured from a photo of 2026-11-09).
 On the north wall the Spülzeile from the kitchen door's frame into the NE corner, under the Abzug
 (flue box, from 1.80 m up); on the east wall the Ostzeile, 60 cm from the Halbinsel's front, then the
-Wamsler wood cooker under its old steel hood; the Halbinsel with the cooktop towards the dining
-table; the Besenschrank in the NW corner, behind the kitchen door opened into the room. No wall
+Wamsler wood cooker, its pipe into the east wall at 1.80 m; the Halbinsel with the cooktop towards the
+dining table, under the old steel hood hung from the ceiling (#26); the Besenschrank in the NW corner, behind the kitchen door opened into the room. No wall
 cabinets. All cabinets in the style of input/2026-11-10 input/kueche_mallnitz.png, painted RAL 5014
 (hc.mallnitz_front); east of the sink, where the Herd stands in front of the Spülzeile, a blind
 cabinet, its granite top (like the Ostzeile's) running up to the Herd.
@@ -24,6 +24,7 @@ XW, YN, XE = 5.492, 5.847, 8.555             # wall faces (2 mm clear): Speis wa
 SINK_X0 = 7.05                               # Spülzeile: from the kitchen door's frame (7.03) ...
 HY0, HY1 = 4.30, 5.10                        # the Herd (80) along the east wall, right after the Ostzeile
 OSTZEILE = (3.66, 4.26)                      # the Ostzeile's door: 60 from the Halbinsel's front
+KOCHFELD = (7.18, 7.95, 3.12, 3.58)          # the Halbinsel's cooktop: x from, to, y from, to
 ABZUG = (8.227, 5.55, 1.80)                  # Abzug: x from, y from (depth 30 assumed), underside
 BESEN = (6.002, 5.297, 2.20)                 # Besenschrank: x to, y from (incl. door), height
 
@@ -79,34 +80,36 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
     B(o, "Stahl", sx - 0.20, sx + 0.20, 5.33, 5.70, zt + 0.003, zt + 0.004)
     B(o, "Stahl", sx - 0.015, sx + 0.015, 5.77, 5.80, zt, zt + 0.26)                  # tap
     B(o, "Stahl", sx - 0.01, sx + 0.01, 5.60, 5.77, zt + 0.235, zt + 0.255)
-    B(o, "Eisen", 7.18, 7.95, 3.12, 3.58, zt, zt + 0.005)                            # cooktop
+    B(o, "Eisen", *KOCHFELD, zt, zt + 0.005)                                        # cooktop
     for cx, cy, rr in ((7.36, 3.24, 0.08), (7.36, 3.46, 0.06), (7.76, 3.24, 0.06), (7.76, 3.46, 0.09)):
         PR(o, "Metall", [(cx + rr * math.cos(math.pi * i / 8), cy + rr * math.sin(math.pi * i / 8))
                          for i in range(16)], zt + 0.005, zt + 0.006)
     ofen.wamsler(c, 7.972 + dx, HY0 + dy, rng)
 
-    # hood of the old form: rolled lip, straight skirt with a rail, canopy narrowing to the stack
-    h, xf, ym = c + "_Haube", XE - 0.55, (HY0 + HY1) / 2
-    ya, yb, rh = ym - 0.43, ym + 0.43, rng.random()
-    B(h, "Stahl", xf - 0.01, XE, ya - 0.01, yb + 0.01, 1.62, 1.64, rh)
-    B(h, "Stahl", xf, XE, ya, yb, 1.64, 1.76, rh)
-    v = [(xf, ya, 1.76), (XE, ya, 1.76), (XE, yb, 1.76), (xf, yb, 1.76),
-         (XE - 0.22, ym - 0.15, 2.04), (XE, ym - 0.15, 2.04), (XE, ym + 0.15, 2.04), (XE - 0.22, ym + 0.15, 2.04)]
+    # hood of the old form over the cooktop (#26), hung from the ceiling: rolled lip 65 above the cooktop,
+    # straight skirt with a rail on the cook's (north) side, canopy narrowing on all sides to the stack
+    h, rh = c + "_Haube", rng.random()
+    xm, ym, zl = (KOCHFELD[0] + KOCHFELD[1]) / 2, (KOCHFELD[2] + KOCHFELD[3]) / 2, zt + 0.005 + 0.65
+    xa, xb, ya, yb, z1, z2 = xm - 0.45, xm + 0.45, ym - 0.30, ym + 0.30, zl + 0.14, zl + 0.42
+    B(h, "Stahl", xa - 0.01, xb + 0.01, ya - 0.01, yb + 0.01, zl, zl + 0.02, rh)
+    B(h, "Stahl", xa, xb, ya, yb, zl + 0.02, z1, rh)
+    v = [(xa, ya, z1), (xb, ya, z1), (xb, yb, z1), (xa, yb, z1),
+         (xm - 0.15, ym - 0.15, z2), (xm + 0.15, ym - 0.15, z2), (xm + 0.15, ym + 0.15, z2), (xm - 0.15, ym + 0.15, z2)]
     hc.add(c, h, "Stahl", [(x + dx, y + dy, z) for x, y, z in v],
            [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], rh)
-    B(h, "Stahl", XE - 0.20, XE, ym - 0.135, ym + 0.135, 2.04, hc.Z_EG_TOP + 0.02, rh)    # into the ceiling
-    hc.prism(c, h, "Stahl", hc.frame("x"), [(xf - 0.04 + dx + 0.01 * math.cos(math.pi * i / 4),
-                                             1.70 + 0.01 * math.sin(math.pi * i / 4)) for i in range(8)],
-             ya + 0.02 + dy, yb - 0.02 + dy, rng.random())                            # rail
-    for y in (ya + 0.05, yb - 0.05):
-        B(h, "Stahl", xf - 0.04, xf, y - 0.005, y + 0.005, 1.695, 1.705)
-    # at its back edge (the wall) a strip under the lip with 4 built-in spots (#22), one light for the four
-    sa, sb = ya + 0.05, yb - 0.05
-    B(h, "Metall", XE - 0.07, XE - 0.01, sa, sb, 1.60, 1.62, rh)
+    B(h, "Stahl", xm - 0.135, xm + 0.135, ym - 0.135, ym + 0.135, z2, hc.Z_EG_TOP + 0.02, rh)   # into the ceiling
+    hc.prism(c, h, "Stahl", hc.frame("y"), [(yb + 0.04 + dy + 0.01 * math.cos(math.pi * i / 4),
+                                             zl + 0.08 + 0.01 * math.sin(math.pi * i / 4)) for i in range(8)],
+             xa + 0.02 + dx, xb - 0.02 + dx, rng.random())                            # rail
+    for x in (xa + 0.05, xb - 0.05):
+        B(h, "Stahl", x - 0.005, x + 0.005, yb, yb + 0.04, zl + 0.075, zl + 0.085)
+    # along its middle a strip under the lip with 4 built-in spots (#22), one light for the four under it
+    sa, sb = xa + 0.05, xb - 0.05
+    B(h, "Metall", sa, sb, ym - 0.03, ym + 0.03, zl - 0.02, zl, rh)
     for k in range(4):
-        y = sa + (sb - sa) * (k + 0.5) / 4
-        B(h, "Opalglas", XE - 0.06, XE - 0.02, y - 0.02, y + 0.02, 1.596, 1.60, rh)
-    hc.WALL_LIGHTS.append((XE - 0.50 + dx, ym + dy, 1.45))    # 50 out from the wall like every lamp's, under the hood
+        x = sa + (sb - sa) * (k + 0.5) / 4
+        B(h, "Opalglas", x - 0.02, x + 0.02, ym - 0.02, ym + 0.02, zl - 0.024, zl - 0.02, rh)
+    hc.WALL_LIGHTS.append((xm + dx, ym + dy, zl - 0.17))
     # Besenschrank in the NW corner, door to the south, on a plinth like the base units
     bx, by, bh = BESEN
     B(o, "Front", XW, bx, by + 0.02, YN, zp, bh)
