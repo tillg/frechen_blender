@@ -81,6 +81,7 @@ Choices made while nobody was there to ask are logged here
   ~23:20: on the user's request ("merge the pending PRs to main") PRs #41, #42, #43, #45 were merged into main (e3c743d, 28ca48f, 212f365, 090110b), branches deleted, issues #32 #29 #28 #27 [done].
   #26: branch issue/26-haube-induktion from fix/waschkueche-zwei-maschinen, PR https://github.com/tillg/frechen_blender/pull/47 (archived on the branch; full check: pytest red only on the pre-existing `test_vorlagen` input count, Playwright 109/111: `bad.spec.js:49` green alone, the ~30 fps test load-flaky).
   #29 follow-up + #31 bug (no issue of their own, decisions 29, 30): branch fix/waschkueche-zwei-maschinen from issue/27-garderobe-jacken (= main 090110b after the merge), PR against main, `Refs #29, Refs #31`, no labels; full check 110/111 + pytest 213/214: the ~30 fps test load-flaky (green alone), `test_vorlagen`'s input count red only from the untracked #40/#44 inputs.
+  #30: branch issue/30-glas-waschkueche from issue/26-haube-induktion, PR https://github.com/tillg/frechen_blender/pull/49 (archived on the branch; full check: pytest red only on the pre-existing `test_vorlagen` input count, Vitest 65/65, Playwright 111/111).
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
