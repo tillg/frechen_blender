@@ -14,7 +14,7 @@ test('hires: one room light per ROOM_LIGHTS entry at floor + ROOM_LIGHT_H and pe
   expect(extras.ROOM_LIGHT_H).toBe(2.1);                           // NaN would compare equal below
   const L = createLighting(scene, extras, new THREE.Vector3(), undefined, hires);
   const n = extras.room_lights.length;
-  expect(extras.wall_lights.length).toBe(71);                         // OG 35, EG 35 (#22), the hood's spots
+  expect(extras.wall_lights.length).toBe(69);                         // OG 35, EG 33 (#22, #34: 32 + the Ofen bed's), the hood's spots
   expect(L.roomLights.length).toBe(n + extras.wall_lights.length);
   L.roomLights.forEach((l, i) => {
     const [x, y, z] = i < n ? extras.room_lights[i] : extras.wall_lights[i - n];
@@ -22,30 +22,17 @@ test('hires: one room light per ROOM_LIGHTS entry at floor + ROOM_LIGHT_H and pe
     expect(l.position.toArray()).toEqual(i < n ? [x, z + extras.ROOM_LIGHT_H, -y] : [x, z, -y]);
   });
   L.setDusk(1);                                                    // a Wandlampe is dimmer than a fill light
-  const tag = extras.wall_light_variant;                           // default layout: the Alternativ lamps dark
-  expect(L.roomLights.map((l) => l.intensity)).toEqual(L.roomLights.map((_, i) => (i < n ? 9 : tag[i - n] === 'alt' ? 0 : 2)));
+  expect(L.roomLights.map((l) => l.intensity)).toEqual(L.roomLights.map((_, i) => (i < n ? 9 : 2)));
 });
 
-test('the wall lights of the other layout stay dark (hires) and out of the pool (fast) (#22: the Essen lamps)', () => {
-  const tag = extras.wall_light_variant, n = extras.room_lights.length;
-  expect(tag.filter((v) => v === 'main').length).toBe(2);
-  expect(tag.filter((v) => v === 'alt').length).toBe(2);
-  const H = createLighting(new THREE.Scene(), extras, new THREE.Vector3(), undefined, hires);
-  for (const lay of ['main', 'alt']) {
-    H.setLayout(lay);
-    H.setDusk(1);
-    H.roomLights.slice(n).forEach((l, i) => expect(l.intensity > 0).toBe(!tag[i] || tag[i] === lay));
-  }
+test('one EG layout (#34): no layout tags, no setLayout; the Essen lamps on the back of B join the pool (fast)', () => {
+  expect(extras.wall_light_variant).toBeUndefined();
   const F = createLighting(new THREE.Scene(), extras, new THREE.Vector3());
+  expect(F.setLayout).toBeUndefined();
   F.setDusk(1);
-  const of = (lay) => extras.wall_lights.filter((_, i) => tag[i] === lay).map((p) => p.map((v) => +v.toFixed(3)).join(','));
-  const pool = () => F.roomLights.map((l) => [l.position.x, -l.position.z, l.position.y].map((v) => +v.toFixed(3)).join(','));
-  for (const [lay, other] of [['main', 'alt'], ['alt', 'main']]) {
-    F.setLayout(lay);
-    F.update(new THREE.Vector3(3.6, 1.6, -2.6), true);                 // in the Essen, by both pairs
-    expect(pool().some((p) => of(lay).includes(p))).toBe(true);
-    expect(pool().some((p) => of(other).includes(p))).toBe(false);
-  }
+  F.update(new THREE.Vector3(3.6, 1.6, -2.6), true);                 // in the Essen
+  const pool = F.roomLights.map((l) => [l.position.x, -l.position.z]);
+  for (const x of [3.9035, 4.7245]) expect(pool.some(([px, py]) => Math.abs(px - x) < 0.002 && Math.abs(py - 3.215) < 0.002)).toBe(true);
 });
 
 test('hires: dusk turns the room lights on and the sun down; they stay in the render list by day', () => {
@@ -56,7 +43,7 @@ test('hires: dusk turns the room lights on and the sun down; they stay in the re
   L.setDusk(1);
   expect(L.sun.intensity).toBeLessThan(sunDay);
   expect(L.sun.position.y).toBeLessThan(L.sun.position.length() * Math.sin((20 * Math.PI) / 180));  // low sun
-  expect(L.roomLights.every((l) => (l.userData.site?.variant === 'alt' ? l.intensity === 0 : l.intensity > 0) && l.visible)).toBe(true);   // default layout
+  expect(L.roomLights.every((l) => l.intensity > 0 && l.visible)).toBe(true);
 });
 
 test('hires: dusk switches the outside lamps on: a warm light at every bulb of OUTSIDE_LIGHTS', () => {
@@ -109,7 +96,7 @@ test('update() moves the pool to the sites nearest the camera, storey-aware indo
   L.setDusk(1);
   const rooms = [...L.roomLights], outs = [...L.outsideLights];
   L.update(new THREE.Vector3(33, 13, 24), false);                     // default camera, outside
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([35, 22, 23, 70, 34, 71].map(roomSite)));   // 34, 35: Stube (#22); 70, 71: Elternbad (#3)
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([35, 22, 23, 68, 34, 69].map(roomSite)));   // 34, 35: Stube (#22); 68, 69: Elternbad (#3; #34: two EG lamps fewer before them)
   expect(sorted(L.outsideLights.map((l) => zup(l.position)))).toEqual(sorted([2, 3].map(outSite)));
   for (const l of L.outsideLights) expect(l.target.position.toArray()).toEqual(l.position.clone().setY(l.position.y - 1).toArray());
   L.update(new THREE.Vector3(11.7, 1.6, -3.2), true);                 // Stube: all EG, its Wandlampen (#22)
@@ -130,12 +117,12 @@ test('a pooled light fades to 0 at the cut-off (FADE 1.0 m)', () => {
   L.update(cam, false);
   const at = (i) => L.roomLights.find((l) => zup(l.position).join() === roomSite(i).join());
   const d = (i) => at(i).position.distanceTo(cam);
-  const [x, y, z] = extras.wall_lights[69 - extras.room_lights.length];   // exact: its distance is the cut-off
+  const [x, y, z] = extras.wall_lights[67 - extras.room_lights.length];   // exact: its distance is the cut-off
   const dCut = new THREE.Vector3(x, z, -y).distanceTo(cam);           // the 7th nearest site: first one left out
   expect(at(35).intensity).toBeCloseTo(2 * 0.5, 5);                   // the nearest, a Wandlampe (Stube, #22), full
   expect(at(22).intensity).toBeCloseTo(2 * 0.5, 5);                   // an OG Wandlampe, full
-  expect(at(71).intensity).toBeCloseTo(2 * 0.5 * (dCut - d(71)), 5);  // the 6th, a Wandlampe (Elternbad), nearly out
-  expect(at(71).intensity).toBeLessThan(2 * 0.5 * 0.3);
+  expect(at(69).intensity).toBeCloseTo(2 * 0.5 * (dCut - d(69)), 5);  // the 6th, a Wandlampe (Elternbad), nearly out
+  expect(at(69).intensity).toBeLessThan(2 * 0.5 * 0.3);
 });
 
 test('prewarm() compiles with the pool in the render list, then restores day/dusk', async () => {

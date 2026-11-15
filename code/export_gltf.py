@@ -140,8 +140,6 @@ def export(path, bp=None):
             node["extras"]["smooth"] = True
         if name in bp.furniture:
             node["extras"]["furniture"] = True
-        if name in (bp.variant or {}):                       # one layout only: "main" / "alt" (Erdgeschoss - Alternativ)
-            node["extras"]["variant"] = bp.variant[name]
         if name in bp.pivot:
             node["translation"] = list(yup(piv))
         if name in (bp.slide or {}):                         # the sub-model viewer rolls it there and back
@@ -181,7 +179,7 @@ def export(path, bp=None):
         extras.update({
             "room_lights": jsonable(bp.room_lights), "ROOM_LIGHT_H": house_core.ROOM_LIGHT_H,
             "outside_lights": jsonable(bp.outside_lights),
-            "wall_lights": jsonable(bp.wall_lights), "wall_light_variant": list(bp.wall_variant),
+            "wall_lights": jsonable(bp.wall_lights),
             "Z_OG": house_core.Z_OG, "W_OUT": house_core.W_OUT, "D_OUT": house_core.D_OUT,
             "RIDGE_Z": house_core.RIDGE_Z,
             "garden": {"ground": jsonable(lay.ground), "no_grass": jsonable(lay.no_grass),

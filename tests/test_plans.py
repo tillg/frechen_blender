@@ -13,12 +13,12 @@ BP = house_core.build()
 
 def test_every_opened_leaf_has_a_door_record():
     """panel_door, entrance_door and back_door record every hinged leaf (LEAVES also holds the
-    three sliding leaves: the Bad's two and the Speis's)."""
+    Bad's two sliding leaves; the Speis's went with the default layout, #34)."""
     bp = house_core.build()                     # LEAVES is module state: other tests rebuild it
     doors, leaves = bp.doors, list(house_core.LEAVES)
     for c in ("EG", "OG"):
         hinged = [lv for lv in leaves if lv[0] == c]
-        n_slide = len(bp.slide) + 1 if c == "EG" else 0
+        n_slide = len(bp.slide) if c == "EG" else 0
         extra = 2 if c == "EG" else 0                                    # Haustür, Hintertür
         assert len([d for d in doors if d["c"] == c]) == len(hinged) - n_slide + extra, c
     for d in doors:
@@ -485,14 +485,6 @@ def test_the_title_block_names_the_generation_time_only_when_asked(tmp_path):
     assert ep.generated(utc.replace(month=7)) == "generiert: 12. Juli 2026 21:34 Uhr"    # CEST
     assert "generiert" not in ep.sheet("Ost", "", "abc")
     assert ">generiert: 12. November 2026 20:34 Uhr</text>" in ep.sheet("Ost", "", "abc", stamp=ep.generated(utc))
-
-
-def test_sheets_leave_the_variant_out(sheets):
-    """The plan sheets show the default layout (#5): drawn from house_core.default_layout(), which the
-    model state in the title block names."""
-    svg = (sheets / "eg.svg").read_text()
-    assert f"Modellstand {ep.model_state(house_core.default_layout(BP))}" in svg
-    assert ep.model_state(BP) != ep.model_state(house_core.default_layout(BP))
 
 
 def test_every_sheet_carries_the_viewers_title_top_left(sheets):

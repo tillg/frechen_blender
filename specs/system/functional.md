@@ -34,8 +34,8 @@ edited: 2026-11-15
   - Stube niche with a segmental arch
   - Wandlampen (brass gooseneck, opal bell) in every room of both storeys but the Speis, each centred
     in a free wall span; in the EG as agreed on `input/2026-11-14 input/lampen_eg_v1.svg` (also over the
-    Ofen bed and the back hall's mirror), the Essen's west-wall pair only in the default layout, a pair on
-    the Speis's wooden back in Alternativ; four spots in a strip under the Küche hood
+    Ofen bed and the back hall's mirror), the Essen's pair on the Speis's wooden back (not on its west
+    wall, where cabinet C stands); four spots in a strip under the Küche hood
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
     threshold), the Bäder (the Gästebad with its WC niche and shower, the Bad Nadine & Till with its shower) and
@@ -63,17 +63,13 @@ edited: 2026-11-15
     pull on every drawer and door), painted RAL 5014 Taubenblau; under the cooktop drawers towards
     the kitchen and towards the dining table
   - Speis (no wall to the Essen): from the Flur wall open shelf A (60 cm), the aisle (91.9 cm,
-    west end free), open shelf B (60 cm) and, back to back with it, cabinet C towards the Essen
-    (60 cm), all to the ceiling; the shelves spruce, stocked for illustration (food cartons,
+    west end free) and open shelf B (60 cm) with a closed back of vertical spruce boards towards the
+    Essen, all to the ceiling; the shelves spruce, stocked for illustration (food cartons,
     flour, jars of tomato sauce and pickles, cans, now and then a grey plastic crate with a lid);
-    C with the kitchen's painted Mallnitz fronts and cup pulls, four leaf columns, each a top
-    door, a door over the upper half and three drawers below; the wall to the Küche ends at C's
-    front and is open
-    over the aisle, where a sliding door on the Küche side stands slid open to the south
-  - variant **Alternativ** (viewer entry Erdgeschoss - Alternativ only; Blender, film and plans show
-    the above): C over the full west wall of the Essen (six leaf columns), B with a closed back of
-    vertical spruce boards towards the Essen, the Speis/Küche wall ending at B, and in the opening
-    two half-height saloon leaves (curved top rail, slats, no handles) that swing into the Speis
+    cabinet C (60 cm) over the full west wall of the Essen, to the ceiling, with the kitchen's
+    painted Mallnitz fronts and cup pulls, six leaf columns, each a top door, a door over the upper
+    half and three drawers below; the wall to the Küche ends at B, and in the opening over the
+    aisle two half-height saloon leaves (curved top rail, slats, no handles) that swing into the Speis
   - dining table after tisch-briol.png, one table 2.00 m long: board top, legs splayed on a flat
     foot frame with corner blocks; 8 chairs (3 per long side, one at each end)
   - Büro desk in the Bibliothek between the two north french doors: a 190 × 100 × 4 cm solid
@@ -236,8 +232,8 @@ Blender backend. What the scripts make:
 - **Navigation panel** at the top right of every page (house and the five sub-models), the same
   place everywhere: three drop-downs that open below and a Reset button (house: plus the sun
   toggle). There is no timeline bar and no Play.
-  - **Modell:** Ganzes Haus, Erdgeschoss, Erdgeschoss - Alternativ, 1. Stock (the cutaway: the
-    whole house, without roof, only the EG – the default or the variant Alternativ –; the ground
+  - **Modell:** Ganzes Haus, Erdgeschoss, 1. Stock (the cutaway: the
+    whole house, without roof, only the EG; the ground
     stays), a separator, then the sub-models by storey: under the heading Erdgeschoss Ofen, Schreibtisch,
     Bad Oma & Opa, Küche, Gäste-WC, Schrank im Büro; under 1. Stock Schrankbett, Gästebad, Bad Nadine & Till. A house entry switches in place, a sub-model entry opens its page; the current one is
     selected.
@@ -268,7 +264,7 @@ Blender backend. What the scripts make:
   - **Detailmodell:** procedural materials after `MAT_DEF`, daylight, grass and leafy shrubs.
   - **Gebaut:** dusk sky, low sun, the Wandlampen's shades glow and the lights nearest the camera
     are lit (6 inside: wall lamps and the Speis's fill light; 2 outside lamps; inside the house the
-    own storey first); in "Erdgeschoss - Alternativ" the Essen's lamps of that layout. By day all off.
+    own storey first). By day all off.
   - **Eingerichtet:** like Gebaut, plus the furniture (nodes with `extras.furniture`), which no
     other stage shows. The cutaway still applies: Erdgeschoss hides the OG furniture.
 - **Orbit** with the mouse (drag, scroll) around an outside Standpunkt. At an inside Standpunkt
@@ -362,7 +358,7 @@ sequenceDiagram
 
 The model has no runtime state. In Blender (dormant) the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
-the Bad's sliding leaves, the back hall's three doors and the Büro door move on their own clocks (each one at its
+the Bad's sliding leaves, the back hall's three doors, the Speis's saloon leaves and the Büro door move on their own clocks (each one at its
 built or its other state, or on the way); otherwise the state is the model entry (cutaway all / noroof / eg or a sub-model), the Darstellung
 (house progress `p` 0–4), the Standpunkt (or Eigene Ansicht), a forced dusk value from the sun
 toggle (cleared by any stage change), the saved view per entry, the Rundgang

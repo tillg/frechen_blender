@@ -50,8 +50,8 @@ test('in the house the doors swing too: in Eingerichtet, drawn while they move; 
   await page.goto('/?cam=1.0,8.35,1.6&at=1.5,6.2,1.0&p=4&cut=eg');               // back hall, looking south
   await page.waitForFunction(() => window.__fl?.ready === true);
   const at = () => page.evaluate(() => window.__fl.doors());
-  expect(Object.keys(await at()).sort()).toEqual(['EG_Alt_Pendeltuer_N', 'EG_Alt_Pendeltuer_S',   // + saloon leaves (#5)
-    'EG_Buerotuer', 'EG_Hintertuer', 'EG_WC_Tuer', 'EG_Windfangtuer']);   // + Büro (regal.py)
+  expect(Object.keys(await at()).sort()).toEqual(['EG_Buerotuer', 'EG_Hintertuer',   // + Büro (regal.py)
+    'EG_Pendeltuer_N', 'EG_Pendeltuer_S', 'EG_WC_Tuer', 'EG_Windfangtuer']);   // + saloon leaves (#5)
   await page.waitForFunction(() => ['EG_Hintertuer', 'EG_WC_Tuer', 'EG_Windfangtuer']             // a back hall door
     .some((n) => window.__fl.doors()[n].pos > 0 && window.__fl.doors()[n].pos < 0.5), null, { timeout: 9000, polling: 16 });
   const d0 = await page.evaluate(() => window.__fl.draws);
