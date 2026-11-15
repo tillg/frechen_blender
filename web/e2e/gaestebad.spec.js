@@ -17,7 +17,7 @@ test('Gästebad page draws shower, tub, WC niche and basin with the core dimensi
   expect(await page.evaluate(() => window.__gaestebad.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(10);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['WC 125', 'Dusche 101 × 140', 'Glas 88', 'Durchgang 52', 'Wanne 170 × 75', 'Waschbecken 60', 'Spiegel 80 × 85', 'Tür 81']) {
+  for (const t of ['WC 125', 'Dusche 101 × 141', 'Glas 88', 'Durchgang 53', 'Wanne 165 × 75', 'Waschbecken 60', 'Spiegel 80 × 85', 'Tür 81']) {
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Von der Tür', 'Gerendert']]) {

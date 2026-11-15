@@ -114,7 +114,7 @@ def test_routes_and_spots_clear_the_gaestebad():
             lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
             if 0.30 < lo[0] and hi[0] < 2.575 and 5.44 < lo[1] and hi[1] < 8.575 and (o != "Waende" or hi[0] - lo[0] < 0.2):
                 boxes.append((lo, hi))
-    assert len(boxes) > 100 and any(lo[1] > 6.7 and hi[0] < 1.1 and abs(hi[2] - house_core.Z_OG - 0.58) < 1e-6
+    assert len(boxes) > 100 and any(lo[1] > 6.85 and hi[0] < 1.12 and hi[2] > house_core.Z_OG + 0.7
                                     for lo, hi in boxes)                     # the tub is among them
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
     for name, route in tour.ROUTES:

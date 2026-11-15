@@ -28,6 +28,8 @@ Choices made while nobody was there to ask are logged here
   - [19:36 — #32: the tub built in, white ceramic shell with a limestone apron](#run-2026-11-15-1633-16)
   - [20:20 — #32: the user's addition: limestone shower floor and walls, glass instead of the partition, 9 cm further forward; tub 170](#run-2026-11-15-1633-17)
   - [20:45 — #32: the user's second addition: the shower glass 10 cm longer, to y 6.34; the way in 50 cm](#run-2026-11-15-1633-18)
+  - [21:10 — #32: the user's third addition: a freestanding slipper tub after today's photo, head end to the shower, a glass pane between them; a new Fotos-Bereich "Gästebad"](#run-2026-11-15-1633-19)
+  - [21:25 — #32: the user's fourth addition: the tub's tap out of the outer wall at the foot end, no standpipe](#run-2026-11-15-1633-20)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -212,6 +214,7 @@ Choices made while nobody was there to ask are logged here
 - **Why:** a freestanding tub wedged against two walls and the shower looks wrong and wastes the 75 cm; the limestone ties it to the house's walk-in showers; materials reused from `MAT_DEF`.
 - **Alternatives:** freestanding white tub on feet; Taubenblau tiles on the apron (they mark the WCs).
 - **Consequences:** none beyond the new Parts in `<c>_Sanitaer` / `<c>_Fliesen`.
+  Superseded by -19 (the user asked for the freestanding tub of today's photo).
 
 ## 20:20 — #32: the user's addition: limestone shower floor and walls, glass instead of the partition, 9 cm further forward; tub 170 {#run-2026-11-15-1633-17}
 
@@ -232,3 +235,24 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the user asked for exactly this; 50 cm is a usual minimum for a walk-in opening; a 160 tub is short to lie in, and the user did not ask to change it.
 - **Alternatives:** tub 160 with 60 cm kept; a hinged glass door.
 - **Consequences:** `test_gaestebad_clearances` bound 60 → 50 (the user's request supersedes the earlier own choice); labels "Glas 88", "Durchgang 52"; toilet lamp at y 5.90.
+
+## 21:10 — #32: the user's third addition: a freestanding slipper tub after today's photo, head end to the shower, a glass pane between them; a new Fotos-Bereich "Gästebad" {#run-2026-11-15-1633-19}
+
+- **Status:** open
+- **Context:** the user (via the coordinator): „Und die Badewanne ersetzen durch eine wie im heutigen input directory. Mit dem Kopfende zur Dusche. Und zwischen der Dusche und der Badewanne auch eine Glasscheibe“. The photo `input/2026-11-15 input/badewanne.webp`: a white freestanding slipper tub on four claw feet, rolled rim, one end raised as a back rest, a floor-standing chrome filler. The tub of -16/-17 was built in (limestone apron), 170 from y 6.87. #31's photo pages assign every image of `input/` to one Bereich; none holds the OG Gästebad.
+- **Question:** size and heights of the tub; where the pane and the filler go; which Bereich gets the photo.
+- **Decision:** slipper tub 165 × 75 (body; the rolled rim 1.2 cm wider), 3.5 cm off the west wall, from y 6.89 to 8.54; rim at the head end (south, to the shower) 74, at the foot end 60 — both under the window's 75 sill, so the window stays free (the photo's head end is higher; here the sill limits it); four claw feet as turned white parts; filler beside the tub on the east at y 7.40 (short of the basin's 60 cm front zone), its gooseneck over the rim; drain at the foot end. A glass pane at y 6.865 from the west wall's slabs to 5 cm past the tub's east side; the shower's north edge moves 1 cm (6.855 → 6.865) to keep the way in at 50 cm (now measured to the pane's rail). The basin moves 1 cm east (1.45 → 1.46) to stay 5 cm from the wider tub. The photo goes to a new Bereich "Gästebad" (room "Bad" OG, marker in the room); `test_anchors_in_free_air_in_their_room` keyed PLAN_ROOMS by (name, storey), which holds the OG's two "Bad" only once — it now accepts any room of that name. The photo is copied by `vorlagen.py --copy`; the other new file in that folder (`waschtisch.avif`) is not part of #32 and stays untracked.
+- **Why:** the user's words; 165 fits the 1.69 m between pane and north wall with air on both ends; a rim above the sill would cover the window the user wants to look out of.
+- **Alternatives:** tub 170 touching pane and wall; head end 80 as in the photo (over the sill); the photo under "Ganzes Haus" (it is not house-wide).
+- **Consequences:** the limestone apron and the built-in shell are gone; "Kopfende 74", "Rand 60", "Wanne 165 × 75", "Dusche 101 × 141", "Durchgang 53"; 56 pictures in `input/`.
+  The floor-standing filler was replaced by -20.
+
+## 21:25 — #32: the user's fourth addition: the tub's tap out of the outer wall at the foot end, no standpipe {#run-2026-11-15-1633-20}
+
+- **Status:** open
+- **Context:** the user (via the coordinator): „Und bei der Badewanne im Gästebad soll das Wasser also der Wasserhahn aus der Wand an der anderen Seite kommen also an der Außenwand nicht diese Stange, die mitten im Raum steht“. -19 had a floor-standing filler east of the tub.
+- **Question:** which wall and where on it?
+- **Decision:** a chrome wall tap on the west wall (the outer wall the tub stands along) at the foot end (y = tub end − 35 cm, 17 cm above the foot rim, under no window: the big window ends at 7.76): rosette, mixer body with lever, spout reaching 20 cm over the rim; a hand shower on a wall holder above it. Nothing stands on the floor beside the tub.
+- **Why:** "an der anderen Seite" = the other end from the head end (the foot end); "an der Außenwand" = the west wall; the north wall at the foot is an inner wall.
+- **Alternatives:** the tap on the north wall behind the foot end (inner wall, not what the user said).
+- **Consequences:** `TAP` replaces `FY`; a test pins the tap on the outer wall at the foot end and nothing on the floor east of the tub.

@@ -57,6 +57,14 @@ supersedes the numbers above where they differ.
 the glass ends at y 6.34 (88 long, 19 cm further forward than the old wall); the tub stays 170, the way into
 the shower is 50 cm (was ≥ 60).
 
+**Third addition** (-19): „Und die Badewanne ersetzen durch eine wie im heutigen input directory. Mit dem
+Kopfende zur Dusche. Und zwischen der Dusche und der Badewanne auch eine Glasscheibe“ — a freestanding slipper
+tub 165 × 75 on claw feet after `input/2026-11-15 input/badewanne.webp` (head end 74 to the shower, foot 60,
+both under the sill), a glass pane between shower and tub; the photo in a new Fotos-Bereich "Gästebad".
+
+**Fourth addition** (-20): „… der Wasserhahn aus der Wand an der anderen Seite … an der Außenwand nicht diese
+Stange, die mitten im Raum steht“ — the tap comes out of the west (outer) wall at the foot end.
+
 ## Open questions
 
-none — decided and logged in `DECISIONS.md` (run-2026-11-15-1633-15 … -18; unattended run).
+none — decided and logged in `DECISIONS.md` (run-2026-11-15-1633-15 … -20; unattended run).
