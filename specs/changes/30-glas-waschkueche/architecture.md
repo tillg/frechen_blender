@@ -1,7 +1,7 @@
 ---
 feature: 30-glas-waschkueche
 title: "Architecture: glazed top metre in the Bad / Waschküche partition"
-status: applying
+status: applied
 order: 3
 created: 2026-11-16
 edited: 2026-11-16

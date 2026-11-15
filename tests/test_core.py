@@ -1591,7 +1591,7 @@ def test_wandlampen_og_placements():
                          ((14.35, m(2.67, 4.15)), L, (-1, 0)),                           # the two east balcony doors
                          ((10.07, m(3.84, 5.266)), L, (1, 0))],                          # WC corner .. open leaf's end
         "WC": [((9.26, 3.98), L, (0, 1)), ((9.92, 4.95), S, (-1, 0))],                   # cistern, mirror
-        "Waschküche": [((round(5.59 + 0.375 + 0.75 * k, 3), 2.79), 1.10, (0, 1)) for k in range(4)]   # over the table,
+        "Waschküche": [((round(5.59 + 0.375 + 0.75 * k, 3), 2.79), waschkueche.LAMPE_H, (0, 1)) for k in range(4)]   # over the table,
                                                                                          # #30: under the glazing
                       + [((8.59, 4.70), S, (-1, 0))],                                    # #29: over the basin's mirror
         "Saschi": [((5.44, m(3.37, 6.06)), L, (-1, 0))],                                 # nightstand .. Flur wall
@@ -2100,6 +2100,11 @@ def test_oberlicht_bad_waschkueche():
     assert all(abs((lo[1] + hi[1]) / 2 - 2.705) < 1e-6 and hi[1] - lo[1] < 0.01 for lo, hi in glass)   # in the middle
     assert any(m == "Innentuer" and abs(lo[1] - 2.62) < 1e-6 and abs(hi[1] - 2.79) < 1e-6 and lo[0] < 6.49 - 0.012
                and hi[0] > 6.49 + 0.012 for m, lo, hi in own)                         # mullion on the glass line
+    post = [(lo, hi) for m, lo, hi in own if m == "Innentuer" and lo[0] < e.XG < hi[0] and hi[0] - lo[0] < 0.1]
+    end = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Sanitaer")) if lo[0] < e.XG < hi[0] and 2.5 < hi[1] < 2.64
+           and hi[2] > zo + 1.20]                                             # the north pane and its rail, above the sill
+    assert len(post) == 1 and len(end) == 2
+    assert all(post[0][0][0] <= lo[0] and hi[0] <= post[0][1][0] and post[0][0][1] <= hi[1] for lo, hi in end)  # end on it
     wk = ("OG", "OG_Waende")
     assert all(_part_at(wk, x, 2.70, zo + h) is None for x in (6.0, 7.0, 8.0) for h in (1.25, 1.7, 2.15))
     assert all(_part_at(wk, x, 2.70, zo + h) == "Putz" for x in (6.0, 7.0, 8.0) for h in (0.6, 1.15))

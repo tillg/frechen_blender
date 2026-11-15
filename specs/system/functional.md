@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-15
+edited: 2026-11-16
 ---
 
 # Functional: Frechenlehen house model
@@ -165,8 +165,9 @@ edited: 2026-11-15
     90 deep over the wall's full 2.22 (no tray: the limestone floor runs through, a drain each), a
     head in each back corner, a glass 80 per shower from its side wall and a 60 passage between them
     in the middle; the strip's walls in limestone slabs to 2 m like the Bad Großeltern's, on the north
-    wall (the Waschküche partition, whose top metre is to be glazed) only to 1.20, and nothing else on
-    that wall above 1.20; the toilet on the north wall between glass and basin on Taubenblau tiles
+    wall (the Waschküche partition) only to 1.20; above it, up to the ceiling, the Oberlicht: Milchglas
+    in three fields in a pine lining of the full wall depth, 10 cm short of the corners, a mullion on
+    the back shower's glass line, where that pane ends, so the Bad's window lights the Waschküche; the toilet on the north wall between glass and basin on Taubenblau tiles
     (north and east wall); the Waschbecken einzeln 60 on the east wall north of the door under the
     wood-framed mirror 80 × 85 with two Wandlampen, one more left of the window
   - the four WCs (the WC in the Bad Großeltern's niche, the Gäste-WC, the WC 2,30 and the Gästebad's WC, tiled on its south and east wall only), after
@@ -186,7 +187,8 @@ edited: 2026-11-15
     floor, west and north wall; its south and east side each a glass bifold door folding inward; the
     room door opens 90° to clear it); on the east wall north of
     the tower (15 cm from it) a Waschbecken einzeln 60 × 47 on Taubenblau tiles under a mirror 80 × 85 in a 10 cm
-    wooden frame with one Wandlampe; nothing on the south wall above 1.20
+    wooden frame with one Wandlampe; the south wall's top metre is the Bad's Oberlicht, the four
+    Wandlampen over the table hang under it (rosettes at 1.10)
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
   door outside, panel door between the rooms.
 - **Surroundings:** granite terrace with gravel strip and soil beds, ground.
