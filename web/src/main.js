@@ -9,6 +9,7 @@ import { createPlanView, PLANS } from './plans.js';
 import { createLighting } from './lighting.js';
 import { makeMaterials, roomEnvironment, setReflections, updateStage } from './materials.js';
 import { weights, stageAt } from './stages.js';
+import { createMarkers } from './markers.js';
 import { liftingNodes, slidingNodes, swingingNodes } from './slides.js';
 import { createTour, drawDue, LOOK } from './tour.js';
 import { createUI } from './ui.js';
@@ -84,6 +85,7 @@ const lifts = liftingNodes(bp.objects);
 const liftBoxes = lifts.nodes.map((n) => n.obj.updateMatrixWorld(true) || new THREE.Box3().setFromObject(n.obj)
   .union(new THREE.Box3().setFromObject(n.obj).translate(new THREE.Vector3(0, n.lift, 0))));
 scene.add(bp.root, ink.group, garden.group, fire.group);
+const markers = createMarkers(bp, yup);                   // the Vorlagen links in the rooms (code/vorlagen.py)
 
 let progress = 0, cut = 'all', sun = null;               // sun: null = follow the stage, else forced dusk 0/1
 // drawn on demand: a frame only when something changed (dirty), a fire in view flickers, or the tour runs
@@ -224,7 +226,7 @@ const planView = createPlanView(import.meta.env.BASE_URL);
 let plan = null;
 function setPlan(k) {
   plan = k;
-  if (k) planView.show(k); else planView.hide();
+  if (k) { planView.show(k); markers.hide(); } else planView.hide();
   dirty = true;
   saveView();
 }
@@ -314,6 +316,7 @@ renderer.setAnimationLoop((now) => {
   lastDraw = now;
   fire.tick(now / 1000);
   lights.update(p, inside);                                         // fast mode, dusk: the pool to the nearest sites
+  markers.update(camera, { touring, hires, plan, cut, camInside: inside });   // hidden in a route and the film capture
   renderer.render(scene, camera);
   draws++;
 });

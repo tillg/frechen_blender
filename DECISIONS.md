@@ -17,6 +17,10 @@ Choices made while nobody was there to ask are logged here
   - [17:20 — Rename the former Alternativ objects: `EG_Essen_Schrank`, `EG_Speis_Rueckwand`, `EG_Pendeltuer_S`/`_N`; lamps 13, 14 into `EG_Wandlampen`](#run-2026-11-15-1633-5)
   - [17:20 — The saloon leaves keep a door clock of their own, keyed by the name `_Pendeltuer`](#run-2026-11-15-1633-6)
   - [17:20 — Delete the tests of the switch and of the default layout; port the general ones](#run-2026-11-15-1633-7)
+  - [18:02 — #31: nine Bereiche; every raster image of `input/` assigned, plan renders in "Pläne"](#run-2026-11-15-1633-8)
+  - [18:02 — #31: markers as DOM links with a wall-ray occlusion test, not scene sprites](#run-2026-11-15-1633-9)
+  - [18:02 — #31: one page `vorlagen.html?b=<key>`, fed by a small generated JSON; reached by a link in the house page's title box](#run-2026-11-15-1633-10)
+  - [18:02 — #31: copies downsized to ≤ 1600 px JPEG and committed; the copy step is a one-off `sips` run](#run-2026-11-15-1633-11)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -44,6 +48,7 @@ Choices made while nobody was there to ask are logged here
 - **Consequences:** merge the PRs in order (#35 first); with "delete branch on merge" GitHub retargets the next PR to `main`. A change requested in an early PR has to be carried up the stack (rebase/merge the later branches).
   #35: branch issue/35-nur-noch-threejs from main, PR https://github.com/tillg/frechen_blender/pull/36 (a tweak: no change directory, so no archive step; `specs/system/` updated in place).
   #34: branch issue/34-alternativ-layout-standard from issue/35-nur-noch-threejs, PR https://github.com/tillg/frechen_blender/pull/37 (archived on the branch; full check: one red, `tour.spec.js` › ~30 fps lower bound, flaky under load, fails 2/5 on the base branch too).
+  #31: branch issue/31-fotos-anzeigen from issue/34-alternativ-layout-standard, PR https://github.com/tillg/frechen_blender/pull/38 (archived on the branch; full check green).
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -105,3 +110,43 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the switch and the default layout no longer exist; the general properties (lamp places, clearances, route) still hold and keep their tests.
 - **Alternatives:** keep the switch tests skipped (dead weight).
 - **Consequences:** none beyond the deleted code.
+
+## 18:02 — #31: nine Bereiche; every raster image of `input/` assigned, plan renders in "Pläne" {#run-2026-11-15-1633-8}
+
+- **Status:** open
+- **Context:** `specs/changes/31-fotos-anzeigen/` (issue #31 "Fotos anzeigen"): "kopiere alle Fotos nach Bereichen"; `input/` holds 55 raster images, among them plan renders, agreed drawings, sketches and two monitor screenshots.
+- **Question:** which areas, and what about pictures that are not photos of a place?
+- **Decision:** Bereiche Stube, Küche & Essen, Garderobe & Gäste-WC (the back hall with its Windfang door: Garderobe + Toilette Mallnitz + Bad Mallnitz + back door), Haupteingang & Windfang, Bibliothek & Büro, Bad Oma & Opa, Außen & Garten, Ganzes Haus (floors, interior door, stair, standard basins, Wandlampe, Werkstattofen — it stands in three rooms) and Pläne (the four architect plan renders, no marker). Drawings and sketches go to their room; the monitor screenshots to Büro. PDFs and SVGs are not copied (the plans are the viewer's plan sheets). "Ganzes Haus" has a marker in the OG Flur (so the 1. Stock has one too).
+- **Why:** every image in one place makes the test simple and exhaustive ("all photos"); the user's examples land where the issue says.
+- **Alternatives:** exclude plans/screenshots (an exclusion list to maintain); one area per room incl. OG rooms (they have no photos of their own).
+- **Consequences:** a new picture in `input/` fails `tests/test_vorlagen.py` until it is assigned and copied.
+
+## 18:02 — #31: markers as DOM links with a wall-ray occlusion test, not scene sprites {#run-2026-11-15-1633-9}
+
+- **Status:** open
+- **Context:** `specs/changes/31-fotos-anzeigen/`: a clickable element in each room opens its page.
+- **Question:** 3D sprite in the scene or an HTML element over the canvas?
+- **Decision:** one `<a target="_blank">` per anchored Bereich, projected from its anchor; shown only from inside on its storey within 8 m, or from above with that storey cut open, or (Außen) from outside; and only when no wall object lies between camera and anchor; hidden in a route, `?hires=on` and on a plan sheet.
+- **Why:** a real link (href, new tab, cursor, keyboard, testable in the production build without the test hook), no click-vs-orbit-drag logic, no WebGPU sprite material; the wall ray keeps the next room's marker from showing through the wall.
+- **Alternatives:** sprites (depth test for free, but click handling and raycasting the sprites); overlays without occlusion (markers through walls).
+- **Consequences:** furniture does not hide a marker (only walls do); the marker is a flat label of constant size, not a picture in the room.
+
+## 18:02 — #31: one page `vorlagen.html?b=<key>`, fed by a small generated JSON; reached by a link in the house page's title box {#run-2026-11-15-1633-10}
+
+- **Status:** open
+- **Context:** `specs/changes/31-fotos-anzeigen/`: area pages plus a house-wide page, reachable from the UI.
+- **Question:** one HTML per area or one page; where does the page get the manifest; where does the UI link it?
+- **Decision:** one `vorlagen.html` (no `b`: index of all Bereiche); the manifest comes from `public/vorlagen.json`, written by `npm run blueprint` from `code/vorlagen.py` (git-ignored like the `.glb`); the house page's title box gets a link "Fotos & Vorlagen" (the toolbar stays as it is; its layout and lists are pinned by `nav.spec.js`).
+- **Why:** one build input and script; the page must not load the 39 MB glb; a title link changes no toolbar test.
+- **Alternatives:** an entry in the Modell drop-down (it lists models, not pages of photos); one HTML file per Bereich.
+- **Consequences:** sub-model pages have no link to the photos (from there: the house page).
+
+## 18:02 — #31: copies downsized to ≤ 1600 px JPEG and committed; the copy step is a one-off `sips` run {#run-2026-11-15-1633-11}
+
+- **Status:** open
+- **Context:** `specs/changes/31-fotos-anzeigen/`: the originals sum to ~150 MB (5712 × 4284 photos); `input/` is not served.
+- **Question:** originals or copies; generated at build or committed?
+- **Decision:** `python3 code/vorlagen.py --copy` (macOS `sips`): longest side ≤ 1600 px, JPEG quality 80, into `web/public/vorlagen/<key>/`; committed. Tests check that every copy exists and is ≤ 1600 px, never call `sips`.
+- **Why:** the Pages build needs them; CI (Linux) has no `sips`; a 1600 px copy is plenty for a reference.
+- **Alternatives:** full originals (slow page, big repo); Pillow at build time (new dependency).
+- **Consequences:** a changed original needs `--copy` again; the repo grows by a few MB.
