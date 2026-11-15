@@ -2,7 +2,8 @@
 
 Pure Python, no bpy. BEREICHE is the one list: per Bereich (area) its key, title, the PLAN_ROOMS room
 it lies in, the anchor of its marker in the house viewer (x, y, z in house coordinates; None: no
-marker) and its pictures (source under input/, copy file name, German caption). export_gltf.py writes
+marker) and its pictures (source under input/, copy file name, German caption); a picture that repeats
+a shown one is listed in DOPPELT instead. export_gltf.py writes
 the anchored Bereiche to scene.extras.vorlagen (web/src/markers.js); `python3 code/vorlagen.py
 <out.json>` writes the manifest for the photo pages (web/vorlagen.html, npm run blueprint).
 `python3 code/vorlagen.py --copy` (once, macOS sips) puts the downsized copies (longest side
@@ -31,8 +32,8 @@ BEREICHE = [
         foto("2026-09-24 input/ofen_stuben.jpg", "Kachelofen mit Ofenbank – das Vorbild für den Ofen der Stube"),
         foto("2026-11-04 input/IMG_6409.jpeg", "Skizze: der Ofen von oben, 120 × 120 cm, die Feuertür über Eck"),
         foto("2026-11-04 input/IMG_6410.jpeg", "Skizze: Ofen und Wand mit Maßen"),
-        foto("2026-11-03 input/ofenbett-1200x800.jpg", "Ofenbett über dem Ofen, mit Regal und Lampe"),
-        foto("2026-11-04 input/Pasted 04-11-2026 at 07.49.12.png", "Entwurf der Stube mit dem Ofenbett", "stube_entwurf.jpg"),
+        foto("2026-11-04 input/Pasted 04-11-2026 at 07.49.12.png", "Entwurf der Stube: das Ofenbett über dem Ofen, mit Regal und Lampe",
+             "stube_entwurf.jpg"),
         foto("2026-11-03 input/bank-schlicht.png", "Schlichte Bank mit Kissen – die Ofenbank"),
         foto("2026-11-05 input/sofa.tiff", "Dreisitzer in Leinen – das Sofa"),
         foto("2026-11-05 input/sessel-klein.jpg", "Kleiner Sessel – die zwei Sessel der Sitzecke"),
@@ -49,8 +50,7 @@ BEREICHE = [
     ]},
     {"key": "garderobe", "title": "Garderobe & Gäste-WC", "room": ("Garderobe", "EG"), "at": (1.85, 6.4, 1.6), "fotos": [
         foto("2026-11-10 input/garderobe mallnitz.jpeg", "Garderobe in Mallnitz – Bank, Hakenleiste, Hutablage"),
-        foto("2026-11-10 input/toilette mallnitz.jpeg", "Toilette in Mallnitz – grüne Fliesen, bei uns werden sie blau"),
-        foto("2026-11-08 input/bad_mallnitz.jpeg", "WC in Mallnitz – Fliesen und Spiegel"),
+        foto("2026-11-10 input/toilette mallnitz.jpeg", "Toilette in Mallnitz – grüne Fliesen und Spiegel, bei uns werden die Fliesen blau"),
         foto("2026-09-24 input/back_door_of_the_house.jpg", "Die Hintertür"),
     ]},
     {"key": "windfang", "title": "Haupteingang & Windfang", "room": ("Neuer Windfang", "EG"), "at": (13.5, 7.5, 1.6), "fotos": [
@@ -104,6 +104,12 @@ BEREICHE = [
         foto("2026-09-23 input/grundriss_og.png", "Grundriss 1. Stock, Bestand (23. 9. 2026)", "grundriss_og_bestand.jpg"),
     ]},
 ]
+
+# pictures of input/ that are the same photo as a shown one (another size or crop): not shown; duplicate -> kept
+DOPPELT = {
+    "2026-11-08 input/bad_mallnitz.jpeg": "2026-11-10 input/toilette mallnitz.jpeg",                 # 768 x 1024
+    "2026-11-03 input/ofenbett-1200x800.jpg": "2026-11-04 input/Pasted 04-11-2026 at 07.49.12.png",  # 1200 x 800
+}
 
 
 def manifest():

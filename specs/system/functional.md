@@ -304,7 +304,8 @@ Blender backend. What the scripts make:
   the dusk, and the meadow grass is not drawn while the camera is inside the main house; the
   dusk lighting is compiled once at load, so the first dusk doesn't stall. `?hires=on` (the
   film capture, `tmp/threejs_film.mjs`, always sets it) switches all of these shortcuts off.
-- **Fotos & Vorlagen** (`vorlagen.html`): every raster image of `input/` the model was built after,
+- **Fotos & Vorlagen** (`vorlagen.html`): every raster image of `input/` the model was built after, each photo
+  once (a repeat of a shown one, another size of the same photo, is listed in `vorlagen.DOPPELT`, not shown),
   sorted into ten Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC, Haupteingang & Windfang,
   Bibliothek & Büro, Bad Oma & Opa, Gästebad, Außen & Garten, Ganzes Haus = elements found all over the house,
   Pläne); without `?b=` an index (cover picture and count per Bereich), with `?b=<key>` the

@@ -39,6 +39,7 @@ Choices made while nobody was there to ask are logged here
   - [22:27 — #27: "left wall" = east wall, "back end" = south wall; hooks over the whole east wall, the coats between Wandlampe 33 and the hook tips](#run-2026-11-15-1633-27)
   - [22:27 — #27: a dozen shoes = 6 pairs; coats and shoes as furniture `EG_Kleidung` with new fabric materials; the bench assertions replaced](#run-2026-11-15-1633-28)
   - [23:06 — #29 follow-up: one tweak branch for two user follow-ups, committed; the washer tower 4 cm from the table, the basin 15 cm from the tower](#run-2026-11-15-1633-29)
+  - [23:10 — #31 bug: duplicates found by a 16 × 16 average hash (> 16 of 256 bits apart); two pairs, the larger copy kept, captions merged, the others in `DOPPELT`](#run-2026-11-15-1633-30)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -362,3 +363,13 @@ Choices made while nobody was there to ask are logged here
 - **Why:** "etwas näher an den Tisch" = as close as the old third machine stood; the basin keeps the spacing that was agreed in #29 and gains the most distance from the door.
 - **Alternatives:** centre the basin between tower and cabin (y ≈ 4.98, closer to the door than the user wants); a bigger gap to the table (the tower would block less of the table end, but the user asked for "näher").
 - **Consequences:** the tour clearance test now also covers the tower (green: the Waschküche Standpunkt at (8.25, 3.3) keeps 33 cm). `og.svg` changes.
+
+## 23:10 — #31 bug: duplicates found by a 16 × 16 average hash (> 16 of 256 bits apart); two pairs, the larger copy kept, captions merged, the others in `DOPPELT` {#run-2026-11-15-1633-30}
+
+- **Status:** open
+- **Context:** the user (screenshot of `vorlagen.html?b=garderobe`): „die Toilette aus Mallnitz ist doppelt auf der Seite“. `toilette mallnitz.jpeg` (4032 × 3024) and `bad_mallnitz.jpeg` (768 × 1024) are the same photo, not byte-identical. `test_every_input_image_is_assigned_once` wants every raster image of `input/` assigned exactly once; no PIL in `.venv`.
+- **Question:** how to find near-identical photos, which copy to keep, and how to keep the "every image accounted for" rule?
+- **Decision:** a regression test hashes every shown copy (`sips` → 16 × 16 BMP, grayscale average hash, min over the four 90° turns) and requires > 16 differing bits for every pair. Over all 56 photos it found two duplicates: the Mallnitz toilet (3 bits) and `ofenbett-1200x800.jpg` vs the Stube Entwurf `Pasted 04-11-2026 at 07.49.12.png` (10 bits; looked at: the same picture); the closest different pictures are 23 apart (the two Ofen sketches, the two Grundrisse). Kept the larger source each (toilette mallnitz, 4032 px; the Entwurf, 2382 px) with merged captions; the others go into `vorlagen.DOPPELT` (duplicate → kept), which the assignment test counts with the shown ones; their `web/public/vorlagen/` copies removed, input files kept.
+- **Why:** threshold halfway between the duplicates (≤ 10) and the closest distinct pictures (≥ 23); sips is already the copy tool (macOS only, like `--copy`).
+- **Alternatives:** byte or size comparison (misses rescaled copies); threshold 5 as briefed (misses the Ofenbett pair).
+- **Consequences:** the test needs macOS `sips` (pytest is not run in CI). Stube 10 → 9 pictures, Garderobe 4 → 3. Code docstrings that cite `bad_mallnitz.jpeg` / `ofenbett-1200x800.jpg` as the model's source stay valid (the files remain in `input/`).
