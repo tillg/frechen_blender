@@ -14,7 +14,7 @@ The house is described once, in a **pure-Python core** (`code/house_core.py` plu
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
-- `build_house.py` builds the Blender scene. Blender renders the stills and the film from it.
+- `build_house.py` builds the Blender scene, from which Blender rendered the stills and the film.
   **Dormant** since issue #35: kept and compiled by `tests/test_blender_scripts.py`, but not
   run or maintained; `frechenlehen.blend` is frozen at `7805879` (last parity-green full check).
   Re-enabling: `CLAUDE.md` › Running › Blender backend.
