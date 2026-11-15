@@ -5661,6 +5661,27 @@
 <path class="fe" d="M143.87 146.33L151.34 146.33L151.34 146.21L143.87 146.21Z"/>
 <path class="fe" d="M151.37 146.33L169.86 146.33L169.86 146.21L151.37 146.21Z"/>
 <path class="fe" d="M252.93 146.33L269.11 146.33L269.11 146.21L252.93 146.21Z"/>
+<path class="fe" d="M176.18 146.35L206.18 146.35L206.18 124.35L176.18 124.35Z"/>
+<path class="fe" d="M185.24 146.20L206.18 146.20L206.18 135.70L185.24 135.70Z"/>
+<path class="fe" d="M188.25 137.19L189.72 137.19L189.72 136.47L188.25 136.47Z"/>
+<path class="fe" d="M192.75 137.19L194.22 137.19L194.22 136.47L192.75 136.47Z"/>
+<path class="fe" d="M195.75 137.19L197.22 137.19L197.22 136.47L195.75 136.47Z"/>
+<path class="fe" d="M189.00 136.44L190.47 136.44L190.47 135.72L189.00 135.72Z"/>
+<path class="fe" d="M190.50 136.44L191.97 136.44L191.97 135.72L190.50 135.72Z"/>
+<path class="fe" d="M192.00 136.44L193.47 136.44L193.47 135.72L192.00 135.72Z"/>
+<path class="fe" d="M193.50 136.44L194.97 136.44L194.97 135.72L193.50 135.72Z"/>
+<path class="fe" d="M195.00 136.44L196.47 136.44L196.47 135.72L195.00 135.72Z"/>
+<path class="fe" d="M196.50 136.44L197.97 136.44L197.97 135.72L196.50 135.72Z"/>
+<path class="fe" d="M188.25 135.35L189.72 135.35L189.72 135.20L188.25 135.20Z"/>
+<path class="fe" d="M189.75 135.35L191.22 135.35L191.22 135.20L189.75 135.20Z"/>
+<path class="fe" d="M191.25 135.35L192.72 135.35L192.72 135.20L191.25 135.20Z"/>
+<path class="fe" d="M192.75 135.35L194.22 135.35L194.22 135.20L192.75 135.20Z"/>
+<path class="fe" d="M195.75 135.35L197.22 135.35L197.22 135.20L195.75 135.20Z"/>
+<path class="fe" d="M188.25 135.69L189.72 135.69L189.72 135.35L188.25 135.35Z"/>
+<path class="fe" d="M189.75 135.69L191.22 135.69L191.22 135.35L189.75 135.35Z"/>
+<path class="fe" d="M191.25 135.69L192.72 135.69L192.72 135.35L191.25 135.35Z"/>
+<path class="fe" d="M192.75 135.69L194.22 135.69L194.22 135.35L192.75 135.35Z"/>
+<path class="fe" d="M195.75 135.69L197.22 135.69L197.22 135.35L195.75 135.35Z"/>
 <path class="fe" d="M103.88 173.15L103.88 150.65L103.63 150.65L103.63 173.15Z"/>
 <path class="fe" d="M143.87 173.33L153.56 173.33L153.56 173.21L143.87 173.21Z"/>
 <path class="fe" d="M153.59 173.33L173.68 173.33L173.68 173.21L153.59 173.21Z"/>
@@ -6004,8 +6025,6 @@
 <path class="fe" d="M281.12 144.70L281.12 144.95L281.41 144.95L281.41 144.70Z"/>
 <path class="fe" d="M281.12 144.95L281.12 146.55L281.41 146.55L281.41 144.95Z"/>
 <path class="fe" d="M143.86 149.15L143.86 115.09L143.61 115.09L143.61 149.15Z"/>
-<path class="fe" d="M182.14 146.17L197.52 146.17L197.52 126.35L182.14 126.35Z"/>
-<path class="f" d="M197.44 146.17L197.52 146.17L197.52 126.35L197.44 126.35Z"/>
 <path class="fe" d="M288.19 173.85L294.07 173.85L294.07 173.45L288.19 173.45Z"/>
 <path class="fe" d="M281.12 140.66L281.12 140.92L281.41 140.92L281.41 140.66Z"/>
 <path class="fe" d="M281.12 143.69L281.12 143.94L281.41 143.94L281.41 143.69Z"/>
@@ -8654,6 +8673,6 @@
 <text x="293.00" y="264.00" font-size="5.00" text-anchor="start" font-weight="bold">Frechenlehen</text>
 <text x="293.00" y="274.00" font-size="4.50" text-anchor="start">Ansicht Süd</text>
 <text x="293.00" y="283.50" font-size="3.50" text-anchor="start">M 1:100</text>
-<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand b04600dd0658</text>
+<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 86ff5b141018</text>
 <g id="scale" stroke="#000" stroke-width="0.18"><rect x="290.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="300.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="310.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="320.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="330.00" y="251.00" width="10.00" height="1.50" fill="#000"/></g><text x="290.00" y="249.80" font-size="2.00" text-anchor="middle">0</text><text x="300.00" y="249.80" font-size="2.00" text-anchor="middle">1</text><text x="310.00" y="249.80" font-size="2.00" text-anchor="middle">2</text><text x="320.00" y="249.80" font-size="2.00" text-anchor="middle">3</text><text x="330.00" y="249.80" font-size="2.00" text-anchor="middle">4</text><text x="340.00" y="249.80" font-size="2.00" text-anchor="middle">5</text><text x="342.50" y="252.40" font-size="2.00" text-anchor="start">m</text>
 </svg>
