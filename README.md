@@ -185,7 +185,7 @@ Titel der Haus-Seite; jede Bereichsseite verlinkt alle anderen. Im Haus steht in
 Schild „Fotos: …“: sichtbar von drinnen (im selben Geschoss, nicht durch Wände) und in Erdgeschoss / 1. Stock
 von oben, „Außen & Garten“ vor der Terrasse; ein Klick öffnet die Seite des Bereichs in einem neuen Tab. Im
 Rundgang, beim Filmen und auf einem Planblatt sind die Schilder aus. Welches Bild wohin gehört und wo das
-Schild steht, steht einmal in `code/vorlagen.py`; die verkleinerten Kopien (≤ 1600 px) liegen in
+Schild steht, steht einmal in `code/vorlagen.py` (jedes Foto nur einmal: dasselbe Foto in anderer Größe steht dort in `DOPPELT` und wird nicht gezeigt); die verkleinerten Kopien (≤ 1600 px) liegen in
 `web/public/vorlagen/` (neu erzeugen mit `python3 code/vorlagen.py --copy`, nur macOS).
 
 - Online: <https://tillg.github.io/frechen_blender/> (wird bei jedem Push auf `main` neu gebaut)
