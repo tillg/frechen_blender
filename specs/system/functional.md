@@ -54,8 +54,8 @@ edited: 2026-11-16
     it a Besenschrank 51 × 55 × 2.20 m; the Spülzeile (~150 cm, steel sink and tap at the water connection)
     from the door frame into the NE corner, under the Abzug (plastered flue box from 1.80 m, depth
     assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
-    after wamsler.jpeg (stainless steel, fire burning behind the glass, its black flue pipe up to 1.80 m
-    and there into the east wall, a rosette on the wall); the Halbinsel with the induction cooktop towards
+    after wamsler.jpeg (stainless steel, fire burning behind the glass, its black flue pipe from the left (north) of
+    its top up to 1.95 m and there north into the Abzug, the Kaminschacht, a rosette on its face, #26b); the Halbinsel with the induction cooktop towards
     the dining table, under an old-form steel hood hung from the ceiling (centred, lip 65 cm above the
     cooktop, skirt with a rail on the cook's side, canopy, stack to the ceiling; a strip of 4 spots along
     its middle); no wall cabinets; east of the sink,

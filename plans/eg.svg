@@ -1575,7 +1575,7 @@
 <path class="fe" d="M247.00 116.52L246.91 116.43L246.89 116.48L246.95 116.54Z"/>
 <path class="fe" d="M246.91 116.43L246.78 116.43L246.80 116.48L246.89 116.48Z"/>
 <path class="fe" d="M246.78 116.43L246.69 116.52L246.75 116.54L246.80 116.48Z"/>
-<path class="fe" d="M223.68 147.90L223.58 147.65L223.38 147.45L223.13 147.35L222.86 147.35L222.61 147.45L222.41 147.65L222.31 147.90L222.31 148.17L222.41 148.42L222.61 148.62L222.86 148.72L223.13 148.72L223.38 148.62L223.58 148.42L223.68 148.17Z"/>
+<path class="fe" d="M223.38 142.70L223.28 142.45L223.08 142.25L222.83 142.15L222.56 142.15L222.31 142.25L222.11 142.45L222.01 142.70L222.01 142.97L222.11 143.22L222.31 143.42L222.56 143.52L222.83 143.52L223.08 143.42L223.28 143.22L223.38 142.97Z"/>
 <path class="f" d="M234.57 128.65L234.18 128.65L234.18 128.94L234.57 128.94Z"/>
 <path class="e" d="M234.57 128.65L234.18 128.65M234.18 128.65L234.18 128.94M234.18 128.94L234.57 128.94"/>
 <path class="f" d="M238.97 128.65L238.58 128.65L238.58 128.94L238.97 128.94Z"/>
@@ -3112,8 +3112,7 @@
 <path class="c" d="M229.66 116.39L229.78 116.50L229.78 116.67L229.66 116.78L229.50 116.78L229.39 116.67L229.39 116.50L229.50 116.39Z"/>
 <path class="c" d="M239.91 116.89L240.76 116.89L240.76 116.29L239.91 116.29Z"/>
 <path class="c" d="M211.05 161.37L217.80 161.37L217.80 156.50L211.05 156.50Z"/>
-<path class="c" d="M222.40 148.62L222.40 147.45L224.62 147.45L224.62 148.62Z"/>
-<path class="c" d="M224.25 149.02L224.25 147.05L224.34 147.05L224.34 149.02Z"/>
+<path class="c" d="M223.19 142.50L223.28 142.72L223.28 142.95L223.19 143.17L223.03 143.33L222.81 143.42L222.58 143.42L222.36 143.33L222.20 143.17L222.11 142.95L222.11 142.72L222.20 142.50L222.36 142.34L222.58 142.25L222.81 142.25L223.03 142.34Z"/>
 <path class="c" d="M182.84 104.88L183.09 104.88L183.09 103.68L182.84 103.68Z"/>
 <path class="c" d="M191.88 104.88L192.12 104.88L192.12 103.68L191.88 103.68Z"/>
 <path class="c" d="M182.13 103.68L183.09 103.68L183.09 103.53L182.13 103.53Z"/>
@@ -3290,7 +3289,7 @@
 <text x="293.00" y="264.00" font-size="5.00" text-anchor="start" font-weight="bold">Frechenlehen</text>
 <text x="293.00" y="274.00" font-size="4.50" text-anchor="start">Grundriss EG</text>
 <text x="293.00" y="283.50" font-size="3.50" text-anchor="start">M 1:100</text>
-<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 7897348c482a</text>
+<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 5ee06065cdc9</text>
 <g id="scale" stroke="#000" stroke-width="0.18"><rect x="290.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="300.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="310.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="320.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="330.00" y="251.00" width="10.00" height="1.50" fill="#000"/></g><text x="290.00" y="249.80" font-size="2.00" text-anchor="middle">0</text><text x="300.00" y="249.80" font-size="2.00" text-anchor="middle">1</text><text x="310.00" y="249.80" font-size="2.00" text-anchor="middle">2</text><text x="320.00" y="249.80" font-size="2.00" text-anchor="middle">3</text><text x="330.00" y="249.80" font-size="2.00" text-anchor="middle">4</text><text x="340.00" y="249.80" font-size="2.00" text-anchor="middle">5</text><text x="342.50" y="252.40" font-size="2.00" text-anchor="start">m</text>
 <g id="north" stroke="#000" stroke-width="0.25"><circle cx="395.00" cy="32.00" r="7" fill="none"/><path d="M395.00 25.00L397.50 36.00L395.00 34.00L392.50 36.00Z" fill="#000"/></g><text x="395.00" y="23.50" font-size="3.50" text-anchor="middle" font-weight="bold">N</text>
 </svg>

@@ -126,7 +126,7 @@ flowchart LR
   `floor_cover()`. The outer walls and the shortened bedroom wall stay in `build_eg()`.
 - **Küche.** `code/kueche.py` the same way: `kueche_neu(c, x0, y0)` builds Spülzeile, Ostzeile,
   Halbinsel with the cooktop (`KOCHFELD`) under the hood (`_Haube`, hung from the ceiling), the Wamsler
-  (`ofen.wamsler()`, its pipe into the east wall at 1.80 with a rosette), Besenschrank and the
+  (`ofen.wamsler(..., shaft)`, its pipe from its left up to 1.95 and north into the Abzug with a rosette, #26b), Besenschrank and the
   Abzug (`c + "_Waende"`) straight into collection `c` with the room's inner NW corner at
   (x0, y0) (`EG` at `KUECHE_AT`, or `Kueche` at the origin, so the sub-model lies at y ≤ 0).
   Positions are written in house coordinates (those of `input/2026-11-09 input/speis_kueche_v6.svg`)
