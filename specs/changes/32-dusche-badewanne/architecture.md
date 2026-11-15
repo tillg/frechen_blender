@@ -25,7 +25,7 @@ glass end), `hc.shower(..., [(PA, YS, PA, YG)], tray=False)` brings the glass; `
 the west wall (to the small window's sill `WS` over the full width, above only beside it) and once on the
 south wall to the glass, from `Random(18)`; the head sits on the slabs; `YT` 6.87 (tub 170); `TX` centred
 between glass and east wall; `wainscot(sides="se")`; `BATHS_OG` in `house_core.py` splits the Gästebad at
-the glass line (one rectangle north of `YG`, shower and WC south of it).
+the glass line (one rectangle north of `YG`, shower and WC south of it). Second addition (-18): `YG` 6.34.
 
 ```mermaid
 flowchart LR

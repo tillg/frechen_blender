@@ -53,6 +53,10 @@ partition replaced by a glass wall to y 6.24 (9 cm further forward); the tub bec
 the entrance north of the glass stays ≥ 60 clear; the shower becomes 101 × 140, the WC 125 wide. This
 supersedes the numbers above where they differ.
 
+**Second addition** (run-2026-11-15-1633-18): „das glas der Dusche im oben Gästebad bitte noch 10cm länger“ —
+the glass ends at y 6.34 (88 long, 19 cm further forward than the old wall); the tub stays 170, the way into
+the shower is 50 cm (was ≥ 60).
+
 ## Open questions
 
-none — decided and logged in `DECISIONS.md` (run-2026-11-15-1633-15, -16, -17; unattended run).
+none — decided and logged in `DECISIONS.md` (run-2026-11-15-1633-15 … -18; unattended run).
