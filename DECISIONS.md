@@ -68,7 +68,7 @@ Choices made while nobody was there to ask are logged here
   19:55: on the user's request ("merge the pending PRs to main") PRs #36–#39 were merged into main (13692f8, c5b0f1a, 337cf95, 9290f63), branches deleted, issues #35 #34 #31 #33 [done]. Later PRs target main and wait for the user.
   #32: branch issue/32-dusche-badewanne from issue/33-zwei-duschen (now in main), PR https://github.com/tillg/frechen_blender/pull/41 (base main; archived on the branch; full check 110/111, the red a pinned old label, fixed, green alone).
   #29: branch issue/29-waschkueche-becken-dusche from issue/32-dusche-badewanne, PR https://github.com/tillg/frechen_blender/pull/42 (archived on the branch; full check 109/111: `bad.spec.js:49` green alone, the ~30 fps test load-flaky). After the user's change (-24, a post-archive change on the branch, system docs updated in place): full check 111/111.
-  #28: branch issue/28-waschkueche-fliesenboden from issue/29-waschkueche-becken-dusche (a tweak that commits, as #35: no change directory, `specs/system/` updated in place; full check 109/111: `desk.spec.js:77` green alone, the ~30 fps test load-flaky, red alone at 8 fps), PR PRURL.
+  #28: branch issue/28-waschkueche-fliesenboden from issue/29-waschkueche-becken-dusche (a tweak that commits, as #35: no change directory, `specs/system/` updated in place; full check 109/111: `desk.spec.js:77` green alone, the ~30 fps test load-flaky, red alone at 8 fps), PR https://github.com/tillg/frechen_blender/pull/43.
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
