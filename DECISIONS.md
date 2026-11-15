@@ -27,6 +27,7 @@ Choices made while nobody was there to ask are logged here
   - [19:36 — #32: shower SW, tub 180 × 75 along the west wall under the window, partition shortened to 6.15, WC niche to the SE, basin 60 on the north wall; 4 lamps instead of 5](#run-2026-11-15-1633-15)
   - [19:36 — #32: the tub built in, white ceramic shell with a limestone apron](#run-2026-11-15-1633-16)
   - [20:20 — #32: the user's addition: limestone shower floor and walls, glass instead of the partition, 9 cm further forward; tub 170](#run-2026-11-15-1633-17)
+  - [20:45 — #32: the user's second addition: the shower glass 10 cm longer, to y 6.34; the way in 50 cm](#run-2026-11-15-1633-18)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -220,4 +221,14 @@ Choices made while nobody was there to ask are logged here
 - **Decision:** floor: no ceramic tray, the room's limestone runs through (`tray=False`, as in the Bäder S and Großeltern); limestone to 2.0 on the back wall (west, around the small window: up to its sill 1.48 over the full width, above only beside it) and on the side wall (south, with the head, on the slabs); the partition goes, a glass wall stands on its west face line (x 1.319) from the south wall to y 6.24 (9 cm further forward than the wall's 6.15); the WC niche, now glass to the east wall, keeps the toilet centred between glass and wall. To keep the shower's entrance ≥ 60 cm clear between the glass and the tub, the tub is 170 (y 6.87 .. 8.57) instead of 180; the window still spans 89 cm of it.
 - **Why:** "hintere Wand" = the back wall of -15 (west), "Seite" = the shower's other wall (south; the east side is the glass); a few cm forward is what "etwas" says, and more would close the way in; 170 × 75 is a standard tub.
 - **Alternatives:** keep the 180 tub with a 50 cm entrance; glass further forward with a door; keep the partition and add glass in front of it.
-- **Consequences:** the partition over the EG one is gone (its test rewritten, appended to -14); `BATHS_OG` is one rectangle for the room; one draw less from `Random(18)` (the mirror's rnd changes).
+- **Consequences:** the partition over the EG one is gone (its test rewritten, appended to -14); `BATHS_OG` splits the Gästebad at the glass line (one rectangle put the WC 2,30's floor probe on a joint); one draw less from `Random(18)` (the mirror's rnd changes).
+
+## 20:45 — #32: the user's second addition: the shower glass 10 cm longer, to y 6.34; the way in 50 cm {#run-2026-11-15-1633-18}
+
+- **Status:** open
+- **Context:** the user (via the coordinator): „das glas der Dusche im oben Gästebad bitte noch 10cm länger“. The glass of -17 ran from the south wall to y 6.24, leaving 60 cm to the tub; a test pinned ≥ 60.
+- **Question:** lengthen the glass at the cost of the way in, or keep 60 cm by shortening the tub to 160?
+- **Decision:** the glass ends at y 6.34 (88 long); the tub stays 170, so the way into the shower is 50 cm (51.5 to the shower edge, 50.4 between glass rail and tub cap). The clearance test's bound goes from 60 to 50.
+- **Why:** the user asked for exactly this; 50 cm is a usual minimum for a walk-in opening; a 160 tub is short to lie in, and the user did not ask to change it.
+- **Alternatives:** tub 160 with 60 cm kept; a hinged glass door.
+- **Consequences:** `test_gaestebad_clearances` bound 60 → 50 (the user's request supersedes the earlier own choice); labels "Glas 88", "Durchgang 52"; toilet lamp at y 5.90.

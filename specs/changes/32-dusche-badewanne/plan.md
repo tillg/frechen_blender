@@ -28,5 +28,8 @@ edited: 2026-11-15
   - Test first: `tests/test_core.py` › `test_gaestebad_og_walls` (glass, no partition), `test_gaestebad_og_shower_and_tub` (no tray, limestone floor and walls, window free, tub 170), `test_gaestebad_clearances` (entrance from the glass, toilet centred, tiles), `test_gaestebad_submodel` labels, lamp and basin positions — failed on the first layout (5 red), green after
   - Verify: `.venv/bin/python -m pytest -q tests/test_core.py -k "gaestebad or wandlampen or waschbecken or wc_"` → green; `check.sh quick` green; Show again (page top, house top, door at 1.6 m)
   - Applied: the Gästebad leaves `WCS` (three tiled walls no longer: glass on one side), its tiles are checked in `test_gaestebad_clearances`; the floor as one rectangle put the WC 2,30's probe on a joint, so `BATHS_OG` splits at the glass line instead (where the slabs would end anyway).
+- [x] [python] The user's second addition (run-2026-11-15-1633-18): the shower glass 10 cm longer, to y 6.34 (the way in 50 cm); labels, toilet lamp, docs, plan sheets follow
+  - Test first: `tests/test_core.py` › `test_gaestebad_og_walls` (glass at y 6.3, its end 6.344), `test_gaestebad_clearances` (way in ≥ 50, was 60), `test_gaestebad_submodel` ("Glas 88", "Durchgang 52"), `test_wandlampen_og_placements` (toilet lamp y 5.90) — 3 red on the 6.24 glass, green after
+  - Verify: `.venv/bin/python -m pytest -q tests/test_core.py tests/test_tour.py` → green; `check.sh quick`; Show (page top, door)
 
 System docs are updated at `/spec:archive`.

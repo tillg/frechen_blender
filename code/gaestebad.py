@@ -23,7 +23,7 @@ import gaeste_wc
 GAESTEBAD_AT = (0.31, 5.46)                  # house: the room's inner SW corner
 WI, WO, YS, YN = 0.31, 2.57, 5.46, 8.57      # room: west and east (Flur wall) faces, south and north faces
 PA = gaeste_wc.PA                            # the glass between shower and WC: over the EG partition's west face
-YG = 6.24                                    # its north end, 9 cm before the partition's (6.15); the way in north of it
+YG = 6.34                                    # its north end, 19 cm before the partition's (6.15); the way in north of it
 TUER = (7.66, 8.47)                          # Flur door in the east wall, hinged south, open flat into the Bad
 YT, XT, ZR = 6.87, WI + 0.75, 0.58           # tub: south edge (window from 6.77), east face, rim top
 SN = YT - 0.015                              # shower's north edge: clear of the tub's limestone end
