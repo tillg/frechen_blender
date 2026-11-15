@@ -26,7 +26,7 @@ CODE = Path(__file__).resolve().parent.parent / "code"
 def test_paint_and_room_lights_live_in_the_core():
     ral9010, ral5014 = (241, 236, 225), (99, 125, 150)
     assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014, "Front": ral5014}
-    assert len(house_core.ROOM_LIGHTS) == 1 and len(BP.wall_lights) == 32 + 33 + 1   # OG (#33), EG (#22, #34), hood spots
+    assert len(house_core.ROOM_LIGHTS) == 1 and len(BP.wall_lights) == 31 + 33 + 1   # OG (#33, #32), EG (#22, #34), hood spots
     assert BP.paint == house_core.PAINT and BP.room_lights == house_core.ROOM_LIGHTS
     assert "RAL =" not in (CODE / "paint.py").read_text()
     assert "ROOM_LIGHTS =" not in (CODE / "film.py").read_text()
@@ -1205,7 +1205,7 @@ def _part_at(key, x, y, z):
 # the four WCs: (collection, floor z, interior rectangle, door span on the north wall)
 WCS = [("EG", 0.0, (0.31, 1.319, 5.475, 6.574), (0.48, 1.24)),                   # Gäste-WC by the back hall
        ("EG", 0.0, (0.31, 1.274, 8.656, 9.856), (0.31, 1.274)),                  # WC Großeltern: niche, north open
-       ("OG", house_core.Z_OG, (0.31, 1.319, 5.46, 6.54), (0.31, 1.319)),        # Gästebad: WC niche, north open
+       ("OG", house_core.Z_OG, (1.419, 2.57, 5.46, 6.15), (1.419, 2.57)),        # Gästebad: WC niche (#32: SE), north open
        ("OG", house_core.Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]          # WC 2,30
 
 
@@ -1237,7 +1237,7 @@ def test_wc_fixtures_after_the_photo():
     zo = house_core.Z_OG
     at = lambda wx, wy, fx, fy: lambda u, v: (wx + fx * v - fy * u, wy + fy * v + fx * u)
     for c, z, *w in [("EG", 0.0, 0.31 + 0.482, 8.656, 0, 1), ("EG", 0.0, 0.8145, 5.475, 0, 1),
-                     ("OG", zo, 0.8145, 5.46, 0, 1), ("OG", zo, 9.26, 3.98, 0, 1)]:
+                     ("OG", zo, 1.9945, 5.46, 0, 1), ("OG", zo, 9.26, 3.98, 0, 1)]:
         M, key = at(*w), (c, c + "_Sanitaer")
         assert _part_at(key, *M(0, 0.10), z + 0.60) == "Keramik", w            # cistern
         assert _part_at(key, *M(0, 0.40), z + 0.03) == "Keramik", w            # pedestal on the floor
@@ -1326,23 +1326,23 @@ def test_keramik_bright_white():
 
 
 def test_waschbecken_og_baeder():
-    """OG Bäder (request 2026-11-12): a Waschbecken doppelt on its Ständer, 120 in the middle of the
-    north wall of the Gästebad at the end of the Flur (NW, #18); above it a mirror 140 x 85 (#19)
-    in a 10 cm wooden frame (like the OG Flur's); clear of the door leaves and the shower. Nadine & Till's
+    """OG Bäder (request 2026-11-12): a Waschbecken on its Ständer on the north wall of the Gästebad at the
+    end of the Flur (NW, #18); #32: einzeln 60 between the tub and the door, above it a mirror 80 x 85
+    in a 10 cm wooden frame (like the OG Flur's); clear of the door leaves, the shower and the tub. Nadine & Till's
     Bad (S) has a single one since #33 (test_elternbad_layout); nothing there reaches into the window reveal."""
     zo, key = house_core.Z_OG, ("OG", "OG_Sanitaer")
-    showers = [((1.419, 5.46, zo), (2.57, 6.54, zo + 2.05))]
-    for wall, w in (((1.44, 8.57, 0, -1), 1.20),):                                # NW: Gästebad (#18), centred
-        parts = _waschbecken(key, wall, w, 0.47, 2, zo)
+    showers = [((0.31, 5.46, zo), (1.319, 6.755, zo + 2.05)), ((0.31, 6.756, zo), (1.074, 8.57, zo + 0.58))]   # + tub
+    for wall, w in (((1.45, 8.57, 0, -1), 0.60),):                                # NW: Gästebad (#18, #32)
+        parts = _waschbecken(key, wall, w, 0.47, 1, zo)
         _clear(parts, _leaf_boxes(BP, "OG", zo) + showers, wall)
         cx, cy = wall[:2]
         mixers = sorted(round((lo[0] + hi[0]) / 2 - cx, 3) for m, lo, hi in parts
                         if m == "Metall" and abs(lo[2] - zo - 0.85) < 1e-6)
-        assert mixers == [round(-w / 4, 3), round(w / 4, 3)], wall
+        assert mixers == [0.0], wall
         mir = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Spiegel")) if m == "Spiegel" and abs(lo[1] - cy) < 0.02
                and lo[0] < cx < hi[0]]
         assert len(mir) == 1 and abs((mir[0][0][0] + mir[0][1][0]) / 2 - cx) < 1e-6, wall
-        mw = 1.10 if cy < 1 else 1.40                 # Bad S: 110, Gästebad: 140, x 85 in a 10 cm wooden frame (like the Flur's)
+        mw = 1.10 if cy < 1 else 0.80                 # Bad S: 110, Gästebad: 80 (#32), x 85 in a 10 cm wooden frame (like the Flur's)
         frame = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Spiegel")) if m == "Kiefer" and abs(lo[1] - cy) < 0.05
                  and lo[0] < cx + 1 and hi[0] > cx - 1]
         assert len(frame) == 4
@@ -1386,17 +1386,18 @@ def _rosettes(bp, key):
 def test_wandlampen_over_the_og_mirrors():
     """Issue #19: the Gästebad's mirror becomes 140 x 85, the Flur's 110 x 85 (bottoms stay at 1.17); over
     them 4 and 2 Wandlampen, each centred on its equal share of the mirror's width, rosette centre at
-    WANDLAMPE_SPIEGEL_H and clear above the frame; one more on the Gästebad's west wall between its
-    small and big window, at the same height ("auf gleicher Höhe")."""
+    WANDLAMPE_SPIEGEL_H and clear above the frame. #32: the Gästebad's mirror is 80 x 85 with 2 lamps;
+    the west-wall lamp between the windows (now in the shower) went to the north wall over the tub's
+    head end, at the same height."""
     zo, H = house_core.Z_OG, house_core.WANDLAMPE_SPIEGEL_H
     assert H == 2.10
     got = _rosettes(BP, ("OG", "OG_Wandlampen"))
-    want = [((round(1.44 + d, 3), 8.57), (0, -1)) for d in (-0.525, -0.175, 0.175, 0.525)]   # Gästebad mirror
+    want = [((round(1.45 + d, 3), 8.57), (0, -1)) for d in (-0.2, 0.2)]                     # Gästebad mirror
     want += [((round(6.01 + d, 3), 6.35), (0, 1)) for d in (-0.275, 0.275)]                 # Flur mirror
-    want += [((0.31, round((6.32 + 6.77) / 2, 3)), (1, 0))]                                # Gästebad windows
+    want += [((round((0.31 + 1.06) / 2, 3), 8.57), (0, -1))]                               # Gästebad tub
     for w, f in want:
         assert (w, round(zo + H, 3), f) in got, (w, f, got)
-    for x, y in ((1.44, 8.57), (6.01, 6.35)):                            # the frames end 3+ cm under the rosettes
+    for x, y in ((1.45, 8.57), (6.01, 6.35)):                            # the frames end 3+ cm under the rosettes
         top = max(hi[2] for m, lo, hi in _parts(BP, ("OG", "OG_Spiegel")) if m == "Kiefer" and abs(lo[1] - y) < 0.05
                   and lo[0] < x < hi[0])
         assert abs(top - (zo + 2.02)) < 1e-6 and zo + H - 0.042 - top > 0.03
@@ -1410,8 +1411,8 @@ def test_wandlampen_og_placements():
     assert L == 1.70
     m = lambda a, b: round((a + b) / 2, 3)
     want = {
-        "Gästebad": [((round(1.44 + d, 3), 8.57), S, (0, -1)) for d in (-0.525, -0.175, 0.175, 0.525)]
-                    + [((0.31, m(6.32, 6.77)), S, (1, 0))],
+        "Gästebad": [((round(1.45 + d, 3), 8.57), S, (0, -1)) for d in (-0.2, 0.2)]           # #32: mirror,
+                    + [((m(0.31, 1.06), 8.57), S, (0, -1)), ((2.57, m(5.46, 6.15)), L, (-1, 0))],   # tub, toilet
         "Flur": [((round(6.01 + d, 3), 6.35), S, (0, 1)) for d in (-0.275, 0.275)]
                 + [((m(4.15, 6.31), 8.57), L, (0, -1)),                                  # Yoga .. Jugend door
                    ((round(7.20 + 5.10 / 3, 3), 8.57), L, (0, -1)), ((round(7.20 + 2 * 5.10 / 3, 3), 8.57), L, (0, -1)),
@@ -1437,8 +1438,8 @@ def test_wandlampen_og_placements():
     flat = sorted((w, round(zo + h, 3), f) for room in want.values() for w, h, f in room)
     same = lambda a, b: math.dist(a[0], b[0]) < 0.0015 and a[1:] == b[1:]     # 1.5 mm: positions at half mm round either way
     miss = ([g for g in got if not any(same(g, w) for w in flat)], [w for w in flat if not any(same(g, w) for g in got)])
-    assert len(flat) == 32 and len(got) == len(flat) and miss == ([], []), miss
-    assert len([p for p in BP.wall_lights if p[2] > house_core.Z_OG]) == 32
+    assert len(flat) == 31 and len(got) == len(flat) and miss == ([], []), miss
+    assert len([p for p in BP.wall_lights if p[2] > house_core.Z_OG]) == 31
 
 
 def test_wandlampen_eg_placements():
@@ -1671,14 +1672,16 @@ def test_bad_built_into_the_grosseltern():
 
 
 def test_gaestebad_og_walls():
-    """Gästebad im 1. Stock (#18): the partition between WC niche and shower stands over the EG
-    Gäste-WC's (gaeste_wc.PA/PB); the WC 2,26's wall with its door is gone, the niche is open."""
+    """Gästebad im 1. Stock (#18): the partition stands over the EG Gäste-WC's (gaeste_wc.PA/PB); #32: it ends
+    at y 6.15, so the shower west of it opens east between it and the tub; the WC 2,26's wall with its door is
+    gone, the niche is open."""
     import gaeste_wc
     zo, key = house_core.Z_OG, ("OG", "OG_Waende")
     xm = (gaeste_wc.PA + gaeste_wc.PB) / 2
-    assert [_part_at(key, xm, y, zo + 1.0) for y in (5.5, 6.0, 6.5)] == ["Putz"] * 3          # partition
+    assert [_part_at(key, xm, y, zo + 1.0) for y in (5.5, 5.8, 6.1)] == ["Putz"] * 3          # partition
+    assert all(_part_at(key, xm, y, zo + h) is None for y in (6.2, 6.5, 6.7) for h in (1.0, 2.1))   # shower entrance
     assert any(abs(lo[0] - gaeste_wc.PA) < 1e-6 and abs(hi[0] - gaeste_wc.PB) < 1e-6 and abs(lo[1] - 5.46) < 1e-6
-               and abs(hi[1] - 6.54) < 1e-6 for m, lo, hi in _parts(BP, key))                # its full box
+               and abs(hi[1] - 6.15) < 1e-6 for m, lo, hi in _parts(BP, key))                # its full box
     assert _part_at(key, 1.62, 6.0, zo + 1.0) is None                                        # old partition
     assert all(_part_at(key, x, 6.49, zo + h) is None for x in (0.4, 1.0, 1.3) for h in (1.0, 2.3))   # old WC wall
     assert not [d for d in BP.doors if d["c"] == "OG" and d["hinge"][0] < 2.5 and 6.3 < d["hinge"][1] < 6.7]
@@ -1686,27 +1689,81 @@ def test_gaestebad_og_walls():
                 and 6.0 < min(l[0][1], l[1][1]) < 6.7]
 
 
-def test_gaestebad_og_shower():
-    """Gästebad (#18): walk-in shower in the east niche, 115 wide and long to 5 cm short of the Flur
-    door's leaf (open flat against the east wall; request 2026-11-13); a 65 cm glass panel on its
-    north edge from the east wall, the rest open (50 beside the partition), no door; the head on the
-    south wall behind the glass."""
+def _gaestebad_boxes(bp, c="OG", dx=0.0, dy=0.0):
+    """The (material, lo, hi) of every Part the Gästebad brings into the room (fixtures, tiles, mirror, lamps,
+    the partition), in house coordinates."""
+    out = []
+    for o in ("Sanitaer", "Fliesen", "Spiegel", "Wandlampen", "Waende"):
+        for m, lo, hi in _parts(bp, (c, c + "_" + o)):
+            lo, hi = (lo[0] + dx, lo[1] + dy, lo[2]), (hi[0] + dx, hi[1] + dy, hi[2])
+            if 0.30 < lo[0] and hi[0] < 2.575 and 5.455 < lo[1] and hi[1] < 8.575 and (o != "Waende" or hi[0] - lo[0] < 0.2):
+                out.append((m, lo, hi))
+    return out
+
+
+def test_gaestebad_og_shower_and_tub():
+    """Issue #32: coming in through the Flur door one faces the back wall (west): on the left, in the SW corner,
+    the walk-in shower (west wall to the partition, south wall to the tub; no glass, head on the south wall);
+    to its right the tub 180 x 75 built in along the west wall from the big window's south jamb (y 6.77) to the
+    north wall: white shell, rim 58 under the window's 75 sill, the window over its south half (to look out
+    of), a limestone apron (east) and end (south), a deck mixer on the south rim."""
     zo, key = house_core.Z_OG, ("OG", "OG_Sanitaer")
     near = lambda a, b: all(abs(p - q) < 1e-6 for p, q in zip(a, b))
+    room = [(m, lo, hi) for m, lo, hi in _gaestebad_boxes(BP)]
     tray = [(lo, hi) for m, lo, hi in _parts(BP, key) if m == "Keramik" and abs(lo[2] - zo - 0.015) < 1e-6
-            and lo[0] < 2.6 and 5.4 < lo[1] < 7.0]
-    assert len(tray) == 1 and near(tray[0][0][:2], (1.419, 5.46)) and near(tray[0][1][:2], (2.57, 6.85))
-    glass = [(lo, hi) for m, lo, hi in _parts(BP, key) if m == "Glas" and lo[0] < 2.6 and 5.4 < lo[1] < 7.0]
-    assert len(glass) == 1
-    (lo, hi), = glass
-    assert near((lo[0], hi[0]), (1.92 - 0.004, 2.57 + 0.004)) and near((lo[1], hi[1]), (6.85 - 0.004, 6.85 + 0.004))
-    leaf, = [d["leaf"] for d in BP.doors if d["c"] == "OG" and abs(d["hinge"][0] - 2.57) < 0.01 and 7.6 < d["hinge"][1] < 7.7]
-    gap = min(leaf[0][1], leaf[1][1]) - max(hi[1] for m, lo, hi in _parts(BP, key)
-                                            if m in ("Glas", "Metall") and 6.6 < hi[1] < 7.0 and lo[0] > 1.9)
-    assert 0.03 < gap < 0.07                                                 # glass and its rail: ~5 cm short
+            and abs(hi[2] - zo - 0.045) < 1e-6 and lo[0] < 2.6 and 5.4 < lo[1] < 7.0]
+    assert len(tray) == 1 and near(tray[0][0][:2], (0.31, 5.46)) and near(tray[0][1][:2], (1.319, 6.755))
+    assert not [1 for m, lo, hi in room if m == "Glas"]                                      # walk-in, no glass
     riser = [(lo, hi) for m, lo, hi in _parts(BP, key) if m == "Metall" and abs(lo[2] - zo - 1.0) < 1e-6
              and lo[0] < 2.6 and 5.4 < lo[1] < 5.6]
-    assert len(riser) == 1 and 1.92 < (riser[0][0][0] + riser[0][1][0]) / 2 < 2.57
+    assert len(riser) == 1 and 0.31 < (riser[0][0][0] + riser[0][1][0]) / 2 < 1.319
+    tub = [(lo, hi) for m, lo, hi in room if m == "Keramik" and lo[1] > 6.74 and hi[0] < 1.1]
+    lo = [min(b[0][k] for b in tub) for k in range(3)]
+    hi = [max(b[1][k] for b in tub) for k in range(3)]
+    assert near(lo[:2], (0.31, 6.756)) and near(hi[:3], (1.074, 8.57, zo + 0.58))           # 180 (+ cap) x 75
+    assert abs(lo[2] - zo - 0.015) < 1e-6 and hi[2] < zo + 0.75                              # rim under the sill
+    assert min(7.76, hi[1]) - max(6.77, lo[1]) > 0.95                                        # the window over the tub
+    inner = [b for b in tub if abs(b[1][2] - zo - 0.15) < 1e-6]                               # the bottom, inside the rims
+    assert len(inner) == 1 and near(inner[0][0][:2], (0.37, 6.83)) and near(inner[0][1][:2], (1.0, 8.51))
+    stone = [(lo, hi) for m, lo, hi in room if m == "Kalkstein"]
+    apron = [b for b in stone if b[0][0] > 1.06 and b[1][0] < 1.075]
+    end = [b for b in stone if b[0][1] > 6.755 and b[1][1] < 6.77]
+    assert sum(b[1][1] - b[0][1] for b in apron) > 1.75 and sum(b[1][0] - b[0][0] for b in end) > 0.72
+    assert all(b[1][2] <= zo + 0.56 + 1e-6 for b in apron + end)                             # under the cap
+    mixer = [(lo, hi) for m, lo, hi in room if m == "Metall" and lo[2] > zo + 0.57 and lo[0] < 1.06 and lo[1] > 6.74]
+    assert mixer and all(b[0][1] > 6.756 and b[1][1] < 7.0 for b in mixer)                  # on the south rim
+
+
+def test_gaestebad_clearances():
+    """Issue #32: the shower opens east north of the partition, ≥ 60 cm clear to the tub, nothing in front of the
+    opening; the toilet centred in the WC niche east of the partition, ≥ 20 free each side, ≥ 60 in front; the
+    basin (single 60) on the north wall between tub and door, ≥ 5 from the tub, 60 free in front; nothing of the
+    Gästebad within the Flur door leaf's swing (so the leaf, open flat against the east wall, touches nothing)."""
+    zo = house_core.Z_OG
+    boxes = _gaestebad_boxes(BP)
+    hits = lambda a, b: [(m, lo, hi) for m, lo, hi in boxes
+                         if all(lo[k] < b[k] - 1e-6 and hi[k] > a[k] + 1e-6 for k in range(3))]
+    part = [(lo, hi) for m, lo, hi in boxes if m == "Putz"]
+    tub = [(lo, hi) for m, lo, hi in boxes if m in ("Keramik", "Kalkstein") and lo[1] > 6.74 and hi[0] < 1.1]
+    yp, yt = max(hi[1] for lo, hi in part), min(lo[1] for lo, hi in tub)
+    assert yt - yp >= 0.60                                                                  # shower entrance
+    assert not hits((0.9, yp, zo + 0.1), (1.75, yt, zo + 1.9))
+    toilet = [(lo, hi) for m, lo, hi in boxes if m == "Keramik" and lo[0] > 1.42 and hi[1] < 6.3]
+    tl, th = [min(b[0][k] for b in toilet) for k in range(3)], [max(b[1][k] for b in toilet) for k in range(3)]
+    assert abs((tl[0] + th[0]) / 2 - (1.419 + 2.57) / 2) < 1e-6                              # centred in the niche
+    assert tl[0] - 1.419 - 0.01 >= 0.20 and 2.57 - 0.01 - th[0] >= 0.20                      # 20 free each side
+    assert not hits((tl[0], th[1], zo + 0.05), (th[0], th[1] + 0.60, zo + 1.5))              # 60 in front
+    basin = [(lo, hi) for m, lo, hi in boxes if m == "Keramik" and abs(hi[2] - zo - 0.85) < 1e-6 and lo[1] > 8.0]
+    bl, bh = [min(b[0][k] for b in basin) for k in range(3)], [max(b[1][k] for b in basin) for k in range(3)]
+    assert abs(bh[0] - bl[0] - 0.60) < 1e-6 and bl[0] - max(hi[0] for lo, hi in tub) >= 0.05
+    assert not hits((bl[0], bl[1] - 0.60, zo + 0.05), (bh[0], bl[1], zo + 1.8))              # 60 in front
+    door, = [d for d in BP.doors if d["c"] == "OG" and abs(d["hinge"][0] - 2.57) < 0.01 and 7.6 < d["hinge"][1] < 7.7]
+    h = door["hinge"][:2]
+    r = max(math.dist(h, p[:2]) for p in door["leaf"])
+    corners = lambda lo, hi: [(x, y) for x in (lo[0], hi[0]) for y in (lo[1], hi[1])]
+    near = [(m, lo, hi) for m, lo, hi in boxes if any(math.dist(h, p) < r + 0.05 for p in corners(lo, hi))
+            or (lo[1] < h[1] < hi[1] and h[0] - hi[0] < r + 0.05)]
+    assert near == []
 
 
 def test_gaestebad_submodel():
@@ -1731,10 +1788,11 @@ def test_gaestebad_submodel():
     assert len(part) == 1 and part <= house("Waende")                      # the partition (the wall pieces:
                                                                            # cut differently in the house)
     labels = [d[2] for d in bp.dims]
-    assert len(bp.wall_lights) == 5 and len(bp.parts[("Gaestebad", "Gaestebad_Wandlampen")]) == 5 * 8   # #19: its five lamps,
+    assert len(bp.wall_lights) == 4 and len(bp.parts[("Gaestebad", "Gaestebad_Wandlampen")]) == 4 * 8   # #32: its four lamps,
     for x, y, z in bp.wall_lights:                                                           # where the house has them
         assert any(math.dist((x + x0, y + y0, z + house_core.Z_OG), q) < 1e-6 for q in BP.wall_lights), (x, y, z)
-    for t in ("WC 101", "Dusche 115 × 139", "Glas 65", "50 offen", "Waschbecken 120", "Spiegel 140 × 85", "Tür 81"):
+    for t in ("WC 115", "Dusche 101 × 130", "Durchgang 60", "Wanne 180 × 75", "Rand 58", "Waschbecken 60", "Spiegel 80 × 85",
+              "Tür 81"):
         assert t in labels, (t, labels)
 
 

@@ -1,7 +1,8 @@
 // Gästebad sub-model page (gaestebad.html): the OG Bad at the end of the Flur of house_core.build_gaestebad()
 // (code/gaestebad.py, issue #18) with the pieces of its four walls, drawn by submodel.js. Model origin:
-// the room's inner SW corner; the room spans x 0..2.26, y 0..3.11: along the south wall the WC niche
-// (x 0..1.01) and the shower (x 1.11..2.26, to y 1.39), the basin in the middle of the north wall.
+// the room's inner SW corner; the room spans x 0..2.26, y 0..3.11 (#32): the shower in the SW corner (x 0..1.01,
+// to y 1.30), the tub along the west wall (x 0..0.75, y 1.31..3.11) under the window, the WC niche east of the
+// partition (x 1.11..2.26, to y 0.69), the basin on the north wall between the tub and the door.
 import { startSubmodel } from './submodel.js';
 
 await startSubmodel({
@@ -9,7 +10,7 @@ await startSubmodel({
   views: {
     iso: ['Schräg', [4.6, 4.9, 4.2], [1.1, 1.5, 0.8]],             // from the Flur's side (north-east), above
     top: ['Von oben', [1.13, 1.55, 9.0], [1.13, 1.551, 0.0]],      // plan, north at the top
-    door: ['Von der Tür', [2.1, 2.95, 1.6], [1.1, 0.5, 0.9]],      // inside the Flur door, looking at niche and shower
+    door: ['Von der Tür', [2.1, 2.6, 1.6], [0.2, 0.6, 0.7]],       // inside the Flur door, looking at shower and tub
   },
   colors: { Gaestebad_Sanitaer: 0x2b5f8e, Gaestebad_Spiegel: 0x2b5f8e, Gaestebad_Wandlampen: 0x8a6a2b,
     Gaestebad_Fliesen: 0x4f7a5a, Gaestebad_Waende: 0x8a8a8a,
