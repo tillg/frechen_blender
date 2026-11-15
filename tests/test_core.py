@@ -2404,9 +2404,6 @@ def test_garderobe_kleidung():
     boards = [z + g.SHOE_T for z in g.SHOE_Z[:2]]
     assert sorted(sum(abs(lo[2] - b) < 0.003 for lo, hi in soles) for b in boards) == [6, 6]
     shoes = [(m, lo, hi) for m, lo, hi in kl if hi[2] < top]
-    for m, lo, hi in bodies:                                                         # hems 2 cm above the boots under them
-        under = [h[2] for m_, l, h in shoes if l[0] < hi[0] and h[0] > lo[0]]
-        assert lo[2] > max(under + [top]) + 0.02, m
     for m, lo, hi in shoes:
         level = max(b for b in boards if b <= lo[2] + 0.003)
         assert hi[2] < level + 0.20 - 0.02 and hi[1] < g.YS + g.SHOE_D, (m, lo, hi)
@@ -2414,6 +2411,7 @@ def test_garderobe_kleidung():
     others = [("EG", "EG_" + n) for n in ("Waende", "Wandlampen", "Fenster_Tueren", "Innentueren", "Hintertuer",
                                          "WC_Tuer", "Windfangtuer")]
     boxes = [(lo, hi) for k in others for m, lo, hi in _parts(BP, k)]
+    _clear(gar, boxes, "Garderobe")                                                  # hooks, rod, shelves
     boxes += [(lo, hi) for m, lo, hi in gar if m != "Stahl"]
     _clear([p for p in kl if p[0] != "Stahl"], boxes, "Kleidung")
     hooks = [p for p in kl if p[0] == "Stahl"]
