@@ -147,16 +147,16 @@ def test_routes_and_spots_clear_the_waschkueche():
 
 def test_routes_and_spots_clear_the_kueche_hood():
     """Issue #26: every camera key of every route and every Standpunkt keeps 0.25 m from the Küche hood, now hung over
-    the Halbinsel's cooktop (the Rundgang passes south of it), and from the Wamsler's pipe up to 1.80 m."""
+    the Halbinsel's cooktop (the Rundgang passes south of it), from the Wamsler with its pipe up to 1.80 m and from
+    the Küche's cabinets (the Standpunkt moved west of the Halbinsel)."""
     bp = house_core.build()
     boxes = []
-    for o in ("Haube", "Herd"):
+    for o in ("Haube", "Herd", "Kueche"):
         g = bp.geo[("EG", "EG_" + o)]
         for first, n in bp.parts[("EG", "EG_" + o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
             lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
-            if o == "Haube" or (g["m"][first] == "Eisen" and lo[2] > 0.94):
-                boxes.append((lo, hi))
+            boxes.append((lo, hi))
     assert len(boxes) > 10 and max(hi[2] for lo, hi in boxes) > house_core.Z_EG_TOP
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
     for name, route in tour.ROUTES:
