@@ -147,11 +147,9 @@ def test_schrankbett_page(capsys):
     assert cam[1] > at[1] and cam[0] == at[0]
 
 
-def test_variant_objects_are_shown_in_their_entry(bp):
-    """Objects of the EG variant Alternativ (#5) are hidden in Erdgeschoss: the Show uses its entry
-    Erdgeschoss - Alternativ (cut eg_alt) for them; default objects keep cut eg."""
-    names = ["EG_Alt_Schrank", "EG_Alt_Pendeltuer_S"]
-    assert show.view(bp, show.bbox(bp, names), names=names)[3] == "eg_alt"
-    assert show.view(bp, show.bbox(bp, ["EG_Speis_C"]), names=["EG_Speis_C"])[3] == "eg"
-    assert show.view(bp, show.bbox(bp, ["EG_Alt"]), names=["EG_Alt"])[3] == "eg_alt"           # prefixes
-    assert show.view(bp, show.bbox(bp, ["EG_Speis"]), names=["EG_Speis"])[3] == "eg"            # both layouts
+def test_speis_objects_are_shown_in_erdgeschoss(bp):
+    """One EG layout since #34: the Speis / Essen built-ins (former variant Alternativ, #5) are shown in
+    the entry Erdgeschoss (cut eg); there is no entry eg_alt any more."""
+    names = ["EG_Essen_Schrank", "EG_Pendeltuer_S"]
+    assert show.view(bp, show.bbox(bp, names))[3] == "eg"
+    assert show.view(bp, show.bbox(bp, ["EG_Speis"]))[3] == "eg"                                  # prefixes

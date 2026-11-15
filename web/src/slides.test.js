@@ -94,16 +94,16 @@ describe('the Büro door (code/regal.py) on its own clock', () => {
   });
 });
 
-describe('the leaves of a layout variant (#5: the saloon leaves) on a clock of their own', () => {
-  it('the back hall keeps its rotation; the variant leaves (hidden in the default layout) take no slot of it', () => {
-    const mk = (name, variant) => { const o = new Object3D(); o.name = name; o.userData.swing = Math.PI / 2; if (variant) o.userData.variant = variant; return o; };
-    const hall = [mk('EG_Hintertuer'), mk('EG_WC_Tuer')], alt = [mk('EG_Alt_Pendeltuer_S', 'alt'), mk('EG_Alt_Pendeltuer_N', 'alt')];
+describe('the saloon leaves (#5, #34: EG_Pendeltuer_*) on a clock of their own', () => {
+  it('the back hall keeps its rotation; the saloon leaves take no slot of it', () => {
+    const mk = (name) => { const o = new Object3D(); o.name = name; o.userData.swing = Math.PI / 2; return o; };
+    const hall = [mk('EG_Hintertuer'), mk('EG_WC_Tuer')], saloon = [mk('EG_Pendeltuer_S'), mk('EG_Pendeltuer_N')];
     const picks = () => 0.99;                                           // always the last node of a clock
-    const s = swingingNodes([...hall, ...alt], picks);
+    const s = swingingNodes([...hall, ...saloon], picks);
     s.update(4.5);
     const st = s.state();
     expect([st.EG_Hintertuer.pos, st.EG_WC_Tuer.pos]).toEqual([0, 0.5]);   // as with the hall alone
-    expect([st.EG_Alt_Pendeltuer_S.pos, st.EG_Alt_Pendeltuer_N.pos]).toEqual([0, 0.5]);   // their own clock
+    expect([st.EG_Pendeltuer_S.pos, st.EG_Pendeltuer_N.pos]).toEqual([0, 0.5]);           // their own clock
   });
 });
 

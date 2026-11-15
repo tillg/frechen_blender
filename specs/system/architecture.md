@@ -130,17 +130,12 @@ flowchart LR
   (x0, y0) (`EG` at `KUECHE_AT`, or `Kueche` at the origin, so the sub-model lies at y ≤ 0).
   Positions are written in house coordinates (those of `input/2026-11-09 input/speis_kueche_v6.svg`)
   and shifted; own `random.Random(14)`. The room's walls, the kitchen door and the Speis
-  (`speis()`: shelves A/B, cabinet C, sliding leaf on the kitchen side, own `random.Random(9)`)
-  stay in `house_core`.
-- **Variant Alternativ.** `VARIANT` (object → `main` | `alt`) flags the objects of one layout only.
-  `speis()` puts the default-only parts in objects of their own (`EG_Speis_C`, `EG_Speis_Schiebetuer`,
-  `EG_Speis_Waende`: the wall's 60 cm stub to C, with the wall's `rnd`, suffix `_Waende` so the plan
-  sheets cut it as wall). `speis_alt()` (own `random.Random(25)`) builds the `alt` objects:
-  `EG_Alt_Schrank` (C on the Essen west wall, y 0.417–3.712, six columns), `EG_Alt_Speis` (B's back,
-  vertical spruce boards) and the saloon leaves `EG_Alt_Pendeltuer_S`/`_N` (half height, built
-  closed, `PIVOT` + `SWING` ±90° into the Speis; neither in `LEAVES` nor `DOORS`).
-  `default_layout(bp)` returns the Blueprint without the `alt` objects (and their pivots, swings):
-  `build_house.py` and `export_plans.py` build from it.
+  (`speis()`: shelves A/B, own `random.Random(9)`; `speis_essen()`, own `random.Random(25)`:
+  `EG_Essen_Schrank` (cabinet C on the Essen west wall, y 0.417–3.712, six columns),
+  `EG_Speis_Rueckwand` (B's back, vertical spruce boards) and the saloon leaves
+  `EG_Pendeltuer_S`/`_N` (half height, built closed, `PIVOT` + `SWING` ±90° into the Speis; neither
+  in `LEAVES` nor `DOORS`)) stay in `house_core`. The Speis/Küche wall ends at B; the opening over
+  the aisle has no other leaf.
 - **Gäste-WC.** `code/gaeste_wc.py` the same way: `gaeste_wc_neu(c, x0, y0)` builds WC and
   Garderobe by the back hall into collection `c` with the old WC room's inner SW corner at
   (x0, y0) (`EG` at `WC_AT`, or `GaesteWC` at the origin), after
@@ -241,23 +236,22 @@ flowchart LR
   windrose rectangles, density field, the grass clump and the shrub placements.
 - **Room lights.** `ROOM_LIGHTS` (x, y, floor z) plus `ROOM_LIGHT_H`, the light height above
   the floor: only the Speis.
-- **Wandlampen.** `wandlampe(coll, wx, wy, fx, fy, z, obj=None, variant=None)` builds one lamp into
+- **Wandlampen.** `wandlampe(coll, wx, wy, fx, fy, z, obj=None)` builds one lamp into
   `obj` (default `<coll>_Wandlampen`; one fixed `rnd`, no draws, in `SMOOTH`) and appends its light
-  to `WALL_LIGHTS` (50 cm out from the wall, 5 cm under the rosette) and its layout tag to the parallel
-  `WALL_LIGHT_VARIANT` (None, "main", "alt"; both lists cleared together in every `build*()`).
+  to `WALL_LIGHTS` (50 cm out from the wall, 5 cm under the rosette; cleared in every `build*()`).
   `build_wandlampen()` (from `build_sanitary()`) builds `WANDLAMPEN_OG` and `WANDLAMPEN_EG` (wall
-  point, facing, height, layout; the EG list after `input/2026-11-14 input/lampen_eg_v1.svg`, drawn from
-  it by `lampen_eg_svg.py`) into `OG_Wandlampen`, `EG_Wandlampen`, `EG_Wandlampen_Essen` (`VARIANT`
-  main) and `EG_Alt_Wandlampen` (alt). Over mirrors: `gaestebad.py`, `elternbad.py`, `build_sanitary()`;
+  point, facing, height; the EG list after `input/2026-11-14 input/lampen_eg_v1.svg`, drawn from
+  it by `lampen_eg_svg.py`, without its lamps 11, 12 on the Essen west wall, where cabinet C stands;
+  13, 14 hang on B's board back) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, `build_sanitary()`;
   over the Ofen bed: `ofen.py` (its light moved with the Ofen by `ofen_im_haus()`); the hood's spots:
-  `kueche.py` (one light). `default_layout()` drops the alt lights. "Wandlampen" in `PLAN["skip_words"]`
+  `kueche.py` (one light). "Wandlampen" in `PLAN["skip_words"]`
   keeps them off the Grundriss (the Ansichten show them through openings).
 - **Randomness.** `build()` clears every registry and seeds `random` with 22, so builds are
   repeatable and both backends get the same `rnd` values. The clump uses
   `random.Random(5)` and the shrubs `random.Random(6)`.
 
 `build()` returns the **Blueprint**: `geo`, `parts`, `smooth`, `pivot`, `mat_def`, `paint`,
-`room_lights`, `wall_lights`, `wall_variant`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
+`room_lights`, `wall_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
 `dims` (sub-models only), `turn` (`TURN`: object → yaw in degrees about its pivot), `slide`
 (`SLIDE`: object → (dx, dy, dz) to its other end of travel; the Bad's two sliding leaves, one
 object each; glTF node `extras.slide`), `swing` (`SWING`: object → degrees about its pivot from
@@ -266,8 +260,7 @@ radians about y), `lift` (`LIFT`: object → metres straight up to its other sta
 `extras.lift`) and `crank` (`CRANK`: object → (axis, degrees) turned about its pivot while the
 lift moves; glTF `extras.crank` = [glTF axis, radians]), `fold` (`FOLD`: object → (hinge, axis,
 degrees) about its own hinge in its turning frame meanwhile; glTF `extras.fold` = [hinge relative to
-the pivot, glTF axis, radians]) and `variant` (`VARIANT`; glTF
-`extras.variant`). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
+the pivot, glTF axis, radians]). `panel_door(…, leaf=)` puts a single leaf opened at 90° into its own object,
 hinged at the lining's corner, with the `SWING` that closes it.
 
 ### `build_house.py` — Blender backend (dormant)
@@ -298,7 +291,7 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
   float32 values.
 - **Materials** `FL_<name>`: a `pbrMetallicRoughness` approximation. The full `MAT_DEF` entry,
   `kind` and paint go in `extras`. Materials of open Parts are `doubleSided`.
-- **`scene.extras`:** `room_lights`, `ROOM_LIGHT_H`, `wall_lights`, `wall_light_variant`, `outside_lights`, `Z_OG`, `W_OUT`, `D_OUT`, `RIDGE_Z`,
+- **`scene.extras`:** `room_lights`, `ROOM_LIGHT_H`, `wall_lights`, `outside_lights`, `Z_OG`, `W_OUT`, `D_OUT`, `RIDGE_Z`,
   the garden layout and (house only, not the Ofen) `tour = {fps, frames}`, the camera keys of
   `tour.build_tour()` as JSON, `routes = [{name, frames}]` (the viewer's shorter routes, i.e.
   `ROUTES[1:]`) and `spots = [{name, group, entries, cam, at, fov}]` (`SPOTS`).
@@ -308,7 +301,7 @@ Standard library only ([ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writ
 ### `export_plans.py` — plan-sheet backend
 
 Standard library only, no Blender: `python3 code/export_plans.py plans/` calls
-`house_core.default_layout(house_core.build())`
+`house_core.build()`
 and writes `eg.svg`, `og.svg` (Grundrisse) and `nord.svg`, `ost.svg`, `sued.svg`, `west.svg`
 (Ansichten). It knows only how to draw; what an object is comes from the core:
 
@@ -371,7 +364,7 @@ caller's `PROJECT` gives it.
 | `paint.py` | Overwrites the base colour of plain materials with `PAINT`. | `FL_*` materials from `build_house` |
 | `windrose.py` | Compass rose at `WINDROSE_CENTER`/`WINDROSE_R`, in its own collection. | core |
 | `garden.py` | Meadow: a Geometry Nodes scatter of grass clumps over an emitter grid built from the garden layout (no grass on `no_grass` or `windrose`). Leafy shrubs at the layout's shrub placements. | core, `Beet_*` objects |
-| `film.py` | Keys `FL_Kamera_Rundgang` with `tour.build_tour()` (frame range = key count), fill lights (`Innenlicht`) at `ROOM_LIGHTS` + `ROOM_LIGHT_H` and a small one at each wall light of the default layout, opens `EG_Haustuer`. | core, `tour.py`, `EG_Haustuer` pivot |
+| `film.py` | Keys `FL_Kamera_Rundgang` with `tour.build_tour()` (frame range = key count), fill lights (`Innenlicht`) at `ROOM_LIGHTS` + `ROOM_LIGHT_H` and a small one at each wall light, opens `EG_Haustuer`. | core, `tour.py`, `EG_Haustuer` pivot |
 
 ### `web/` — the viewer
 
@@ -415,10 +408,8 @@ sequenceDiagram
     `FADE` 1.0 m). `prewarm(compile)` makes the pool visible, awaits
     `renderer.compileAsync`, catches a failure, and restores the day/dusk visibility; `main.js`
     awaits it after `renderer.init()`.
-  - **`hires`**: one light per site (1 fill + 71 wall + 8 outside), always in the render list, intensity
+  - **`hires`**: one light per site (1 fill + 69 wall + 8 outside), always in the render list, intensity
     `base · v`.
-  - **Layout:** `setLayout('main' | 'alt')` (from `main.js` `setCutaway()`) keeps the other layout's wall
-    lights at 0 (hires) or out of the ranking (fast mode).
 - **`hires`.** `main.js` reads `?hires=on` once; it also sets the pixel ratio (full vs. ≤ 1.5)
   and whether the grass is hidden while `indoors()` (fast mode only, Rundgang included), and
   `saveView()` keeps it in the URL.
@@ -431,18 +422,16 @@ sequenceDiagram
 - **Visibility.** `main.js` feeds materials, lights and garden a merged view
   (`built + furnished`), so Eingerichtet looks like Gebaut. One `applyVisibility()` (on
   progress and cutaway changes) shows an object iff the cutaway does not hide it, for
-  `extras.furniture` the stage is Eingerichtet, and for `extras.variant` it is the cutaway's
-  layout (`alt` in `eg_alt`, else `main`). The Skizze lines (`ink.js`) are grouped by collection,
-  level and variant (`Ink_EG_base_alt`) and follow the same rule.
+  `extras.furniture` the stage is Eingerichtet. The Skizze lines (`ink.js`) are grouped by collection
+  and level (`Ink_EG_base`) and follow the same rule.
 - **`toolbar.js`.** The one navigation panel of every page (house and sub-models): three custom
   drop-downs (button + `role="listbox"`, always open below; keys ↑ ↓ Enter Esc), Reset and, on
-  the house, the sun toggle. Modell (house entries Ganzes Haus / Erdgeschoss / Erdgeschoss -
-  Alternativ / 1. Stock, a
+  the house, the sun toggle. Modell (house entries Ganzes Haus / Erdgeschoss / 1. Stock, a
   separator, the sub-model pages grouped by storey under the headings Erdgeschoss and 1. Stock: `PAGES`
   entries carry `eg` / `og`), Darstellung (levels) and Standpunkt (group headings; "Eigene
   Ansicht" appears after a camera move). A page passes its entries, levels, spots, routes and
-  callbacks. The house entries switch the cutaway in place (`all` / `eg` / `eg_alt` / `noroof`, URL `cut=`
-  kept; `eg_alt` lists the Erdgeschoss Standpunkte); a sub-model entry navigates to its page (relative URLs).
+  callbacks. The house entries switch the cutaway in place (`all` / `eg` / `noroof`, URL `cut=`
+  kept); a sub-model entry navigates to its page (relative URLs).
 - **`ui.js`.** The house page's title and its toolbar wiring (stage labels as levels, sun toggle
   enabled from p 1.5). `body.dataset.stage`/`cutaway` mirror the state.
 - **`viewstate.js`.** Pure, no three.js. Saved views in `localStorage` under
@@ -478,8 +467,8 @@ sequenceDiagram
   edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
   lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s; the Büro door
-  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest; the leaves of a variant on one of
-  their own, so hidden leaves take no slot of the others); nodes with `extras.lift` rise and
+  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest; the saloon leaves
+  `*_Pendeltuer_*` on one of their own, so they take no slot of the back hall's doors); nodes with `extras.lift` rise and
   sink together on one clock (`liftingNodes()`: 3 s up, 4 s rest, 3 s down, 4 s rest), nodes with
   `extras.crank` turning with them (also without a lift: the Schrankbett), nodes with `extras.fold`
   folding about their own hinge in that turning frame (its feet). `main.js`
@@ -555,15 +544,14 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Speis shelves and cabinet are **built-ins** (`EG_Speis`, stage Gebaut) | Furniture (`EG_Moebel`, Eingerichtet) | Cabinet C replaces a wall; floor-to-ceiling joinery belongs to the house like the kitchen. |
 | One **navigation panel** (`toolbar.js`: Modell, Darstellung, Standpunkt, Reset) on every page | Per-page buttons; a link per sub-model | The same controls at the same place everywhere; one page list in one place. |
 | Routes are a **group inside the Standpunkt drop-down** | A 4th "Routen" drop-down | Three drop-downs everywhere. |
-| The **cutaway is the house entries** of the Modell drop-down (Ganzes Haus `all`, Erdgeschoss `eg`, Erdgeschoss - Alternativ `eg_alt`, 1. Stock `noroof`) | Separate cut buttons | Today's `cut=` values stay, so `show.py`, `shot.js` and every URL stay valid. |
-| A layout **variant is an object flag** (`VARIANT`) in the core, one glb; the variant entry is a cutaway value (`eg_alt`); Blender, film and plans show the default (`default_layout()`) | Two glbs or Blueprints; per-Part flags; a separate `v=` URL parameter; the variant in Blender too | One build and file; the viewer only toggles visibility like `furniture`; URLs, `show.py` and `shot.js` keep working; the default stays the agreed plan. |
+| The **cutaway is the house entries** of the Modell drop-down (Ganzes Haus `all`, Erdgeschoss `eg`, 1. Stock `noroof`) | Separate cut buttons | Today's `cut=` values stay, so `show.py`, `shot.js` and every URL stay valid. |
 | **Custom drop-downs** (button + `role="listbox"`) that always open below | Native `<select>`; `appearance: base-select` | A native macOS select opens over the chosen entry, i.e. upwards far down the list; `base-select` is Chrome-only. e2e tests click `role=button`, then `role=option`. |
 | The **URL wins over `localStorage`**, which holds the same query string, one saved view per model entry | Storage wins; a JSON state; one view per page | `show.py`, `shot.js`, the blueprint-watch reload and shared links all open `?cam=…`: one format, one parser. Each house entry opens at its own view. |
 | **Standpunkte and routes live in `tour.py`**, exported in `scene.extras` | JS literals in `main.js` | ADR-001-XEWL: model facts once in the core; the golden and pytest machinery is there. Sub-model views stay in the page config (not used anywhere else). |
 | **Inside spots use the look-around of the paused route** | Plain orbit around a room point | An orbit target in the room swings the camera through walls. |
 | Starting a route sets Eingerichtet + Ganzes Haus; the Darstellung drop-down stays usable; another Standpunkt or Modell ends it; **a route is not saved** | Keep the chosen level; save the route time | Matches the film. Beenden restores the view from before; a half-played route on reopening would surprise. |
 | **Short routes must be closed** (`build_tour` smooths cyclically, `step()` wraps with `% T`) | Jump back on loop | A seamless Endlos; a pytest enforces it. |
-| Leaves are modelled **open** (kitchen door 90° into the Küche, Speis sliding leaf slid south) | Closed | The Rundgang walks through the kitchen door and looks into the Speis aisle. |
+| Leaves are modelled **open** (kitchen door 90° into the Küche) | Closed | The Rundgang walks through the kitchen door and looks into the Speis aisle. |
 | The back hall's three doors **swing in the viewer** (`SWING`), the film keeps them as built | Static doors; animate in the film too | They show where the doors get in each other's way; the film camera and its clearance stay fixed. Moving only in Eingerichtet, as the Bad's leaves: the Skizze lines don't follow. |
 | The desk lifts by **own registries `LIFT` + `CRANK` on one shared clock** | Reuse `SLIDE` with a dz | `slides.js` moves one random slide node at a time: top and devices would part. The spindles ride with the top, inside the solid housings when low. |
 | The Schrankbett folds by **`CRANK` without a `LIFT`, its feet by `FOLD`** on the lift clock | A new fold registry for the bed; an axis on `SWING`; parenting the feet to the bed | `CRANK` already carries axis + angle through core → glTF → `slides.js`; `FOLD` composes one hinge turn in the node's turning frame (a few lines in `liftingNodes`) without node hierarchies. The bed folds in step with the Büro desk in the house. |

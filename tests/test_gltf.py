@@ -120,7 +120,7 @@ def test_garden_extras(glb):
     assert len(ex["garden"]["no_grass"]) == len(lay.no_grass) and len(ex["garden"]["windrose"]) == 5
     assert len(ex["garden"]["shrubs"]) == len(lay.shrubs)
     assert ex["garden"]["DENSITY"] == house_core.DENSITY and ex["garden"]["FAR_DENS"] == house_core.FAR_DENS
-    assert len(ex["room_lights"]) == 1 and len(ex["wall_lights"]) == 71 and ex["wall_light_variant"] == list(BP.wall_variant) and ex["Z_OG"] == house_core.Z_OG
+    assert len(ex["room_lights"]) == 1 and len(ex["wall_lights"]) == 69 and ex["Z_OG"] == house_core.Z_OG
     assert ex["ROOM_LIGHT_H"] == house_core.ROOM_LIGHT_H
     assert ex["outside_lights"] == [list(p) for p in BP.outside_lights] and len(ex["outside_lights"]) == 8
     assert "lamp_lights" not in ex                                        # no always-on lamps (#22)
@@ -346,9 +346,8 @@ def test_routes_and_spots_in_scene_extras(glb):
                               "cam": [33, -24, 13], "at": [7.4, 6.4, 3.2], "fov": 28}
 
 
-def test_variant_extras(glb):
-    """Issue #5: the objects of one layout only carry extras.variant ("main" / "alt"), which the
-    viewer's Erdgeschoss - Alternativ switches on; shared objects carry none."""
+def test_no_layout_extras(glb):
+    """Issue #34: one EG layout: no node carries extras.variant, the scene no wall_light_variant."""
     gltf = glb["gltf"]
-    got = {n["name"]: n["extras"]["variant"] for n in gltf["nodes"] if "variant" in n.get("extras", {})}
-    assert got == house_core.build().variant and "alt" in got.values() and "main" in got.values()
+    assert not [n["name"] for n in gltf["nodes"] if "variant" in n.get("extras", {})]
+    assert "wall_light_variant" not in gltf["scenes"][0]["extras"]

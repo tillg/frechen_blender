@@ -17,8 +17,6 @@ import { cleanView, hasView, initialQuery, read, remove, safeStorage, storageKey
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 // ?hires=on: full quality for the film capture, no speed shortcut that changes the picture
 const hires = new URLSearchParams(location.search).get('hires') === 'on';
-const forcedLayout = new URLSearchParams(location.search).get('layout') === 'alt' ? 'alt' : null;   // ?layout=alt: the EG variant
-// Alternativ in every entry and the Rundgang (its film), nothing cut away for it
 
 const renderer = new THREE.WebGPURenderer({ antialias: true });
 renderer.setPixelRatio(hires ? window.devicePixelRatio : Math.min(window.devicePixelRatio, 1.5));   // Retina: 44 % fewer pixels, barely softer
@@ -107,25 +105,20 @@ function setProgress(p) {
   dirty = true;
   saveView();
 }
-// cutaway: hide whole collections ('roof' = Dach incl. west cladding, 'og' = OG + OG balconies);
-// eg_alt (Erdgeschoss - Alternativ) cuts as eg and shows the EG variant Alternativ (extras.variant
-// 'alt') instead of the default layout ('main'), which every other cutaway shows
-const HIDE = { all: [], noroof: ['roof'], eg: ['roof', 'og'], eg_alt: ['roof', 'og'] };
-const layoutOf = (c) => forcedLayout ?? (c === 'eg_alt' ? 'alt' : 'main');
-const layout = (o, c) => !o.userData.variant || o.userData.variant === layoutOf(c);
+// cutaway: hide whole collections ('roof' = Dach incl. west cladding, 'og' = OG + OG balconies)
+const HIDE = { all: [], noroof: ['roof'], eg: ['roof', 'og'] };
 // furniture only in Eingerichtet
 function applyVisibility() {
   const furnished = stageAt(progress) === 'furnished';
   for (const o of bp.objects) {
-    if (!o.userData.hidden) o.visible = !HIDE[cut].includes(cutLevel(o)) && (!o.userData.furniture || furnished) && layout(o, cut);
+    if (!o.userData.hidden) o.visible = !HIDE[cut].includes(cutLevel(o)) && (!o.userData.furniture || furnished);
   }
   for (const g of fire.group.children) g.visible = !HIDE[cut].includes(cutLevel(g));   // the OG stove's fire goes with the OG
 }
 function setCutaway(c) {
   cut = c;
   applyVisibility();
-  for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level) && layout(l, c);
-  lights.setLayout(layoutOf(c));                                       // a layout's own Wandlampen light only in it (#22)
+  for (const l of ink.group.children) l.visible = !HIDE[c].includes(l.userData.level);
   dirty = true;
   saveView();
 }
@@ -134,7 +127,7 @@ function setCutaway(c) {
 // stage and cutaway. The URL follows the view, so a reload (e.g. after a core change) or a shared
 // link opens the same view. Each house entry (Ganzes Haus / Erdgeschoss / 1. Stock) also keeps its
 // view in the browser (viewstate.js): a URL without a view opens the last entry at its saved view.
-const ENTRY = { all: 'haus', eg: 'eg', eg_alt: 'eg_alt', noroof: 'og' }, HOUSE_ENTRIES = Object.values(ENTRY);
+const ENTRY = { all: 'haus', eg: 'eg', noroof: 'og' }, HOUSE_ENTRIES = Object.values(ENTRY);
 const storage = safeStorage(), key = (m) => storageKey('index', m), LAST = key('last');
 const url = new URLSearchParams(location.search);
 const urlPlan = PLANS.some(([k]) => k === url.get('plan')) ? url.get('plan') : null;   // ?plan=eg: a sheet of Ganzes Haus
@@ -143,8 +136,7 @@ url.delete('m');                                                    // ?m=: from
 const query = new URLSearchParams(initialQuery(url.size ? `?${url}`.replaceAll('%2C', ',') : '', storage, key(model)));
 const zup = (v) => [v.x, -v.z, v.y].map((n) => +n.toFixed(3)).join(',');
 const cutOf = (m) => Object.keys(ENTRY).find((c) => ENTRY[c] === m);
-const spotEntry = (m) => (m === 'eg_alt' ? 'eg' : m);              // Erdgeschoss - Alternativ: the Erdgeschoss spots
-const standard = (m) => SPOTS.find((s) => s.entries.includes(spotEntry(m)));   // the entry's first Standpunkt
+const standard = (m) => SPOTS.find((s) => s.entries.includes(m));   // the entry's first Standpunkt
 let saveTimer = 0;
 // the view is written 300 ms after the last change; a pending write is flushed before the entry
 // changes (switchModel), so it lands under the entry it belongs to
@@ -159,7 +151,7 @@ function flushView() {
     + (viewFov !== FOV ? `&fov=${viewFov}` : '');
   // the entry's default (Reset) is kept as no saved view and a bare URL
   const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
-  const extra = [plan && `plan=${plan}`, hires && 'hires=on', forcedLayout && 'layout=alt'].filter(Boolean);
+  const extra = [plan && `plan=${plan}`, hires && 'hires=on'].filter(Boolean);
   const q = (home ? '' : view) + (extra.length ? (home ? '?' : '&') + extra.join('&') : '');
   if (tour.state !== 'off') return;                               // a route is not saved, not even in the URL
   if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
@@ -192,7 +184,7 @@ function applyView(q) {                                             // camera an
   const v = (k) => q.get(k)?.split(',').map(Number), std = standard(model);
   if (v('cam')) place(v('cam'), v('at') ?? std.at, Number(q.get('fov') ?? FOV), !!v('at') && Math.hypot(...v('cam').map((c, i) => c - v('at')[i])) < 2 * LOOK);
   else place(std.cam, std.at, std.fov, false);
-  spot = SPOTS.find((s) => s.entries.includes(spotEntry(model)) && at(s))?.name ?? null;
+  spot = SPOTS.find((s) => s.entries.includes(model) && at(s))?.name ?? null;
   if (q.has('p')) setProgress(Number(q.get('p')));
 }
 applyView(query);
@@ -211,7 +203,7 @@ const ROUTES = [{ name: 'Um und durch das Haus', ...bp.extras.tour },
 function spotItems(m) {
   const items = [];
   let group;
-  for (const s of SPOTS.filter((x) => x.entries.includes(spotEntry(m)))) {
+  for (const s of SPOTS.filter((x) => x.entries.includes(m))) {
     if (s.group !== group) items.push({ group: (group = s.group) });
     items.push({ value: `spot:${s.name}`, label: s.name });
   }

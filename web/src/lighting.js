@@ -1,7 +1,6 @@
 // Day and dusk: sun from Blender's angle (setup_scene), hemisphere light, sky background, and
 // at dusk a low warm sun, deep-blue sky and warm point lights at ROOM_LIGHTS (floor + ROOM_LIGHT_H) and,
-// dimmer, at the bulbs of the Wandlampen (WALL_LIGHTS; one ranking, one pool with the room lights; a
-// Wandlampe of one EG layout only (extras.wall_light_variant "main" / "alt") lights only in that layout: setLayout),
+// dimmer, at the bulbs of the Wandlampen (WALL_LIGHTS; one ranking, one pool with the room lights),
 // and the wall lamps outside switched on: a warm spot pointing down from the OUTSIDE_LIGHTS bulbs.
 // hires (full quality, film capture): one light per site, always in the render list. Fast mode
 // (default): a fixed pool of ROOM_N room / OUTSIDE_N outside lights, out of the render list by day,
@@ -34,10 +33,8 @@ export function createLighting(scene, extras, target, uDetail = uniform(1), { hi
   const hemi = new THREE.HemisphereLight(0xffffff, 0xb8b0a0, 1.4);
   const roomSites = [
     ...extras.room_lights.map(([x, y, z]) => ({ p: yup(x, y, z + extras.ROOM_LIGHT_H), base: ROOM_BASE })),
-    ...(extras.wall_lights ?? []).map(([x, y, z], i) => ({ p: yup(x, y, z), base: LAMP_BASE, variant: extras.wall_light_variant?.[i] ?? null })),
+    ...(extras.wall_lights ?? []).map(([x, y, z]) => ({ p: yup(x, y, z), base: LAMP_BASE })),
   ];
-  let layout = 'main', last = null;                                // the EG layout shown; the last camera (fast mode)
-  const inLayout = (s) => !s.variant || s.variant === layout;
   const outsideSites = extras.outside_lights.map(([x, y, z]) => ({ p: yup(x, y, z), base: OUTSIDE_BASE }));
   const roomLight = ({ p, base }) => {
     const l = new THREE.PointLight(0xffb070, 0, 8, 2);
@@ -53,7 +50,6 @@ export function createLighting(scene, extras, target, uDetail = uniform(1), { hi
     return l;
   };
   const roomLights = (hires ? roomSites : roomSites.slice(0, ROOM_N)).map(roomLight);
-  if (hires) roomLights.forEach((l, i) => { l.userData.site = roomSites[i]; });
   const outsideLights = (hires ? outsideSites : outsideSites.slice(0, OUTSIDE_N)).map(outsideLight);
   scene.add(sun, sun.target, hemi, ...roomLights, ...outsideLights, ...outsideLights.map((l) => l.target));
   scene.backgroundNode = mix(mix(color(PAPER), color(...SKY), uDetail), color(...DUSK_SKY), uDusk);
@@ -65,13 +61,8 @@ export function createLighting(scene, extras, target, uDetail = uniform(1), { hi
     sun.intensity = 2.2 + (0.7 - 2.2) * v;
     sun.color.copy(white).lerp(warm, v);
     hemi.intensity = 1.4 + (0.25 - 1.4) * v;
-    for (const l of [...roomLights, ...outsideLights]) l.intensity = l.userData.base * v * (!l.userData.site || inLayout(l.userData.site) ? 1 : 0);
+    for (const l of [...roomLights, ...outsideLights]) l.intensity = l.userData.base * v;
     if (!hires) showPool(v > 0);
-  }
-  function setLayout(v) {                                          // 'main' (default) or 'alt' (Erdgeschoss - Alternativ)
-    layout = v;
-    setDusk(uDusk.value);
-    if (last) update(...last);
   }
   function showPool(on) {
     for (const o of [...roomLights, ...outsideLights, ...outsideLights.map((l) => l.target)]) o.visible = on;
@@ -103,12 +94,11 @@ export function createLighting(scene, extras, target, uDetail = uniform(1), { hi
     });
   }
   function update(cam, inside) {                                   // y-up camera position; inside: indoors()
-    last = [cam.clone(), inside];
     if (hires || uDusk.value === 0) return;
     const w = inside ? STOREY_W : 1;
-    place(roomSites.filter(inLayout), roomLights, cam, w);
+    place(roomSites, roomLights, cam, w);
     place(outsideSites, outsideLights, cam, w);
   }
   setDusk(0);
-  return { sun, hemi, roomLights, outsideLights, setDusk, setLayout, update, prewarm, uDusk };
+  return { sun, hemi, roomLights, outsideLights, setDusk, update, prewarm, uDusk };
 }
