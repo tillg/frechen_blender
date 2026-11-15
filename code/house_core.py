@@ -1404,9 +1404,10 @@ GAESTE_WC_EG = (gaeste_wc.WI, gaeste_wc.WO, gaeste_wc.YS, gaeste_wc.YN)    # WC 
 TRENNWAND_EG = (gaeste_wc.PA, gaeste_wc.PB, gaeste_wc.YS, gaeste_wc.YN)    # none under their partition
 BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
                                          # lays its own floor (code/bad.py): left out of the EG's
-# OG Gästebad (room, WC niche, shower niche; none under their partition) and Bad Nadine & Till
+# OG Gästebad (room, WC niche, shower niche; none under their partition), Bad Nadine & Till and Waschküche
 BATHS_OG = [(gaestebad.WI, gaestebad.WO, gaestebad.YG, gaestebad.YN), (gaestebad.WI, gaestebad.PA, gaestebad.YS, gaestebad.YG),
-            (gaestebad.PA, gaestebad.WO, gaestebad.YS, gaestebad.YG), elternbad.ROOM]   # Gästebad: the slabs end under its glass
+            (gaestebad.PA, gaestebad.WO, gaestebad.YS, gaestebad.YG), elternbad.ROOM,   # Gästebad: the slabs end under its glass
+            waschkueche.ROOM]                    # the Waschküche (#28), its shower cabin's floor included
 
 
 def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(), rng=random):
@@ -1457,8 +1458,7 @@ def build_slabs():
     slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
     wcs = lambda c: [r for k, _, r, _ in WCS if k == c]     # all toilets: stone floors
     floor_cover("EG", 0.0, CORRIDOR_EG + wcs("EG") + [GAESTE_WC_EG], [BAD_EG, TRENNWAND_EG])
-    floor_cover("OG", Z_OG, BATHS_OG + wcs("OG") + [waschkueche.DUSCHE], [STAIR_HOLE])   # OG corridor: oak like the rooms;
-                                                                    # the Waschküche's shower cabin (#29): limestone
+    floor_cover("OG", Z_OG, BATHS_OG + wcs("OG"), [STAIR_HOLE])     # OG corridor: oak like the rooms
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 
 
