@@ -21,6 +21,9 @@ Choices made while nobody was there to ask are logged here
   - [18:02 — #31: markers as DOM links with a wall-ray occlusion test, not scene sprites](#run-2026-11-15-1633-9)
   - [18:02 — #31: one page `vorlagen.html?b=<key>`, fed by a small generated JSON; reached by a link in the house page's title box](#run-2026-11-15-1633-10)
   - [18:02 — #31: copies downsized to ≤ 1600 px JPEG and committed; the copy step is a one-off `sips` run](#run-2026-11-15-1633-11)
+  - [19:01 — #33: shower strip 90 deep along the west wall; the north wall is the Waschküche partition, kept free above 1.20](#run-2026-11-15-1633-12)
+  - [19:01 — #33: basin single 60 (was double 100) with mirror 80 × 85 on the east wall; toilet on the north wall; 3 lamps instead of 6](#run-2026-11-15-1633-13)
+  - [19:01 — #33: rewrite the old Elternbad layout tests; the Rundgang stops in front of the glass](#run-2026-11-15-1633-14)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -49,6 +52,7 @@ Choices made while nobody was there to ask are logged here
   #35: branch issue/35-nur-noch-threejs from main, PR https://github.com/tillg/frechen_blender/pull/36 (a tweak: no change directory, so no archive step; `specs/system/` updated in place).
   #34: branch issue/34-alternativ-layout-standard from issue/35-nur-noch-threejs, PR https://github.com/tillg/frechen_blender/pull/37 (archived on the branch; full check: one red, `tour.spec.js` › ~30 fps lower bound, flaky under load, fails 2/5 on the base branch too).
   #31: branch issue/31-fotos-anzeigen from issue/34-alternativ-layout-standard, PR https://github.com/tillg/frechen_blender/pull/38 (archived on the branch; full check green).
+  #33: branch issue/33-zwei-duschen from issue/31-fotos-anzeigen, PR https://github.com/tillg/frechen_blender/pull/39 (archived on the branch; full check: 3 reds, two pinned lamp count / label fixed and rerun green, the ~30 fps test flaky, green alone).
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -150,3 +154,34 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the Pages build needs them; CI (Linux) has no `sips`; a 1600 px copy is plenty for a reference.
 - **Alternatives:** full originals (slow page, big repo); Pillow at build time (new dependency).
 - **Consequences:** a changed original needs `--copy` again; the repo grows by a few MB.
+
+## 19:01 — #33: shower strip 90 deep along the west wall; the north wall is the Waschküche partition, kept free above 1.20 {#run-2026-11-15-1633-12}
+
+- **Status:** open
+- **Context:** `specs/changes/33-zwei-duschen/`: issue #33 wants two showers at the back wall, heads in the back corners, glass with a 60 cm passage in the middle. The door `TUER` is in the east wall, so the back wall is the west wall (x 5.59, borders Saschi). The Waschküche lies north (`ROOM_NAMES` 7.1, 4.4), so the north wall (y 2.62 .. 2.79) is the partition #30 will glaze in its top metre (ceiling 2.20 → sill 1.20).
+- **Question:** strip depth, where the passage sits, and how to keep #30's metre free.
+- **Decision:** strip 90 deep over the wall's full 2.22; panes at x 6.49 from each side wall to 30 cm short of the wall's middle (y 1.51), so the Parts (rails included) leave exactly 60 clear; heads on the west wall 30 from each side wall; limestone on the west wall and the strip's south-wall piece to 2.0, on the strip's north-wall piece only to 1.20. Nothing on the Bad side of the north wall above 1.20 (the lamp over the cistern goes). The north pane's end meets the north wall up to 2.0 (glass, not a fixture on the wall).
+- **Why:** 90 × 111 per shower is a usual size and leaves 2.10 m for toilet and basin; the passage centred on the wall is "in der Mitte".
+- **Alternatives:** 100 deep (only 2.00 left in front); passage aligned with the door (not in the middle).
+- **Consequences:** #30 can place its glass anywhere along the north wall; at x ≤ 6.49 it sits above the NW shower's limestone, which ends at 1.20.
+
+## 19:01 — #33: basin single 60 (was double 100) with mirror 80 × 85 on the east wall; toilet on the north wall; 3 lamps instead of 6 {#run-2026-11-15-1633-13}
+
+- **Status:** open
+- **Context:** with the strip on the west wall, the south wall keeps 35 cm between glass and window, and east of the window the open door leaf. The north wall may carry nothing above 1.20 (#30), so no mirror there. The only wall piece left for basin + mirror is the east wall north of the door's architrave (y 1.65 .. 2.62, 0.97).
+- **Question:** where do toilet and basin go (the issue leaves it to us)?
+- **Decision:** basin single 60 × 47 (one tap, as the Waschküche's) on the tiles of the east wall, centred on that piece, under a wood mirror 80 × 85 with two Wandlampen over it; toilet on the north wall at x 7.15 (≥ 40 free to the glass and to the basin's front, nothing within 60 in front); Taubenblau tiles stay on the north wall from the glass and on the east wall down to the door. Lamps: 2 over the mirror + the one left of the window (was 4 + 1 + 1 over the cistern).
+- **Why:** the only arrangement that keeps the door leaf, the passage and #30's metre free; a 100 basin doesn't fit 0.97.
+- **Alternatives:** double basin on the north wall without mirror (mirror is a must); toilet in the NE corner (then the basin has no wall).
+- **Consequences:** one basin instead of two — the user may prefer a narrower double or a second mirror elsewhere.
+
+## 19:01 — #33: rewrite the old Elternbad layout tests; the Rundgang stops in front of the glass {#run-2026-11-15-1633-14}
+
+- **Status:** open
+- **Overrides:** principles.md › never change a test to make it pass — here the issue changes the layout these tests pin (`test_elternbad_layout`, `test_elternbad_submodel`, `test_route_walks_into_the_elternbad_and_back_out`, the OG wall-light count).
+- **Context:** the old tests assert the old shower, basin, lamp count and a Rundgang stop at x 5.95, which now lies inside the strip, behind the south pane.
+- **Question:** rewrite or keep the tests; walk the camera through the 60 passage or not?
+- **Decision:** rewrite them for the new layout (same kinds of checks, plus passage, toilet and #30 checks); the Rundgang walks in at y 1.15 and stops at x 6.85, 36 cm in front of the glass (south pane), looking through it at the back wall; turn right round and out as before. A new test keeps every Rundgang key in the Bad ≥ 0.25 m from its Parts.
+- **Why:** the issue invalidates what they pin; a 60 passage leaves only ±5 cm for the 0.25 m camera clearance, which the route's smoothing could break.
+- **Alternatives:** walk through the passage (risky clearance); leave the route (camera inside the glass).
+- **Consequences:** tour goldens regenerated.
