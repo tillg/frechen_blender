@@ -134,6 +134,20 @@ def test_garden_extras(glb):
     assert sorted(read(glb, clump["attributes"]["_H"])) == sorted(map(f32, lay.clump["h"]))
 
 
+def test_vorlagen_extras(glb):
+    """The markers of the Vorlagen (code/vorlagen.py, #31): every anchored Bereich with its anchor,
+    and the wall objects that hide a marker behind them."""
+    import vorlagen
+    ex = glb["gltf"]["scenes"][0]["extras"]
+    assert ex["vorlagen"] == [{"key": b["key"], "title": b["title"], "at": list(b["at"])}
+                              for b in vorlagen.BEREICHE if b["at"]]
+    names = {n["name"] for n in glb["gltf"]["nodes"]}
+    assert "EG_Waende" in ex["vorlagen_walls"] and "OG_Waende" in ex["vorlagen_walls"]
+    assert "EG_Anbau" in ex["vorlagen_walls"]                            # the PLAN wall objects too
+    assert set(ex["vorlagen_walls"]) <= names
+    assert all(n.endswith(house_core.PLAN["wall_suffix"]) or n in house_core.PLAN["wall_objects"] for n in ex["vorlagen_walls"])
+
+
 def test_smooth_objects_are_marked(glb):
     assert node(glb, "Kiesel")["extras"].get("smooth") and node(glb, "Aussenleuchten")["extras"].get("smooth")
     assert "smooth" not in node(glb, "EG_Waende")["extras"]

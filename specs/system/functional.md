@@ -289,6 +289,17 @@ Blender backend. What the scripts make:
   the dusk, and the meadow grass is not drawn while the camera is inside the main house; the
   dusk lighting is compiled once at load, so the first dusk doesn't stall. `?hires=on` (the
   film capture, `tmp/threejs_film.mjs`, always sets it) switches all of these shortcuts off.
+- **Fotos & Vorlagen** (`vorlagen.html`): every raster image of `input/` the model was built after,
+  sorted into nine Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC, Haupteingang & Windfang,
+  Bibliothek & Büro, Bad Oma & Opa, Außen & Garten, Ganzes Haus = elements found all over the house,
+  Pläne); without `?b=` an index (cover picture and count per Bereich), with `?b=<key>` the
+  Bereich's pictures with German captions, a click opens the copy (≤ 1600 px). Every page links the
+  3D house, the index and every Bereich; the house page links the index under its title ("Fotos &
+  Vorlagen"). In the house, every Bereich but Pläne has a marker "Fotos: <Bereich>" at its anchor
+  (Ganzes Haus in the OG Flur, Außen & Garten before the terrace): shown from inside on its storey
+  within 8 m, from above when Erdgeschoss / 1. Stock opens its storey, Außen from outside within
+  15 m; never when a wall object lies between camera and anchor, in a route, with `?hires=on` or on a
+  plan sheet. A click opens the Bereich's page in a new tab.
 - Local: `cd web && npm install && npm run dev` (one server, port 5377). The `.glb` is regenerated
   from the core first, and again whenever a `code/*.py` file is saved; then open pages reload at
   the same view.
@@ -352,7 +363,8 @@ sequenceDiagram
 | | `plans/*.svg` plan sheets for the architect (committed) |
 | `input/farben_*.png` colour references | `docs/images/ansicht_*.png` (README views) |
 | | `tmp/web/*.png` viewer screenshots, `tmp/check-*.log` check logs |
-| | `web/public/frechenlehen.glb` (generated), `web/dist/` → GitHub Pages |
+| | `web/public/frechenlehen.glb`, `web/public/vorlagen.json` (generated), `web/dist/` → GitHub Pages |
+| every raster image in `input/` (the Vorlagen) | `web/public/vorlagen/<Bereich>/*.jpg` downsized copies (committed) |
 
 ## States and transitions
 

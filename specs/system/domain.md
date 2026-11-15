@@ -92,6 +92,9 @@ the team uses them:
 | **Slow test** | A pytest test marked `slow` (plan-sheet determinism and currency: they export the sheets again); not in the quick check. |
 | **`@eye` test** | A Playwright test that only makes pictures for a human (stills along the Rundgang); not in the default run, `--grep @eye` runs it. |
 | **View URL** | The viewer's URL state: house `?cam=x,y,z&at=x,y,z&p=0…4&cut=` `all` / `noroof` / `eg`, sub-model pages `?cam=&at=&look=`, model coordinates (z up). |
+| **Vorlage** | A reference picture in `input/` the model was built after (photo, sketch, drawing, plan render); each belongs to exactly one Bereich, with a German caption, and is copied (≤ 1600 px JPEG) to `web/public/vorlagen/<key>/`. |
+| **Bereich** | An area of the house the Vorlagen are sorted by (`code/vorlagen.py` `BEREICHE`): a room or room group, Außen & Garten, Ganzes Haus (elements found all over the house) or Pläne; one page each (`vorlagen.html?b=<key>`). |
+| **Marker** (Vorlagen) | The link "Fotos: <Bereich>" over the house viewer at a Bereich's anchor; it opens the Bereich's page. Pläne has none. |
 | **Show** | Opening the user's browser at a view URL that frames changed objects (`code/show.py`), after the agent has looked at a screenshot of the same URL (`web/shot.js`). |
 
 ## Concepts and entities
