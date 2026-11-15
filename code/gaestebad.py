@@ -1,13 +1,15 @@
 """Frechenlehen – the Gästebad im 1. Stock (issue #18) as a sub-model (web/gaestebad.html): the OG Bad at
 the end of the Flur (NW; the architect's "Bad 6,98 m²" with "WC 2,26 m²"). Issue #32: coming in through the
 Flur door (east wall) one faces the back wall (west, the outer wall): on the left, in the SW corner, a
-walk-in shower 101 x 130 (west wall to the partition, south wall to the tub), the head on the south wall;
-to its right a bathtub 180 x 75 built in along the back wall under the big window (rim 58 below its 75
-sill: lying in the tub, back to the north wall, one looks out of it), a white ceramic shell in a limestone
-apron. The 10 cm partition still stands over the EG Gäste-WC's (code/gaeste_wc.py) but ends at YP, so the
-shower opens east between it and the tub; east of it the open WC niche (no wall, no door; toilet centred
-on its south wall, facing north; Taubenblau tiles); the Waschbecken einzeln 60 on the north wall between
-tub and door under a mirror 80 x 85 in a 10 cm wooden frame (like the OG Flur's).
+walk-in shower 101 x 140 (west wall to the glass, south wall to the tub) on the room's limestone floor, its
+back (west) and side (south) wall in limestone to 2.0, the head on the south wall; to its right a bathtub
+170 x 75 built in along the back wall under the big window (rim 58 below its 75 sill: lying in the tub,
+back to the north wall, one looks out of it), a white ceramic shell in a limestone apron. Between shower
+and WC a glass wall (where the partition over the EG Gäste-WC's stood, code/gaeste_wc.py) from the south
+wall to YG, a little further forward than that wall reached; north of it the way into the shower. East of
+it the open WC (toilet centred on the south wall, facing north; Taubenblau tiles on the south and east
+wall); the Waschbecken einzeln 60 on the north wall between tub and door under a mirror 80 x 85 in a 10 cm
+wooden frame (like the OG Flur's).
 
 Pure Python like house_core.py, which imports this module: build_sanitary() calls gaestebad_neu() at
 GAESTEBAD_AT on the OG floor, build_og() takes the Flur door (TUER) from here; house_core.build_gaestebad()
@@ -20,13 +22,15 @@ import gaeste_wc
 
 GAESTEBAD_AT = (0.31, 5.46)                  # house: the room's inner SW corner
 WI, WO, YS, YN = 0.31, 2.57, 5.46, 8.57      # room: west and east (Flur wall) faces, south and north faces
-PA, PB = gaeste_wc.PA, gaeste_wc.PB          # partition, over the EG Gäste-WC's
-YP = 6.15                                    # its north end: WC niche 69 deep, the shower's entrance north of it
+PA = gaeste_wc.PA                            # the glass between shower and WC: over the EG partition's west face
+YG = 6.24                                    # its north end, 9 cm before the partition's (6.15); the way in north of it
 TUER = (7.66, 8.47)                          # Flur door in the east wall, hinged south, open flat into the Bad
-YT, XT, ZR = 6.77, WI + 0.75, 0.58           # tub: south edge (the big window's south jamb), east face, rim top
+YT, XT, ZR = 6.87, WI + 0.75, 0.58           # tub: south edge (window from 6.77), east face, rim top
 SN = YT - 0.015                              # shower's north edge: clear of the tub's limestone end
-SX = (WI + PA) / 2                           # shower head: the middle of its south wall
-TX = (PB + WO) / 2                           # toilet axis: centred in the niche
+SX = (WI + PA) / 2                           # shower head: the middle of its south wall, on the slabs
+CLAD, ST = 2.0, 0.012                        # shower walls: limestone to 2.0, slab face off the wall
+WS = (5.72, 6.32, 4.18)                      # the west wall's small window: y span, sill (house z)
+TX = (PA + WO) / 2                           # toilet axis: centred between glass and east wall
 BX = 1.45                                    # basin and mirror: between the tub and the door
 BW, BD = 0.60, 0.47                          # Waschbecken einzeln
 MW, MH, MF, MZ = 0.80, 0.85, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
@@ -77,15 +81,13 @@ def wanne(c, dx, dy, z, rng):
 
 def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
     """The Gästebad built into collection c with the room's inner SW corner at (x0, y0) on floor z; with
-    walls (the sub-model) also the four wall pieces. Partition, mirror and tub draw their rnd from this
-    module's generators, toilet and shower from the global stream (as everywhere in the house), tiles
-    and basin from their own. Returns the dimension lines (sub-model coordinates)."""
+    walls (the sub-model) also the four wall pieces. Mirror, shower walls and tub draw their rnd from this
+    module's generators (the shower's limestone too); tiles and basin from their own. Returns the dimension
+    lines (sub-model coordinates)."""
     dx, dy = x0 - GAESTEBAD_AT[0], y0 - GAESTEBAD_AT[1]
     if walls:
         waende(c, dx, dy)
     rng = random.Random(18)
-    H = hc.Z_OG_TOP - hc.Z_OG
-    hc.box(c, c + "_Waende", "Putz", PA + dx, PB + dx, YS + dy, YP + dy, z, z + H, rng.random())   # partition
 
     # north wall: the basin between tub and door, the mirror above it
     hc.waschbecken(c, BX + dx, YN + dy, 0, -1, BW, BD, 1, z=z)
@@ -93,12 +95,20 @@ def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
     for k in range(2):                                   # two Wandlampen over it, one per half of its width (#19)
         hc.wandlampe(c, BX - MW / 2 + MW * (k + 0.5) / 2 + dx, YN + dy, 0, -1, z + hc.WANDLAMPE_SPIEGEL_H)
     hc.wandlampe(c, (WI + XT) / 2 + dx, YN + dy, 0, -1, z + hc.WANDLAMPE_SPIEGEL_H)   # over the tub's head end
-    hc.wandlampe(c, WO + dx, (YS + YP) / 2 + dy, -1, 0, z + hc.WANDLAMPE_H)           # east wall: over the toilet
-    # back wall: the shower in the SW corner, the tub north of it; south wall: the WC niche east of the partition
-    hc.shower(c, WI + dx, PA + dx, YS + dy, SN + dy, [], (SX + dx, YS + dy, 0, 1), z=z)
+    hc.wandlampe(c, WO + dx, (YS + YG) / 2 + dy, -1, 0, z + hc.WANDLAMPE_H)           # east wall: over the toilet
+    # back wall: the shower in the SW corner (no tray: the limestone floor runs through; limestone on the west wall,
+    # its small window left free above the sill, and on the south wall to the glass; the head on the slabs), the
+    # tub north of it; south wall: the WC east of the glass
+    sill = z + WS[2] - hc.Z_OG
+    hc.limestone(c, False, WI, 1, YS, SN, z + 0.018, sill, rng, dx, dy)
+    for ya, yb in ((YS, WS[0]), (WS[1], SN)):
+        hc.limestone(c, False, WI, 1, ya, yb, sill, z + CLAD, rng, dx, dy)
+    hc.limestone(c, True, YS, 1, WI + ST, PA - 0.005, z + 0.018, z + CLAD, rng, dx, dy)
+    hc.shower(c, WI + dx, PA + dx, YS + dy, SN + dy, [(PA + dx, YS + dy, PA + dx, YG + dy)],
+              (SX + dx, YS + ST + dy, 0, 1), z=z, tray=False)
     wanne(c, dx, dy, z, random.Random(32))
     hc.toilet(c, TX + dx, YS + dy, 0, 1, z=z)
-    hc.wainscot(c, z, PB + dx, WO + dx, YS + dy, YP + dy, (PB + dx, WO + dx))
+    hc.wainscot(c, z, PA + 0.006 + dx, WO + dx, YS + dy, YG + dy, (WO + dx, WO + dx), sides="se")
 
     # dimension lines (sub-model coordinates)
     S = lambda xa, ya, za, xb, yb, zb, s: ((xa - GAESTEBAD_AT[0], ya - GAESTEBAD_AT[1], za),
@@ -107,11 +117,10 @@ def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
     ba, bb = BX - BW / 2, BX + BW / 2
     ma, mb = BX - MW / 2, BX + MW / 2
     return [S(WI, YS + 0.05, top, PA, YS + 0.05, top, f"Dusche {cm(WI, PA)} × {cm(YS, SN)}"),
-            S(PA, YS + 0.05, top, PB, YS + 0.05, top, cm(PA, PB)),
-            S(PB, YS + 0.05, top, WO, YS + 0.05, top, f"WC {cm(PB, WO)}"),
-            S(PB + 0.05, YS, f, PB + 0.05, YP, f, cm(YS, YP)),
-            S(PA - 0.05, YP, f, PA - 0.05, SN, f, f"Durchgang {cm(YP, SN)}"),
-            S(PB, YS + 0.85, f, TX, YS + 0.85, f, cm(PB, TX)),
+            S(PA, YS + 0.05, top, WO, YS + 0.05, top, f"WC {cm(PA, WO)}"),
+            S(PA + 0.05, YS, f, PA + 0.05, YG, f, f"Glas {cm(YS, YG)}"),
+            S(PA - 0.05, YG, f, PA - 0.05, SN, f, f"Durchgang {cm(YG, SN)}"),
+            S(PA, YS + 0.85, f, TX, YS + 0.85, f, cm(PA, TX)),
             S(TX, YS + 0.85, f, WO, YS + 0.85, f, cm(TX, WO)),
             S(WI + 0.45, YT, f, WI + 0.45, YN, f, f"Wanne {cm(YT, YN)} × {cm(WI, XT)}"),
             S(XT + 0.03, YT + 0.15, 0.0, XT + 0.03, YT + 0.15, ZR, f"Rand {cm(0, ZR)}"),

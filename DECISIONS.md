@@ -26,6 +26,7 @@ Choices made while nobody was there to ask are logged here
   - [19:01 — #33: rewrite the old Elternbad layout tests; the Rundgang stops in front of the glass](#run-2026-11-15-1633-14)
   - [19:36 — #32: shower SW, tub 180 × 75 along the west wall under the window, partition shortened to 6.15, WC niche to the SE, basin 60 on the north wall; 4 lamps instead of 5](#run-2026-11-15-1633-15)
   - [19:36 — #32: the tub built in, white ceramic shell with a limestone apron](#run-2026-11-15-1633-16)
+  - [20:20 — #32: the user's addition: limestone shower floor and walls, glass instead of the partition, 9 cm further forward; tub 170](#run-2026-11-15-1633-17)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -189,7 +190,7 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the issue invalidates what they pin; a 60 passage leaves only ±5 cm for the 0.25 m camera clearance, which the route's smoothing could break.
 - **Alternatives:** walk through the passage (risky clearance); leave the route (camera inside the glass).
 - **Consequences:** tour goldens regenerated.
-  #32: the Gästebad's layout tests (`test_gaestebad_og_walls`, `test_gaestebad_og_shower`, `test_gaestebad_submodel`, the OG wall-light counts, `web/e2e/gaestebad.spec.js` labels) rewritten for shower + tub; the Rundgang route unchanged (it only peeks in from the Flur), a new test keeps it ≥ 0.25 m from the Gästebad's Parts.
+  #32: the Gästebad's layout tests (`test_gaestebad_og_walls`, `test_gaestebad_og_shower`, `test_gaestebad_submodel`, the OG wall-light counts, `web/e2e/gaestebad.spec.js` labels; after the user's addition (-17) also the partition and the ceramic tray they pinned) rewritten for shower + tub; the Rundgang route unchanged (it only peeks in from the Flur), a new test keeps it ≥ 0.25 m from the Gästebad's Parts.
 
 ## 19:36 — #32: shower SW, tub 180 × 75 along the west wall under the window, partition shortened to 6.15, WC niche to the SE, basin 60 on the north wall; 4 lamps instead of 5 {#run-2026-11-15-1633-15}
 
@@ -210,3 +211,13 @@ Choices made while nobody was there to ask are logged here
 - **Why:** a freestanding tub wedged against two walls and the shower looks wrong and wastes the 75 cm; the limestone ties it to the house's walk-in showers; materials reused from `MAT_DEF`.
 - **Alternatives:** freestanding white tub on feet; Taubenblau tiles on the apron (they mark the WCs).
 - **Consequences:** none beyond the new Parts in `<c>_Sanitaer` / `<c>_Fliesen`.
+
+## 20:20 — #32: the user's addition: limestone shower floor and walls, glass instead of the partition, 9 cm further forward; tub 170 {#run-2026-11-15-1633-17}
+
+- **Status:** open
+- **Context:** during the run the user added (via the coordinator): „Die Dusche im oberen Gästebad sollte als Boden auch die Stein fließen haben und auch die Wände die hintere und die Seite Wand sollten mit Stein fließen ausgelegt werden. Und die Wand zwischen Dusche und Toilette sollte durch eine Glaswand ersetzt werden, die etwas weiter nach vorne geht als die jetzige Wand.“ The layout of -15 has the shower in the SW corner, the partition (to y 6.15) between it and the WC niche, the tub from y 6.77.
+- **Question:** which walls are "hintere" and "Seite"; how far is "etwas weiter nach vorne"; how does the shower keep its entrance when the glass reaches further towards the tub?
+- **Decision:** floor: no ceramic tray, the room's limestone runs through (`tray=False`, as in the Bäder S and Großeltern); limestone to 2.0 on the back wall (west, around the small window: up to its sill 1.48 over the full width, above only beside it) and on the side wall (south, with the head, on the slabs); the partition goes, a glass wall stands on its west face line (x 1.319) from the south wall to y 6.24 (9 cm further forward than the wall's 6.15); the WC niche, now glass to the east wall, keeps the toilet centred between glass and wall. To keep the shower's entrance ≥ 60 cm clear between the glass and the tub, the tub is 170 (y 6.87 .. 8.57) instead of 180; the window still spans 89 cm of it.
+- **Why:** "hintere Wand" = the back wall of -15 (west), "Seite" = the shower's other wall (south; the east side is the glass); a few cm forward is what "etwas" says, and more would close the way in; 170 × 75 is a standard tub.
+- **Alternatives:** keep the 180 tub with a 50 cm entrance; glass further forward with a door; keep the partition and add glass in front of it.
+- **Consequences:** the partition over the EG one is gone (its test rewritten, appended to -14); `BATHS_OG` is one rectangle for the room; one draw less from `Random(18)` (the mirror's rnd changes).

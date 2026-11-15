@@ -104,7 +104,7 @@ def test_routes_and_spots_clear_the_elternbad():
 
 def test_routes_and_spots_clear_the_gaestebad():
     """Issue #32: every camera key of every route and every Standpunkt keeps 0.25 m from the Parts the Gästebad
-    brings (shower, tub, toilet, basin, mirror, tiles, limestone, lamps, partition; code/gaestebad.py)."""
+    brings (shower, glass, tub, toilet, basin, mirror, tiles, limestone, lamps; code/gaestebad.py)."""
     bp = house_core.build()
     boxes = []
     for o in ("Sanitaer", "Fliesen", "Spiegel", "Wandlampen", "Waende"):
@@ -112,7 +112,7 @@ def test_routes_and_spots_clear_the_gaestebad():
         for first, n in bp.parts[("OG", "OG_" + o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
             lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
-            if 0.30 < lo[0] and hi[0] < 2.575 and 5.455 < lo[1] and hi[1] < 8.575 and (o != "Waende" or hi[0] - lo[0] < 0.2):
+            if 0.30 < lo[0] and hi[0] < 2.575 and 5.44 < lo[1] and hi[1] < 8.575 and (o != "Waende" or hi[0] - lo[0] < 0.2):
                 boxes.append((lo, hi))
     assert len(boxes) > 100 and any(lo[1] > 6.7 and hi[0] < 1.1 and abs(hi[2] - house_core.Z_OG - 0.58) < 1e-6
                                     for lo, hi in boxes)                     # the tub is among them
