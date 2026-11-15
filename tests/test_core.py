@@ -850,7 +850,7 @@ def test_waschkueche_shower_cabin():
     """Issue #29, the user's change (run-2026-11-15-1633-24): „Gleich rechts in dem Eck … mit zwei Glaswänden, die man
     aufklappen kann. Und dann noch ein Spalt von 20 cm bis zu dem Schrank.“ A floor-level shower cabin 1.10 x 1.10 in
     the NW corner, right of the door as one comes in (outer x 5.59 .. 6.69, y 4.96 .. 6.06): limestone slabs on the
-    floor inside it only (top +0.018, no tray), oak around it; limestone on the west and north wall to 2.0, the head
+    floor (top +0.018, no tray; since #28 the whole room's limestone runs through it); limestone on the west and north wall to 2.0, the head
     on the west wall, a drain in the middle; its south and east side each a glass bifold door (two 8 mm panels on a
     wall profile, two hinges at the fold, a bar handle each side of the free panel), folding into the cabin; exactly
     20 cm free to the basket cupboard south of it; the room door opens 90° and its leaf stays clear; nothing on the
@@ -863,11 +863,10 @@ def test_waschkueche_shower_cabin():
     assert x1 < door["hinge"][0] and min(p[0] for p in leaf) > 7.1 and min(p[1] for p in leaf) < 5.2   # open 90°
     pts = lambda ps: {_floor_at("OG", x, y) for x, y in ps} - {None}
     assert pts([(5.7, 5.05), (6.6, 5.95), (6.1, 5.5), (5.65, 6.0)]) == {"Kalkstein"}
-    assert pts([(6.8, 5.5), (6.1, 4.85), (7.5, 5.5), (7.0, 3.5)]) == {"Eiche"}
+    assert pts([(6.8, 5.5), (6.1, 4.85), (7.5, 5.5), (7.0, 3.5)]) == {"Kalkstein"}   # the room around it too (#28)
     stone = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Bodenbelag")) if m == "Kalkstein"
-             and 5.5 < hi[0] and lo[0] < 6.8 and 4.8 < hi[1] and lo[1] < 6.06]
-    assert stone and all(x0 - 1e-6 <= lo[0] and hi[0] <= x1 + 1e-6 and y0 - 1e-6 <= lo[1] and hi[1] <= y1 + 1e-6
-                         and abs(hi[2] - zo - 0.018) < 1e-6 for lo, hi in stone)     # only inside, tile plane
+             and x0 < hi[0] and lo[0] < x1 and y0 < hi[1] and lo[1] < y1]
+    assert stone and all(abs(hi[2] - zo - 0.018) < 1e-6 for lo, hi in stone)          # tile plane
     near = lambda key, a, b: [(m, lo, hi) for m, lo, hi in _parts(BP, key)
                               if all(lo[k] < b[k] - 1e-6 and hi[k] > a[k] + 1e-6 for k in range(3))]
     san = near(("OG", "OG_Sanitaer"), (x0 - 0.1, y0 - 0.1, zo), (x1 + 0.1, y1, zo + 2.2))
@@ -1284,7 +1283,7 @@ def test_bathrooms_have_limestone_like_the_eg_corridor():
     assert not [(a, b) for i, a in enumerate(gb) for b in gb[i + 1:]                       # no stone twice
                 if all(a[0][k] < b[1][k] - 1e-6 and b[0][k] < a[1][k] - 1e-6 for k in range(2))]
     assert pts("OG", [(5.65, 0.45), (7.0, 1.5), (8.55, 2.55)]) == {"Kalkstein"}                       # Bad S
-    assert pts("OG", [(4.0, 7.5), (7.0, 4.0)]) == {"Eiche"}                                            # Flur, HWR
+    assert pts("OG", [(4.0, 7.5)]) == {"Eiche"} and pts("OG", [(7.0, 4.0)]) == {"Kalkstein"}          # Flur; HWR (#28)
     assert pts("EG", [(0.71, 11.656)]) == {"Kalkstein"} and pts("EG", [(1.81, 10.7)]) == {"Eiche"}   # Bad Großeltern
     assert pts("EG", [(1.6, 9.3)]) == {"Eiche"}                                                        # its Schrank
     assert pts("EG", [(5.0, 7.5)]) == {"Kalkstein"}                                                    # EG Flur
@@ -2048,6 +2047,27 @@ def test_elternbad_submodel():
     labels = [d[2] for d in bp.dims]
     for t in ("Duschen 90", "Glas 80", "Durchgang 60", "Waschbecken 60", "Spiegel 80 × 85", "Tür 93", "Fenster 88"):
         assert t in labels, (t, labels)
+
+
+def test_waschkueche_has_a_tile_floor():
+    """Issue #28: „Die Waschküche soll keinen Holzboden bekommen, sondern einen Fliesenboden.“ The whole Waschküche
+    (x 5.59 .. 8.59, y 2.79 .. 6.06) gets the limestone of the OG baths, none under its walls, no oak left in it; the
+    shower cabin's floor is part of that tiling, so no two floor slabs overlap (no z-fight)."""
+    zo, (x0, x1, y0, y1) = house_core.Z_OG, waschkueche.ROOM
+    assert (x0, x1, y0, y1) == (5.59, 8.59, 2.79, 6.06)
+    fl = [(m, lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Bodenbelag"))
+          if lo[0] < x1 - 1e-6 and x0 + 1e-6 < hi[0] and lo[1] < y1 - 1e-6 and y0 + 1e-6 < hi[1]]
+    assert {m for m, lo, hi in fl} == {"Kalkstein"}                                  # no oak in the room
+    assert all(x0 - 1e-6 <= lo[0] and hi[0] <= x1 + 1e-6 and y0 - 1e-6 <= lo[1] and hi[1] <= y1 + 1e-6
+               and abs(hi[2] - zo - 0.018) < 1e-6 for m, lo, hi in fl)           # none under the walls, tile plane
+    area = sum((hi[0] - lo[0]) * (hi[1] - lo[1]) for m, lo, hi in fl)
+    assert 0.95 * (x1 - x0) * (y1 - y0) < area <= (x1 - x0) * (y1 - y0) + 1e-6     # the whole room
+    assert not [(a, b) for i, a in enumerate(fl) for b in fl[i + 1:]                 # no slab twice (the cabin's)
+                if all(a[1][k] < b[2][k] - 1e-6 and b[1][k] < a[2][k] - 1e-6 for k in range(2))]
+    pts = lambda ps: {_floor_at("OG", x, y) for x, y in ps} - {None}
+    sx, sy = waschkueche.DUSCHE[1], waschkueche.DUSCHE[2]                            # across the cabin's outline
+    assert pts([(sx - 0.05, 5.5), (sx + 0.05, 5.5), (6.1, sy - 0.05), (6.1, sy + 0.05), (8.5, 2.85)]) == {"Kalkstein"}
+    assert pts([(7.0, 6.3), (5.0, 4.0)]) == {"Eiche"}                                # Flur, Bad side: unchanged
 
 
 def test_wcs_have_limestone_floors():
