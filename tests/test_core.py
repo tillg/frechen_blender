@@ -2241,8 +2241,7 @@ def test_gaeste_wc_submodel():
     (west, 101) and Garderobe (east, 94); the WC gets a new 76 opening in the north wall (17 from
     the west wall), its leaf opened outward into the Flur, 90 deg, hinged at the partition side;
     the toilet centred (50/50), 40 free in front of it (drawing: 41, its toilet 1 cm shorter); Taubenblau tiles in the WC only. The
-    Garderobe keeps the old 80 opening without a door: bench 35 x 110 at 45, wall to wall, 59 free
-    beside it, hook board, six hooks at 165, hat shelf at 185. On the Flur east wall a Waschbecken
+    Garderobe keeps the old 80 opening without a door (its furnishing: test_garderobe_jacken). On the Flur east wall a Waschbecken
     einzeln 40/28 at 85 on its Ständer (input/2026-11-12 input/), 14/40/14 on the 69 wall piece, 83 from the WC door's hinge jamb; tiles behind it to
     about 112, up to the Windfang door's architrave; a mirror 40 x 60 in a 7 cm wooden frame from 120."""
     import gaeste_wc as g
@@ -2344,8 +2343,8 @@ def test_garderobe_jacken():
     cm = lambda a, b: round(abs(b - a) * 100)
     gar = [(m, [lo[0] + x0, lo[1] + y0, lo[2]], [hi[0] + x0, hi[1] + y0, hi[2]])
            for m, lo, hi in _parts(bp, ("GaesteWC", "GaesteWC_Garderobe"))]      # house coordinates
-    # no bench: nothing between 25 and 1.30 sticks out more than 5 cm from the east wall north of the shoe shelf
-    assert not [p for p in gar if p[1][1] > g.YS + 0.40 and p[1][2] < 1.30 and p[2][2] > 0.25]
+    # no bench: nothing between the shoe shelf (top 50) and the hook board (from 1.35)
+    assert not [p for p in gar if p[1][2] < 1.30 and p[2][2] > 0.55]
     # hook board over the whole east wall; >= 20 hooks in two rows, staggered, on the east wall
     board = [(lo, hi) for m, lo, hi in gar if m == "FichteZ" and hi[0] - lo[0] < 0.03 and hi[1] - lo[1] > 1.0]
     assert len(board) == 1 and abs(board[0][1][0] - 2.358) < 1e-6 and cm(board[0][0][1], board[0][1][1]) == 110
@@ -2353,7 +2352,7 @@ def test_garderobe_jacken():
     rows = {}
     for lo, hi in arms:
         rows.setdefault(round(lo[2] + 0.005, 2), []).append(round((lo[1] + hi[1]) / 2, 4))
-    assert sorted(rows) == [1.50, 1.65] and len(arms) >= 20
+    assert sorted(rows) == [1.50, 1.65] and (len(rows[1.65]), len(rows[1.50])) == (12, 11)
     up, dn = sorted(rows[1.65]), sorted(rows[1.50])
     assert all(min(abs(y - u) for u in up) > 0.03 for y in dn)              # staggered
     assert all(g.YS < y < g.YN for y in up + dn)
@@ -2372,10 +2371,9 @@ def test_garderobe_jacken():
     assert len(boards) == 3 and all(cm(lo[1], hi[1]) == 33 and abs(lo[1] - g.YS) < 1e-6 for lo, hi in boards)
     assert [cm(a[1][2], b[0][2]) for a, b in zip(boards, boards[1:])] == [20, 20]
     labels = [d[2] for d in bp.dims]
-    for t in ("Stange 94 auf 178", "Schuhregal 33 tief", "Hakenbrett 110"):
+    for t in ("Kleiderstange 94 auf 178", "Schuhregal 33 tief", "Hakenbrett 110"):
         assert t in labels, t
     assert not [t for t in labels if "Bank" in t]
-
 
 
 def test_garderobe_kleidung():
@@ -2398,11 +2396,17 @@ def test_garderobe_kleidung():
     top = max(z + g.SHOE_T for z in g.SHOE_Z)
     assert min(lo[2] for m, lo, hi in coats) > top + 0.05                           # hems above the shoe shelf
     assert all(1.66 - 1e-6 <= lo[0] and hi[0] <= 2.20 for m, lo, hi in coats)       # lamp | coats | hooks
+    xs = sorted([min(lo[0] for m_, lo, hi in coats if m_ == m), max(hi[0] for m_, lo, hi in coats if m_ == m)]
+                for m in fabrics)
+    assert all(a[1] < b[0] for a, b in zip(xs, xs[1:]))                              # coats don't touch each other
     soles = [(lo, hi) for m, lo, hi in kl if m == "Gummi" and hi[2] - lo[2] < 0.03]
     assert len(soles) == 12
     boards = [z + g.SHOE_T for z in g.SHOE_Z[:2]]
     assert sorted(sum(abs(lo[2] - b) < 0.003 for lo, hi in soles) for b in boards) == [6, 6]
     shoes = [(m, lo, hi) for m, lo, hi in kl if hi[2] < top]
+    for m, lo, hi in bodies:                                                         # hems 2 cm above the boots under them
+        under = [h[2] for m_, l, h in shoes if l[0] < hi[0] and h[0] > lo[0]]
+        assert lo[2] > max(under + [top]) + 0.02, m
     for m, lo, hi in shoes:
         level = max(b for b in boards if b <= lo[2] + 0.003)
         assert hi[2] < level + 0.20 - 0.02 and hi[1] < g.YS + g.SHOE_D, (m, lo, hi)

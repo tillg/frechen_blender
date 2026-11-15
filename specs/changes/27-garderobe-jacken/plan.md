@@ -1,7 +1,7 @@
 ---
 feature: 27-garderobe-jacken
 title: "Plan: Garderobe für viele Jacken"
-status: applying
+status: applied
 order: 4
 created: 2026-11-15
 edited: 2026-11-15

@@ -120,7 +120,7 @@ def gaeste_wc_neu(c="GaesteWC", x0=0.0, y0=0.0):
             S(WI, YN - 0.25, f, TX, YN - 0.25, f, cm(WI, TX)),
             S(TX, YN - 0.25, f, PA, YN - 0.25, f, cm(TX, PA)),
             S(TX, YS + TD, f, TX, YN, f, f"{cm(YS + TD, YN)} frei"),
-            S(PB, ROD_Y, ROD_Z + 0.05, WO, ROD_Y, ROD_Z + 0.05, f"Stange {cm(PB, WO)} auf {cm(0, ROD_Z)}"),
+            S(PB, ROD_Y, ROD_Z + 0.05, WO, ROD_Y, ROD_Z + 0.05, f"Kleiderstange {cm(PB, WO)} auf {cm(0, ROD_Z)}"),
             S((PB + WO) / 2, YS, SHOE_Z[-1] + SHOE_T + f, (PB + WO) / 2, YS + SHOE_D, SHOE_Z[-1] + SHOE_T + f,
               f"Schuhregal {cm(0, SHOE_D)} tief"),
             S(PB + 0.06, YS + SHOE_D + 0.02, SHOE_Z[0] + SHOE_T, PB + 0.06, YS + SHOE_D + 0.02, SHOE_Z[1], cm(SHOE_Z[0] + SHOE_T, SHOE_Z[1])),
@@ -164,7 +164,7 @@ def kleidung(c, dx, dy):
         X("Kiefer", xc - 0.006, xc + 0.006, [(yc - 0.20, s - 0.03), (yc + 0.20, s - 0.03), (yc + 0.20, s - 0.015),
                                              (yc + 0.05, s + 0.035), (yc - 0.05, s + 0.035), (yc - 0.20, s - 0.015)], r)
         w, f = 0.002, ROD_R + 0.002                                                                # hook over the rod
-        Bx("Stahl", xc - w, xc + w, yc + f, yc + f + 2 * w, s + 0.03, ROD_Z + f + 2 * w, 0.5)
+        Bx("Stahl", xc - w, xc + w, yc + f, yc + f + 2 * w, s + 0.06, ROD_Z + f + 2 * w, 0.5)
         Bx("Stahl", xc - w, xc + w, yc - f - 2 * w, yc + f, ROD_Z + f, ROD_Z + f + 2 * w, 0.5)
         Bx("Stahl", xc - w, xc + w, yc - f - 2 * w, yc - f, ROD_Z, ROD_Z + f, 0.5)
     kinds = [("Halbschuh", 0.08, ["Leder", "Anthrazit"]), ("Turnschuh", 0.085, ["Leinen", "Jeans", "Wolle"]),

@@ -143,8 +143,9 @@ flowchart LR
   hand basin stands outside the room. Its walls: the partition and the WC's north wall
   (`interior()` with the WC door and the open Garderobe passage). Toilet and WC tiles
   (`toilet()`, `wainscot()`), the basin (`waschbecken()`, einzeln 40 × 28, `tile=WC_TILE_T`) with tiles on the back hall's
-  east wall (`wainscot(sides="e")`) and a pine-framed mirror, the Garderobe (`_Garderobe`: bench,
-  hook board, hooks, hat shelf); own `random.Random(12)`, the north wall and the toilet from the
+  east wall (`wainscot(sides="e")`) and a pine-framed mirror, the Garderobe (`_Garderobe`: hook board,
+  23 hooks, hat shelf, Kleiderstange, shoe shelf; no bench) and its coats and shoes (`kleidung()`,
+  object `_Kleidung`, in `FURNITURE`, own `random.Random(27)`, explicit `rnd` per part); own `random.Random(12)`, the north wall and the toilet from the
   global stream. It also builds the back hall's other two doors: `back_door(c, dx, dy)` and the
   glazed Windfang door (`panel_door(…, leaf=)`; the long wall keeps an open passage there). The
   three leaves are objects of their own (`_Hintertuer`, `_WC_Tuer`, `_Windfangtuer`) with a
