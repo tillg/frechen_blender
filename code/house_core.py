@@ -1309,7 +1309,7 @@ def build_og():
     interior(c, 9.08, 9.25, 8.86, 12.485, (), z0, z1)
     interior(c, 2.57, 2.71, 5.46, 8.57, [(*gaestebad.TUER, -1, "a")], z0, z1, H)   # Gästebad (code/gaestebad.py)
     interior(c, 2.71, 14.35, 6.06, 6.35,
-             [(4.02, 4.87, -1, "a", False), (7.15, 8.17, -1, "a"), (8.76, 9.65, -1, "b", False),
+             [(4.02, 4.87, -1, "a", False), (7.15, 8.17, -1, "a", False), (8.76, 9.65, -1, "b", False),
               (10.66, 11.51, -1, "a", False)], z0, z1, H)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
     interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
@@ -2253,8 +2253,8 @@ def build_furniture():
     desk.desk("OG", 5.592, 8.588, 2.792, 3.592, zo)                     # full width of the back wall
     folded_stack("OG", 6.45, 3.20, zo + 0.75, ("Jeans", "Jeans", "Wolle", "Bettwaesche", "Creme", "Leinen"))
     folded_stack("OG", 7.15, 3.20, zo + 0.75, ("Bettwaesche", "Creme", "Bettwaesche", "Leinen", "Bettwaesche"))
-    basket_cupboard("OG", 5.59, 6.19, waschkueche.DUSCHE[3] + 0.02, 5.95, zo, n=2)   # right wall from the door
-                                                                        # to the shower cabin (#29)
+    basket_cupboard("OG", 5.59, 6.19, 3.612, waschkueche.DUSCHE[2] - 0.20, zo, n=2)   # right wall from the door:
+                                                                        # 20 cm before the shower cabin (#29)
     bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)

@@ -33,6 +33,7 @@ Choices made while nobody was there to ask are logged here
   - [21:07 — #29: shower cabin on the Waschküche's west wall north of the table, basin 60 on the east wall north of the machines; the basket cupboard shortened to two baskets per shelf](#run-2026-11-15-1633-21)
   - [21:07 — #29: the cabin's glass door built closed (no PIVOT/SWING), limestone on floor patch and west wall, one lamp over the mirror in the tower lamp's slot](#run-2026-11-15-1633-22)
   - [21:07 — #29: a module `code/waschkueche.py` without a sub-model page](#run-2026-11-15-1633-23)
+  - [21:45 — #29: the user's change: cabin in the NW corner right of the door, two inward-folding glass doors, 20 cm to the cupboard; the room door opens 90°](#run-2026-11-15-1633-24)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -292,3 +293,13 @@ Choices made while nobody was there to ask are logged here
 - **Why:** #28 (floor) and #30 (south wall glazing) need the cabin's and the room's numbers; same shape as `elternbad.py`.
 - **Alternatives:** functions in house_core (no reload entry, but the core grows); a sub-model page (not required).
 - **Consequences:** reload entries in `build_house.py` and `garden.py`; CLAUDE.md lists the module.
+
+## 21:45 — #29: the user's change: cabin in the NW corner right of the door, two inward-folding glass doors, 20 cm to the cupboard; the room door opens 90° {#run-2026-11-15-1633-24}
+
+- **Status:** open
+- **Context:** the user (via the coordinator), after PR #42: „Zu der Dusche in der Waschküche bitte platziere sie lieber, wenn man in die Waschküche reinkommt. Gleich rechts in dem Eck. Und sie soll im Eck sein mit zwei Glaswänden, die man aufklappen kann. Und dann noch ein Spalt von 20 cm bis zu dem Schrank.“ The door is in the north wall (x 7.15 .. 8.17); entering one faces south, so "rechts" is west: the NW corner (west wall × Flur wall). The room door's leaf, hinged at the west jamb, opened flat against that very wall (to x 6.19). The Schrank there is the basket cupboard on the west wall.
+- **Question:** how do two glass walls open in a corner 20 cm from the cupboard and beside the door leaf, and where does the door leaf go?
+- **Decision:** cabin outer x 5.59 .. 6.69, y 4.96 .. 6.06 (west and north wall clad in limestone to 2.0, head on the west wall); its south and east sides are each a glass **bifold door** (two panels on a wall profile, hinged between them, folding into the cabin — "aufklappen"), built closed; the cupboard runs from the table (y 3.612) to exactly 20 cm before the cabin (y 4.76), two baskets per shelf. The room door keeps its hinge but opens 90° (`flat=False`), its leaf standing at x 7.15, 46 cm east of the cabin.
+- **Why:** outward-swinging leaves 1.09 wide could open only about 20° (the cupboard 20 cm away, the open room door 46 cm away); inward-folding panels need no room outside. A 90° leaf is how the house already opens doors where a corner is too close (CLAUDE.md › Interior doors).
+- **Alternatives:** hinged outward doors (blocked as above); re-hinge the room door at the east jamb (its leaf would hit the basin); open the room door into the Flur (the Flur basin and the WC door are in the way).
+- **Consequences:** the room door's leaf stands into the room; the cabin is outside its sweep; `test_waschkueche_open_cupboard…` finds the leaf by its 90° position; the "Hauswirtschaftsraum" plan label stays over the table.

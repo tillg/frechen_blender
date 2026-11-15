@@ -214,16 +214,17 @@ flowchart LR
   `random.Random(4)` for the sub-model floor. It returns its dimension lines.
 - **Waschküche.** `code/waschkueche.py` (house only, no sub-model): `waschkueche_neu(c, z)`, called last in
   `build_sanitary()`, builds into the OG Waschküche (x 5.59 .. 8.59, y 2.79 .. 6.06) a floor-level shower cabin
-  `DUSCHE` = (5.59, 6.69, 3.61, 4.71), 1.10 × 1.10 outer, against the west wall just north of the table: its floor
-  is a limestone rectangle in the OG `floor_cover()` (oak around it, top at the bathroom floors' 0.018), `limestone()`
-  on the west wall to 2.0, head and drain via `shower(…, glass=[], tray=False)`, 8 mm glass to the south, north and
-  east to 2.0 with a top rail over the fixed panes, a door 60 wide at the north end of the east glass (hinged north,
-  opening out, built closed: two hinges, a bar handle each side). On the east wall north of the machines the
-  Waschbecken einzeln 60 on `BY` = 5.28 (5+ cm outside the door leaf's sweep) on `wainscot(sides="e")` tiles 12 cm
-  wider each side, `wood_mirror()` 80 × 85 above; its Wandlampe is the `WANDLAMPEN_OG` entry (an entry may carry a
-  5th value, its height: here `WANDLAMPE_SPIEGEL_H`). `basket_cupboard(…, n)` (baskets per shelf, width ≤ 0.66)
-  holds two per shelf north of the cabin. Nothing on the south wall above 1.20 (to be glazed). Own `random.Random(29)`
-  for glass and limestone.
+  `DUSCHE` = (5.59, 6.69, 4.96, 6.06), 1.10 × 1.10 outer, in the NW corner right of the door as one comes in: its
+  floor is a limestone rectangle in the OG `floor_cover()` (oak around it, top at the bathroom floors' 0.018),
+  `limestone()` on the west and north wall to 2.0, head (west wall) and drain via `shower(…, glass=[], tray=False)`;
+  its south and east side each a glass bifold door (`faltwand()`: a wall profile, two equal 8 mm panels folding into
+  the cabin, two hinges at the fold, a bar handle each side of the free panel; built closed), the two free panels
+  meeting at the corner. `basket_cupboard(…, n)` (baskets per shelf, width ≤ 0.66) runs from the table to exactly
+  20 cm before the cabin, two per shelf; the room door opens 90° (`flat=False`, leaf at x 7.15) so it clears the
+  cabin. On the east wall north of the machines the Waschbecken einzeln 60 on `BY` = 5.28 (5+ cm outside the door
+  leaf's sweep) on `wainscot(sides="e")` tiles 12 cm wider each side, `wood_mirror()` 80 × 85 above; its Wandlampe
+  is the `WANDLAMPEN_OG` entry (an entry may carry a 5th value, its height: here `WANDLAMPE_SPIEGEL_H`). Nothing on
+  the south wall above 1.20 (to be glazed). Own `random.Random(29)` for glass and limestone.
 - **Limestone cladding.** `limestone(coll, along_x, face, n, ua, ub, z0, top, rng, dx, dy)` clads a
   shower wall in `<coll>_Fliesen`: a `Fuge` backing 2 mm off the wall, `Kalkstein` slabs 6..12 mm proud,
   rows of about 0.5 m, slabs 0.4..0.8 long from `rng`, joints 4 mm. Used by `bad.stone()` and

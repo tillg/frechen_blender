@@ -176,9 +176,10 @@ edited: 2026-11-15
   - Waschküche: two front loaders at the east wall, a dryer stacked on the north one; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the
     right wall from the door (west) an open spruce cupboard, 2.0 m high, continuous shelves
-    without dividers, two coarsely woven wicker laundry baskets (stakes and weavers) per shelf;
-    between cupboard and table a floor-level shower cabin 1.10 × 1.10 (limestone floor and west wall,
-    glass on three sides, a 60 glass door hinged north in the east glass); on the east wall north of
+    without dividers, two coarsely woven wicker laundry baskets (stakes and weavers) per shelf; 20 cm
+    beyond it, in the NW corner right of the door, a floor-level shower cabin 1.10 × 1.10 (limestone
+    floor, west and north wall; its south and east side each a glass bifold door folding inward; the
+    room door opens 90° to clear it); on the east wall north of
     the machines a Waschbecken einzeln 60 × 47 on Taubenblau tiles under a mirror 80 × 85 in a 10 cm
     wooden frame with one Wandlampe; nothing on the south wall above 1.20
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
