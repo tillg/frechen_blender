@@ -24,6 +24,8 @@ Choices made while nobody was there to ask are logged here
   - [19:01 — #33: shower strip 90 deep along the west wall; the north wall is the Waschküche partition, kept free above 1.20](#run-2026-11-15-1633-12)
   - [19:01 — #33: basin single 60 (was double 100) with mirror 80 × 85 on the east wall; toilet on the north wall; 3 lamps instead of 6](#run-2026-11-15-1633-13)
   - [19:01 — #33: rewrite the old Elternbad layout tests; the Rundgang stops in front of the glass](#run-2026-11-15-1633-14)
+  - [19:36 — #32: shower SW, tub 180 × 75 along the west wall under the window, partition shortened to 6.15, WC niche to the SE, basin 60 on the north wall; 4 lamps instead of 5](#run-2026-11-15-1633-15)
+  - [19:36 — #32: the tub built in, white ceramic shell with a limestone apron](#run-2026-11-15-1633-16)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -53,6 +55,8 @@ Choices made while nobody was there to ask are logged here
   #34: branch issue/34-alternativ-layout-standard from issue/35-nur-noch-threejs, PR https://github.com/tillg/frechen_blender/pull/37 (archived on the branch; full check: one red, `tour.spec.js` › ~30 fps lower bound, flaky under load, fails 2/5 on the base branch too).
   #31: branch issue/31-fotos-anzeigen from issue/34-alternativ-layout-standard, PR https://github.com/tillg/frechen_blender/pull/38 (archived on the branch; full check green).
   #33: branch issue/33-zwei-duschen from issue/31-fotos-anzeigen, PR https://github.com/tillg/frechen_blender/pull/39 (archived on the branch; full check: 3 reds, two pinned lamp count / label fixed and rerun green, the ~30 fps test flaky, green alone).
+  19:55: on the user's request ("merge the pending PRs to main") PRs #36–#39 were merged into main (13692f8, c5b0f1a, 337cf95, 9290f63), branches deleted, issues #35 #34 #31 #33 [done]. Later PRs target main and wait for the user.
+  #32: branch issue/32-dusche-badewanne from issue/33-zwei-duschen (now in main), PR base main.
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -185,3 +189,24 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the issue invalidates what they pin; a 60 passage leaves only ±5 cm for the 0.25 m camera clearance, which the route's smoothing could break.
 - **Alternatives:** walk through the passage (risky clearance); leave the route (camera inside the glass).
 - **Consequences:** tour goldens regenerated.
+  #32: the Gästebad's layout tests (`test_gaestebad_og_walls`, `test_gaestebad_og_shower`, `test_gaestebad_submodel`, the OG wall-light counts, `web/e2e/gaestebad.spec.js` labels) rewritten for shower + tub; the Rundgang route unchanged (it only peeks in from the Flur), a new test keeps it ≥ 0.25 m from the Gästebad's Parts.
+
+## 19:36 — #32: shower SW, tub 180 × 75 along the west wall under the window, partition shortened to 6.15, WC niche to the SE, basin 60 on the north wall; 4 lamps instead of 5 {#run-2026-11-15-1633-15}
+
+- **Status:** open
+- **Context:** issue #32: the OG Gästebad (x 0.31 .. 2.57, y 5.46 .. 8.57) gets a bathtub besides the shower. Entering through the Flur door (east wall, y 7.66 .. 8.47, leaf open flat against the east wall down to y 6.91) one faces the west wall (outer wall): a small high window (y 5.72 .. 6.32, sill 1.48) and the big window (y 6.77 .. 7.76, sill 0.75). The user wants the shower on the left (south) and the tub to its right along the back wall, with a view out of the window from the tub; basin and toilet "sensibly".
+- **Question:** where do shower, tub, toilet and basin go, and what happens to the partition (over the EG Gäste-WC's) and the WC niche?
+- **Decision:** shower in the SW corner, 101 × 131 (west wall to the partition, south wall to the tub), walk-in on the old tray, head on the south wall; tub 180 × 75 built in along the west wall from the big window's south edge (y 6.77) to the north wall, rim 0.58 under the 0.75 sill, back rest at the north end so one looks out of the window ahead to the right. The partition stays over the EG one but ends at y 6.15 (was 6.54), so the shower opens east between it and the tub (62 cm). The WC niche moves east of the partition (115 wide, toilet centred, Taubenblau tiles on its three walls). Basin single 60 × 47 on the north wall between tub and door (x 1.15 .. 1.75) with a wood mirror 80 × 85; lamps: two over the mirror, one over the tub's head end, one over the toilet (4; the west-wall lamp would now hang in the shower).
+- **Why:** follows the issue's arrangement literally; the partition keeps the WC out of sight from the door and still stands over the EG one; the north wall is the only free wall for the basin (east wall: door and leaf; south: shower and WC).
+- **Alternatives:** tub 170 from the north wall and the shower closed by glass to the north (a 42 cm throat to its entrance); no partition, toilet in the open room (WC seen from the door); basin double 120 (does not fit beside the tub).
+- **Consequences:** OG wall-light count 32 → 31 (pinned in several tests, `lighting.test.js`, `stages.spec.js`); BATHS_OG follows `YP`; plan sheets re-exported.
+
+## 19:36 — #32: the tub built in, white ceramic shell with a limestone apron {#run-2026-11-15-1633-16}
+
+- **Status:** open
+- **Context:** the issue leaves the tub's look open (no reference photo in `input/`); the tub stands between two walls (west, north) and the shower.
+- **Question:** freestanding tub or built in?
+- **Decision:** built in: a white `Keramik` shell (rim 6 cm, bottom at 0.15, rim top 0.58), its apron (east face) and south end (towards the shower) clad with the house's limestone (`hc.limestone()`, as in the Bäder's showers); a chrome deck mixer with spout on the south rim, drain at that end, the back rest end to the north. Own `random.Random(32)`.
+- **Why:** a freestanding tub wedged against two walls and the shower looks wrong and wastes the 75 cm; the limestone ties it to the house's walk-in showers; materials reused from `MAT_DEF`.
+- **Alternatives:** freestanding white tub on feet; Taubenblau tiles on the apron (they mark the WCs).
+- **Consequences:** none beyond the new Parts in `<c>_Sanitaer` / `<c>_Fliesen`.
