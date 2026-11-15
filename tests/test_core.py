@@ -896,7 +896,9 @@ def test_waschkueche_shower_cabin():
     for key in keys:
         assert not near(key, (x1 + 0.07, y0, zo + 0.03), (x1 + 0.65, hy + 0.62, zo + 1.95)), key
     assert not near(("OG", "OG_Moebel"), (x0, y0, zo), (x1, y1, zo + 2.1))     # table, cupboard clear
-    assert not [1 for m, lo, hi in san if lo[1] < 2.81 and hi[2] > zo + 1.20]   # nothing on the south wall
+    south = [(o, m, lo, hi) for o in ("Sanitaer", "Fliesen", "Spiegel") for m, lo, hi in _parts(BP, ("OG", "OG_" + o))
+             if 5.59 < hi[0] and lo[0] < 8.59 and 2.79 <= hi[1] and lo[1] < 2.81 and hi[2] > zo + 1.20]
+    assert south == []                                                          # nothing on the south wall (#30)
 
 
 def test_waschkueche_basin():
@@ -1952,7 +1954,7 @@ def test_elternbad_layout():
     assert near([(lo[1] + hi[1]) / 2 for lo, hi in riser], (0.70, 2.32))
     # toilet: on the north wall's tiles, ≥ 20 free to the glass and the basin, nothing within 60 in front
     toilet = [(m, lo, hi) for m, lo, hi in san if m in ("Keramik", "Metall") and 6.6 < lo[0] and hi[0] < 7.8
-              and 1.8 < lo[1] and hi[1] < 2.62 and hi[2] < zo + 0.85]                     # (in the room: #29)
+              and 1.8 < lo[1] and room(lo, hi) and hi[2] < zo + 0.85]                     # (in the room: #29)
     cistern = [(lo, hi) for m, lo, hi in toilet if m == "Keramik" and near((lo[2], hi[2]), (zo + 0.42, zo + 0.78))]
     assert len(cistern) == 1
     (lo, hi), = cistern

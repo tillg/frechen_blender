@@ -14,7 +14,7 @@ floor; build_slabs() takes DUSCHE for the floor cover, build_furniture() fits th
 import random
 import house_core as hc
 
-WI, WO, YS, YN = 5.59, 8.59, 2.79, 6.06      # room: west, east, south (Bad partition) and north (Flur) faces
+WI, WO = 5.59, 8.59                          # room: west and east faces (south 2.79: the Bad partition; north 6.06)
 DUSCHE = (WI, WI + 1.10, 3.61, 4.71)         # shower cabin, outer: west wall .. glass, 1.8 cm north of the table
 GT, ST = 0.008, 0.012                        # glass thickness; the limestone slabs' face off the wall
 TW = 0.60                                    # glass door width (north end of the east glass)
@@ -61,7 +61,8 @@ def becken(c, z, rng):
 
 
 def waschkueche_neu(c, z):
-    """Basin and shower of the Waschküche into collection c on floor z. Own random stream."""
+    """Basin and shower of the Waschküche into collection c on floor z. Glass, limestone and mirror draw from an own
+    stream; head and drain (hc.shower) and the tiles and basin draw as their helpers do elsewhere."""
     rng = random.Random(29)
     dusche(c, z, rng)
     becken(c, z, rng)
