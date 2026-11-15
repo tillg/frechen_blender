@@ -145,6 +145,26 @@ def test_routes_and_spots_clear_the_waschkueche():
         assert gap(s[3]) >= 0.25, s[0]
 
 
+def test_routes_and_spots_clear_the_oberlicht():
+    """Issue #30: every camera key of every route and every Standpunkt keeps 0.25 m from the glazing in the top
+    metre of the Bad / Waschküche partition (frame, beads, glass; code/elternbad.py)."""
+    bp = house_core.build()
+    key = ("OG", "OG_Innentueren")
+    g, boxes = bp.geo[key], []
+    for first, n in bp.parts[key]:
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
+        if 5.59 <= lo[0] and hi[0] <= 8.59 and 2.619 < lo[1] and hi[1] < 2.791:
+            boxes.append((lo, hi))
+    assert len(boxes) > 10
+    gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
+    for s in tour.SPOTS:
+        assert gap(s[3]) >= 0.25, s[0]
+
+
 def test_routes_and_spots_clear_the_kueche_hood():
     """Issue #26: every camera key of every route and every Standpunkt keeps 0.25 m from the Küche hood, now hung over
     the Halbinsel's cooktop (the Rundgang passes south of it), from the Wamsler with its pipe up to 1.80 m and from

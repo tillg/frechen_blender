@@ -979,6 +979,7 @@
 <path class="fe" d="M128.87 144.95L128.87 144.70L128.59 144.70L128.59 144.95Z"/>
 <path class="fe" d="M128.87 139.15L128.87 138.90L128.59 138.90L128.59 139.15Z"/>
 <path class="fe" d="M128.87 138.90L128.87 137.30L128.59 137.30L128.59 138.90Z"/>
+<path class="fe" d="M215.12 133.85L224.52 133.85L224.52 125.05L215.12 125.05Z"/>
 <path class="fe" d="M125.97 111.18L125.97 111.38L304.62 111.38L304.62 111.18Z"/>
 <path class="f" d="M125.97 111.38L125.97 111.89L304.62 111.89L304.62 111.38Z"/>
 <path class="e" d="M125.97 111.38L125.97 111.89M304.62 111.89L304.62 111.38"/>
@@ -998,7 +999,7 @@
 <path class="e" d="M268.14 150.65L268.14 173.35M268.14 173.35L293.12 173.35M293.12 173.35L293.12 153.35M293.12 150.65L268.14 150.65"/>
 <path class="f" d="M293.12 153.35L301.12 153.35L301.12 150.65L293.12 150.65Z"/>
 <path class="e" d="M293.12 153.35L301.12 153.35M301.12 150.65L293.12 150.65"/>
-<path class="fe" d="M203.82 146.35L233.82 146.35L233.82 124.35L203.82 124.35Z"/>
+<path class="fe" d="M204.82 146.35L232.82 146.35L232.82 134.35L204.82 134.35Z"/>
 <path class="fe" d="M128.87 139.66L128.87 139.40L128.59 139.40L128.59 139.66Z"/>
 <path class="f" d="M128.87 142.68L128.87 142.43L128.59 142.43L128.59 142.68Z"/>
 <path class="e" d="M128.87 142.68L128.87 142.43M128.87 142.43L128.59 142.43M128.59 142.43L128.59 142.68"/>
@@ -7851,6 +7852,6 @@
 <text x="293.00" y="264.00" font-size="5.00" text-anchor="start" font-weight="bold">Frechenlehen</text>
 <text x="293.00" y="274.00" font-size="4.50" text-anchor="start">Ansicht Nord</text>
 <text x="293.00" y="283.50" font-size="3.50" text-anchor="start">M 1:100</text>
-<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand a92b15e3157e</text>
+<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 7897348c482a</text>
 <g id="scale" stroke="#000" stroke-width="0.18"><rect x="290.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="300.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="310.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="320.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="330.00" y="251.00" width="10.00" height="1.50" fill="#000"/></g><text x="290.00" y="249.80" font-size="2.00" text-anchor="middle">0</text><text x="300.00" y="249.80" font-size="2.00" text-anchor="middle">1</text><text x="310.00" y="249.80" font-size="2.00" text-anchor="middle">2</text><text x="320.00" y="249.80" font-size="2.00" text-anchor="middle">3</text><text x="330.00" y="249.80" font-size="2.00" text-anchor="middle">4</text><text x="340.00" y="249.80" font-size="2.00" text-anchor="middle">5</text><text x="342.50" y="252.40" font-size="2.00" text-anchor="start">m</text>
 </svg>

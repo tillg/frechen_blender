@@ -1,7 +1,7 @@
 ---
 feature: 30-glas-waschkueche
 title: "Architecture: glazed top metre in the Bad / Waschküche partition"
-status: proposed
+status: applying
 order: 3
 created: 2026-11-16
 edited: 2026-11-16
@@ -15,9 +15,10 @@ edited: 2026-11-16
 7.49) and a builder `oberlicht(c, dx, dy, z0, z1)`. Both callers cut the opening with a `wall()` kind `I` op
 (`interior(..., ops=[(a, b, z0 + SILL, z1, "I")])`, one random draw as before) and call the builder:
 `house_core.build_og()` and `elternbad.waende()` (sub-model). The builder puts a pine lining (`Innentuer`) of the
-full wall depth into the opening (sill, head, jambs, two 6 cm mullions), glazing beads 2 × 2 cm both sides of each
-pane and `Milchglas` 8 mm in the wall's middle, all in `<c>_Fenster_Tueren` (the plans treat it as a frame) with
-one `rnd` from an own `random.Random(30)`. The four Waschküche lamps over the table get a fifth entry (height
+full wall depth into the opening (sill and jambs 5 cm, a 7 cm head board under the ceiling, two 6 cm mullions),
+glazing beads 2 × 2 cm both sides of each pane and `Milchglas` 8 mm in the wall's middle, all in `<c>_Innentueren`
+with one `rnd` from an own `random.Random(30)`. Not `<c>_Fenster_Tueren`: the plans' room regions (cut at 2.15)
+skip frames, so Bad and Waschküche would merge; as a built-in the head board, cut there, parts them. The four Waschküche lamps over the table get a fifth entry (height
 `waschkueche.LAMPE_H` = 1.10: lamp top 1.185, shade rim 23 cm over the table).
 
 ```mermaid

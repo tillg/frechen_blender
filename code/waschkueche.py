@@ -7,7 +7,8 @@ the user: „Gleich rechts in dem Eck … mit zwei Glaswänden, die man aufklapp
 floors; no tray; house_core lays it with the floor cover), limestone on the west and north wall to 2.0, the head on the west wall,
 the drain in the middle; its south and east side each a bifold glass door folding into the cabin (built closed);
 the cupboard ends 20 cm before it. On the east wall north of the tower a Waschbecken einzeln 60 on Taubenblau
-tiles under a mirror 80 x 85 in a 10 cm wooden frame. Nothing on the south wall: #30 glazes its top metre.
+tiles under a mirror 80 x 85 in a 10 cm wooden frame. The south wall's top metre is the Bad's Oberlicht (#30,
+elternbad.oberlicht()): the four Wandlampen over the table hang under it (LAMPE_H).
 
 Pure Python like house_core.py, which imports this module: build_sanitary() calls waschkueche_neu() on the OG
 floor; build_slabs() takes ROOM for the floor cover (via BATHS_OG), build_furniture() ends the cupboard 20 cm before it.
@@ -24,6 +25,8 @@ BY = 4.70                                    # basin, tiles, mirror, lamp: their
                                              # the washer tower (4.252): tiles 3 cm, basin 15 cm from it
 BW, BD = 0.60, 0.47                          # Waschbecken einzeln
 MW, MH, MF, MZ = 0.80, 0.85, 0.10, 1.17      # mirror: outer width x height, frame width, bottom
+LAMPE_H = 1.10                               # the four Wandlampen over the table (south wall): under #30's glazing
+                                             # (sill 1.20; lamp top +0.085), the shade's rim 23 cm over the table
 
 
 def dusche(c, z, rng):
