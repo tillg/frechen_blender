@@ -105,8 +105,8 @@ test('update() moves the pool to the sites nearest the camera, storey-aware indo
   expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([35, 33, 34, 1, 31, 37].map(roomSite)));   // 1: the Ofen bed's, 31: Windfang (the hood's spots, 2, moved over the Halbinsel, #26)
   L.update(new THREE.Vector3(11.1, 4.3, -6.3), true);                 // OG Galerie: all OG, Wandlampen only
   expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([23, 12, 13, 7, 24, 11].map(roomSite)));
-  L.update(new THREE.Vector3(7.1, 4.3, -4.4), true);                  // Waschküche: its five lamps and the WC's
-  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([27, 26, 29, 28, 25, 24].map(roomSite)));
+  L.update(new THREE.Vector3(7.1, 4.3, -4.4), true);                  // Waschküche: four of its five lamps (#30: the table's
+  expect(sorted(L.roomLights.map((l) => zup(l.position)))).toEqual(sorted([27, 26, 29, 28, 30, 24].map(roomSite)));   // 60 cm lower, the west one drops out), the WC's and Saschi's
   expect(L.roomLights.every((l) => l.userData.base === 2)).toBe(true);
 });
 
