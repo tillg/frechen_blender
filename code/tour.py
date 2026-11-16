@@ -130,7 +130,7 @@ SPOTS = [
     ("Von oben", "Übersicht", ("eg", "og"), (7.44, 6.4, 38), (7.44, 6.7, 0), 28),
     ("Schräg von Südosten", "Übersicht", ("eg", "og"), (24, -10, 17), (7.44, 6.44, 1.0), 28),
     ("Stube", "Erdgeschoss", ("haus", "eg"), (12.6, 0.75, EYE), (10.0, 5.0, 1.0), SEE),
-    ("Küche", "Erdgeschoss", ("haus", "eg"), (8.35, 2.7, EYE), (6.2, 5.4, 1.0), SEE),
+    ("Küche", "Erdgeschoss", ("haus", "eg"), (6.2, 3.3, EYE), (8.5, 4.8, 1.1), SEE),   # past the hood (#26)
     ("Speis", "Erdgeschoss", ("haus", "eg"), (5.95, 4.79, EYE), (3.0, 4.79, 1.2), SEE),
     ("Bibliothek - Ecke hinten rechts", "Erdgeschoss", ("haus", "eg"), (13.7, 12.05, EYE), (9.2, 9.4, 1.0), SEE),  # behind the desk
     ("Bibliothek - Klavierspieler", "Erdgeschoss", ("haus", "eg"), (8.12, 11.94, 1.25), (9.12, 10.21, 0.32), SEE),  # on the piano bench, over the keys

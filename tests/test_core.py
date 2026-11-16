@@ -1048,27 +1048,83 @@ def test_kueche_wamsler_herd_at_the_north_end_of_the_east_run():
     assert "EG_Herd" not in BP.furniture                                      # built in, like the Ofen
 
 
-def test_kueche_old_steel_hood_above_the_herd():
-    """Küche: above the Herd a steel hood of the old form: a straight skirt with a rail in front,
-    a sloping canopy narrowing to a flue stack that runs up to the ceiling."""
-    herd = _herd_body()
-    hy0, hy1 = min(p[1][1] for p in herd), max(p[2][1] for p in herd)
+def _kochfeld():
+    """The Halbinsel's cooktop: the Eisen plate on the worktop (lo, hi)."""
+    (_, lo, hi, _), = [p for p in part_list(("EG", "EG_Kueche")) if p[0] == "Eisen" and p[1][2] > 0.89]
+    return lo, hi
+
+
+def _hood_canopy():
+    """The hood's canopy: its one 8-vertex Stahl part on two levels that narrows upwards along x and y."""
+    def width(vs, z, k):                                                      # extent along axis k at height z
+        return max(v[k] for v in vs if v[2] == z) - min(v[k] for v in vs if v[2] == z)
+    return [p for p in part_list(("EG", "EG_Haube")) if p[0] == "Stahl" and len(set(p[3])) == 8
+            and len({v[2] for v in p[3]}) == 2 and all(width(p[3], p[2][2], k) < width(p[3], p[1][2], k) - 0.2
+                                                       for k in (0, 1))]
+
+
+def test_kueche_hood_over_the_cooktop():
+    """Issue #26: the steel hood of the old form hangs from the ceiling over the Halbinsel's cooktop, centred on it
+    and covering it: a rolled lip 65 cm above the cooktop, a straight skirt, a rail on the north (cook's) side, a
+    canopy narrowing upwards to a stack that runs into the ceiling; clear of the Küche's cabinets and worktop."""
+    clo, chi = _kochfeld()
     hood = [p for p in part_list(("EG", "EG_Haube")) if p[0] == "Stahl"]   # (+ the spot strip, #22)
-    assert {p[0] for p in part_list(("EG", "EG_Haube"))} == {"Stahl", "Metall", "Opalglas"}
     lo = [min(p[1][k] for p in hood) for k in range(3)]; hi = [max(p[2][k] for p in hood) for k in range(3)]
-    assert lo[1] < hy0 + 0.01 and hi[1] > hy1 - 0.01 and abs((lo[1] + hi[1]) / 2 - (hy0 + hy1) / 2) < 0.01
-    assert 1.55 <= lo[2] <= 1.75 and hi[2] > house_core.Z_EG_TOP              # up into the ceiling
-    assert KUECHE_EAST - 0.01 < hi[0] < KUECHE_EAST and hi[0] - lo[0] >= 0.5
-    def width(vs, z):                                                         # y extent at height z
-        return max(v[1] for v in vs if v[2] == z) - min(v[1] for v in vs if v[2] == z)
-    taper = [p for p in hood if len(set(p[3])) == 8 and len({v[2] for v in p[3]}) == 2
-             and width(p[3], p[2][2]) < width(p[3], p[1][2]) - 0.3]
-    assert len(taper) == 1                                                    # narrows upwards
+    taper = _hood_canopy()
+    assert len(taper) == 1                                                    # narrows upwards on all sides
+    _, tlo, thi, _ = taper[0]
+    for k in (0, 1):
+        assert abs((tlo[k] + thi[k]) / 2 - (clo[k] + chi[k]) / 2) < 0.01 and tlo[k] < clo[k] and thi[k] > chi[k]
+    assert abs(lo[2] - (chi[2] + 0.65)) < 0.01 and hi[2] > house_core.Z_EG_TOP              # up into the ceiling
+    assert 0.8 <= hi[0] - lo[0] <= 1.0 and 0.5 <= hi[1] - lo[1] <= 0.7
+    rail = [p for p in hood if p[2][0] - p[1][0] > 0.8 and p[2][1] - p[1][1] < 0.03 and p[2][2] - p[1][2] < 0.03]
+    assert len(rail) == 1 and rail[0][1][1] > (lo[1] + hi[1]) / 2               # on the north side
+    _clear([p[:3] for p in part_list(("EG", "EG_Haube"))], [p[1:3] for p in part_list(("EG", "EG_Kueche"))], "Haube")
+
+
+def test_nothing_above_the_wamsler_but_its_pipe():
+    """Issue #26: the hood is gone from the Wamsler; above its top only its own pipe (collar, riser, bend into
+    the wall, rosette) - no EG part but walls and ceiling overlaps its footprint higher up."""
+    body = _herd_body()
+    lo = [min(p[1][k] for p in body) for k in range(3)]; hi = [max(p[2][k] for p in body) for k in range(3)]
+    above = [(k[1], m, plo, phi) for k in BP.geo if k[0] == "EG" and not any(w in k[1] for w in ("_Waende", "Decke"))
+             for m, plo, phi in _parts(BP, k)
+             if plo[2] >= hi[2] + 0.05 and all(plo[j] < hi[j] - 1e-6 and phi[j] > lo[j] + 1e-6 for j in (0, 1))]
+    assert len(above) == 3 and {a[0] for a in above} == {"EG_Herd"} and {a[1] for a in above} == {"Eisen"}, above
+    pipe, *_ = _wamsler_pipe()
+    assert sorted(a[2] for a in above) == sorted(p[1] for p in pipe)
 
 
 def _herd_body():
     """The Wamsler's body: its one Stahl part taller than 0.5 m."""
     return [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Stahl" and p[2][2] - p[1][2] > 0.5]
+
+
+def _wamsler_pipe():
+    """The Wamsler's pipe parts (Eisen above the top plate): (vertical, horizontal, rosette)."""
+    top = max(p[2][2] for p in _herd_body())
+    pipe = [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Eisen" and p[2][2] > top + 0.1]
+    size = lambda p: [p[2][k] - p[1][k] for k in range(3)]
+    vert = [p for p in pipe if size(p)[2] > 0.5]
+    horiz = [p for p in pipe if size(p)[0] > 0.15 and size(p)[2] < 0.15]
+    rosette = [p for p in pipe if size(p)[0] < 0.02 and size(p)[1] > 0.17 and size(p)[2] > 0.17]
+    return pipe, vert, horiz, rosette
+
+
+def test_wamsler_pipe_into_the_wall_higher_up():
+    """Issue #26: the Wamsler's black pipe (Ø 12) rises from the flue collar on its top to 1.80 m, bends there
+    by 90 deg into the east wall and ends in a rosette (Ø ~20) on the wall face; nothing else in the pipe."""
+    pipe, vert, horiz, rosette = _wamsler_pipe()
+    top = max(p[2][2] for p in _herd_body())
+    assert len(vert) == len(horiz) == len(rosette) == 1 and len(pipe) == 3
+    (_, vlo, vhi, _), (_, hlo, hhi, _), (_, rlo, rhi, _) = vert[0], horiz[0], rosette[0]
+    assert abs(vhi[0] - vlo[0] - 0.12) < 0.005 and abs(hhi[2] - hlo[2] - 0.12) < 0.005     # Ø 12
+    assert vlo[2] <= top + 0.1 and abs((hlo[2] + hhi[2]) / 2 - 1.80) < 0.01                 # collar .. bend at 1.80
+    assert hlo[2] < vhi[2] < hhi[2] and hlo[0] <= vlo[0] + 0.001                           # the elbow: riser ends inside
+    assert abs((hlo[1] + hhi[1]) / 2 - (vlo[1] + vhi[1]) / 2) < 1e-6
+    assert hhi[0] > KUECHE_EAST + 0.01                                                     # into the wall
+    assert abs(rhi[0] - KUECHE_EAST) < 1e-6 and rhi[1] - rlo[1] >= 0.18                    # rosette on the face
+    assert abs((rlo[2] + rhi[2]) / 2 - 1.80) < 0.01 and abs((rlo[1] + rhi[1]) / 2 - (hlo[1] + hhi[1]) / 2) < 1e-6
 
 
 def test_kueche_hood_sink_tap_and_wamsler_in_steel():
@@ -1562,7 +1618,7 @@ def test_wandlampen_eg_placements():
             ((13.4485, 5.849), L, s),                                     # 3 Stube: door leaf .. east wall
             ((14.351, 0.8345), L, w),                                     # 4 Stube: SE corner, east pier
             ((9.056, 4.0727), L, e),                                      # 5 Stube: over the bench
-            ((7.46, 5.849), L, s), ((8.557, 3.96), L, w),                 # 7, 8 Küche: sink; right of the hood
+            ((7.46, 5.849), L, s), ((8.557, 3.96), L, w),                 # 7, 8 Küche: sink; right of the Wamsler
             ((5.674, 0.415), L, n),                                       # 10 Essen: terrace door .. window
             ((11.72, 8.576), L, s), ((6.334, 8.576), L, s), ((3.4965, 8.576), L, s),   # 15-17 Flur, north
             ((3.7813, 6.349), L, n), ((4.9057, 6.349), L, n), ((8.285, 6.349), L, n),  # 18-20 Flur, south
@@ -1584,24 +1640,26 @@ def test_wandlampen_eg_placements():
 
 
 def test_haube_spots():
-    """Issue #22: under the Küche hood's back edge (at the east wall) a Metall strip with 4 built-in spots
-    (Opalglas: its material glows at dusk) evenly along it, attached under the lip (1.62); one light for the four,
-    under the hood 50 cm out from the wall like every lamp's, among the wall lights."""
-    import kueche
+    """Issue #22, moved with the hood over the cooktop (#26): along the hood's middle a Metall strip under the lip
+    with 4 built-in spots (Opalglas: its material glows at dusk) evenly along it; one light for the four, under
+    the hood's centre, among the wall lights."""
     key = ("EG", "EG_Haube")
     parts = list(_parts(BP, key))
+    stahl = [(lo, hi) for m, lo, hi in parts if m == "Stahl"]
+    hlo = [min(lo[k] for lo, hi in stahl) for k in range(3)]
     strip = [(lo, hi) for m, lo, hi in parts if m == "Metall"]
-    spots = sorted(((lo, hi) for m, lo, hi in parts if m == "Opalglas"), key=lambda b: b[0][1])
+    spots = sorted(((lo, hi) for m, lo, hi in parts if m == "Opalglas"), key=lambda b: b[0][0])
     assert len(strip) == 1 and len(spots) == 4
     (slo, shi), = strip
-    assert abs(shi[2] - 1.62) < 1e-6 and shi[0] <= kueche.XE + 1e-6 and kueche.XE - slo[0] < 0.10   # at the wall
-    ys = [(lo[1] + hi[1]) / 2 for lo, hi in spots]
-    assert all(abs((ys[k + 1] - ys[k]) - (ys[1] - ys[0])) < 1e-6 for k in range(3))                  # evenly
-    assert all(slo[0] < (lo[0] + hi[0]) / 2 < shi[0] and abs(hi[2] - slo[2]) < 1e-6 for lo, hi in spots)
-    xm, ym = (slo[0] + shi[0]) / 2, (slo[1] + shi[1]) / 2
-    lights = [p for p in BP.wall_lights if math.dist(p[:2], (kueche.XE - 0.50, ym)) < 0.01]
+    assert abs(shi[2] - hlo[2]) < 1e-6 and shi[0] - slo[0] > shi[1] - slo[1]            # under the lip, along x
+    (_, tlo, thi, _), = _hood_canopy()
+    xm, ym = (tlo[0] + thi[0]) / 2, (tlo[1] + thi[1]) / 2
+    assert abs((slo[0] + shi[0]) / 2 - xm) < 1e-6 and abs((slo[1] + shi[1]) / 2 - ym) < 1e-6   # in the middle
+    xs = [(lo[0] + hi[0]) / 2 for lo, hi in spots]
+    assert all(abs((xs[k + 1] - xs[k]) - (xs[1] - xs[0])) < 1e-6 for k in range(3))                  # evenly
+    assert all(slo[0] < x < shi[0] and abs(hi[2] - slo[2]) < 1e-6 for x, (lo, hi) in zip(xs, spots))
+    lights = [p for p in BP.wall_lights if math.dist(p[:2], (xm, ym)) < 0.01]
     assert len(lights) == 1 and lights[0][2] < slo[2]
-    assert kueche.XE - 0.55 < lights[0][0]                                      # still under the hood (front 55)
 
 
 def test_eg_lamps_clear():

@@ -131,7 +131,7 @@ auf die andere Seite seiner Schiene. Im Haus steht dasselbe Bad, zum Schlafzimme
 rollen die Türen genauso in der Stufe „Eingerichtet“, nur im Rundgang stehen sie still (WC offen).
 
 Teilmodell **Küche** (`kueche.html`): Spülzeile bis ins Eck unter dem Abzug, Ostzeile 60 cm,
-Wamsler-Holzherd mit Haube, Halbinsel mit Kochfeld und Besenschrank (Mallnitz-Fronten in RAL 5014), mit Maßen;
+Wamsler-Holzherd mit Ofenrohr auf 1,80 m in die Wand, Halbinsel mit Kochfeld unter der Haube (von der Decke abgehängt) und Besenschrank (Mallnitz-Fronten in RAL 5014), mit Maßen;
 Darstellung wie beim Ofen. Im Haus steht dieselbe Küche.
 
 Teilmodell **Gäste-WC** (`gaeste_wc.html`): WC und Garderobe am Hintereingang mit Trennwand, der

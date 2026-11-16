@@ -40,6 +40,8 @@ Choices made while nobody was there to ask are logged here
   - [22:27 — #27: a dozen shoes = 6 pairs; coats and shoes as furniture `EG_Kleidung` with new fabric materials; the bench assertions replaced](#run-2026-11-15-1633-28)
   - [23:06 — #29 follow-up: one tweak branch for two user follow-ups, committed; the washer tower 4 cm from the table, the basin 15 cm from the tower](#run-2026-11-15-1633-29)
   - [23:10 — #31 bug: duplicates found by a 16 × 16 average hash (> 16 of 256 bits apart); two pairs, the larger copy kept, captions merged, the others in `DOPPELT`](#run-2026-11-15-1633-30)
+  - [23:40 — #26: the hood as an island hood hung from the ceiling over the Halbinsel's cooktop; lip 65 above it; the Wamsler's pipe bends into the east wall at 1.80](#run-2026-11-15-1633-31)
+  - [23:40 — #26: the hood and Haubenspots tests rewritten to the new place](#run-2026-11-15-1633-32)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -75,6 +77,7 @@ Choices made while nobody was there to ask are logged here
   #28: branch issue/28-waschkueche-fliesenboden from issue/29-waschkueche-becken-dusche (a tweak that commits, as #35: no change directory, `specs/system/` updated in place; full check 109/111: `desk.spec.js:77` green alone, the ~30 fps test load-flaky, red alone at 8 fps), PR https://github.com/tillg/frechen_blender/pull/43.
   #27: branch issue/27-garderobe-jacken from issue/28-waschkueche-fliesenboden, PR https://github.com/tillg/frechen_blender/pull/45 (archived on the branch; full check 110/111: the ~30 fps test load-flaky, green alone; after the review fixes the quick check is red only on `test_vorlagen`'s input count, caused by the untracked `kleiner-schreibtisch.webp` of #44).
   ~23:20: on the user's request ("merge the pending PRs to main") PRs #41, #42, #43, #45 were merged into main (e3c743d, 28ca48f, 212f365, 090110b), branches deleted, issues #32 #29 #28 #27 [done].
+  #26: branch issue/26-haube-induktion from fix/waschkueche-zwei-maschinen, PR https://github.com/tillg/frechen_blender/pull/47 (archived on the branch; full check: pytest red only on the pre-existing `test_vorlagen` input count, Playwright 109/111: `bad.spec.js:49` green alone, the ~30 fps test load-flaky).
   #29 follow-up + #31 bug (no issue of their own, decisions 29, 30): branch fix/waschkueche-zwei-maschinen from issue/27-garderobe-jacken (= main 090110b after the merge), PR against main, `Refs #29, Refs #31`, no labels; full check 110/111 + pytest 213/214: the ~30 fps test load-flaky (green alone), `test_vorlagen`'s input count red only from the untracked #40/#44 inputs.
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
@@ -375,3 +378,23 @@ Choices made while nobody was there to ask are logged here
 - **Why:** threshold halfway between the duplicates (≤ 10) and the closest distinct pictures (≥ 23); sips is already the copy tool (macOS only, like `--copy`).
 - **Alternatives:** byte or size comparison (misses rescaled copies); threshold 5 as briefed (misses the Ofenbett pair).
 - **Consequences:** the test needs macOS `sips` (pytest is not run in CI). Stube 10 → 9 pictures, Garderobe 4 → 3. Code docstrings that cite `bad_mallnitz.jpeg` / `ofenbett-1200x800.jpg` as the model's source stay valid (the files remain in `input/`).
+
+## 23:40 — #26: the hood as an island hood hung from the ceiling over the Halbinsel's cooktop; lip 65 above it; the Wamsler's pipe bends into the east wall at 1.80 {#run-2026-11-15-1633-31}
+
+- **Status:** open
+- **Context:** issue #26 („Abzughaube vom Wamsler verschieben zum Induktionsherd … das Ofenrohr vom Ofen weiter oben in die Wand laufen“). The cooktop (Kochfeld, x 7.18–7.95, y 3.12–3.58) lies on the Halbinsel, 60 cm from the east wall; no wall cabinets anywhere. The Wamsler already had a pipe, bent into the wall at 1.30 under the hood. The Rundgang passes south of the Halbinsel (nearest key (7.97, 2.75, 1.6)); the Küche Standpunkt (8.35, 2.7, 1.6) looks north-west across the cooktop.
+- **Question:** what kind of hood, how high, and where does the pipe enter the wall?
+- **Decision:** the same old-form steel hood (rolled lip, straight skirt, rail, canopy narrowing to a stack), made symmetric as an island hood hung from the ceiling, centred on the cooktop, 90 × 60 (cooktop 77 × 46), lip 65 cm above the cooktop (1.555), the stack 2 cm into the ceiling; the rail on the north (cook's) side; the four Haubenspots (#22) in a strip along its middle under the lip, the one light under its centre. The pipe (Ø 12, black) rises from the flue collar to 1.80, bends 90° into the east wall there, a rosette (Ø 20) on the wall face. Nothing else above the Wamsler.
+- **Why:** the cooktop is not at a wall, so no wall chimney hood; 65 cm is the usual clearance; the old form keeps the look the user agreed to on 2026-11-10; 1.80 is "weiter oben" and stays under the Abzug's level.
+- **Alternatives:** wall chimney hood on the east wall (not over the cooktop); a flat ceiling extractor (other look); lip at 70–75 cm (keep in mind if the Standpunkt view suffers).
+- **Consequences:** the Rundgang passes 0.29 m from the hood's south face (guarded by `test_routes_and_spots_clear_the_kueche_hood`); the agreed drawing `speis_kueche_svg.py` does not show the hood and stays as it is. The Küche Standpunkt looked across the cooktop and the hood filled the top third of its view (`tmp/web/26-spot-60.png`): moved to (6.2, 3.3, 1.6) → (8.5, 4.8, 1.1), west of the Halbinsel, seeing sink run, Wamsler with its pipe, Ostzeile, cooktop and hood.
+
+## 23:40 — #26: the hood and Haubenspots tests rewritten to the new place {#run-2026-11-15-1633-32}
+
+- **Status:** open
+- **Context:** `test_kueche_old_steel_hood_above_the_herd` and `test_haube_spots` pin the hood over the Wamsler at the east wall (lip 1.62, strip at `XE`, light 50 from the wall). Issue #26 moves the hood.
+- **Question:** may tests be changed for this issue?
+- **Decision:** replace them by `test_kueche_hood_over_the_cooktop` (centred on the cooktop, lip 65 above it, skirt, rail, a single tapering canopy, stack into the ceiling, clear of the Küche's parts) and a rewritten `test_haube_spots` (one strip, 4 evenly spaced spots under it, one light under the hood's centre); add `test_nothing_above_the_wamsler_but_its_pipe` and `test_wamsler_pipe_into_the_wall_higher_up`.
+- **Why:** the issue itself asks for the move; the new tests keep every property of the old ones that still holds.
+- **Alternatives:** keep the old tests (they cannot hold after the issue).
+- **Consequences:** the comment "right of the hood" on Wandlampe 8 in `test_eg_wandlampen` becomes stale; reworded to "right of the Wamsler". `web/src/lighting.test.js` pins the six lit sites seen from the Stube: the hood's light (site 2) moved 1.4 m away, the Windfang's lamp (site 31) takes its place.
