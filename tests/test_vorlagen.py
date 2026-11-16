@@ -22,7 +22,7 @@ def test_every_input_image_is_assigned_once():
                    if p.suffix.lower() in RASTER)
     srcs = [nfc(f["src"]) for b in vorlagen.BEREICHE for f in b["fotos"]]
     doppelt = {nfc(a): nfc(b) for a, b in vorlagen.DOPPELT.items()}
-    assert len(files) == 57
+    assert len(files) == 58
     assert sorted(srcs + list(doppelt)) == files      # each one exactly once (shown or a duplicate), none missing or extra
     assert set(doppelt.values()) <= set(srcs) and not set(doppelt) & set(srcs)   # a duplicate's photo is shown once
     keys = [b["key"] for b in vorlagen.BEREICHE]
@@ -45,6 +45,8 @@ def test_issue_examples():
     assert "ofen_stuben.jpg" in src("stube")
     assert {"waschbecken_einzeln.jpeg", "waschbecken_staender.png", "wandlampe.png"} <= src("haus")
     assert src("gaestebad") == {"badewanne.webp"} and b["gaestebad"]["room"] == ("Bad", "OG")   # #32: the tub
+    assert src("schlafen") == {"kleiner-schreibtisch.webp"} and b["schlafen"]["room"] == ("Schlafen", "OG")   # #44
+    assert any((n, st) == b["schlafen"]["room"] and x > 11.63 and y < 3.98 for n, st, x, y in house_core.PLAN_ROOMS)
 
 
 def part_boxes(names):

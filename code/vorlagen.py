@@ -73,6 +73,11 @@ BEREICHE = [
     {"key": "gaestebad", "title": "Gästebad", "room": ("Bad", "OG"), "at": (1.7, 7.3, house_core.Z_OG + 1.6), "fotos": [
         foto("2026-11-15 input/badewanne.webp", "Freistehende Badewanne auf Löwenfüßen – die Wanne des Gästebads, Kopfende zur Dusche"),
     ]},
+    {"key": "schlafen", "title": "Schlafzimmer Nadine & Till", "room": ("Schlafen", "OG"),
+     "at": (11.2, 1.8, house_core.Z_OG + 1.6), "fotos": [                               # over the desk (#44)
+        foto("2026-11-15 input/kleiner-schreibtisch.webp", "Kleiner Landhaus-Schreibtisch mit gedrechselten Beinen – "
+             "hinter der niedrigen Wand am Kopfende des Betts, mit passendem Stuhl"),
+    ]},
     {"key": "aussen", "title": "Außen & Garten", "room": None, "at": (6.0, -1.5, 1.6), "fotos": [
         foto("2026-09-24 input/farben_beispiel_haus.png", "Farbbeispiel: weißes Haus mit farbigen Läden"),
         foto("2026-09-24 input/farben_ral.png", "RAL-Karten: 9010 Fassade, 5014 Läden, 5008 Tür"),

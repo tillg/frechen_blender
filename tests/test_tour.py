@@ -401,3 +401,23 @@ def test_routes_and_spots_clear_the_garderobe():
             assert gap(f[:3]) >= 0.25, (name, f[:3])
     for s in tour.SPOTS:
         assert gap(s[3]) >= 0.25, s[0]
+
+
+def test_routes_and_spots_clear_the_schreibplatz():
+    """Issue #44: the small desk and its chair behind the low wall at the bed's head (Schlafzimmer Nadine & Till)
+    stand off every camera key of every route and every Standpunkt by 0.25 m in plan, not only in 3D: the eye
+    passes at 1.6 m over furniture under 0.9 m, so a 3D gap alone would let the camera walk through the chair."""
+    bp = house_core.build()
+    key = ("OG", "OG_Schreibplatz")
+    g, boxes = bp.geo[key], []
+    for first, n in bp.parts[key]:
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        boxes.append(([min(p[k] for p in vs) for k in range(2)], [max(p[k] for p in vs) for k in range(2)]))
+    assert len(boxes) > 20
+    gap = lambda p: min(math.dist(p[:2], [min(max(p[k], lo[k]), hi[k]) for k in range(2)]) for lo, hi in boxes)
+    og = lambda p: house_core.Z_OG < p[2] < house_core.Z_OG_TOP
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert not og(f) or gap(f) >= 0.25, (name, f[:3])
+    for s in tour.SPOTS:
+        assert not og(s[3]) or gap(s[3]) >= 0.25, s[0]
