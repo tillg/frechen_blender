@@ -814,21 +814,25 @@ def test_og_flur_waschbecken_between_the_two_doors():
 
 def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
     """Waschküche (OG, x 5.59 .. 8.59, y 2.79 .. 6.06, door in the north wall): a dryer stands on
-    the washing machine (north one at the east wall), and a table 0.80 m deep runs the full width
+    the washing machine at the east wall, and a table 0.80 m deep runs the full width
     of the back (south) wall, with two stacks of neatly folded clothes on it; it replaces the low
-    cupboard that stood in the SE corner."""
+    cupboard that stood in the SE corner. The user (follow-up to #29): „In der Waschküche reichen zwei
+    Waschmaschinen … behalte den Turm … nimm die dritte, die daneben steht weg. Dadurch können die beiden
+    Waschmaschinen, die übereinander stehen, etwas näher an den Tisch verrutschen“: the tower only, 3–5 cm
+    from the table."""
     zo = house_core.Z_OG
     room = [p for p in part_list(("OG", "OG_Moebel")) if 5.59 <= p[1][0] and p[2][0] <= 8.59 and 2.79 <= p[1][1] and p[2][1] <= 6.06]
     enamel = sorted((p for p in room if p[0] == "Emaille"), key=lambda p: (p[1][1], p[1][2]))
-    assert len(enamel) == 3                                                   # washer, washer + dryer
-    washer, dryer = enamel[1:]
+    assert len(enamel) == 2                                                   # the tower: washer + dryer
+    washer, dryer = enamel
     assert dryer[1][:2] == washer[1][:2] and dryer[2][:2] == washer[2][:2]     # same footprint
     assert abs(dryer[1][2] - washer[2][2]) < 0.002                            # stands on it
+    assert 8.59 - washer[2][0] < 0.01                                         # against the east wall
     top = [p for p in room if p[0] == "FichteX" and p[2][2] > zo + 0.7]
     assert len(top) == 1
     _, lo, hi, _ = top[0]
     assert lo[0] - 5.59 < 0.01 and 8.59 - hi[0] < 0.01 and lo[1] - 2.79 < 0.01   # full width, on the back wall
-    assert hi[1] < enamel[0][1][1]                                            # clear of the south machine
+    assert 0.03 <= washer[1][1] - hi[1] <= 0.05                               # the tower 3–5 cm from the table
     assert hi[1] - lo[1] > 0.78                                               # deep enough to fold on
     assert enamel[-1][2][1] < 5.5                                             # machines clear of the door
     cloth = [p for p in room if p[0] in ("Leinen", "Bettwaesche", "Creme", "Jeans", "Wolle")
@@ -913,18 +917,23 @@ def test_waschkueche_shower_cabin():
 
 def test_waschkueche_basin():
     """Issue #29: a standard Waschbecken einzeln 60 x 47 on its Ständer on the Waschküche's east wall north of the
-    washer tower (centred y 5.28), on Taubenblau tiles 84 wide (12 beyond it each side) on the wall behind it, a
+    washer tower, on Taubenblau tiles 84 wide (12 beyond it each side) on the wall behind it, a
     mirror 80 x 85 in a 10 cm wooden frame above (bottom 1.17), the tower's Wandlampe centred over it at 2.10;
-    ≥ 5 cm outside the room door leaf's sweep, 60 cm free in front, clear of the machines."""
+    ≥ 5 cm outside the room door leaf's sweep, 60 cm free in front, clear of the machines. The user's follow-up
+    („das Waschbecken kann auch noch etwas in diese Richtung und von der Tür weg“): moved south with the tower,
+    centred y 4.70 (was 5.28), the tiles 3 cm and the basin 15 cm from the tower."""
     zo, T, by = house_core.Z_OG, house_core.WC_TILE_T, waschkueche.BY
-    assert by == 5.28
+    assert by == 4.70
     parts = _waschbecken(("OG", "OG_Sanitaer"), (8.59, by, -1, 0), 0.60, 0.47, 1, zo, T)
     fl = ("OG", "OG_Fliesen")
-    assert {_part_at(fl, 8.582, y, z) for y in (4.90, 5.28, 5.66) for z in (zo + 0.2, zo + 0.9)} <= {"Fliese", None}
-    assert "Fliese" in {_part_at(fl, 8.582, y, zo + 0.5) for y in (5.0, 5.05)}
-    tiles = [(lo, hi) for m, lo, hi in _parts(BP, fl) if lo[0] > 8.5 and hi[0] < 8.6 and 4.0 < lo[1] and hi[1] < 6.06 and lo[2] < zo + 1.2]
+    assert {_part_at(fl, 8.582, by + d, z) for d in (-0.38, 0, 0.38) for z in (zo + 0.2, zo + 0.9)} <= {"Fliese", None}
+    assert "Fliese" in {_part_at(fl, 8.582, by + d, zo + 0.5) for d in (-0.28, -0.23)}
+    tiles = [(lo, hi) for m, lo, hi in _parts(BP, fl) if lo[0] > 8.5 and hi[0] < 8.6 and 3.6 < lo[1] and hi[1] < 6.06 and lo[2] < zo + 1.2]
     assert abs(min(lo[1] for lo, hi in tiles) - (by - 0.42)) < 0.01 and abs(max(hi[1] for lo, hi in tiles) - (by + 0.42)) < 0.01
-    frame = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Spiegel")) if m == "Kiefer" and lo[0] > 8.5 and 4.5 < lo[1] < 6.0]
+    tower = max(hi[1] for m, lo, hi in _parts(BP, ("OG", "OG_Moebel")) if m == "Emaille" and lo[0] > 7.9)
+    assert 0.02 <= min(lo[1] for lo, hi in tiles) - tower <= 0.04                # the tiles 3 cm from the tower
+    assert 0.13 <= min(lo[1] for m, lo, hi in parts) - tower <= 0.17             # the basin about 15 cm from it
+    frame = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Spiegel")) if m == "Kiefer" and lo[0] > 8.5 and 3.6 < lo[1] < 6.0]
     assert len(frame) == 4
     assert abs(min(lo[1] for lo, hi in frame) - (by - 0.40)) < 1e-6 and abs(max(hi[1] for lo, hi in frame) - (by + 0.40)) < 1e-6
     assert abs(min(lo[2] for lo, hi in frame) - (zo + 1.17)) < 1e-6 and abs(max(hi[2] for lo, hi in frame) - (zo + 2.02)) < 1e-6
@@ -1527,7 +1536,7 @@ def test_wandlampen_og_placements():
                          ((10.07, m(3.84, 5.266)), L, (1, 0))],                          # WC corner .. open leaf's end
         "WC": [((9.26, 3.98), L, (0, 1)), ((9.92, 4.95), S, (-1, 0))],                   # cistern, mirror
         "Waschküche": [((round(5.59 + 0.375 + 0.75 * k, 3), 2.79), L, (0, 1)) for k in range(4)]   # over the table
-                      + [((8.59, 5.28), S, (-1, 0))],                                    # #29: over the basin's mirror
+                      + [((8.59, 4.70), S, (-1, 0))],                                    # #29: over the basin's mirror
         "Saschi": [((5.44, m(3.37, 6.06)), L, (-1, 0))],                                 # nightstand .. Flur wall
         "Bad Nadine & Till": [((8.59, round(2.14 + d, 3)), S, (-1, 0)) for d in (-0.20, 0.20)]
                              + [((m(7.72, 8.59), 0.40), L, (0, 1))],                # #33: mirror (east wall), window

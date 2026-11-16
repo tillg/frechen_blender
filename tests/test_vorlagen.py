@@ -1,6 +1,6 @@
 """code/vorlagen.py: every reference picture of input/ sorted into one Bereich of the house, its
 downsized copy under web/public/vorlagen/, and the marker anchors of the house viewer (issue #31)."""
-import json, struct, subprocess, sys, unicodedata
+import itertools, json, struct, subprocess, sys, tempfile, unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,8 +21,10 @@ def test_every_input_image_is_assigned_once():
     files = sorted(nfc(str(p.relative_to(ROOT / "input"))) for p in (ROOT / "input").rglob("*")
                    if p.suffix.lower() in RASTER)
     srcs = [nfc(f["src"]) for b in vorlagen.BEREICHE for f in b["fotos"]]
+    doppelt = {nfc(a): nfc(b) for a, b in vorlagen.DOPPELT.items()}
     assert len(files) == 56
-    assert sorted(srcs) == files                      # each one exactly once, none missing or extra
+    assert sorted(srcs + list(doppelt)) == files      # each one exactly once (shown or a duplicate), none missing or extra
+    assert set(doppelt.values()) <= set(srcs) and not set(doppelt) & set(srcs)   # a duplicate's photo is shown once
     keys = [b["key"] for b in vorlagen.BEREICHE]
     assert len(set(keys)) == len(keys)
     names = [(b["key"], f["file"]) for b in vorlagen.BEREICHE for f in b["fotos"]]
@@ -128,6 +130,44 @@ def test_every_copy_exists_and_is_small():
     on_disk = {str(p.relative_to(ROOT / "web" / "public" / "vorlagen"))
                for p in (ROOT / "web" / "public" / "vorlagen").rglob("*.jpg")}
     assert on_disk == {f"{b['key']}/{f['file']}" for b in vorlagen.BEREICHE for f in b["fotos"]}   # no stale copy
+
+
+def average_hashes(paths, n=16):
+    """Per picture the n x n grayscale average hash (bits: brighter than the mean) in its four 90° turns; the
+    pictures are scaled with sips (macOS, as vorlagen.copy()) to n x n BMPs, which are read here."""
+    with tempfile.TemporaryDirectory() as d:
+        tmp = [Path(d) / f"{i}.jpg" for i in range(len(paths))]
+        for a, b in zip(paths, tmp):
+            b.write_bytes(a.read_bytes())
+        subprocess.run(["sips", "-z", str(n), str(n), "-s", "format", "bmp", *map(str, tmp), "--out", d],
+                       check=True, capture_output=True)
+        out = []
+        for t in tmp:
+            data = t.with_suffix(".bmp").read_bytes()
+            off, (w, h), bpp = struct.unpack("<I", data[10:14])[0], struct.unpack("<ii", data[18:26]), data[28] // 8
+            row = (w * bpp + 3) & ~3
+            g = [[0.114 * data[off + y * row + x * bpp] + 0.587 * data[off + y * row + x * bpp + 1]
+                  + 0.299 * data[off + y * row + x * bpp + 2] for x in range(w)] for y in range(abs(h))]
+            g = g[::-1] if h > 0 else g                                     # BMP rows run bottom-up
+            turns = []
+            for _ in range(4):
+                mean = sum(map(sum, g)) / (w * abs(h))
+                turns.append([v > mean for r in g for v in r])
+                g = [list(r) for r in zip(*g[::-1])]
+            out.append(turns)
+        return out
+
+
+def test_no_photo_shown_twice():
+    """Bug (user, Fotos & Vorlagen): „die Toilette aus Mallnitz ist doppelt auf der Seite“ – toilette mallnitz.jpeg and
+    bad_mallnitz.jpeg are the same photo at two sizes. No two shown copies are near-identical: their 16 x 16 average
+    hashes (any 90° turn) differ in more than 16 of 256 bits (the two duplicates found: 3 and 10; the closest
+    different pictures: 23). Duplicates stay in input/, listed in vorlagen.DOPPELT."""
+    shown = [ROOT / "web" / "public" / "vorlagen" / b["key"] / f["file"] for b in vorlagen.BEREICHE for f in b["fotos"]]
+    hashes = average_hashes(shown)
+    for i, j in itertools.combinations(range(len(shown)), 2):
+        d = min(sum(x != y for x, y in zip(hashes[i][0], t)) for t in hashes[j])
+        assert d > 16, (shown[i].name, shown[j].name, d)
 
 
 def test_json_manifest(tmp_path):

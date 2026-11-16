@@ -38,6 +38,8 @@ Choices made while nobody was there to ask are logged here
   - [22:05 — #28: the whole Waschküche on the OG baths' limestone (`waschkueche.ROOM` in `BATHS_OG`); the cabin's own patch dropped; three oak assertions of #29 flipped](#run-2026-11-15-1633-26)
   - [22:27 — #27: "left wall" = east wall, "back end" = south wall; hooks over the whole east wall, the coats between Wandlampe 33 and the hook tips](#run-2026-11-15-1633-27)
   - [22:27 — #27: a dozen shoes = 6 pairs; coats and shoes as furniture `EG_Kleidung` with new fabric materials; the bench assertions replaced](#run-2026-11-15-1633-28)
+  - [23:06 — #29 follow-up: one tweak branch for two user follow-ups, committed; the washer tower 4 cm from the table, the basin 15 cm from the tower](#run-2026-11-15-1633-29)
+  - [23:10 — #31 bug: duplicates found by a 16 × 16 average hash (> 16 of 256 bits apart); two pairs, the larger copy kept, captions merged, the others in `DOPPELT`](#run-2026-11-15-1633-30)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -72,6 +74,8 @@ Choices made while nobody was there to ask are logged here
   #29: branch issue/29-waschkueche-becken-dusche from issue/32-dusche-badewanne, PR https://github.com/tillg/frechen_blender/pull/42 (archived on the branch; full check 109/111: `bad.spec.js:49` green alone, the ~30 fps test load-flaky). After the user's change (-24, a post-archive change on the branch, system docs updated in place): full check 111/111.
   #28: branch issue/28-waschkueche-fliesenboden from issue/29-waschkueche-becken-dusche (a tweak that commits, as #35: no change directory, `specs/system/` updated in place; full check 109/111: `desk.spec.js:77` green alone, the ~30 fps test load-flaky, red alone at 8 fps), PR https://github.com/tillg/frechen_blender/pull/43.
   #27: branch issue/27-garderobe-jacken from issue/28-waschkueche-fliesenboden, PR https://github.com/tillg/frechen_blender/pull/45 (archived on the branch; full check 110/111: the ~30 fps test load-flaky, green alone; after the review fixes the quick check is red only on `test_vorlagen`'s input count, caused by the untracked `kleiner-schreibtisch.webp` of #44).
+  ~23:20: on the user's request ("merge the pending PRs to main") PRs #41, #42, #43, #45 were merged into main (e3c743d, 28ca48f, 212f365, 090110b), branches deleted, issues #32 #29 #28 #27 [done].
+  #29 follow-up + #31 bug (no issue of their own, decisions 29, 30): branch fix/waschkueche-zwei-maschinen from issue/27-garderobe-jacken (= main 090110b after the merge), PR against main, `Refs #29, Refs #31`, no labels; full check 110/111 + pytest 213/214: the ~30 fps test load-flaky (green alone), `test_vorlagen`'s input count red only from the untracked #40/#44 inputs.
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -350,3 +354,24 @@ Choices made while nobody was there to ask are logged here
 - **Why:** literal reading; 4 pairs per 90 cm level would be crowded. Furniture keeps loose items off the architect's plans.
 - **Alternatives:** 12 pairs (would need 4 levels or overlapping shoes); coats inside `_Garderobe` (on the plan sheets).
 - **Consequences:** five new `FL_*` materials in the viewer; the plan sheet `eg.svg` changes (bench gone, rod and shoe shelf in).
+
+## 23:06 — #29 follow-up: one tweak branch for two user follow-ups, committed; the washer tower 4 cm from the table, the basin 15 cm from the tower {#run-2026-11-15-1633-29}
+
+- **Status:** open
+- **Overrides:** `/spec:tweak` — unattended: "don't commit" (here: one commit per follow-up, as #35/#28 did, decision 3); the tweak is on a branch `fix/waschkueche-zwei-maschinen` without an issue of its own.
+- **Context:** the user, after PR #42/#45: „In der Waschküche reichen zwei Waschmaschinen. Also bitte behalte den Turm an Waschmaschinen und nimm die dritte, die daneben steht weg. Dadurch können die beiden Waschmaschinen, die übereinander stehen, etwas näher an den Tisch verrutschen, und das Waschbecken kann auch noch etwas in diese Richtung und von der Tür weg.“ The tower stood at y 4.23 .. 4.85, the third machine at 3.61 .. 4.21 next to the table (to y 3.592); the basin on `BY` = 5.28. In the same branch the bug „die Toilette aus Mallnitz ist doppelt auf der Seite“ (Fotos & Vorlagen, #31).
+- **Question:** how far do tower and basin move?
+- **Decision:** the tower takes the third machine's place: y 3.632 .. 4.252, 4 cm from the table (enough to pull it out). The basin keeps its old relation to the tower: tiles 3 cm, basin 15 cm from it, `BY` = 4.70 (58 cm further from the door). Mirror and lamp move with it. One branch from `issue/27-garderobe-jacken`, one commit per follow-up, PR with `Refs #29, Refs #31`, no labels.
+- **Why:** "etwas näher an den Tisch" = as close as the old third machine stood; the basin keeps the spacing that was agreed in #29 and gains the most distance from the door.
+- **Alternatives:** centre the basin between tower and cabin (y ≈ 4.98, closer to the door than the user wants); a bigger gap to the table (the tower would block less of the table end, but the user asked for "näher").
+- **Consequences:** the tour clearance test now also covers the tower (green: the Waschküche Standpunkt at (8.25, 3.3) keeps 33 cm). `og.svg` changes.
+
+## 23:10 — #31 bug: duplicates found by a 16 × 16 average hash (> 16 of 256 bits apart); two pairs, the larger copy kept, captions merged, the others in `DOPPELT` {#run-2026-11-15-1633-30}
+
+- **Status:** open
+- **Context:** the user (screenshot of `vorlagen.html?b=garderobe`): „die Toilette aus Mallnitz ist doppelt auf der Seite“. `toilette mallnitz.jpeg` (4032 × 3024) and `bad_mallnitz.jpeg` (768 × 1024) are the same photo, not byte-identical. `test_every_input_image_is_assigned_once` wants every raster image of `input/` assigned exactly once; no PIL in `.venv`.
+- **Question:** how to find near-identical photos, which copy to keep, and how to keep the "every image accounted for" rule?
+- **Decision:** a regression test hashes every shown copy (`sips` → 16 × 16 BMP, grayscale average hash, min over the four 90° turns) and requires > 16 differing bits for every pair. Over all 56 photos it found two duplicates: the Mallnitz toilet (3 bits) and `ofenbett-1200x800.jpg` vs the Stube Entwurf `Pasted 04-11-2026 at 07.49.12.png` (10 bits; looked at: the same picture); the closest different pictures are 23 apart (the two Ofen sketches, the two Grundrisse). Kept the larger source each (toilette mallnitz, 4032 px; the Entwurf, 2382 px) with merged captions; the others go into `vorlagen.DOPPELT` (duplicate → kept), which the assignment test counts with the shown ones; their `web/public/vorlagen/` copies removed, input files kept.
+- **Why:** threshold halfway between the duplicates (≤ 10) and the closest distinct pictures (≥ 23); sips is already the copy tool (macOS only, like `--copy`).
+- **Alternatives:** byte or size comparison (misses rescaled copies); threshold 5 as briefed (misses the Ofenbett pair).
+- **Consequences:** the test needs macOS `sips` (pytest is not run in CI). Stube 10 → 9 pictures, Garderobe 4 → 3. Code docstrings that cite `bad_mallnitz.jpeg` / `ofenbett-1200x800.jpg` as the model's source stay valid (the files remain in `input/`).
