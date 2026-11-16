@@ -815,7 +815,7 @@ def test_og_flur_waschtisch_between_the_two_doors():
     san = [p for p in [*part_list(("OG", "OG_Sanitaer")), *part_list(("OG", "OG_Spiegel"))] if near(p)]   # mirror: furnishing (#19)
     assert not [p for p in san if p[0] == "Schiefer"]
     glass = [p for p in san if p[0] == "Spiegel"]
-    frame = [p for p in san if p[0] == "Kiefer" and p[1][2] > zo + 1.0]
+    frame = [p for p in san if p[0] == "Kiefer"]
     assert len(glass) == 1 and len(frame) == 4
     _, glo, ghi, _ = glass[0]
     flo = [min(p[1][k] for p in frame) for k in range(3)]; fhi = [max(p[2][k] for p in frame) for k in range(3)]
