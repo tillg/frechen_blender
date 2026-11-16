@@ -1317,7 +1317,9 @@ def build_og():
              [(4.02, 4.87, -1, "a", False), (7.15, 8.17, -1, "a", False), (8.76, 9.65, -1, "b", False),
               (10.66, 11.51, -1, "a", False)], z0, z1, H)
     interior(c, 5.44, 5.59, 0.40, 6.06, (), z0, z1)
-    interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1)                  # HWR / Bad (new)
+    interior(c, 5.59, 8.59, 2.62, 2.79, (), z0, z1,                  # HWR / Bad (new), the Oberlicht (#30)
+             ops=[(*elternbad.OBERLICHT, z0 + elternbad.SILL, z1, "I")])
+    elternbad.oberlicht(c, 0.0, 0.0, z0, z1)
     interior(c, 8.59, 8.72, 0.40, 6.06, [(*elternbad.TUER, -1, "a", False)], z0, z1, H)   # Bad Nadine & Till (code/elternbad.py)
     interior(c, 9.92, 10.07, 3.84, 6.06, (), z0, z1)                 # WC 2,30: 1.20 wide (plan)
     interior(c, 8.72, 9.92, 3.84, 3.98, (), z0, z1)
@@ -1727,7 +1729,8 @@ WANDLAMPEN_OG = [
     (14.35, (2.67 + 4.15) / 2, -1, 0),                                    # Schlafzimmer: between the east balcony doors
     (10.07, (3.84 + 5.266) / 2, 1, 0),                                    # Schlafzimmer: WC corner (Kaminofen) .. open leaf's end
     (9.26, 3.98, 0, 1),                                                   # WC: over the cistern
-    *[(5.59 + 0.75 * (k + 0.5), 2.79, 0, 1) for k in range(4)],           # Waschküche: over the table (full width)
+    *[(5.59 + 0.75 * (k + 0.5), 2.79, 0, 1, waschkueche.LAMPE_H) for k in range(4)],   # Waschküche: over the table
+                                                                          # (full width), under the glazing (#30)
     (8.59, waschkueche.BY, -1, 0, WANDLAMPE_SPIEGEL_H),                   # Waschküche: over the basin's mirror (#29)
     (5.44, (3.37 + 6.06) / 2, -1, 0),                                     # Saschi: nightstand .. Flur wall
 ]

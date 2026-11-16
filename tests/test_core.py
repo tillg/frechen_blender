@@ -1591,7 +1591,8 @@ def test_wandlampen_og_placements():
                          ((14.35, m(2.67, 4.15)), L, (-1, 0)),                           # the two east balcony doors
                          ((10.07, m(3.84, 5.266)), L, (1, 0))],                          # WC corner .. open leaf's end
         "WC": [((9.26, 3.98), L, (0, 1)), ((9.92, 4.95), S, (-1, 0))],                   # cistern, mirror
-        "Waschküche": [((round(5.59 + 0.375 + 0.75 * k, 3), 2.79), L, (0, 1)) for k in range(4)]   # over the table
+        "Waschküche": [((round(5.59 + 0.375 + 0.75 * k, 3), 2.79), waschkueche.LAMPE_H, (0, 1)) for k in range(4)]   # over the table,
+                                                                                         # #30: under the glazing
                       + [((8.59, 4.70), S, (-1, 0))],                                    # #29: over the basin's mirror
         "Saschi": [((5.44, m(3.37, 6.06)), L, (-1, 0))],                                 # nightstand .. Flur wall
         "Bad Nadine & Till": [((8.59, round(2.14 + d, 3)), S, (-1, 0)) for d in (-0.20, 0.20)]
@@ -2078,6 +2079,56 @@ def test_elternbad_layout():
     _clear([("leaf", lo, hi) for lo, hi in leaf], lamps + [(lo, hi) for m, lo, hi in toilet + basin] + drain + glass + riser, "leaf")
     _clear([(m, lo, hi) for o in ("Sanitaer", "Fliesen", "Spiegel", "Wandlampen") for m, lo, hi in _parts(BP, ("OG", "OG_" + o))
             if room(lo, hi)], [passage], "passage")
+
+
+def test_oberlicht_bad_waschkueche():
+    """Issue #30: the partition between the Bad Nadine & Till and the Waschküche (y 2.62 .. 2.79) is glazed in its
+    top metre: a pine lining of the full wall depth from its sill at 1.20 up to the 2.20 ceiling, 10 cm short of the
+    side walls, three panes of Milchglas between two mullions, one of them on the shower glass line (x 6.49);
+    plaster below and in the piers. Nothing of either room reaches into the glazing but the north shower pane and
+    its rail, which end on that mullion; the same in the sub-model (web/elternbad.html). The plans still part the
+    two rooms on the wall line (areas about 3.00 x 2.22 and 3.00 x 3.27)."""
+    import elternbad as e, export_plans
+    zo, ft = house_core.Z_OG, ("OG", "OG_Innentueren")
+    wall = lambda lo, hi: 5.59 <= lo[0] and hi[0] <= 8.59 and 2.62 - 1e-6 <= lo[1] and hi[1] <= 2.79 + 1e-6
+    own = [(m, lo, hi) for m, lo, hi in _parts(BP, ft) if wall(lo, hi) and lo[2] >= zo + 1.0]
+    glass = sorted((lo, hi) for m, lo, hi in own if m == "Milchglas")
+    assert len(glass) == 3 and {m for m, lo, hi in own} == {"Innentuer", "Milchglas"}
+    assert abs(min(lo[2] for m, lo, hi in own) - (zo + 1.20)) < 1e-6                  # 1.00 high,
+    assert abs(max(hi[2] for m, lo, hi in own) - (zo + 2.20)) < 1e-6                  # its top at the ceiling
+    assert abs(min(lo[0] for m, lo, hi in own) - 5.69) < 1e-6 and abs(max(hi[0] for m, lo, hi in own) - 8.49) < 1e-6
+    assert all(abs((lo[1] + hi[1]) / 2 - 2.705) < 1e-6 and hi[1] - lo[1] < 0.01 for lo, hi in glass)   # in the middle
+    assert any(m == "Innentuer" and abs(lo[1] - 2.62) < 1e-6 and abs(hi[1] - 2.79) < 1e-6 and lo[0] < 6.49 - 0.012
+               and hi[0] > 6.49 + 0.012 for m, lo, hi in own)                         # mullion on the glass line
+    post = [(lo, hi) for m, lo, hi in own if m == "Innentuer" and lo[0] < e.XG < hi[0] and hi[0] - lo[0] < 0.1]
+    end = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Sanitaer")) if lo[0] < e.XG < hi[0] and 2.5 < hi[1] < 2.64
+           and hi[2] > zo + 1.20]                                             # the north pane and its rail, above the sill
+    assert len(post) == 1 and len(end) == 2
+    assert all(post[0][0][0] <= lo[0] and hi[0] <= post[0][1][0] and post[0][0][1] <= hi[1] for lo, hi in end)  # end on it
+    wk = ("OG", "OG_Waende")
+    assert all(_part_at(wk, x, 2.70, zo + h) is None for x in (6.0, 7.0, 8.0) for h in (1.25, 1.7, 2.15))
+    assert all(_part_at(wk, x, 2.70, zo + h) == "Putz" for x in (6.0, 7.0, 8.0) for h in (0.6, 1.15))
+    assert all(_part_at(wk, x, 2.70, zo + 1.7) == "Putz" for x in (5.64, 8.54))      # the piers
+    # nothing of the OG reaches into the glazing (3 cm in front of each face), but the north shower pane's end
+    box = ((5.69, 2.62 - 0.03, zo + 1.20), (8.49, 2.79 + 0.03, zo + 2.20))
+    for key in BP.geo:
+        if key[0] == "OG":
+            _clear([(m, lo, hi) for m, lo, hi in _parts(BP, key) if not (key == ft and wall(lo, hi))
+                    and not (key[1] == "OG_Sanitaer" and lo[0] < e.XG < hi[0] and hi[1] < 2.64 and hi[2] <= zo + 2.02 + 1e-6)],
+                   [box], key)
+    # the four lamps over the Waschküche table hang under it
+    lamps = [hi for m, lo, hi in _parts(BP, ("OG", "OG_Wandlampen")) if 5.59 < lo[0] < 8.5 and 2.79 <= lo[1] < 3.1]
+    assert lamps and max(hi[2] for hi in lamps) < zo + 1.20
+    regions, anchors = export_plans.room_regions(BP, "OG")
+    area = {n: round(regions[anchors[k]]["area"], 3) for k, (n, st, x, y) in enumerate(BP.plan_rooms) if k in anchors}
+    assert abs(area["Bad"] - 6.66) < 0.02 and abs(area["Hauswirtschaftsraum"] - 9.81) < 0.02, area   # 5 mm gaps
+    # the sub-model: the same glazing
+    bp = house_core.build_elternbad()
+    house_core.build()                                                    # restore the registries
+    x0, y0 = e.ELTERNBAD_AT
+    sg = sorted(([lo[0] + x0, lo[1] + y0, lo[2] + zo], [hi[0] + x0, hi[1] + y0, hi[2] + zo])
+                for m, lo, hi in _parts(bp, ("Elternbad", "Elternbad_Innentueren")) if m == "Milchglas")
+    assert len(sg) == 3 and all(all(abs(p - q) < 1e-6 for p, q in zip(a + b, c + d)) for (a, b), (c, d) in zip(sg, glass))
 
 
 def test_elternbad_submodel():

@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-15
+edited: 2026-11-16
 ---
 
 # Architecture: Frechenlehen house model
@@ -209,11 +209,17 @@ flowchart LR
   half of the wall each: the floor runs through, drain and glass on its 0.018 top; a pane from each side
   wall to `PA`/`PB`, whose rails leave 60 clear around `YM`; the heads on the west wall's slabs `HU` = 0.30
   from the side walls; `limestone()` on the west wall and the strip's south-wall piece to 2.0, its
-  north-wall piece to `SILL` = 1.20: the north wall is the Waschküche partition, kept free above 1.20 for
-  its future glazing), the toilet at `TX` = 7.15 on the north wall facing south with `wainscot` on the
+  north-wall piece to `SILL` = 1.20: the north wall is the Waschküche partition with the Oberlicht above), the toilet at `TX` = 7.15 on the north wall facing south with `wainscot` on the
   north and east wall (`sides="ne"`); on the east wall north of the door the Waschbecken einzeln 60 on the
   tiles and `wood_mirror()` 80 × 85 on `BY`, two Wandlampen over it, one east of the window. Own `random.Random(3)` for mirror and cladding,
-  `random.Random(4)` for the sub-model floor. It returns its dimension lines.
+  `random.Random(4)` for the sub-model floor. It returns its dimension lines. The Oberlicht: `OBERLICHT` =
+  (5.69, 8.49), `PFOSTEN` = (`XG`, `XG` + 1.0); `build_og()` and `waende()` both cut the north wall with a `wall()`
+  kind `I` op from `SILL` to the ceiling (one random draw, as the plain wall) and call `oberlicht(c, dx, dy, z0, z1)`:
+  a pine (`Innentuer`) lining of the full wall depth (sill and jambs 5 cm, mullions 6 cm, a 7 cm head board under the
+  ceiling), Milchglas 8 mm in the wall's middle, beads 2 × 2 cm on both sides, one rnd (`random.Random(30)`), in
+  `<c>_Innentueren`: for the plans a built-in, whose head board, cut at `ROOM_CUT` 2.15, parts Bad and Waschküche
+  (frames in `_Fenster_Tueren` are skipped there). The four Waschküche table lamps in `WANDLAMPEN_OG` hang at
+  `waschkueche.LAMPE_H` = 1.10, under it.
 - **Waschküche.** `code/waschkueche.py` (house only, no sub-model): `waschkueche_neu(c, z)`, called last in
   `build_sanitary()`, builds into the OG Waschküche (x 5.59 .. 8.59, y 2.79 .. 6.06) a floor-level shower cabin
   `DUSCHE` = (5.59, 6.69, 4.96, 6.06), 1.10 × 1.10 outer, in the NW corner right of the door as one comes in: its
