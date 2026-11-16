@@ -105,7 +105,9 @@ flowchart LR
 - **Desk.** `code/desk.py` the same way: the plain table builder `desk()` (OG laundry table),
   `desk_neu(c, x0, y0)` (the Büro desk: cherry top 190 × 100 (`DESK_W`/`DESK_D`) on the cast-iron
   crank frame, two monitors, MacBook, keyboard, trackpad, built straight into collection `c`: `EG`
-  at `DESK_AT`, or `Desk` at the origin) and `stuhl()`; `build_desk()` stays in `house_core`. The
+  at `DESK_AT`, or `Desk` at the origin) and `stuhl()` (the office chair, #48: object `<c>_Buerostuhl`, in
+  `FURNITURE`, at `CHAIR`; materials `Kunststoff`, `Polster`, `Netz`; one `rnd` for the whole chair, the one
+  global draw the board chair took there, so no later part shifts); `build_desk()` stays in `house_core`. The
   static frame is furniture in `<c>_Moebel`; the lifted parts (top, top bars, spindles) are
   `<c>_Schreibtisch`, the hand wheel `<c>_Handrad` (`PIVOT` at the hub). `LIFT` (object → metres
   up, `LIFT_DZ` = 0.30) holds `_Schreibtisch`, `_Geraete`, `_Bildschirm_L/R`; `CRANK` (object →

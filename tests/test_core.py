@@ -1255,17 +1255,17 @@ def test_kueche_and_speis_fronts_after_mallnitz():
 
 
 def test_chairs_are_board_chairs_after_stuhl_png():
-    """All chairs (8 at the dining table, one at the Bibliothek desk) after input/2026-11-05
-    input/stuhl.png: a thick plank seat on two battens, four splayed tapering stick legs without
+    """The 8 chairs at the dining table after input/2026-11-05 input/stuhl.png (the Bibliothek desk has
+    an office chair since #48: test_buerostuhl_after_photo): a thick plank seat on two battens, four splayed tapering stick legs without
     stretchers, one tall backrest board leaning back with a pointed heart cut out near its top, its
     tenon wedged under the seat."""
     parts = list(part_list(("EG", "EG_Stuehle")))
     seats = [p for p in parts if abs(p[2][2] - 0.46) < 0.005 and p[2][2] - p[1][2] >= 0.04]
-    assert len(seats) == 9
+    assert len(seats) == 8
     centre = lambda p: ((p[1][0] + p[2][0]) / 2, (p[1][1] + p[2][1]) / 2)
     mean = lambda vs, k: sum(v[k] for v in vs) / len(vs)
     legs = [p for p in parts if p[1][2] < 0.01]
-    assert len(legs) == 4 * 9
+    assert len(legs) == 4 * 8
     for _, _, hi, vs in legs:
         foot = [v for v in vs if v[2] < 0.01]; head = [v for v in vs if v[2] > hi[2] - 0.001]
         c = min((centre(s) for s in seats), key=lambda q: math.dist(q, (mean(foot, 0), mean(foot, 1))))
@@ -1273,14 +1273,56 @@ def test_chairs_are_board_chairs_after_stuhl_png():
         assert max(v[0] for v in foot) - min(v[0] for v in foot) < max(v[0] for v in head) - min(v[0] for v in head) + 0.02   # tapering
     assert not [p for p in parts if p[1][2] > 0.02 and p[2][2] < 0.35]                       # no stretchers
     board = [p for p in parts if p[2][2] > 0.85]
-    assert len(board) == 4 * 9                                                # two sides, above and below the heart
-    assert sum(len(set(p[3])) == 10 for p in board) == 9                      # the piece notched by the heart's point
+    assert len(board) == 4 * 8                                                # two sides, above and below the heart
+    assert sum(len(set(p[3])) == 10 for p in board) == 8                      # the piece notched by the heart's point
     for _, _, hi, vs in board:
         c = min((centre(s) for s in seats), key=lambda q: math.dist(q, (vs[0][0], vs[0][1])))
         top = [v for v in vs if v[2] > hi[2] - 0.001]; low = [v for v in vs if v[2] < min(w[2] for w in vs) + 0.001]
         lean = math.dist(c, (mean(top, 0), mean(top, 1))) - math.dist(c, (mean(low, 0), mean(low, 1)))
         assert lean > 0.12 * (top[0][2] - low[0][2])                         # leans back
-    assert sum(0.90 <= p[2][2] <= 1.0 for p in board) == 3 * 9                # tall: about 0.95
+    assert sum(0.90 <= p[2][2] <= 1.0 for p in board) == 3 * 8                # tall: about 0.95
+
+
+def test_buerostuhl_after_photo():
+    """Issue #48: the chair at the Büro desk is an office chair after input/2026-11-13 input/bürostuhl.png (its own
+    furniture object <c>_Buerostuhl, in the house and in the desk sub-model): a black five-star base on ten twin-castor
+    wheels, a black gas column, a grey upholstered seat, a light-grey mesh back in a black frame leaning back, a mesh
+    headrest above it and two black T-armrests; centred on the desk, facing it, seat front just short of the top's
+    front edge; no clash with the desk, its frame, the walls, the bookcase, windows and doors (the Büro door too)."""
+    import desk
+    x0, y0 = desk.DESK_AT
+    assert "EG_Buerostuhl" in house_core.FURNITURE
+    parts = list(part_list(("EG", "EG_Buerostuhl")))
+    assert {m for m, *_ in parts} == {"Kunststoff", "Polster", "Netz"}
+    cx = x0 + desk.DESK_W / 2
+    wheels = [p for p in parts if p[2][2] <= 0.06]
+    assert len(wheels) == 10 and all(p[1][2] < 1e-9 for p in wheels)                  # on the floor
+    spokes = [p for p in parts if p[0] == "Kunststoff" and 0.05 < p[1][2] and p[2][2] < 0.14
+              and max(p[2][0] - p[1][0], p[2][1] - p[1][1]) > 0.15]
+    assert len(spokes) == 5                                                            # five-star base
+    assert all(math.dist(((p[1][0] + p[2][0]) / 2, (p[1][1] + p[2][1]) / 2), (cx, y0 + desk.CHAIR[1])) < 0.36 for p in wheels)
+    seat = [p for p in parts if p[0] == "Polster"]
+    assert len(seat) == 1
+    _, lo, hi, _ = seat[0]
+    assert 0.47 <= hi[2] <= 0.53 and 0.46 <= hi[0] - lo[0] <= 0.54                      # seat height, width
+    assert abs((lo[0] + hi[0]) / 2 - cx) < 1e-6                                          # centred on the desk
+    assert y0 - 0.15 < hi[1] < y0                                                        # front just short of the top
+    mesh = [p for p in parts if p[0] == "Netz"]
+    assert len(mesh) == 2                                                                # back, headrest
+    back, head = sorted(mesh, key=lambda p: p[1][2])
+    assert back[2][1] < lo[1] + 0.05 and back[2][2] > 1.0 and head[2][2] > 1.15          # behind the seat: faces the desk
+    top = [v for v in back[3] if v[2] > back[2][2] - 0.001]; low = [v for v in back[3] if v[2] < back[1][2] + 0.001]
+    assert max(v[1] for v in top) < max(v[1] for v in low) - 0.05                       # leans back
+    pads = [p for p in parts if p[0] == "Kunststoff" and 0.62 < p[1][2] and p[2][2] < 0.70 and p[2][1] - p[1][1] > 0.2]
+    assert len(pads) == 2 and sorted(p[1][0] < cx for p in pads) == [False, True]       # armrests both sides
+    others = [p for o in ("EG_Waende", "EG_Fenster_Tueren", "EG_Innentueren", "EG_Moebel", "EG_Schreibtisch", "EG_Geraete",
+                          "EG_Buerotuer", "EG_Stuehle", "EG_Wandlampen")
+              for p in _parts(BP, ("EG", o))]
+    near = [(lo, hi) for m, lo, hi in others if lo[0] < cx + 1.0 and hi[0] > cx - 1.0 and lo[1] < y0 + 0.2 and hi[1] > y0 - 1.2]
+    assert near
+    _clear([(m, lo, hi) for m, lo, hi, _ in parts], near + _leaf_boxes(BP, "EG", 0.0), "Buerostuhl")
+    bp = house_core.build_desk()
+    assert ("Desk", "Desk_Buerostuhl") in bp.geo and ("Desk", "Desk_Stuehle") not in bp.geo
 
 
 def test_desk_submodel():
@@ -1293,7 +1335,7 @@ def test_desk_submodel():
     import desk
     bp = house_core.build_desk()
     assert {c for c, _ in bp.geo} == {"Desk"} and bp.garden is None
-    assert {n for _, n in bp.geo} == {"Desk_Moebel", "Desk_Schreibtisch", "Desk_Handrad", "Desk_Stuehle", "Desk_Geraete",
+    assert {n for _, n in bp.geo} == {"Desk_Moebel", "Desk_Schreibtisch", "Desk_Handrad", "Desk_Buerostuhl", "Desk_Geraete",
                                       "Desk_Bildschirm_L", "Desk_Bildschirm_R"}
     v = bp.geo[("Desk", "Desk_Schreibtisch")]["v"]
     lo, hi = [min(p[k] for p in v) for k in range(3)], [max(p[k] for p in v) for k in range(3)]

@@ -6,7 +6,7 @@ monitors showing the screenshots of input/2026-11-06 input/ (a12 left, pilcrow r
 Pro left of them, a white Magic Keyboard and a white Magic Trackpad.
 
 Pure Python like house_core.py, which imports this module: build_furniture() calls desk_neu() at
-DESK_AT and stuhl() at the chair's old place in the build order; house_core.build_desk() wraps
+DESK_AT and stuhl() (the office chair, #48) at the chair's old place in the build order; house_core.build_desk() wraps
 desk_neu() at the origin as the Blueprint of web/desk.html. The primitives and the geometry
 accumulator come from house_core (attribute access, because the two modules import each other).
 Everything is axis-aligned and built straight into the given collection, so the house and the
@@ -18,7 +18,7 @@ import house_core as hc
 DESK_AT = (10.943, 11.471)                                 # house: SW corner, between the two north
 DESK_W, DESK_D, DESK_H = 1.90, 1.00, 0.75                  # french doors of the Bibliothek, centred
                                                            # there, back edge 2 mm off the wall
-CHAIR = (DESK_W / 2, -0.23)                                # chair centre, facing the desk (+y)
+CHAIR = (DESK_W / 2, -0.32)                                # chair centre (column), facing the desk (+y)
 LIFT_DZ = 0.30                                             # crank travel: 75 -> 105 cm
 # The crank frame ("Wien"), sizes read off the photo (assumed): two arched cast-iron legs across the
 # depth, 10 cm thick, their west faces at LEG_X; on each two spindle housings and a gearbox between
@@ -133,8 +133,51 @@ def handrad(c, x0, y0, z, rng):
 
 
 def stuhl(c, x0, y0):
-    """The board chair at the desk (house_core.chair)."""
-    hc.chair(c, x0 + CHAIR[0], y0 + CHAIR[1], 0, 1)
+    """The office chair at the desk (<c>_Buerostuhl, furniture) after input/2026-11-13 input/bürostuhl.png (#48),
+    centred at CHAIR, facing the desk (+y): black five-star nylon base on twin castors, black gas column and
+    mechanism, a grey upholstered seat, a light-grey mesh back in a black frame leaning back 10°, a mesh headrest
+    on a post above it, two black T-armrests. One rnd for the whole chair: the board chair's one global draw, so
+    every part built after it keeps its value."""
+    o, r = c + "_Buerostuhl", random.random()
+    cx, cy = x0 + CHAIR[0], y0 + CHAIR[1]
+    K = "Kunststoff"
+    for k in range(5):                                                     # base: one arm straight back
+        a = math.radians(270 + 72 * k)
+        d, n = (math.cos(a), math.sin(a), 0), (-math.sin(a), math.cos(a), 0)
+        p = (cx + 0.04 * d[0] - 0.022 * n[0], cy + 0.04 * d[1] - 0.022 * n[1], 0.075)
+        obox(c, o, K, p, tuple(0.25 * e for e in d), tuple(0.044 * e for e in n), (0, 0, 0.035), r)
+        tx, ty = cx + 0.30 * d[0], cy + 0.30 * d[1]
+        hc.box(c, o, K, tx - 0.012, tx + 0.012, ty - 0.012, ty + 0.012, 0.052, 0.077, r)   # castor fork
+        for s in (-1, 1):                                                  # twin wheels, rolling along y
+            hc.prism_x(c, o, K, tx + s * 0.004, tx + s * 0.02, ring(ty, 0.025, 0.025), r)
+    hc.xy_prism(c, o, K, [(cx + x, cy + y) for x, y in ring(0, 0, 0.05, 10)], 0.07, 0.13, r)          # hub
+    hc.xy_prism(c, o, K, [(cx + x, cy + y) for x, y in ring(0, 0, 0.026, 10)], 0.13, 0.40, r)         # gas column
+    hc.box(c, o, K, cx - 0.11, cx + 0.11, cy - 0.13, cy + 0.11, 0.40, 0.445, r)                        # mechanism
+    hc.box(c, o, K, cx + 0.11, cx + 0.19, cy + 0.02, cy + 0.04, 0.415, 0.425, r)                       # lift lever
+    hc.prism_x(c, o, "Polster", cx - 0.25, cx + 0.25,                                                  # seat, waterfall front
+               [(cy - 0.24, 0.445), (cy + 0.19, 0.445), (cy + 0.24, 0.47), (cy + 0.235, 0.50),
+                (cy + 0.19, 0.51), (cy - 0.20, 0.505), (cy - 0.24, 0.49)], r)
+    for s in (-1, 1):                                                      # armrests: bracket, post, pad
+        hc.box(c, o, K, cx + s * 0.11, cx + s * 0.29, cy - 0.06, cy + 0.0, 0.41, 0.435, r)
+        hc.box(c, o, K, cx + s * 0.26, cx + s * 0.29, cy - 0.07, cy + 0.01, 0.435, 0.64, r)
+        hc.box(c, o, K, cx + s * 0.235, cx + s * 0.315, cy - 0.15, cy + 0.10, 0.64, 0.665, r)
+    # back: (u across, t through the back towards its rear, b up it), leaning back 10° from the seat's back edge
+    sn, cs = math.sin(math.radians(10)), math.cos(math.radians(10))
+    B = lambda u, t, b: (cx + u, cy - 0.25 - t * cs - b * sn, 0.50 + b * cs - t * sn)
+    hc.box(c, o, K, cx - 0.03, cx + 0.03, cy - 0.30, cy - 0.12, 0.42, 0.445, r)                        # spine foot
+    obox(c, o, K, B(-0.03, 0.0, -0.07), (0.06, 0, 0), tuple(a - b for a, b in zip(B(0, 0.035, -0.07), B(0, 0, -0.07))),
+         tuple(a - b for a, b in zip(B(0, 0, 0.12), B(0, 0, -0.07))), r)                                  # spine
+    w = lambda b: 0.24 - 0.02 * b / 0.64                                                               # half width: tapers up
+    for u0, u1, b0, b1 in ((-1, -1, 0, 0.64), (1, 1, 0, 0.64)):                                        # frame stiles
+        hc.prism(c, o, K, lambda u, t, z: B(u, t, z), [(u0 * w(b0), b0), (u0 * (w(b0) - 0.025), b0),
+                 (u1 * (w(b1) - 0.025), b1), (u1 * w(b1), b1)], 0.0, 0.03, r)
+    for b0, b1 in ((0.0, 0.03), (0.61, 0.64)):                                                          # top, bottom rails
+        hc.prism(c, o, K, B, [(-w(b0) + 0.025, b0), (w(b0) - 0.025, b0), (w(b1) - 0.025, b1), (-w(b1) + 0.025, b1)], 0.0, 0.03, r)
+    hc.prism(c, o, "Netz", B, [(-w(0.01) + 0.01, 0.01), (w(0.01) - 0.01, 0.01), (w(0.63) - 0.01, 0.63),
+                               (-w(0.63) + 0.01, 0.63)], 0.009, 0.021, r)                              # mesh
+    hc.prism(c, o, K, B, [(-0.02, 0.62), (0.02, 0.62), (0.02, 0.70), (-0.02, 0.70)], 0.03, 0.05, r)    # headrest post
+    hc.prism(c, o, K, B, [(-0.16, 0.68), (0.16, 0.68), (0.15, 0.82), (-0.15, 0.82)], 0.0, 0.03, r)     # headrest frame
+    hc.prism(c, o, "Netz", B, [(-0.15, 0.69), (0.15, 0.69), (0.14, 0.81), (-0.14, 0.81)], -0.006, 0.0, r)   # its mesh
 
 
 def obox(c, o, m, p, ex, ey, ez, rnd):

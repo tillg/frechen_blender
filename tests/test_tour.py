@@ -421,3 +421,21 @@ def test_routes_and_spots_clear_the_schreibplatz():
             assert not og(f) or gap(f) >= 0.25, (name, f[:3])
     for s in tour.SPOTS:
         assert not og(s[3]) or gap(s[3]) >= 0.25, s[0]
+
+
+def test_routes_and_spots_clear_the_buerostuhl():
+    """Issue #48: every camera key of every route and every Standpunkt keeps 0.25 m from the office chair at the
+    Büro desk (5-star base, seat, mesh back with headrest, armrests; code/desk.py)."""
+    bp = house_core.build()
+    key = ("EG", "EG_Buerostuhl")
+    g, boxes = bp.geo[key], []
+    for first, n in bp.parts[key]:
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        boxes.append(([min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]))
+    assert len(boxes) > 15
+    gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
+    for s in tour.SPOTS:
+        assert gap(s[3]) >= 0.25, s[0]
