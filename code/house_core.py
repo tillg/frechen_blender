@@ -752,15 +752,15 @@ def toilet(coll, wx, wy, fx, fy, z=0.0):
     xy_prism(coll, o, "Metall", rect(0.215, 0.27, 0.16, 0.17), z + 0.73, z + 0.745)
 
 
-def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
+def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None, staender=True):
     """Waschbecken after input/2026-11-12 input/waschbecken_einzeln.jpeg / _doppelt.jpg on the
     Waschbeckenständer of waschbecken_staender.png: a rectangular ceramic basin w x d (centred on
     the wall point (wx, wy), facing (fx, fy), `tile` in front of the plaster), top 85, 17 high, a
     tap deck along the wall with `taps` mixers (1: einzeln, 2: doppelt, at u = -w/4, w/4) over one
     bowl with one drain. The Ständer in chrome tubes: two front legs with tapered feet and collars,
     a front rail and two side rails at 52 back to balls on wall rosettes, two back posts up to the
-    basin, a bottle trap to the wall. Own random stream (rng, else a new Random(16)), so the
-    global one is not touched."""
+    basin, a bottle trap to the wall. staender=False: neither Ständer nor trap, the basin stands on a
+    Waschtisch (#40). Own random stream (rng, else a new Random(16)), so the global one is not touched."""
     rng = rng or random.Random(16)
     r = rng.random()
     o, M = coll + "_Sanitaer", at_wall(wx + fx * tile, wy + fy * tile, fx, fy)
@@ -783,6 +783,8 @@ def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
         T((u, vm, top), (u, vm, top + 0.13), [(0.018, 0), (0.016, 1)])
         T((u, vm, top + 0.12), (u, vm + 0.13, top + 0.10), [(0.009, 0), (0.008, 1)])
         T((u, vm, top + 0.13), (u, vm - 0.03, top + 0.18), [(0.006, 0), (0.005, 1)])
+    if not staender:
+        return
     lu, lv, rz = w / 2 - 0.05, d - 0.05, 0.52
     for s in (-1, 1):
         u = s * lu
@@ -799,6 +801,49 @@ def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
     T((0, vd, 0.30), (0, vd, 0.42), [(0.018, 0), (0.028, 0.15), (0.028, 1)])      # bottle,
     T((0, vd, 0.38), (0, 0.008, 0.38), [(0.014, 0), (0.014, 1)])                   # arm to the wall
     T((0, 0.0, 0.38), (0, 0.008, 0.38), [(0.03, 0), (0.03, 1)])                    # rosette
+
+
+def waschtisch(coll, wx, wy, fx, fy, w, d, z=0.0):
+    """Waschtisch after input/2026-11-15 input/waschtisch.avif (#40): an old pine bedside cabinet carrying a
+    Waschbecken einzeln w x d (waschbecken(staender=False), its underside on the top at z + 0.68). Top 3 cm with
+    a moulded edge under it, 10 cm wider than the basin each side and 5 cm deeper; four square legs tapering
+    below the carcass; panelled sides and back; at the front a drawer with a knob, a protruding rail under it
+    and a door with a raised panel, its knob on the left (u < 0). Centred on the wall point (wx, wy) facing
+    (fx, fy), into object <coll>_Sanitaer (with the basin, in every stage). Reddish old pine: Innentuer (grain up)
+    for legs, sides, back and door, Stufe (worn, grain along x: a wall along x) for top, rails and drawer.
+    Own random stream Random(40)."""
+    o, M, rng = coll + "_Sanitaer", at_wall(wx, wy, fx, fy), random.Random(40)
+    r, rf = rng.random(), rng.random()                                           # carcass, fronts
+    B = lambda u0, u1, v0, v1, z0, z1, rnd, m="Innentuer": box(coll, o, m, *[c for p in zip(M(u0, v0), M(u1, v1))
+                                                                           for c in sorted(p)], z + z0, z + z1, rnd)
+    W, D, ht = w / 2 + 0.10, d + 0.05, 0.68
+    B(-W, W, 0.0, D, ht - 0.03, ht, r, "Stufe")                                  # top
+    B(-W + 0.015, W - 0.015, 0.0, D - 0.015, ht - 0.045, ht - 0.03, r, "Stufe")  # moulded edge under it
+    lu, lw, v0, v1, zc, zt = W - 0.03, 0.045, 0.02, D - 0.03, 0.14, ht - 0.045
+    for su in (-1, 1):
+        for vb in (v0, v1 - lw):                                                 # legs: square, tapering below zc
+            u0, u1 = sorted((su * lu, su * (lu - lw)))
+            B(u0, u1, vb, vb + lw, zc, zt, r)
+            n = 0.015                                                            # taper on the inner faces
+            ua, ub = (u0 + n, u1) if su > 0 else (u0, u1 - n)
+            va, vb2 = (vb + n, vb + lw) if vb == v0 else (vb, vb + lw - n)
+            low = [(*M(uu, vv), z) for uu, vv in ((ua, va), (ub, va), (ub, vb2), (ua, vb2))]
+            up = [(*M(uu, vv), z + zc) for uu, vv in ((u0, vb), (u1, vb), (u1, vb + lw), (u0, vb + lw))]
+            add(coll, o, "Innentuer", low + up, [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5),
+                                              (2, 3, 7, 6), (3, 0, 4, 7)], r)
+        B(*sorted((su * (lu - 0.01), su * (lu - 0.03))), v0 + lw, v1 - lw, zc, zt, r)   # side panel, set back
+    iu = lu - lw                                                                 # between the legs
+    B(-iu, iu, v0, v0 + 0.015, zc, zt, r)                                        # back
+    B(-iu, iu, v1 - 0.025, v1 - 0.02, zc, zt, r)                                 # front board behind the fronts
+    B(-iu, iu, v1 - 0.02, v1, zc, zc + 0.025, rf, "Stufe")                       # bottom rail
+    B(-iu, iu, v1 - 0.02, v1, zt - 0.025, zt, rf, "Stufe")                       # top rail
+    B(-iu + 0.015, iu - 0.015, v1 - 0.02, v1, zt - 0.125, zt - 0.03, rf, "Stufe")   # drawer front
+    B(-lu - 0.005, lu + 0.005, v1 - 0.025, v1 + 0.012, zt - 0.15, zt - 0.13, rf, "Stufe")   # rail under the drawer
+    B(-iu + 0.015, iu - 0.015, v1 - 0.02, v1, zc + 0.03, zt - 0.155, rf)         # door leaf
+    B(-iu + 0.075, iu - 0.075, v1, v1 + 0.008, zc + 0.08, zt - 0.205, rf)        # its raised panel
+    P = lambda u, v, h: (*M(u, v), z + h)
+    for u, h in ((0.0, zt - 0.078), (-iu + 0.06, (zc + zt - 0.125) / 2)):       # knobs: drawer, door (left)
+        turned(coll, o, "Eisen", P(u, v1, h), P(u, v1 + 0.025, h), [(0.006, 0), (0.008, 0.4), (0.012, 0.7), (0.004, 1)], k=12)
 
 
 def wc_mirror(coll, wx, wy, fx, fy, z=0.0):
@@ -943,14 +988,14 @@ def build_sanitary():
     wc_mirror("OG", 9.92, 4.95, -1, 0, z=zo)
     wandlampe("OG", 9.92, 4.95, -1, 0, zo + WANDLAMPE_SPIEGEL_H)                    # over the mirror (#19)
     # OG Flur (plan: basin symbol): a Waschbecken einzeln 60 exactly between the doors to Saschi
-    # and Waschküche (openings 4.02 .. 4.87 and 7.15 .. 8.17 of the wall y 6.06 .. 6.35), on Taubenblau tiles
-    # 15 cm wider each side, above them a mirror 110 x 85 in a 10 cm wooden frame, two Wandlampen over it (#19)
+    # and Waschküche (openings 4.02 .. 4.87 and 7.15 .. 8.17 of the wall y 6.06 .. 6.35), on a Waschtisch (#40,
+    # the wall plain plaster), above it a mirror 110 x 85 in a 10 cm wooden frame, two Wandlampen over it (#19)
     xf = (4.87 + 7.15) / 2
     wood_mirror("OG", xf, 6.35, 0, 1, 1.10, 0.85, 0.10, zo + 1.17)
     for d in (-0.275, 0.275):
         wandlampe("OG", xf + d, 6.35, 0, 1, zo + WANDLAMPE_SPIEGEL_H)
-    wainscot("OG", zo, xf - 0.45, xf + 0.45, 6.35, 7.35, None, sides="s")
-    waschbecken("OG", xf, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, tile=WC_TILE_T)
+    waschtisch("OG", xf, 6.35, 0, 1, 0.60, 0.47, z=zo)
+    waschbecken("OG", xf, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, staender=False)
     build_wandlampen()
     # OG Bad Nadine & Till (S, #3): shower, toilet with tiles, basin, mirror, lamps (code/elternbad.py); last,
     # so the Wandlampen of #19 keep their order in WALL_LIGHTS

@@ -91,6 +91,7 @@ BEREICHE = [
         foto("2026-11-12 input/waschbecken_einzeln.jpeg", "Das Standard-Waschbecken (einzeln) – WCs und Bäder"),
         foto("2026-11-12 input/waschbecken_staender.png", "Sein Ständer aus Chrom"),
         foto("2026-11-05 input/waschbecken-briol.jpeg", "Waschbecken im Briol"),
+        foto("2026-11-15 input/waschtisch.avif", "Alter Waschtisch aus Kiefer – der Waschtisch im Flur oben, mit dem Standard-Waschbecken"),
         foto("2026-11-03 input/werkstattofen.jpeg", "Werkstattofen – Bibliothek, Oma & Opa, 1. Stock"),
         foto("2026-09-24 input/inside_floor_rooms.jpg", "Eichendielen – der Boden der Zimmer"),
         foto("2026-09-24 input/stone_floor_corridor.jpg", "Kalksteinplatten – Flure, WCs und Bäder"),
