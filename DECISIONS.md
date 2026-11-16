@@ -51,6 +51,8 @@ Choices made while nobody was there to ask are logged here
   - [01:25 — #40: a Waschtisch after the photo (old pine cabinet), the basin as a vessel on its top, in `OG_Sanitaer`; mirror and lamps kept; a tweak that commits](#run-2026-11-15-1633-39)
   - [01:25 — #40: the Flur basin test rewritten to the Waschtisch, the tiles assertions flipped](#run-2026-11-15-1633-40)
   - [01:25 — #40: the photo in the Bereich "Ganzes Haus" (OG Flur); `.avif` counted as raster, count 57](#run-2026-11-15-1633-41)
+  - [01:50 — #44: a small country desk after the photo with a ladder-back chair, west of the low wall at the bed's head, its south half by the balcony door; a tweak that commits](#run-2026-11-15-1633-42)
+  - [01:50 — #44: a new Bereich "Schlafzimmer Nadine & Till" for the photo, marker over the desk, count 58](#run-2026-11-15-1633-43)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -501,3 +503,23 @@ Choices made while nobody was there to ask are logged here
 - **Alternatives:** a new Bereich "Flur oben".
 - **Consequences:** locally the count test stays red until #44 assigns `kleiner-schreibtisch.webp` and bumps it to 58 (green with that file moved away).
 
+
+## 01:50 — #44: a small country desk after the photo with a ladder-back chair, west of the low wall at the bed's head, its south half by the balcony door; a tweak that commits {#run-2026-11-15-1633-42}
+
+- **Status:** open
+- **Context:** #44: „einen kleinen Schreibtisch … hinter die kleine Wand, die am Kopf Ende des Bett steht. Und dahinter einen kleinen Stuhl, der am Schreibtisch steht.“ The photo (`input/2026-11-15 input/kleiner-schreibtisch.webp`): a rustic country (Landhaus) table in honey-brown old pine with a worn finish: plank top overhanging a plain apron, one centred drawer with a round wooden knob, four turned legs (square block at the apron, vase and rings, long taper, ball foot). The "kleine Wand" is the 1.20 m wall `box(… 11.48, 11.63, 0.98, 3.98 …)` behind the bed's headboard (bed x 11.63..13.69, head W). West of it the room is free (x 8.72..11.48, y 0.40..3.84; Kamin in the NW corner, balcony door x 9.84..10.70 in the south wall). The Rundgang's OG return path runs through that zone ((10.0, 1.15) → (10.45, 2.6) → (10.6, 3.6)).
+- **Question:** what to build, and where exactly behind the wall?
+- **Decision:** `house_core.schreibplatz()`: desk top 110 × 55 × 3.5 at 78 cm, 4 cm overhang, four turned legs with ball feet, apron with one drawer + knob on the sitter's (west) side; a small matching ladder-back chair (seat 38 × 38 at 45.5, turned legs, side and front stretchers, back posts to 86 with finials, two slats), "dahinter" = on the desk's far side from the wall, pushed in 10 cm under the top. Desk back 5 mm off the low wall's west face, y 1.25..2.35 (`SCHREIBPLATZ`): its south end 32 cm in from the wall's end, so the 58 cm passage round the wall's south end stays free and the balcony door's daylight falls on the desk (from the sitter's right). Object `OG_Schreibplatz` in `FURNITURE` (stage Eingerichtet, not on the plans). Woods: `Innentuer` (the house's pine), top and seat in a new `KieferY` (same pine, grain along y, so the top's grain runs along its length). Own `random.Random(44)`, explicit `rnd` everywhere: per-object hashes of `v/f/m/r` vs. the base branch identical for all 90 old objects. A `/spec:tweak` that commits (3 steps, no new model file), as #40.
+- **Why:** the photo's look in the house's pine; centred on the bed's head (y ≈ 2.5) the chair would stand on the Rundgang (the new plan-distance test fails there: key (10.41, 2.48)); at y 1.25..2.35 every key stays ≥ 0.26 m clear in plan without touching the route or its golden; walkways ≥ 0.85 m to the south wall, ≥ 1.2 m to the Kamin.
+- **Alternatives:** centred behind the bed head with the route moved west (route golden + film length change); facing the window (the desk would stand free in the room, not "hinter die Wand"); reusing `chair()` (the Esstisch's Brettstuhl: another style, draws from the global random stream and writes `<c>_Stuehle`).
+- **Consequences:** new `MAT_DEF` entry `KieferY` (one more material in the `.glb`). New tests: `test_kleiner_schreibtisch_schlafzimmer` (size, place, chair pushed in, no clash with OG parts or leaves, walkways), `test_routes_and_spots_clear_the_schreibplatz` (in plan, since the eye at 1.6 m passes over a 0.9 m chair in 3D). Blender backend dormant (#35): no rebuild. Plans regenerated (hash line only).
+
+## 01:50 — #44: a new Bereich "Schlafzimmer Nadine & Till" for the photo, marker over the desk, count 58 {#run-2026-11-15-1633-43}
+
+- **Status:** open
+- **Context:** every input raster image must be assigned once; no Bereich covers the OG Schlafzimmer; "Ganzes Haus" is for elements found all over the house.
+- **Question:** which Bereich?
+- **Decision:** a new Bereich `schlafen`, title "Schlafzimmer Nadine & Till", room `("Schlafen", "OG")` (the `PLAN_ROOMS` name at 12.6, 2.5), marker at (11.2, 1.8, Z_OG + 1.6) over the desk; copy via `vorlagen.py --copy` (only the new file changes); the count 57 → 58; `test_issue_examples` asserts the new Bereich.
+- **Why:** the desk belongs to that room alone; the marker leads to the photo where the desk stands.
+- **Alternatives:** "Ganzes Haus" (wrong place, its marker is in the OG Flur).
+- **Consequences:** eleven Bereiche (README, `specs/system/functional.md`). The near-duplicate test stays green.
