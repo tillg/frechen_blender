@@ -8,7 +8,7 @@ sys.path.insert(0, str(ROOT / "code"))
 import house_core  # noqa: E402
 import vorlagen  # noqa: E402
 
-RASTER = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".heic", ".webp", ".gif"}
+RASTER = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".heic", ".webp", ".gif", ".avif"}
 BP = house_core.build()
 nfc = lambda s: unicodedata.normalize("NFC", s)   # macOS file names come decomposed (ü)
 
@@ -22,7 +22,7 @@ def test_every_input_image_is_assigned_once():
                    if p.suffix.lower() in RASTER)
     srcs = [nfc(f["src"]) for b in vorlagen.BEREICHE for f in b["fotos"]]
     doppelt = {nfc(a): nfc(b) for a, b in vorlagen.DOPPELT.items()}
-    assert len(files) == 56
+    assert len(files) == 57
     assert sorted(srcs + list(doppelt)) == files      # each one exactly once (shown or a duplicate), none missing or extra
     assert set(doppelt.values()) <= set(srcs) and not set(doppelt) & set(srcs)   # a duplicate's photo is shown once
     keys = [b["key"] for b in vorlagen.BEREICHE]

@@ -177,9 +177,11 @@ edited: 2026-11-16
     Waschküche) a Waschbecken einzeln 50 × 40 under a mirror in a black frame, clear of the open
     door leaf
   - OG Flur, exactly midway between the doors to Saschi and the Waschküche: a Waschbecken einzeln
-    60 × 47 on Taubenblau WC tiles
-    reaching 15 cm beyond it on either side, above them a mirror 110 × 95 in a 10 cm wooden frame
-    (`wood_mirror()`, as the back hall's 54 × 74 with 7 cm)
+    60 × 47 without its Ständer on a **Waschtisch** (#40, `waschtisch()`, after `input/2026-11-15 input/
+    waschtisch.avif`): an old pine cabinet, top 80 (10 cm wider than the basin each side) × 52 with a
+    moulded edge, a drawer, a protruding rail, a door with a raised panel, two knobs, four slim legs
+    tapering below; the wall behind plain white plaster (no tiles); above it a mirror 110 × 85 in a
+    10 cm wooden frame (`wood_mirror()`, as the back hall's 54 × 74 with 7 cm)
   - Waschküche: a washer tower at the east wall (a dryer stacked on the front loader), 4 cm from the table; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the
     right wall from the door (west) an open spruce cupboard, 2.0 m high, continuous shelves
