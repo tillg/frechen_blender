@@ -235,7 +235,7 @@ flowchart LR
   meeting at the corner. `basket_cupboard(…, n)` (baskets per shelf, width ≤ 0.66) runs from the table to exactly
   20 cm before the cabin, two per shelf; the room door opens 90° (`flat=False`, leaf at x 7.15) so it clears the
   cabin. On the east wall north of the washer tower (`machine()` × 2 in `build_furniture()`, y 3.632 .. 4.252, 4 cm from the
-  table) the Waschbecken einzeln 60 on `BY` = 4.70 (tiles 3 cm, basin 15 cm from the tower; away from the door) on `wainscot(sides="e")` tiles 12 cm wider each side, `wood_mirror()` 80 × 85 above; its Wandlampe
+  table) the Briol sink (`briol()`: deep ceramic sink 60 × 45 after `waschbecken-briol.jpeg`, rim 0.85, 30 high, lip all round, hung on the tiles, waste pipe to the wall, two wall taps with cross handles 24 cm over the rim) on `BY` = 4.70 (tiles 3 cm, basin 15 cm from the tower; away from the door) on `wainscot(sides="e")` tiles 12 cm wider each side, `wood_mirror()` 80 × 85 above; its Wandlampe
   is the `WANDLAMPEN_OG` entry (an entry may carry a 5th value, its height: here `WANDLAMPE_SPIEGEL_H`). Nothing on
   the south wall above 1.20 (to be glazed). Own `random.Random(29)` for glass and limestone.
 - **Limestone cladding.** `limestone(coll, along_x, face, n, ua, ub, z0, top, rng, dx, dy)` clads a

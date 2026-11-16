@@ -932,15 +932,31 @@ def test_waschkueche_shower_cabin():
 
 
 def test_waschkueche_basin():
-    """Issue #29: a standard Waschbecken einzeln 60 x 47 on its Ständer on the Waschküche's east wall north of the
-    washer tower, on Taubenblau tiles 84 wide (12 beyond it each side) on the wall behind it, a
-    mirror 80 x 85 in a 10 cm wooden frame above (bottom 1.17), the tower's Wandlampe centred over it at 2.10;
-    ≥ 5 cm outside the room door leaf's sweep, 60 cm free in front, clear of the machines. The user's follow-up
-    („das Waschbecken kann auch noch etwas in diese Richtung und von der Tür weg“): moved south with the tower,
-    centred y 4.70 (was 5.28), the tiles 3 cm and the basin 15 cm from the tower."""
+    """Issue #29: a basin on the Waschküche's east wall north of the washer tower, on Taubenblau tiles 84 wide
+    (12 beyond it each side) on the wall behind it, a mirror 80 x 85 in a 10 cm wooden frame above (bottom 1.17),
+    the tower's Wandlampe centred over it at 2.10; ≥ 5 cm outside the room door leaf's sweep, 60 cm free in front,
+    clear of the machines. The user's follow-up („das Waschbecken kann auch noch etwas in diese Richtung und von der
+    Tür weg“): moved south with the tower, centred y 4.70 (was 5.28), the tiles 3 cm and the basin 15 cm from the
+    tower. Then („anstatt unseres Standard-Waschbeckens das große Waschbecken aus dem Briol“): the deep ceramic sink
+    of input/2026-11-05 input/waschbecken-briol.jpeg, 60 x 45, rim at 85, 30 high, hollow, hung on the wall (no
+    Ständer: nothing of it below 35), two wall taps with cross handles side by side above it, under the mirror."""
     zo, T, by = house_core.Z_OG, house_core.WC_TILE_T, waschkueche.BY
     assert by == 4.70
-    parts = _waschbecken(("OG", "OG_Sanitaer"), (8.59, by, -1, 0), 0.60, 0.47, 1, zo, T)
+    face = 8.59 - T                                                             # the tiles' face
+    parts = [(m, lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Sanitaer")) if m in ("Keramik", "Metall")
+             and lo[0] > face - 0.48 and hi[0] <= face + 0.002 and by - 0.33 < lo[1] and hi[1] < by + 0.33
+             and zo < lo[2] and hi[2] < zo + 1.17]
+    ker = [(lo, hi) for m, lo, hi in parts if m == "Keramik"]
+    assert len(ker) >= 8                                                        # hollow, with a lip, not a block
+    assert abs(min(lo[1] for lo, hi in ker) - (by - 0.30)) < 1e-6 and abs(max(hi[1] for lo, hi in ker) - (by + 0.30)) < 1e-6
+    assert abs(max(hi[0] for lo, hi in ker) - face) < 1e-6 and abs(min(lo[0] for lo, hi in ker) - (face - 0.45)) < 1e-6
+    assert abs(max(hi[2] for lo, hi in ker) - (zo + 0.85)) < 1e-6 and abs(min(lo[2] for lo, hi in ker) - (zo + 0.55)) < 1e-6
+    bowl = (face - 0.22, by, zo + 0.62)                                         # deep inside the bowl: empty
+    assert not any(all(lo[k] < p < hi[k] for k, p in enumerate(bowl)) for lo, hi in ker)
+    assert min(lo[2] for m, lo, hi in parts) > zo + 0.35                        # wall-hung, no Ständer
+    taps = {round((lo[1] + hi[1]) / 2 - by, 2) for m, lo, hi in parts
+            if m == "Metall" and hi[0] > face - 0.005 and zo + 1.0 < lo[2] and hi[2] < zo + 1.15}
+    assert taps == {-0.07, 0.07}                                                # two wall taps, rosettes on the tiles
     fl = ("OG", "OG_Fliesen")
     assert {_part_at(fl, 8.582, by + d, z) for d in (-0.38, 0, 0.38) for z in (zo + 0.2, zo + 0.9)} <= {"Fliese", None}
     assert "Fliese" in {_part_at(fl, 8.582, by + d, zo + 0.5) for d in (-0.28, -0.23)}
