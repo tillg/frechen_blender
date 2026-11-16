@@ -61,7 +61,7 @@ BEREICHE = [
     {"key": "bibliothek", "title": "Bibliothek & Büro", "room": ("Bibliothek", "EG"), "at": (12.9, 10.4, 1.6), "fotos": [
         foto("2026-11-11 input/regal_tegernsee.jpeg", "Regalwand vom Tegernsee – der Schrank im Büro"),
         foto("2026-11-12 input/schreibtischgestell.jpg", "Gusseisernes Kurbelgestell – der Schreibtisch"),
-        foto("2026-11-13 input/bürostuhl.png", "Bürostuhl"),
+        foto("2026-11-13 input/bürostuhl.png", "Bürostuhl mit Netzlehne – der Stuhl am Schreibtisch"),
         foto("2026-11-06 input/screen_a12.png", "Bildschirm A12 – das Bild auf dem Monitor"),
         foto("2026-11-06 input/screen_pilcrow.png", "Bildschirm Pilcrow – das Bild auf dem zweiten Monitor"),
     ]},

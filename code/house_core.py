@@ -115,6 +115,9 @@ MAT_DEF = {
     "Opalglas":   dict(rgba=(0.92, 0.89, 0.82, 1), rough=0.25, emit=1.0, night=True),   # their shades: glow at dusk
     "Alu":        dict(rgba=(0.72, 0.72, 0.74, 1), metal=0.15, rough=0.35),   # desk: MacBook, keyboard, monitor stands
     "Tasten":     dict(rgba=(0.93, 0.93, 0.92, 1), rough=0.45),             # white keys, trackpad glass
+    "Kunststoff": dict(rgba=(0.02, 0.02, 0.022, 1), rough=0.5),             # office chair (#48): black nylon frame, base, castors
+    "Polster":    dict(rgba=(0.30, 0.30, 0.31, 1), rough=0.95),             # its grey upholstered seat
+    "Netz":       dict(rgba=(0.62, 0.63, 0.64, 1), rough=0.9),              # its light-grey mesh back and headrest
     "Apfel":      dict(rgba=(0.95, 0.95, 0.97, 1), emit=0.5, rough=0.3),   # the softly lit logo on the closed MacBook
     # image: screenshot under web/public/ (2560 x 1440, made once from input/2026-11-06 input/ with
     # sips: downscaled, padded to 16:9); size: the pane's w, h in metres. The pane is its own object
@@ -2028,7 +2031,8 @@ FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "EG_Geschirr", 
              "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse",
              "EG_Spiegel", "OG_Spiegel",   # the mirrors are furnishings: not on the plan sheets (#19)
              "EG_Kleidung",                # the Garderobe's coats and shoes (#27)
-             "OG_Schreibplatz"}            # the small desk and its chair in the Schlafzimmer (#44)
+             "OG_Schreibplatz",            # the small desk and its chair in the Schlafzimmer (#44)
+             "EG_Buerostuhl"}              # the office chair at the Büro desk (#48)
 
 
 def _grain(ax):
