@@ -125,15 +125,16 @@ def test_routes_and_spots_clear_the_gaestebad():
 
 def test_routes_and_spots_clear_the_waschkueche():
     """Issue #29: every camera key of every route and every Standpunkt keeps 0.25 m from the Parts the Waschküche's
-    shower cabin and basin bring (glass, rails, grips, head, limestone, basin, tiles, mirror, its lamp)."""
+    shower cabin and basin bring (glass, rails, grips, head, limestone, basin, tiles, mirror, its lamp) and from
+    the washer tower (moved 58 cm towards the table in the follow-up)."""
     bp = house_core.build()
     boxes = []
-    for o in ("Sanitaer", "Fliesen", "Spiegel", "Wandlampen"):
+    for o in ("Sanitaer", "Fliesen", "Spiegel", "Wandlampen", "Moebel"):
         g = bp.geo[("OG", "OG_" + o)]
         for first, n in bp.parts[("OG", "OG_" + o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
             lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
-            if 5.58 < lo[0] and hi[0] < 8.6 and 2.8 < lo[1] and hi[1] < 6.06:
+            if 5.58 < lo[0] and hi[0] < 8.6 and 2.8 < lo[1] and hi[1] < 6.06 and (o != "Moebel" or g["m"][first] == "Emaille"):
                 boxes.append((lo, hi))
     assert len(boxes) > 100 and any(lo[0] < 6.0 for lo, hi in boxes) and any(lo[0] > 8.0 for lo, hi in boxes)   # cabin, basin
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
@@ -153,6 +154,25 @@ ROUTES_PATH = ROOT / "tests" / "golden" / "routes.json"
 
 def inside(p):
     return 0 < p[0] < house_core.W_OUT and 0 < p[1] < house_core.D_OUT
+
+
+def test_waschkueche_spot_sees_past_the_washer_tower():
+    """Follow-up to #29: the washer tower (1.69 m) moved south to the table; the Waschküche Standpunkt must not
+    look into its side: every corner of the tower lies outside the spot's horizontal field of view (16:9)."""
+    bp = house_core.build()
+    name, _, _, cam, at, fov = next(s for s in tour.SPOTS if s[0] == "Waschküche")
+    half = math.atan(math.tan(math.radians(fov) / 2) * 16 / 9)
+    view = math.atan2(at[1] - cam[1], at[0] - cam[0])
+    g = bp.geo[("OG", "OG_Moebel")]
+    tower = []
+    for first, n in bp.parts[("OG", "OG_Moebel")]:
+        vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+        if g["m"][first] == "Emaille" and min(v[0] for v in vs) > 7.9:
+            tower += vs
+    assert tower
+    for x, y, z in tower:
+        d = (math.atan2(y - cam[1], x - cam[0]) - view + math.pi) % (2 * math.pi) - math.pi
+        assert abs(d) > half, (x, y, math.degrees(d))
 
 
 def test_the_first_route_is_the_films():

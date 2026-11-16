@@ -136,7 +136,7 @@ SPOTS = [
     ("Bibliothek - Klavierspieler", "Erdgeschoss", ("haus", "eg"), (8.12, 11.94, 1.25), (9.12, 10.21, 0.32), SEE),  # on the piano bench, over the keys
     ("Oma & Opa", "Erdgeschoss", ("haus", "eg"), (5.7, 9.45, EYE), (2.8, 11.9, 1.0), SEE),
     ("Nadine & Till", "1. Stock", ("haus", "og"), (13.95, 0.9, OG), (9.12, 3.44, Z_OG + 1.0), SEE),
-    ("Waschküche", "1. Stock", ("haus", "og"), (8.25, 3.3, OG), (5.9, 5.2, Z_OG + 1.0), SEE),
+    ("Waschküche", "1. Stock", ("haus", "og"), (7.6, 3.35, OG), (5.9, 5.2, Z_OG + 1.0), SEE),    # west of the tower
     ("Saschi", "1. Stock", ("haus", "og"), (3.7, 5.2, OG), (5.0, 0.8, Z_OG + 1.0), SEE),
     ("Bichlach", "1. Stock", ("haus", "og"), (9.6, 12.1, OG), (13.8, 9.4, Z_OG + 1.0), SEE),
     ("Jugend", "1. Stock", ("haus", "og"), (7.6, 12.2, OG), (7.6, 9.0, Z_OG + 1.0), SEE),
