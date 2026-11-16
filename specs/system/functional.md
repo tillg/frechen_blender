@@ -84,9 +84,14 @@ edited: 2026-11-16
     and Magic Trackpad. In the viewer (house in Eingerichtet, outside the Rundgang, and the
     Schreibtisch sub-model) the top with everything on it cranks up 30 cm in 3 s, rests 4 s and
     comes down, the hand wheel turning 4 times per stroke; Blender and the film keep it at 75 cm
-  - all chairs (dining table, Bibliothek desk) are board chairs after stuhl.png: thick plank
+  - the dining chairs are board chairs after stuhl.png: thick plank
     seat on battens, four splayed stick legs without stretchers, one tall backrest board leaning
     back with a pointed heart cut out
+  - at the Büro desk an office chair after `input/2026-11-13 input/bürostuhl.png` (#48; also in the
+    Schreibtisch sub-model): black five-star base on twin castors, black gas column, grey upholstered
+    seat (top at 51 cm), a light-grey mesh back in a black frame leaning back 10°, a mesh headrest
+    (top at about 1.30 m), two black T-armrests (pads at 66 cm, below the desk top); centred on the
+    desk, facing it, seat front 8 cm short of the top's front edge (furniture: Eingerichtet only)
   - Stube seating corner between the two big windows: round pedestal side table, two small
     bouclé cocktail armchairs either side of it
   - Stube sofa after sofa.tiff: linen three-seater, 3/4 of the way from the corner pier between
