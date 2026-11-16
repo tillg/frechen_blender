@@ -252,7 +252,7 @@ flowchart LR
 - **Schreibplatz (#44).** `schreibplatz(c, z)` (from `build_furniture()`) builds the Schlafzimmer's small
   country desk and its ladder-back chair into object `<c>_Schreibplatz` (in `FURNITURE`) at `SCHREIBPLATZ`
   (the top's x/y range, west of the low wall at the bed's head); `Innentuer` pine, top and seat in
-  `KieferY` (the same pine, grain along y); own `random.Random(44)`, explicit `rnd` per part, so no other
+  `KieferY` (the same pine, grain along y); own `random.Random(44)`, an explicit `rnd` on every part (one for the desk, one for the chair), so no other
   object's shading shifts.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
   `build_gaeste_wc()` / `build_regal()` / `build_schrankbett()` / `build_gaestebad()` / `build_elternbad()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines

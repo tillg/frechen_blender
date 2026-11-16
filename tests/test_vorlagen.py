@@ -46,6 +46,7 @@ def test_issue_examples():
     assert {"waschbecken_einzeln.jpeg", "waschbecken_staender.png", "wandlampe.png"} <= src("haus")
     assert src("gaestebad") == {"badewanne.webp"} and b["gaestebad"]["room"] == ("Bad", "OG")   # #32: the tub
     assert src("schlafen") == {"kleiner-schreibtisch.webp"} and b["schlafen"]["room"] == ("Schlafen", "OG")   # #44
+    assert any((n, st) == b["schlafen"]["room"] and x > 11.63 and y < 3.98 for n, st, x, y in house_core.PLAN_ROOMS)
 
 
 def part_boxes(names):
