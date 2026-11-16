@@ -1297,6 +1297,12 @@ def test_buerostuhl_after_photo():
     cx = x0 + desk.DESK_W / 2
     wheels = [p for p in parts if p[2][2] <= 0.06]
     assert len(wheels) == 10 and all(p[1][2] < 1e-9 for p in wheels)                  # on the floor
+    forks = [p for p in parts if abs(p[2][2] - 0.077) < 1e-6]
+    assert len(forks) == 5 and all(any(f[1][2] < w[2][2] - 0.001 and math.dist(((f[1][0] + f[2][0]) / 2,), ((w[1][0] + w[2][0]) / 2,)) < 0.03
+                                       for f in forks) for w in wheels)                 # each wheel reaches into its fork
+    for part in parts:                                                                   # one piece: every part overlaps another
+        m, a, b, _ = part
+        assert any(q is not part and all(a[k] < q[2][k] - 0.001 and b[k] > q[1][k] + 0.001 for k in range(3)) for q in parts), (m, a, b)
     spokes = [p for p in parts if p[0] == "Kunststoff" and 0.05 < p[1][2] and p[2][2] < 0.14
               and max(p[2][0] - p[1][0], p[2][1] - p[1][1]) > 0.15]
     assert len(spokes) == 5                                                            # five-star base
