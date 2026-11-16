@@ -250,13 +250,14 @@ def werkstattofen(c, cx, cy, z, turn=0, name="Werkstattofen", rng=random):
                          collection=c))  # fire.py
 
 
-def wamsler(c, x0, y0, rng):
+def wamsler(c, x0, y0, rng, shaft):
     """Wood-fired kitchen cooker after wamsler.jpeg (80 x 58 x 90 cm, sizes estimated from the
     photo), front at x = x0 facing west, south side at y0: stainless steel body on a black plinth,
     steel top with a rail; seen from the front, the fire door with glass top left (north) and the
     ash door below it, the oven door with a window and a small door on the right, a full-width
-    drawer; the flue on top at the back right, its pipe up to 1.80 m and into the east wall there
-    (rosette on the wall face). All parts take their rnd from rng, so the rest of the house keeps its
+    drawer; the flue on top at the left (north, over the firebox, #26b), its pipe up to height zc and
+    there 90 deg north into the Kaminschacht, whose south face is at y = yf (shaft = (yf, zc)), with a
+    rosette on that face. All parts take their rnd from rng, so the rest of the house keeps its
     random shading."""
     o, W, D, y1 = c + "_Herd", 0.80, 0.583, y0 + 0.80
     B = lambda mat, s0, s1, t0, t1, z0, z1, r=None: hc.box(c, o, mat, x0 + t0, x0 + t1, y1 - s1, y1 - s0, z0, z1,
@@ -301,11 +302,11 @@ def wamsler(c, x0, y0, rng):
     hc.prism(c, o, "Stahl", hc.frame("y"), [(y1 - 0.53 + a, 0.67 + b) for a, b in disc(0.025)],
              x0 - 0.020, x0 - 0.018, rng.random())                               # thermometer
     bar(0.31, W - 0.045, 0.765)
-    # flue (back right), its pipe up to 1.80 (#26), there 90 deg into the east wall (2 mm behind x0 + D)
-    fx, fy, zc = x0 + 0.45, y0 + 0.14, 1.80
+    # flue (left, over the firebox, #26b), its pipe up to zc, there 90 deg north into the Kaminschacht
+    (yf, zc), fx, fy = shaft, x0 + 0.42, y1 - 0.14
     hc.xy_prism(c, o, "Eisen", [(fx + a, fy + b) for a, b in disc(0.07, 16)], 0.885, 0.95, rng.random())
     hc.xy_prism(c, o, "Eisen", [(fx + a, fy + b) for a, b in disc(0.06, 16)], 0.95, zc, rng.random())
-    hc.prism(c, o, "Eisen", hc.frame("y"), [(fy + a, zc + b) for a, b in disc(0.06, 16)], fx - 0.06, x0 + D + 0.03,
+    hc.prism(c, o, "Eisen", hc.frame("x"), [(fx + a, zc + b) for a, b in disc(0.06, 16)], fy - 0.06, yf + 0.03,
              rng.random())
-    hc.prism(c, o, "Eisen", hc.frame("y"), [(fy + a, zc + b) for a, b in disc(0.10, 16)], x0 + D - 0.008,
-             x0 + D + 0.002, rng.random())                                      # rosette on the wall face
+    hc.prism(c, o, "Eisen", hc.frame("x"), [(fx + a, zc + b) for a, b in disc(0.10, 16)], yf - 0.01, yf,
+             rng.random())                                                       # rosette on the shaft's face

@@ -54,8 +54,8 @@ edited: 2026-11-16
     it a Besenschrank 51 × 55 × 2.20 m; the Spülzeile (~150 cm, steel sink and tap at the water connection)
     from the door frame into the NE corner, under the Abzug (plastered flue box from 1.80 m, depth
     assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
-    after wamsler.jpeg (stainless steel, fire burning behind the glass, its black flue pipe up to 1.80 m
-    and there into the east wall, a rosette on the wall); the Halbinsel with the induction cooktop towards
+    after wamsler.jpeg (stainless steel, fire burning behind the glass, its black flue pipe from the left (north) of
+    its top up to 1.95 m and there north into the Abzug, the Kaminschacht, a rosette on its face, #26b); the Halbinsel with the induction cooktop towards
     the dining table, under an old-form steel hood hung from the ceiling (centred, lip 65 cm above the
     cooktop, skirt with a rail on the cook's side, canopy, stack to the ceiling; a strip of 4 spots along
     its middle); no wall cabinets; east of the sink,
@@ -70,7 +70,8 @@ edited: 2026-11-16
     flour, jars of tomato sauce and pickles, cans, now and then a grey plastic crate with a lid);
     cabinet C (60 cm) over the full west wall of the Essen, to the ceiling, with the kitchen's
     painted Mallnitz fronts and cup pulls, six leaf columns, each a top door, a door over the upper
-    half and three drawers below; the wall to the Küche ends at B, and in the opening over the
+    half and three drawers below; in the two columns on the dining table's axis the upper half open
+    (no door): shelves with stacks of white plates, tumblers and wine glasses (furniture); the wall to the Küche ends at B, and in the opening over the
     aisle two half-height saloon leaves (curved top rail, slats, no handles) that swing into the Speis
   - dining table after tisch-briol.png, one table 2.00 m long: board top, legs splayed on a flat
     foot frame with corner blocks; 8 chairs (3 per long side, one at each end)

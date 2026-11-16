@@ -2,7 +2,7 @@
 input/2026-11-09 input/speis_kueche_v6.svg (the kitchen door measured from a photo of 2026-11-09).
 On the north wall the Spülzeile from the kitchen door's frame into the NE corner, under the Abzug
 (flue box, from 1.80 m up); on the east wall the Ostzeile, 60 cm from the Halbinsel's front, then the
-Wamsler wood cooker, its pipe into the east wall at 1.80 m; the Halbinsel with the cooktop towards the
+Wamsler wood cooker, its pipe from its left (north) up and at 1.95 m into the Abzug, the Kaminschacht (#26b); the Halbinsel with the cooktop towards the
 dining table, under the old steel hood hung from the ceiling (#26); the Besenschrank in the NW corner, behind the kitchen door opened into the room. No wall
 cabinets. All cabinets in the style of input/2026-11-10 input/kueche_mallnitz.png, painted RAL 5014
 (hc.mallnitz_front); east of the sink, where the Herd stands in front of the Spülzeile, a blind
@@ -25,7 +25,7 @@ SINK_X0 = 7.05                               # Spülzeile: from the kitchen door
 HY0, HY1 = 4.30, 5.10                        # the Herd (80) along the east wall, right after the Ostzeile
 OSTZEILE = (3.66, 4.26)                      # the Ostzeile's door: 60 from the Halbinsel's front
 KOCHFELD = (7.18, 7.95, 3.12, 3.58)          # the Halbinsel's cooktop: x from, to, y from, to
-ABZUG = (8.227, 5.55, 1.80)                  # Abzug: x from, y from (depth 30 assumed), underside
+ABZUG = (8.227, 5.55, 1.80)                  # Abzug (Kaminschacht): x from, y from (depth 30 assumed), underside
 BESEN = (6.002, 5.297, 2.20)                 # Besenschrank: x to, y from (incl. door), height
 
 
@@ -84,7 +84,7 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
     for cx, cy, rr in ((7.36, 3.24, 0.08), (7.36, 3.46, 0.06), (7.76, 3.24, 0.06), (7.76, 3.46, 0.09)):
         PR(o, "Metall", [(cx + rr * math.cos(math.pi * i / 8), cy + rr * math.sin(math.pi * i / 8))
                          for i in range(16)], zt + 0.005, zt + 0.006)
-    ofen.wamsler(c, 7.972 + dx, HY0 + dy, rng)
+    ofen.wamsler(c, 7.972 + dx, HY0 + dy, rng, (ABZUG[1] + dy, ABZUG[2] + 0.15))   # pipe into the Abzug (#26b)
 
     # hood of the old form over the cooktop (#26), hung from the ceiling: rolled lip 65 above the cooktop,
     # straight skirt with a rail on the cook's (north) side, canopy narrowing on all sides to the stack
