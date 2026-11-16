@@ -193,7 +193,7 @@ def test_desk_export(tmp_path):
     g = json.loads(data[20:20 + jlen])
     names = {n["name"] for n in g["nodes"]}
     assert {"Desk_Moebel", "Desk_Schreibtisch", "Desk_Handrad", "Desk_Geraete", "Desk_Bildschirm_L", "Desk_Bildschirm_R",
-            "Desk_Stuehle"} == names
+            "Desk_Buerostuhl"} == names
     bp = house_core.build_desk()
     house_core.build()
     lifted = {n["name"]: n["extras"]["lift"] for n in g["nodes"] if "lift" in n["extras"]}     # #10: the desk cranks up

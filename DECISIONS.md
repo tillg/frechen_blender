@@ -53,6 +53,8 @@ Choices made while nobody was there to ask are logged here
   - [01:25 — #40: the photo in the Bereich "Ganzes Haus" (OG Flur); `.avif` counted as raster, count 57](#run-2026-11-15-1633-41)
   - [01:50 — #44: a small country desk after the photo with a ladder-back chair, west of the low wall at the bed's head, its south half by the balcony door; a tweak that commits](#run-2026-11-15-1633-42)
   - [01:50 — #44: a new Bereich "Schlafzimmer Nadine & Till" for the photo, marker over the desk, count 58](#run-2026-11-15-1633-43)
+  - [02:20 — #48: "Bürotisch" read as Bürostuhl: a black/grey mesh office chair after the photo replaces the board chair at the Büro desk; a tweak that commits](#run-2026-11-15-1633-44)
+  - [02:20 — #48: the desk page's "Auf die Bildschirme" view moved up over the headrest](#run-2026-11-15-1633-45)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -94,6 +96,7 @@ Choices made while nobody was there to ask are logged here
   #26 follow-up + #34 follow-up (no issue of their own, decisions 35–38; a tweak that commits, as decision 29): branch fix/kueche-ofenrohr-schrank from issue/30-glas-waschkueche, PR https://github.com/tillg/frechen_blender/pull/50 against it, `Refs #26` / `Refs #34`, no labels; full check: pytest red only on the pre-existing `test_vorlagen` input count, Vitest 65/65, Playwright 110/111 (the ~30 fps test, red alone too, pre-existing load-flake).
   #40: branch issue/40-waschtisch-flur from fix/kueche-ofenrohr-schrank, PR https://github.com/tillg/frechen_blender/pull/51 against it; a tweak that commits (no change directory, `specs/system/` updated in place); full check (before the review fixes): pytest red only on the `test_vorlagen` input count (the untracked #44 photo), Vitest 65/65, Playwright 110/111 (the ~30 fps test load-flaky); quick check after the fixes: the same one red.
   #44: branch issue/44-schreibtisch-schlafzimmer from issue/40-waschtisch-flur, PR https://github.com/tillg/frechen_blender/pull/52 against it; a tweak that commits (no change directory, `specs/system/` updated in place); full check: pytest 223/223, Vitest 65/65, Playwright 110/111 (the ~30 fps test, red alone too, pre-existing load-flake); quick check after the review fixes green.
+  #48: branch issue/48-buerostuhl from issue/44-schreibtisch-schlafzimmer, PR https://github.com/tillg/frechen_blender/pull/53 against it; a tweak that commits (decisions 44–45).
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -524,3 +527,24 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the desk belongs to that room alone; the marker leads to the photo where the desk stands.
 - **Alternatives:** "Ganzes Haus" (wrong place, its marker is in the OG Flur).
 - **Consequences:** eleven Bereiche (README, `specs/system/functional.md`). The near-duplicate test stays green.
+
+## 02:20 — #48: "Bürotisch" read as Bürostuhl: a black/grey mesh office chair after the photo replaces the board chair at the Büro desk; a tweak that commits {#run-2026-11-15-1633-44}
+
+- **Status:** open
+- **Context:** issue #48: "Vor dem Büro sollte ein Bürotisch hin. … das Bild von dem Bürostuhl. Bitte ersetze den Rollstuhl vor dem Schreibtisch mit so einem Bürostuhl." The photo `input/2026-11-13 input/bürostuhl.png` (already in the Fotos, Bereich Bibliothek & Büro, caption just "Bürostuhl") shows a modern ergonomic task chair: black nylon five-star base with black twin castors, black gas column and mechanism, grey fabric seat, a tall light-grey horizontal-strand mesh back in a black frame, a mesh headrest, black height-adjustable T-armrests.
+- **Question:** what does "Bürotisch" and "Rollstuhl" mean, and what to build where?
+- **Decision:** "Bürotisch" read as Bürostuhl and "Rollstuhl" as the chair now at the desk (the board chair from `house_core.chair()`; the rest of the text is about the chair, the desk exists). `desk.stuhl()` now builds that office chair into its own furniture object `<c>_Buerostuhl` (house `EG_Buerostuhl` in `FURNITURE`, sub-model `Desk_Buerostuhl`): base 5 arms (one straight back) Ø ≈ 0.66 m, 10 wheels, column, mechanism with lever, seat 50 × 48 top at 51 cm with a waterfall front, back 48 → 44 wide, 64 high, leaning back 10°, frame + mesh, headrest 32 × 14 (top ≈ 1.31 m), T-armrests with pads at 66 cm (below the desk top's underside at 71). Centred on the desk (x), `CHAIR` y −0.23 → −0.32: seat front 8 cm short of the top's front edge, the front arms of the base under the top (below the foot tube). New `MAT_DEF` `Kunststoff` (black), `Polster` (grey), `Netz` (light grey; opaque). One `rnd` for the whole chair = the one global `random.random()` the board chair drew at this place, so every other object keeps its rnd: per-object hashes of `v/f/m/r` vs. the base branch differ only for `EG_Stuehle` (the desk's board chair gone, 8 dining chairs left) and `Desk_Stuehle` → `Desk_Buerostuhl`. Caption made specific: "Bürostuhl mit Netzlehne – der Stuhl am Schreibtisch". A `/spec:tweak` that commits (one model function, no new model file), as #40/#44.
+- **Why:** the photo is the user's reference; one shared rnd value avoids z-fight between overlapping frame parts; taking the old draw instead of a separate `random.Random` keeps the global stream exactly as before without a dummy draw (the task asked for an own generator; its purpose — nothing else shifts — is met and verified by the hashes).
+- **Alternatives:** an own `random.Random(48)` plus a discarded global draw (same result, one dead line); keeping the chair in `<c>_Stuehle` (the board-chair test would have to exclude castors and base); a translucent mesh material (the viewer has no such look for fabric; opaque light grey reads like the photo).
+- **Consequences:** `test_chairs_are_board_chairs_after_stuhl_png` now counts 8 chairs (the issue removes the ninth); new `test_buerostuhl_after_photo` (parts, place, faces the desk, no clash with walls, windows, doors and leaves, desk frame, bookcase, lamps, dining chairs; sub-model object), `test_routes_and_spots_clear_the_buerostuhl` (3D, ≥ 0.25 m: green without route change). Name sets in `test_desk_submodel` / `test_desk_export` updated. Blender backend dormant (#35): no rebuild. Plans regenerated (hash line only; the chair is furniture).
+  Review (tweak: Spec axis skipped, no spec): Defects — castors 2 mm below their forks and joints by face contact only → fixed, the test now asserts every chair part overlaps another and each wheel reaches into its fork; the saved `.blend` still has the board chair (accepted: Blender dormant since #35, as #44). Standards — nothing to fix (stacking: decision 1; global draw: this decision). Full check: pytest 225/225, Vitest 65/65, Playwright 109/111 (`bad.spec` leaves-in-house green alone, timing flake; the ~30 fps test, known); after the review fixes quick check + `desk.spec` green.
+
+## 02:20 — #48: the desk page's "Auf die Bildschirme" view moved up over the headrest {#run-2026-11-15-1633-45}
+
+- **Status:** open
+- **Context:** `web/src/desk.js` view `front` looked at the monitors "from behind the chair" at (1.0, −1.25, 1.3); the new chair's headrest (top ≈ 1.31 m at y ≈ −0.70) filled the left half of that view, and `desk.spec.js` › "in Gerendert the monitors show the two screenshots" counts blue/green screen pixels (≥ 2000 each): at (1.0, −1.6, 1.7) the monitors were too small (1861 blue).
+- **Question:** move the view, or change the chair (lower headrest, translucent mesh)?
+- **Decision:** camera to (1.0, −1.0, 1.75), same target: it looks down over the headrest onto the monitors, larger than before; the spec passes unchanged (5/5).
+- **Why:** the chair stays as in the photo; the view's purpose (show the screens) is kept; no test edited.
+- **Alternatives:** a shorter or translucent headrest; dropping the headrest.
+- **Consequences:** the view now also shows keyboard and trackpad from above.
