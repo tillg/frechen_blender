@@ -202,7 +202,8 @@ edited: 2026-11-16
     beyond it, in the NW corner right of the door, a floor-level shower cabin 1.10 × 1.10 (limestone
     floor, west and north wall; its south and east side each a glass bifold door folding inward; the
     room door opens 90° to clear it); on the east wall north of
-    the tower (15 cm from it) a Waschbecken einzeln 60 × 47 on Taubenblau tiles under a mirror 80 × 85 in a 10 cm
+    the tower (15 cm from it) the deep ceramic sink of the Briol (`waschbecken-briol.jpeg`: 60 × 45, rim at 85, 30 high,
+    hung on the wall, two wall taps with cross handles) on Taubenblau tiles under a mirror 80 × 85 in a 10 cm
     wooden frame with one Wandlampe; the south wall's top metre is the Bad's Oberlicht, the four
     Wandlampen over the table hang under it (rosettes at 1.10)
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
