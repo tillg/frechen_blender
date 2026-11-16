@@ -2847,7 +2847,9 @@ def test_kleiner_schreibtisch_schlafzimmer():
     knobs = [p for p in parts if p[2][0] < tlo[0] + 0.05 and p[1][0] > tlo[0] - 0.05 and zo + 0.62 < p[1][2] < zo + 0.75
              and p[2][1] - p[1][1] < 0.05]
     assert knobs and all(p[1][0] < tlo[0] + 0.04 for p in knobs)                        # drawer knob: sitter's side (west)
-    chair = [p for p in parts if p[2][2] < zo + 0.95 and p[1][0] < tlo[0] - 0.01]
+    chair = [p for p in parts if p[2][2] < zo + 0.95 and p[1][0] < tlo[0] - 0.01                 # seat, back legs, slats
+             or p[2][2] < zo + 0.45 and p[1][0] > tlo[0] and abs((p[1][1] + p[2][1]) / 2 - (tlo[1] + thi[1]) / 2) < 0.2]
+    assert len(chair) == 10                          # + front legs, side and front stretchers
     clo = [min(p[1][k] for p in chair) for k in range(3)]; chi = [max(p[2][k] for p in chair) for k in range(3)]
     assert 0.85 < chi[2] - zo < 0.95 and chi[1] - clo[1] < 0.45 and chi[0] - clo[0] < 0.45   # small, high back
     assert tlo[0] < chi[0] < thi[0] and tlo[1] < clo[1] and chi[1] < thi[1]             # pushed in, under the top
@@ -2858,6 +2860,7 @@ def test_kleiner_schreibtisch_schlafzimmer():
               for _, a, b, _ in part_list((c, o)) if a[2] < zo + 1.0 and b[2] > zo + 0.02]
     _clear([(m, a, b) for m, a, b, _ in parts], others, "OG part")                       # walls, bed, Kamin ...
     _clear([(m, a, b) for m, a, b, _ in parts], _leaf_boxes(BP, "OG", zo), "door leaf")
-    ofen = [b for (c, o) in BP.geo if o == "OG_Werkstattofen" for _, a, b, _ in part_list((c, o))]
-    assert lo[0] - max(b[0] for b in ofen) >= 0.60 or lo[1] - max(b[1] for b in ofen) >= 0.60   # walkway to the Kamin
+    ofen = [(a, b) for (c, o) in BP.geo if o == "OG_Werkstattofen" for _, a, b, _ in part_list((c, o))]
+    olo = [min(a[k] for a, _ in ofen) for k in range(2)]; ohi = [max(b[k] for _, b in ofen) for k in range(2)]
+    assert math.hypot(*[max(olo[k] - hi[k], lo[k] - ohi[k], 0) for k in range(2)]) >= 0.60   # walkway to the Kamin
     assert lo[1] - 0.40 >= 0.60                                                         # and along the south wall
