@@ -347,11 +347,11 @@ def test_routes_and_spots_clear_the_wandlampen():
 
 def test_routes_clear_the_speis_and_essen_furniture():
     """Every camera key of every route keeps 0.25 m from the Speis / Essen built-ins of the former variant
-    Alternativ (#5, the only EG layout since #34): cabinet C over the Essen's west wall, B's back, the
-    saloon leaves, as from everything else."""
+    Alternativ (#5, the only EG layout since #34): cabinet C over the Essen's west wall with its plates and
+    glasses (#34 follow-up), B's back, the saloon leaves, as from everything else."""
     bp = house_core.build()
     boxes = []
-    for o in ("EG_Essen_Schrank", "EG_Speis_Rueckwand", "EG_Pendeltuer_S", "EG_Pendeltuer_N"):
+    for o in ("EG_Essen_Schrank", "EG_Speis_Rueckwand", "EG_Pendeltuer_S", "EG_Pendeltuer_N", "EG_Geschirr"):
         g = bp.geo[("EG", o)]
         for first, n in bp.parts[("EG", o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]

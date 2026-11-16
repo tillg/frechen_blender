@@ -6405,7 +6405,7 @@
 <path class="fe" d="M120.37 171.53L120.37 171.75L120.65 171.75L120.65 171.53Z"/>
 <path class="fe" d="M120.37 171.75L120.37 173.35L120.65 173.35L120.65 171.75Z"/>
 <path class="fe" d="M175.72 173.33L178.93 173.33L178.93 173.17L175.72 173.17Z"/>
-<path class="fe" d="M224.33 172.35L257.28 172.35L257.28 149.38L224.33 149.38Z"/>
+<path class="fe" d="M224.33 153.54L257.28 153.54L257.28 149.38L224.33 149.38Z"/>
 <path class="fe" d="M119.47 140.66L119.47 140.92L119.75 140.92L119.75 140.66Z"/>
 <path class="fe" d="M119.47 143.69L119.47 143.94L119.75 143.94L119.75 143.69Z"/>
 <path class="fe" d="M119.47 140.41L119.47 140.66L119.75 140.66L119.75 140.41Z"/>
@@ -9759,6 +9759,6 @@
 <text x="293.00" y="264.00" font-size="5.00" text-anchor="start" font-weight="bold">Frechenlehen</text>
 <text x="293.00" y="274.00" font-size="4.50" text-anchor="start">Ansicht West</text>
 <text x="293.00" y="283.50" font-size="3.50" text-anchor="start">M 1:100</text>
-<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 7897348c482a</text>
+<text x="353.00" y="283.50" font-size="2.50" text-anchor="start">Modellstand 55ea12f692a9</text>
 <g id="scale" stroke="#000" stroke-width="0.18"><rect x="290.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="300.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="310.00" y="251.00" width="10.00" height="1.50" fill="#000"/><rect x="320.00" y="251.00" width="10.00" height="1.50" fill="#fff"/><rect x="330.00" y="251.00" width="10.00" height="1.50" fill="#000"/></g><text x="290.00" y="249.80" font-size="2.00" text-anchor="middle">0</text><text x="300.00" y="249.80" font-size="2.00" text-anchor="middle">1</text><text x="310.00" y="249.80" font-size="2.00" text-anchor="middle">2</text><text x="320.00" y="249.80" font-size="2.00" text-anchor="middle">3</text><text x="330.00" y="249.80" font-size="2.00" text-anchor="middle">4</text><text x="340.00" y="249.80" font-size="2.00" text-anchor="middle">5</text><text x="342.50" y="252.40" font-size="2.00" text-anchor="start">m</text>
 </svg>

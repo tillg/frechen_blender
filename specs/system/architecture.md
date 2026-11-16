@@ -126,13 +126,15 @@ flowchart LR
   `floor_cover()`. The outer walls and the shortened bedroom wall stay in `build_eg()`.
 - **Küche.** `code/kueche.py` the same way: `kueche_neu(c, x0, y0)` builds Spülzeile, Ostzeile,
   Halbinsel with the cooktop (`KOCHFELD`) under the hood (`_Haube`, hung from the ceiling), the Wamsler
-  (`ofen.wamsler()`, its pipe into the east wall at 1.80 with a rosette), Besenschrank and the
+  (`ofen.wamsler(..., shaft)`, its pipe from its left up to 1.95 and north into the Abzug with a rosette, #26b), Besenschrank and the
   Abzug (`c + "_Waende"`) straight into collection `c` with the room's inner NW corner at
   (x0, y0) (`EG` at `KUECHE_AT`, or `Kueche` at the origin, so the sub-model lies at y ≤ 0).
   Positions are written in house coordinates (those of `input/2026-11-09 input/speis_kueche_v6.svg`)
   and shifted; own `random.Random(14)`. The room's walls, the kitchen door and the Speis
   (`speis()`: shelves A/B, own `random.Random(9)`; `speis_essen()`, own `random.Random(25)`:
-  `EG_Essen_Schrank` (cabinet C on the Essen west wall, y 0.417–3.712, six columns),
+  `EG_Essen_Schrank` (cabinet C on the Essen west wall, `ESSEN_SCHRANK` y 0.417–3.712, six columns, columns
+  `OPEN` with the upper half `NICHE` open, shelves `SHELVES`; stocked by `geschirr()`: `EG_Geschirr`, furniture,
+  own `random.Random(26)`),
   `EG_Speis_Rueckwand` (B's back, vertical spruce boards) and the saloon leaves
   `EG_Pendeltuer_S`/`_N` (half height, built closed, `PIVOT` + `SWING` ±90° into the Speis; neither
   in `LEAVES` nor `DOORS`)) stay in `house_core`. The Speis/Küche wall ends at B; the opening over

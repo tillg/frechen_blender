@@ -1083,16 +1083,16 @@ def test_kueche_hood_over_the_cooktop():
 
 
 def test_nothing_above_the_wamsler_but_its_pipe():
-    """Issue #26: the hood is gone from the Wamsler; above its top only its own pipe (collar, riser, bend into
-    the wall, rosette) - no EG part but walls and ceiling overlaps its footprint higher up."""
+    """Issue #26: the hood is gone from the Wamsler; above its top only its own pipe (riser, start of the leg to
+    the Kaminschacht, #26b) - no EG part but walls and ceiling overlaps its footprint higher up."""
     body = _herd_body()
     lo = [min(p[1][k] for p in body) for k in range(3)]; hi = [max(p[2][k] for p in body) for k in range(3)]
     above = [(k[1], m, plo, phi) for k in BP.geo if k[0] == "EG" and not any(w in k[1] for w in ("_Waende", "Decke"))
              for m, plo, phi in _parts(BP, k)
              if plo[2] >= hi[2] + 0.05 and all(plo[j] < hi[j] - 1e-6 and phi[j] > lo[j] + 1e-6 for j in (0, 1))]
-    assert len(above) == 3 and {a[0] for a in above} == {"EG_Herd"} and {a[1] for a in above} == {"Eisen"}, above
-    pipe, *_ = _wamsler_pipe()
-    assert sorted(a[2] for a in above) == sorted(p[1] for p in pipe)
+    assert len(above) == 2 and {a[0] for a in above} == {"EG_Herd"} and {a[1] for a in above} == {"Eisen"}, above
+    pipe, vert, horiz, _ = _wamsler_pipe()
+    assert sorted(a[2] for a in above) == sorted(p[1] for p in vert + horiz)
 
 
 def _herd_body():
@@ -1101,30 +1101,45 @@ def _herd_body():
 
 
 def _wamsler_pipe():
-    """The Wamsler's pipe parts (Eisen above the top plate): (vertical, horizontal, rosette)."""
+    """The Wamsler's pipe parts (Eisen above the top plate): (all, vertical, horizontal along y, rosette)."""
     top = max(p[2][2] for p in _herd_body())
     pipe = [p for p in part_list(("EG", "EG_Herd")) if p[0] == "Eisen" and p[2][2] > top + 0.1]
     size = lambda p: [p[2][k] - p[1][k] for k in range(3)]
     vert = [p for p in pipe if size(p)[2] > 0.5]
-    horiz = [p for p in pipe if size(p)[0] > 0.15 and size(p)[2] < 0.15]
-    rosette = [p for p in pipe if size(p)[0] < 0.02 and size(p)[1] > 0.17 and size(p)[2] > 0.17]
+    horiz = [p for p in pipe if size(p)[1] > 0.15 and size(p)[2] < 0.15]
+    rosette = [p for p in pipe if size(p)[1] < 0.02 and size(p)[0] > 0.17 and size(p)[2] > 0.17]
     return pipe, vert, horiz, rosette
 
 
-def test_wamsler_pipe_into_the_wall_higher_up():
-    """Issue #26: the Wamsler's black pipe (Ø 12) rises from the flue collar on its top to 1.80 m, bends there
-    by 90 deg into the east wall and ends in a rosette (Ø ~20) on the wall face; nothing else in the pipe."""
+def test_wamsler_pipe_from_its_left_into_the_kaminschacht():
+    """Issue #26, follow-up #26b (user 2026-11-16): the Wamsler's black pipe (Ø 12) leaves its top on the LEFT half
+    as seen from the front (north, above the firebox), rises to just under 2 m, bends by 90 deg north and runs into
+    the Kaminschacht in the upper left corner - the Abzug (kueche.ABZUG, plastered flue box in the NE corner from
+    1.80 m) - ending in a rosette (Ø ~20) on its south face, wholly under the box's underside; nothing else in the
+    pipe, and it clears the Küche's cabinets, the hood and every wall but the shaft it enters."""
+    import kueche
     pipe, vert, horiz, rosette = _wamsler_pipe()
-    top = max(p[2][2] for p in _herd_body())
+    body = _herd_body()
+    blo = [min(p[1][k] for p in body) for k in range(3)]; bhi = [max(p[2][k] for p in body) for k in range(3)]
     assert len(vert) == len(horiz) == len(rosette) == 1 and len(pipe) == 3
     (_, vlo, vhi, _), (_, hlo, hhi, _), (_, rlo, rhi, _) = vert[0], horiz[0], rosette[0]
     assert abs(vhi[0] - vlo[0] - 0.12) < 0.005 and abs(hhi[2] - hlo[2] - 0.12) < 0.005     # Ø 12
-    assert vlo[2] <= top + 0.1 and abs((hlo[2] + hhi[2]) / 2 - 1.80) < 0.01                 # collar .. bend at 1.80
-    assert hlo[2] < vhi[2] < hhi[2] and hlo[0] <= vlo[0] + 0.001                           # the elbow: riser ends inside
-    assert abs((hlo[1] + hhi[1]) / 2 - (vlo[1] + vhi[1]) / 2) < 1e-6
-    assert hhi[0] > KUECHE_EAST + 0.01                                                     # into the wall
-    assert abs(rhi[0] - KUECHE_EAST) < 1e-6 and rhi[1] - rlo[1] >= 0.18                    # rosette on the face
-    assert abs((rlo[2] + rhi[2]) / 2 - 1.80) < 0.01 and abs((rlo[1] + rhi[1]) / 2 - (hlo[1] + hhi[1]) / 2) < 1e-6
+    assert vlo[1] > (blo[1] + bhi[1]) / 2 and vhi[1] < bhi[1]                               # left (north) half
+    ax0, ay0, az = kueche.ABZUG
+    zc = (hlo[2] + hhi[2]) / 2
+    assert vlo[2] <= bhi[2] + 0.1 and 1.80 < zc <= 2.00                                    # collar .. bend
+    assert hlo[2] < vhi[2] < hhi[2] and hlo[1] <= vlo[1] + 0.001                           # the elbow: riser ends inside
+    assert abs((hlo[0] + hhi[0]) / 2 - (vlo[0] + vhi[0]) / 2) < 1e-6
+    assert hhi[1] > ay0 + 0.01 and ax0 < hlo[0] and hhi[0] < kueche.XE                    # into the shaft
+    assert abs(rhi[1] - ay0) < 1e-6 and rhi[0] - rlo[0] >= 0.18                            # rosette on its face
+    assert ax0 < rlo[0] and rhi[0] < kueche.XE and rlo[2] > az                             # .. within it, below 1.80 free
+    assert abs((rlo[2] + rhi[2]) / 2 - zc) < 1e-6 and abs((rlo[0] + rhi[0]) / 2 - (hlo[0] + hhi[0]) / 2) < 1e-6
+    shaft = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Waende"))
+             if abs(lo[0] - ax0) < 1e-6 and abs(lo[1] - ay0) < 1e-6 and abs(lo[2] - az) < 1e-6]
+    assert len(shaft) == 1
+    others = [(lo, hi) for o in ("EG_Kueche", "EG_Haube", "EG_Waende", "EG_Wandlampen", "EG_Fenster_Tueren")
+              for m, lo, hi in _parts(BP, ("EG", o)) if (lo, hi) not in shaft]
+    _clear([p[:3] for p in pipe], others, "Ofenrohr")
 
 
 def test_kueche_hood_sink_tap_and_wamsler_in_steel():
@@ -1149,7 +1164,7 @@ def test_kueche_without_wall_cabinets_and_sealed_against_the_herd():
     south of the Herd the Ostzeile's top ends at it too (2 mm joint, no overlap with its rim)."""
     k = list(part_list(("EG", "EG_Kueche")))
     assert not [p for p in k if p[1][2] > 1.3 and p[1][0] > 6.01]              # nothing on the walls (Besenschrank aside)
-    herd = [p for p in part_list(("EG", "EG_Herd"))]
+    herd = [p for p in part_list(("EG", "EG_Herd")) if p[1][2] < 0.95]     # not the pipe (to the Abzug, #26b)
     hy0, hy1 = min(p[1][1] for p in herd), max(p[2][1] for p in herd)       # incl. its top's rim
     hx0 = min(p[1][0] for p in _herd_body())
     assert not [p for p in k if p[0] == "Metall" and p[2][0] > 7.85 and p[1][1] > hy1 - 0.01 and p[2][2] < 0.9]
@@ -1200,17 +1215,19 @@ def test_kueche_and_speis_fronts_after_mallnitz():
     # cabinet C on the Essen's west wall (doors at x 3.352 .. 3.372 towards the dining table, #5, #34)
     c = list(part_list(("EG", "EG_Essen_Schrank")))
     assert {p[0] for p in c} == {"Front", "Metall", "Fuge"}
-    assert len([p for p in c if hood(p)]) == 6 * 5 and len([p for p in c if p[0] == "Metall"]) == 6 * 5 * 2
+    assert len([p for p in c if hood(p)]) == 6 * 5 - 2 and len([p for p in c if p[0] == "Metall"]) == (6 * 5 - 2) * 2
     assert all(p[1][0] > 3.372 - 1e-6 for p in c if p[0] == "Metall")
     panels = [p for p in c if p[0] == "Front" and p[1][0] > 3.35 and p[2][0] <= 3.365]
-    assert len(panels) == 6 * 5                  # per leaf column (request 2026-11-10): top door, a door
+    assert len(panels) == 6 * 5 - 2              # per leaf column (request 2026-11-10): top door, a door
     w = (3.712 - 0.417) / 6                      # over the upper half, three drawers in the lower half
-    for i in range(6):
+    for i in range(6):                           # (columns 1, 2: the upper half open, #34 follow-up)
         col = sorted((p for p in panels if 0.417 + w * i < (p[1][1] + p[2][1]) / 2 < 0.417 + w * (i + 1)),
                      key=lambda p: p[1][2])
-        assert len(col) == 5
+        assert len(col) == (4 if i in (1, 2) else 5)
         top = max(p[2][2] for p in col)
-        assert col[4][1][2] > 2.0 and top > 2.25                              # top door as before (its panel)
+        assert col[-1][1][2] > 2.0 and top > 2.25                             # top door as before (its panel)
+        if i in (1, 2):
+            continue
         door, drawers = col[3], col[:3]
         assert 1.05 < door[1][2] - 0.06 < 1.06 and 1.99 < door[2][2] + 0.06 < 2.0         # panel + 6 cm frame
         hs = [p[2][2] - p[1][2] for p in drawers]
@@ -2697,6 +2714,45 @@ def test_jugend_tuer_und_stockbett():
     _clear([("Fichte", lo, hi) for lo, hi in bunks], _leaf_boxes(BP, "OG", zo), "door leaf")
 
 
+def test_essen_schrank_open_shelves_with_plates_and_glasses():
+    """#34 follow-up (user 2026-11-16): about a quarter of cabinet C's doors are gone - the door over the upper half
+    of the two columns on the dining table's axis (columns 1 and 2 from the south: 2 of 12 doors, about a quarter
+    of the doors' front area). Behind them an open niche: the carcass hollow, painted sides, back, a divider and two
+    shelf boards per column; on them, as furniture (EG_Geschirr), stacks of white plates and rows of glasses."""
+    cab = list(_parts(BP, ("EG", "EG_Essen_Schrank")))
+    ua, ub, xw, xf = 0.417, 3.712, 2.774, 3.372
+    w = (ub - ua) / 6
+    panels = [(lo, hi) for m, lo, hi in cab if m == "Front" and abs(lo[0] - 3.352) < 1e-3 and abs(hi[0] - 3.364) < 1e-3]
+    doors = [(lo, hi) for lo, hi in panels if hi[2] > 1.1]                     # (panels inside a 6 cm frame)
+    assert len(doors) == 10                                                     # 12 doors, 2 left out
+    field = lambda lo, hi: (hi[1] - lo[1] + 0.12) * (hi[2] - lo[2] + 0.12)
+    gone = 2 * (w - 0.006) * (1.995 - 1.0515)
+    assert 0.2 < gone / (gone + sum(field(lo, hi) for lo, hi in doors)) < 0.3      # about a quarter of the door area
+    ya, yb, za, zb = ua + w, ua + 3 * w, 1.0515, 1.995                         # the open fields
+    table = list(_parts(BP, ("EG", "EG_Tisch")))
+    ty = (min(lo[1] for m, lo, hi in table) + max(hi[1] for m, lo, hi in table)) / 2
+    assert abs((ya + yb) / 2 - ty) < 0.05                                       # on the table's axis
+    assert not [lo for lo, hi in panels if lo[1] < yb and hi[1] > ya and lo[2] < zb and hi[2] > za]
+    inside = lambda pt, ps: [p for p in ps if all(p[1][k] - 1e-6 <= pt[k] <= p[2][k] + 1e-6 for k in range(3))]
+    for y in (ua + 1.5 * w, ua + 2.5 * w):                                      # hollow: open from the front ...
+        for z in (1.20, 1.50, 1.85):
+            assert not inside((3.30, y, z), cab), (y, z)
+        assert inside((2.78, y, 1.50), cab) and inside((3.30, y, 1.06), cab)    # ... a back and a bottom
+        boards = [(lo, hi) for m, lo, hi in cab if m == "Front" and lo[1] < y < hi[1] and 1.1 < lo[2] < 1.9
+                  and hi[2] - lo[2] < 0.03 and hi[0] - lo[0] > 0.45]
+        assert len(boards) == 2                                                 # two shelves
+    assert inside((3.30, ua + 2 * w, 1.50), cab)                                # the divider between the columns
+    assert "EG_Geschirr" in house_core.FURNITURE and "EG_Essen_Schrank" not in house_core.FURNITURE
+    dish = list(_parts(BP, ("EG", "EG_Geschirr")))
+    assert {m for m, lo, hi in dish} == {"Keramik", "Glas"}
+    assert all(ya < lo[1] and hi[1] < yb and xw < lo[0] and hi[0] < xf - 0.02 and za < lo[2] and hi[2] < zb
+               for m, lo, hi in dish)                                            # in the open fields
+    plates = [(lo, hi) for m, lo, hi in dish if m == "Keramik" and hi[0] - lo[0] > 0.18 and hi[2] - lo[2] < 0.02]
+    glasses = [(lo, hi) for m, lo, hi in dish if m == "Glas" and hi[0] - lo[0] < 0.10 and hi[2] - lo[2] > 0.07]
+    assert len(plates) >= 20 and len(glasses) >= 12
+    _clear(dish, [(lo, hi) for m, lo, hi in cab], "Geschirr")
+
+
 def test_one_eg_layout():
     """Issue #34: the EG layout Alternativ (#5) is the only one; the default layout's own objects and
     the layout switch (VARIANT, default_layout(), the wall lights' layout tags) are gone."""
@@ -2722,7 +2778,7 @@ def test_speis_essen():
     assert 0.415 < lo[1] < 0.42 and 3.70 < hi[1] < 3.73 and 2.39 <= hi[2] < 2.40       # full width, to the ceiling
     assert {m for m, a, b in cab} == {"Front", "Metall", "Fuge"}
     panels = [p for p in cab if p[0] == "Front" and abs(p[1][0] - 3.352) < 1e-3 and abs(p[2][0] - 3.364) < 1e-3]
-    assert len(panels) == 6 * 5                                                        # six columns of five fronts
+    assert len(panels) == 6 * 5 - 2                                    # six columns of five fronts, two fields open
     _clear(cab, boxes(others), "Essen")
     back = list(_parts(BP, ("EG", "EG_Speis_Rueckwand")))
     assert back and all(3.70 < a[1] and b[1] < 3.732 for m, a, b in back)
