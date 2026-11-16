@@ -35,7 +35,7 @@ edited: 2026-11-15
   - Wandlampen (brass gooseneck, opal bell) in every room of both storeys but the Speis, each centred
     in a free wall span; in the EG as agreed on `input/2026-11-14 input/lampen_eg_v1.svg` (also over the
     Ofen bed and the back hall's mirror), the Essen's pair on the Speis's wooden back (not on its west
-    wall, where cabinet C stands); four spots in a strip under the Küche hood
+    wall, where cabinet C stands); four spots in a strip under the Küche hood over the cooktop
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
     threshold), the Bäder (the Gästebad with its WC, shower and tub, the Bad Nadine & Till with its two showers) and
@@ -54,9 +54,11 @@ edited: 2026-11-15
     it a Besenschrank 51 × 55 × 2.20 m; the Spülzeile (~150 cm, steel sink and tap at the water connection)
     from the door frame into the NE corner, under the Abzug (plastered flue box from 1.80 m, depth
     assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
-    after wamsler.jpeg (stainless steel, fire burning behind the glass, flue pipe into the east wall)
-    under an old-form steel hood (skirt with rail, canopy, stack to the ceiling; a strip of 4 spots at its back edge); the Halbinsel
-    with the induction cooktop towards the dining table; no wall cabinets; east of the sink,
+    after wamsler.jpeg (stainless steel, fire burning behind the glass, its black flue pipe up to 1.80 m
+    and there into the east wall, a rosette on the wall); the Halbinsel with the induction cooktop towards
+    the dining table, under an old-form steel hood hung from the ceiling (centred, lip 65 cm above the
+    cooktop, skirt with a rail on the cook's side, canopy, stack to the ceiling; a strip of 4 spots along
+    its middle); no wall cabinets; east of the sink,
     where the Herd stands in front of the Spülzeile, a blind cabinet (no drawers) and the granite
     top runs up to the Herd, as the Ostzeile's does south of it; all cabinets in the style of
     `input/2026-11-10 input/kueche_mallnitz.png` (frame fronts with a recessed panel, a chrome cup
