@@ -141,6 +141,9 @@ SPOTS = [
     ("Bichlach", "1. Stock", ("haus", "og"), (9.6, 12.1, OG), (13.8, 9.4, Z_OG + 1.0), SEE),
     ("Jugend", "1. Stock", ("haus", "og"), (7.6, 12.2, OG), (7.6, 9.0, Z_OG + 1.0), SEE),
     ("Yoga", "1. Stock", ("haus", "og"), (5.6, 9.4, OG), (1.5, 11.8, Z_OG + 1.0), SEE),
+    ("Bad Nadine & Till", "1. Stock", ("haus", "og"), (8.7, 1.115, OG), (5.59, 1.51, Z_OG + 1.0), SEE),   # in the door, at the two showers
+    ("Flur oben - Waschtisch", "1. Stock", ("haus", "og"), (6.4, 8.15, OG), (6.01, 6.35, Z_OG + 0.9), SEE),
+    ("Gästebad", "1. Stock", ("haus", "og"), (2.2, 8.0, OG), (0.31, 7.3, Z_OG + 1.0), SEE),   # just inside the door: tub ahead, shower and WC left, basin right
 ]
 
 
