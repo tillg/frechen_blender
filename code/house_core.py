@@ -829,8 +829,8 @@ def waschtisch(coll, wx, wy, fx, fy, w, d, z=0.0):
             va, vb2 = (vb + n, vb + lw) if vb == v0 else (vb, vb + lw - n)
             low = [(*M(uu, vv), z) for uu, vv in ((ua, va), (ub, va), (ub, vb2), (ua, vb2))]
             up = [(*M(uu, vv), z + zc) for uu, vv in ((u0, vb), (u1, vb), (u1, vb + lw), (u0, vb + lw))]
-            add(coll, o, "Innentuer", low + up, [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5),
-                                              (2, 3, 7, 6), (3, 0, 4, 7)], r)
+            add(coll, o, "Innentuer", low + up, [(0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1), (1, 5, 6, 2),
+                                              (2, 6, 7, 3), (3, 7, 4, 0)], r)   # at_wall mirrors: faces reversed
         B(*sorted((su * (lu - 0.01), su * (lu - 0.03))), v0 + lw, v1 - lw, zc, zt, r)   # side panel, set back
     iu = lu - lw                                                                 # between the legs
     B(-iu, iu, v0, v0 + 0.015, zc, zt, r)                                        # back
@@ -843,7 +843,7 @@ def waschtisch(coll, wx, wy, fx, fy, w, d, z=0.0):
     B(-iu + 0.075, iu - 0.075, v1, v1 + 0.008, zc + 0.08, zt - 0.205, rf)        # its raised panel
     P = lambda u, v, h: (*M(u, v), z + h)
     for u, h in ((0.0, zt - 0.078), (-iu + 0.06, (zc + zt - 0.125) / 2)):       # knobs: drawer, door (left)
-        turned(coll, o, "Eisen", P(u, v1, h), P(u, v1 + 0.025, h), [(0.006, 0), (0.008, 0.4), (0.012, 0.7), (0.004, 1)], k=12)
+        turned(coll, o, "Eisen", P(u, v1, h), P(u, v1 + 0.025, h), [(0.006, 0), (0.008, 0.4), (0.012, 0.7), (0.004, 1)], k=12, rnd=rf)
 
 
 def wc_mirror(coll, wx, wy, fx, fy, z=0.0):

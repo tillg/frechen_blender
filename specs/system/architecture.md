@@ -240,12 +240,13 @@ flowchart LR
   shower wall in `<coll>_Fliesen`: a `Fuge` backing 2 mm off the wall, `Kalkstein` slabs 6..12 mm proud,
   rows of about 0.5 m, slabs 0.4..0.8 long from `rng`, joints 4 mm. Used by `bad.stone()` and
   `elternbad.py`. `shower(…, tray=True)` builds a ceramic tray; `tray=False` a walk-in shower on the floor.
-- **Waschbecken.** `waschbecken(coll, wx, wy, fx, fy, w, d, taps, z, tile, rng)` builds one
+- **Waschbecken.** `waschbecken(coll, wx, wy, fx, fy, w, d, taps, z, tile, rng, staender)` builds one
   washbasin into `<coll>_Sanitaer` in the wall frame of `at_wall()`: the hollow `Keramik` basin
-  (top z + 0.85, 17 cm high, `taps` mixers), the `Metall` Waschbeckenständer and the bottle trap;
+  (top z + 0.85, 17 cm high, `taps` mixers), the `Metall` Waschbeckenständer and the bottle trap
+  (`staender=False`: neither, the basin stands on a Waschtisch);
   `tile` puts it in front of WC tiles. Every Part shares one `rnd` from `rng`, else a new
   `random.Random(16)` per call. Callers: `build_sanitary()` (OG WC with
-  `wc_mirror()`, OG Flur on `wainscot(sides="s")` with `wood_mirror()`, which the back hall's
+  `wc_mirror()`, OG Flur without Ständer on `waschtisch()` (#40: the pine cabinet after `waschtisch.avif`, top 10 cm wider than the basin each side, in `OG_Sanitaer`, own `random.Random(40)`) with `wood_mirror()`, which the back hall's
   mirror in `gaeste_wc.py` and the mirrors in `gaestebad.py` and `elternbad.py` share with their own `rng`),
   `gaestebad.py`, `elternbad.py`, `gaeste_wc.py` and `bad.py`.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
