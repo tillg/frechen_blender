@@ -48,6 +48,9 @@ Choices made while nobody was there to ask are logged here
   - [01:15 — #26 follow-up: #26's pipe tests rewritten to the Kaminschacht](#run-2026-11-15-1633-36)
   - [01:35 — #34 follow-up: cabinet C's upper door in the two columns on the table's axis left out; shelves with plates and glasses (`EG_Geschirr`)](#run-2026-11-15-1633-37)
   - [01:35 — #34 follow-up: the cabinet C front counts in two tests lowered by the two open fields](#run-2026-11-15-1633-38)
+  - [01:25 — #40: a Waschtisch after the photo (old pine cabinet), the basin as a vessel on its top, in `OG_Sanitaer`; mirror and lamps kept; a tweak that commits](#run-2026-11-15-1633-39)
+  - [01:25 — #40: the Flur basin test rewritten to the Waschtisch, the tiles assertions flipped](#run-2026-11-15-1633-40)
+  - [01:25 — #40: the photo in the Bereich "Ganzes Haus" (OG Flur); `.avif` counted as raster, count 57](#run-2026-11-15-1633-41)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -466,3 +469,34 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the user's request removes the doors; all other assertions stay.
 - **Alternatives:** none that keeps the request.
 - **Consequences:** none beyond the tests.
+
+## 01:25 — #40: a Waschtisch after the photo (old pine cabinet), the basin as a vessel on its top, in `OG_Sanitaer`; mirror and lamps kept; a tweak that commits {#run-2026-11-15-1633-39}
+
+- **Status:** open
+- **Context:** #40: „das Waschbecken im oberen Flur ersetzen durch einen Waschtisch, wie auf dem Bild … die Fliesen von der Wand weg … Standard Waschbecken, einfache Größe … der Waschtisch … rechts und links jeweils 10 cm breiter als das Waschbecken.“ The photo (`input/2026-11-15 input/waschtisch.avif`): an old pine bedside cabinet with a worn reddish-brown patina: overhanging top with a moulded edge, a drawer with a small knob, a protruding rail under it, a door with a raised panel and a knob on the left, panelled sides, four square legs tapering below the carcass; a vessel basin on the top.
+- **Question:** how to build it, where to put it, what stays?
+- **Decision:** `house_core.waschtisch()` (next to `waschbecken()`): top 80 × 52 × 3 (basin 60 × 47 + 10 each side, 5 deeper) with its underside edge, everything else as listed above; the top's surface at 0.68 = the standard basin's underside, so the Waschbecken einzeln 60 × 47 (`waschbecken(staender=False)`: no Ständer, no trap) stands on it as a vessel at its usual 85. Woods: `Innentuer` (reddish pine, grain up) for legs, sides, back, door; `Stufe` (worn, grain along x) for top, rails, drawer — first tried the limed `Kiefer`, too pale and end-grain on the top. Object `OG_Sanitaer` (with the basin, in every stage; `OG_Moebel` is furniture and would leave the basin floating before "Eingerichtet"). Own `random.Random(40)`. The tiles (`wainscot`) gone, the wall plain plaster. Mirror 110 × 85 and the two Wandlampen kept (the mixer ends at 1.03, the mirror starts at 1.17). A `/spec:tweak` that commits (3 steps, no new model file), as #28/#35.
+- **Why:** the photo's look with the house's one basin design; the user asked for the standard single basin; the mirror still fits over it.
+- **Alternatives:** the basin sunk into the top (the photo shows a vessel); a new `MAT_DEF` wood (touches the viewer, not needed); the cabinet in `OG_Moebel`; a module of its own (one function, no sub-model).
+- **Consequences:** the Flur front reaches y 6.87 (was 6.83); the door leaves open into the south rooms, Rundgang ≥ 0.25 m (new test). `waschbecken()` has `staender=True` by default, the other basins unchanged. Blender backend dormant (#35): no rebuild. Plans regenerated.
+
+## 01:25 — #40: the Flur basin test rewritten to the Waschtisch, the tiles assertions flipped {#run-2026-11-15-1633-40}
+
+- **Status:** open
+- **Context:** `test_og_flur_waschbecken_between_the_two_doors` pins the tiles 15 cm beyond the basin, the basin on the tiles and on its Ständer.
+- **Question:** may it be changed?
+- **Decision:** renamed `test_og_flur_waschtisch_between_the_two_doors`: no tiles at that wall, the basin on the plaster without Ständer or trap (`_waschbecken(staender=False)` skips only the Ständer checks), the Waschtisch's top 0.80 = 0.60 + 2 × 0.10 centred, floor to 0.68, four legs, two knobs, clear of the door leaves; the mirror checks kept (now: above the tap). `specs/system/functional.md` said mirror "110 × 95": corrected to the built 85 in the same edit.
+- **Why:** the issue removes the tiles and the Ständer; every other assertion stays.
+- **Alternatives:** none that keeps the request.
+- **Consequences:** none beyond the tests.
+
+## 01:25 — #40: the photo in the Bereich "Ganzes Haus" (OG Flur); `.avif` counted as raster, count 57 {#run-2026-11-15-1633-41}
+
+- **Status:** open
+- **Context:** every raster image of `input/` must be assigned (`test_every_input_image_is_assigned_once`); its `RASTER` set had no `.avif`, so the photo would not count; `kleiner-schreibtisch.webp` (#44) lies untracked in the same folder.
+- **Question:** which Bereich, and the count?
+- **Decision:** "Ganzes Haus" (its marker is in the OG Flur, at the vanity), after the Briol basin; `.avif` added to `RASTER`; the count 56 → 57, the committed images. Copy via `vorlagen.py --copy` (sips reads avif). The near-duplicate test stays green.
+- **Why:** the Bereich's room is the OG Flur; a Bereich of its own for one photo is not needed.
+- **Alternatives:** a new Bereich "Flur oben".
+- **Consequences:** locally the count test stays red until #44 assigns `kleiner-schreibtisch.webp` and bumps it to 58 (green with that file moved away).
+

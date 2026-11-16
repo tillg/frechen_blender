@@ -770,13 +770,14 @@ def test_stube_sitzecke_in_the_se_corner():
     assert min(math.dist((tx, ty), (x, y)) for x, y in ((ax, ay), (bx, by))) > 0.5     # chairs either side
 
 
-def test_og_flur_waschbecken_between_the_two_doors():
+def test_og_flur_waschtisch_between_the_two_doors():
     """OG Flur: a washbasin on the wall between the two doors to the south rooms (wall face y 6.35;
-    the plan draws a basin there), a Waschbecken einzeln 60 x 47 on its Ständer (input/2026-11-12
-    input/), centred exactly between the two door openings (request 2026-11-12). Issue #8: instead
-    of the grey stone panel behind it, the Taubenblau WC tiles (wainscot) about 15 cm beyond the
-    basin on either side, and above it a big mirror in a wide wooden frame like the one over the
-    back hall's basin (gaeste_wc.py)."""
+    the plan draws a basin there), centred exactly between the two door openings (request 2026-11-12),
+    above it a big mirror 110 x 85 in a wide wooden frame (#8, #19). Issue #40 (input/2026-11-15 input/
+    waschtisch.avif): instead of the Ständer a Waschtisch like the photo's old pine cabinet (top with a
+    moulded edge, a drawer, a door with a raised panel, tapered legs), carrying one standard
+    Waschbecken einzeln 60 x 47; its top 10 cm wider than the basin on either side; the Taubenblau
+    tiles off the wall, the wall plain white plaster again."""
     zo = house_core.Z_OG
     assert "Schiefer" not in house_core.MAT_DEF
     wall = [p for p in part_list(("OG", "OG_Waende")) if abs(p[1][1] - 6.06) < 1e-6 and abs(p[2][1] - 6.35) < 1e-6
@@ -788,18 +789,33 @@ def test_og_flur_waschbecken_between_the_two_doors():
     assert len(lintels) == 2                                                            # a door on either side
     X = (wa + wb) / 2
     near = lambda p: p[2][1] <= 6.40 and p[1][1] >= 6.35 - 1e-9 and wa < p[1][0] and p[2][0] < wb
-    tiles = [p for p in part_list(("OG", "OG_Fliesen")) if near(p) and p[0] == "Fliese"]
-    assert tiles
-    tlo = [min(p[1][k] for p in tiles) for k in range(3)]; thi = [max(p[2][k] for p in tiles) for k in range(3)]
-    assert abs(tlo[0] - (X - 0.45)) < 0.01 and abs(thi[0] - (X + 0.45)) < 0.01   # basin 60 + 2 x 15
-    assert tlo[2] <= zo + 0.02 and 1.05 < thi[2] - zo < 1.15                            # floor to the cap
-    assert thi[1] <= 6.35 + house_core.WC_TILE_T + 0.005
-    basin = _waschbecken(("OG", "OG_Sanitaer"), (X, 6.35, 0, 1), 0.60, 0.47, 1, zo, house_core.WC_TILE_T)
-    assert all(lo[1] >= 6.35 + house_core.WC_TILE_T - 1e-6 for m, lo, hi in basin)      # on the tiles
+    assert not [p for p in part_list(("OG", "OG_Fliesen")) if near(p)]                  # #40: no tiles, white plaster
+    assert wall[0][0] == "Putz"
+    basin = _waschbecken(("OG", "OG_Sanitaer"), (X, 6.35, 0, 1), 0.60, 0.47, 1, zo, staender=False)
+    assert all(lo[1] >= 6.35 - 1e-6 for m, lo, hi in basin)                             # straight on the plaster
+    assert not [1 for m, lo, hi in basin if m == "Metall" and lo[2] < zo + 0.60]        # no Ständer, no trap below
+    assert "OG_Sanitaer" not in BP.furniture                                            # cabinet stands in every stage
+    wood = [p for p in part_list(("OG", "OG_Sanitaer")) if p[0] in ("Innentuer", "Stufe") and wa < p[1][0] and p[2][0] < wb
+            and p[1][1] >= 6.35 - 1e-9 and p[2][1] < 7.0]
+    assert len(wood) >= 12                                                              # top, legs, sides, drawer, door ...
+    lo = [min(p[1][k] for p in wood) for k in range(3)]; hi = [max(p[2][k] for p in wood) for k in range(3)]
+    assert abs(hi[2] - (zo + 0.68)) < 1e-6 and abs(lo[2] - zo) < 1e-6                   # floor to under the basin
+    tops = [p for p in wood if abs(p[2][2] - (zo + 0.68)) < 1e-6]
+    assert len(tops) == 1
+    _, tlo, thi, _ = tops[0]
+    assert abs(thi[0] - tlo[0] - (0.60 + 2 * 0.10)) < 1e-6                              # 10 cm wider each side
+    assert abs((tlo[0] + thi[0]) / 2 - X) < 1e-6 and abs(tlo[1] - 6.35) < 1e-6
+    assert 6.35 + 0.47 < thi[1] <= 6.35 + 0.55                                          # basin fits, little overhang
+    assert lo[0] >= tlo[0] - 1e-6 and hi[0] <= thi[0] + 1e-6 and hi[1] <= thi[1] + 0.03  # nothing beyond the top (knobs)
+    legs = [p for p in wood if abs(p[1][2] - zo) < 1e-6]
+    assert len(legs) == 4 and all(p[2][0] - p[1][0] < 0.05 for p in legs)               # four slim legs
+    knobs = [p for p in part_list(("OG", "OG_Sanitaer")) if p[0] == "Eisen" and wa < p[1][0] and p[2][0] < wb]
+    assert len(knobs) == 2                                                              # drawer and door
+    _clear(basin + [(m, a, b) for m, a, b, _ in wood], _leaf_boxes(BP, "OG", zo), "door leaf")
     san = [p for p in [*part_list(("OG", "OG_Sanitaer")), *part_list(("OG", "OG_Spiegel"))] if near(p)]   # mirror: furnishing (#19)
     assert not [p for p in san if p[0] == "Schiefer"]
     glass = [p for p in san if p[0] == "Spiegel"]
-    frame = [p for p in san if p[0] == "Kiefer"]
+    frame = [p for p in san if p[0] == "Kiefer" and p[1][2] > zo + 1.0]
     assert len(glass) == 1 and len(frame) == 4
     _, glo, ghi, _ = glass[0]
     flo = [min(p[1][k] for p in frame) for k in range(3)]; fhi = [max(p[2][k] for p in frame) for k in range(3)]
@@ -808,7 +824,7 @@ def test_og_flur_waschbecken_between_the_two_doors():
     assert abs((glo[0] + ghi[0]) / 2 - X) < 0.005                                    # centred over the basin
     for gap in (glo[0] - flo[0], fhi[0] - ghi[0], glo[2] - flo[2], fhi[2] - ghi[2]):
         assert abs(gap - 0.10) < 1e-6                                                   # 10 cm frame (back hall: 7)
-    assert flo[2] > thi[2] and fhi[2] < house_core.Z_OG_TOP - 0.05                      # above the tiles, below the ceiling
+    assert flo[2] > max(b[2] for m, a, b in basin) and fhi[2] < house_core.Z_OG_TOP - 0.05   # above the tap, below the ceiling
     assert fhi[1] - 6.35 <= 0.03 and ghi[1] < fhi[1]                                    # flat on the wall, glass set back
 
 
@@ -1428,13 +1444,13 @@ def test_wc_fixtures_after_the_photo():
     assert _part_at(("OG", "OG_Spiegel"), *at(6.11, 0.40, 0, 1)(0.27, 0.02), zo + 1.6) != "Eisen"
 
 
-def _waschbecken(key, wall, w, d, taps, z, tile=0.0, bp=None):
+def _waschbecken(key, wall, w, d, taps, z, tile=0.0, bp=None, staender=True):
     """Check one Waschbecken (input/2026-11-12 input/) of object `key`: wall = (wx, wy, fx, fy), the
     basin's centre on the wall face, facing into the room; `tile` = what stands between plaster and
     basin. Rectangular ceramic basin w x d, top z + 0.85, 17 cm high, hollow; `taps` mixers; one
     drain; on the Ständer: two legs to the floor at the front corners with a rail at 0.52 between
-    them, side rails back to the wall, a trap under the drain. Returns the basin's and Ständer's
-    parts (material, lo, hi) in world coordinates."""
+    them, side rails back to the wall, a trap under the drain (staender=False: on a Waschtisch, #40;
+    neither). Returns the basin's and Ständer's parts (material, lo, hi) in world coordinates."""
     bp = bp or BP
     wx, wy, fx, fy = wall
     ox, oy = wx + fx * tile, wy + fy * tile
@@ -1463,6 +1479,8 @@ def _waschbecken(key, wall, w, d, taps, z, tile=0.0, bp=None):
     assert len(drains) == 1, key
     du, dv = uv(*mid(*drains[0]))
     assert abs(du) < 1e-6, key                                                           # one drain, centred
+    if not staender:
+        return parts
     legs = [uv(*mid(lo, hi)) for lo, hi in met if lo[2] <= z + 0.02 and hi[2] >= zb - 0.03]
     assert sorted(round(u, 3) for u, v in legs) == [round(-w / 2 + 0.05, 3), round(w / 2 - 0.05, 3)], key
     assert all(abs(v - (d - 0.05)) < 1e-6 for u, v in legs), key
