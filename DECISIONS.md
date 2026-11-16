@@ -55,6 +55,8 @@ Choices made while nobody was there to ask are logged here
   - [01:50 — #44: a new Bereich "Schlafzimmer Nadine & Till" for the photo, marker over the desk, count 58](#run-2026-11-15-1633-43)
   - [02:20 — #48: "Bürotisch" read as Bürostuhl: a black/grey mesh office chair after the photo replaces the board chair at the Büro desk; a tweak that commits](#run-2026-11-15-1633-44)
   - [02:20 — #48: the desk page's "Auf die Bildschirme" view moved up over the headrest](#run-2026-11-15-1633-45)
+  - [02:50 — Film: capture + encode with `just`, publish by a normal commit on its own branch, no history purge, no force-push](#run-2026-11-15-1633-46)
+  - [02:55 — Retro: a CLAUDE.md pitfall line for self-matching `pgrep` loops; the flaky fps test filed as #54, not changed](#run-2026-11-15-1633-47)
 
 # 2026-11-15 16:33 — Implement issues #35 … #30 {#run-2026-11-15-1633}
 
@@ -97,6 +99,7 @@ Choices made while nobody was there to ask are logged here
   #40: branch issue/40-waschtisch-flur from fix/kueche-ofenrohr-schrank, PR https://github.com/tillg/frechen_blender/pull/51 against it; a tweak that commits (no change directory, `specs/system/` updated in place); full check (before the review fixes): pytest red only on the `test_vorlagen` input count (the untracked #44 photo), Vitest 65/65, Playwright 110/111 (the ~30 fps test load-flaky); quick check after the fixes: the same one red.
   #44: branch issue/44-schreibtisch-schlafzimmer from issue/40-waschtisch-flur, PR https://github.com/tillg/frechen_blender/pull/52 against it; a tweak that commits (no change directory, `specs/system/` updated in place); full check: pytest 223/223, Vitest 65/65, Playwright 110/111 (the ~30 fps test, red alone too, pre-existing load-flake); quick check after the review fixes green.
   #48: branch issue/48-buerostuhl from issue/44-schreibtisch-schlafzimmer, PR https://github.com/tillg/frechen_blender/pull/53 against it; a tweak that commits (decisions 44–45).
+  ~03:00: on the user's request ("merge the pending PRs to main") PRs #46, #47, #49, #50, #51, #52, #53 were merged into main (0d314ec, 5ac283e, 7d15213, 001c07a, 6bd0c2b, fa7d840, bd951c3), branches deleted, issues #26 #30 #40 #44 #48 [done]. The film branch `film/2026-11-16` now targets main.
 
 ## 16:40 — Work the issues strictly one after another, one agent per issue {#run-2026-11-15-1633-2}
 
@@ -548,3 +551,24 @@ Choices made while nobody was there to ask are logged here
 - **Why:** the chair stays as in the photo; the view's purpose (show the screens) is kept; no test edited.
 - **Alternatives:** a shorter or translucent headrest; dropping the headrest.
 - **Consequences:** the view now also shows keyboard and trackpad from above.
+
+## 02:50 — Film: capture + encode with `just`, publish by a normal commit on its own branch, no history purge, no force-push {#run-2026-11-15-1633-46}
+
+- **Status:** open
+- **Overrides:** `just film` / `film-publish` (`justfile`, film-render skill) — publish runs on `main`, purges older films from `main`'s history and force-pushes.
+- **Context:** the user asked "Und ganz am Ende: Den Film neu genieren und publishen". The film must show the final house, but #46–#53 are open stacked PRs, not on `main`; force-push and history rewrite are hard limits of `/autonomous`.
+- **Question:** how to publish the new film?
+- **Decision:** branch `film/2026-11-16` from `issue/48-buerostuhl` (the top of the stack); `just film-capture` + `just film-encode` (the viewer's Rundgang, `?hires=on`); one normal commit adds `2026-11-16_frechen_rundgang_threejs.mp4` and `git rm`s the oldest film `2026-11-12_…` (keep the newest two, as the recipe does); push; PR on top of the stack.
+- **Why:** shows every change of the run; no force-push, no rewrite of pushed history.
+- **Alternatives:** `just film-publish` on `main` (needs the stack merged first and a force-push); capture from `main` (would miss #46–#53).
+- **Consequences:** the 2026-11-12 film stays in the git history (~84 MB more in clones) until the user runs the purge (`just film-publish`'s prune + force-push) after merging. Merge the film PR last.
+
+## 02:55 — Retro: a CLAUDE.md pitfall line for self-matching `pgrep` loops; the flaky fps test filed as #54, not changed {#run-2026-11-15-1633-47}
+
+- **Status:** open
+- **Context:** `/autonomous` step 4 (retro). Two recurring problems of the run: (1) six polling loops `until ! pgrep -f "check.sh full"` left by workers ran for hours (pgrep matched its own shell); (2) `tour.spec.js` "≤ ~30 fps" failed in 5 of 10 finished full checks, also alone and on pre-run code (9–13 fps vs. bound 15).
+- **Question:** which mechanical fix per problem?
+- **Decision:** (1) one pitfall line in `CLAUDE.md` (no test surface: it is about agents' shell usage); (2) bug issue #54 with the measurements and options; the test itself stays as it is.
+- **Why:** changing or weakening a test needs the user's agreement; a CLAUDE.md line is the cheapest durable pointer for (1).
+- **Alternatives:** lower the fps bound / warm-up / `@perf` tag (needs the user); a lint hook for `pgrep -f` in Bash commands (overkill for one pitfall).
+- **Consequences:** until #54 is decided, every full check is expected to show this one red. More retro findings (time per step) are in `tmp/timing/report_2026-11-15.md`.
