@@ -18,7 +18,8 @@ edited: 2026-11-16
 - **Exterior details from photos:**
   - round-arched entrance door, back door with an oval window and black lever handles inside and
     outside (hinged north, opening into the back hall; part of the Gäste-WC sub-model)
-  - windows with larch frames and glazing bars
+  - windows with larch frames and glazing bars; on the room side of every sash a satin-metal turn handle
+    after klinke-fenster.webp (pointed rose, lever hanging down), at the sash's mid height
   - blue shutters with white cross boards
   - larch terrace doors; tall OG west windows (Yoga, Bad): wall below up to a 0.75 m sill, glazed up to the ceiling
   - larch cladding of the whole west side and the east gable, cut around the openings; spaced
@@ -28,7 +29,8 @@ edited: 2026-11-16
 - **Interior:**
   - panelled interior doors (opened; flat ones 7.5 cm off the wall), every door with handles: black
     levers on both faces of hinged leaves, flush pulls on sliding leaves, a room-side handle on each
-    french / terrace door leaf
+    french / terrace door leaf: the satin-metal lever after klinke-balkontüre.webp (oval rose, ribbed neck,
+    long flat lever hanging down), at 1.05
   - glazed Windfang double door; the door to the back Windfang glazed the same way (one leaf,
     hinged north, opened 90° into the back hall, so it lies along the back hall's north wall)
   - Stube niche with a segmental arch

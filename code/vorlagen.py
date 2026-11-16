@@ -93,6 +93,8 @@ BEREICHE = [
     ]},
     {"key": "haus", "title": "Ganzes Haus", "room": ("Flur", "OG"), "at": (6.0, 7.4, house_core.Z_OG + 1.6), "fotos": [
         foto("2026-11-13 input/wandlampe.png", "Wandlampe aus Messing mit Opalglas – in allen Zimmern"),
+        foto("2026-11-16 input/klinke-fenster.webp", "Drehgriff – an allen Fenstern"),
+        foto("2026-11-16 input/klinke-balkontüre.webp", "Klinke der Balkon- und Terrassentüren"),
         foto("2026-11-12 input/waschbecken_einzeln.jpeg", "Das Standard-Waschbecken (einzeln) – WCs und Bäder"),
         foto("2026-11-12 input/waschbecken_staender.png", "Sein Ständer aus Chrom"),
         foto("2026-11-05 input/waschbecken-briol.jpeg", "Waschbecken im Briol – das Waschbecken der Waschküche"),
