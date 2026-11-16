@@ -599,6 +599,42 @@ def test_every_door_has_handles():
                    and o["sill"] < lo[2] < o["head"] for lo, hi in handles), o
 
 
+def test_window_and_balcony_door_handles():
+    """The user (2026-11-16): „die Klinken der Fenster & Balkontüren … ersetze sie alle mit den Hebeln & Drehgriffen
+    aus dem heutigen Input“. Every sash of every exterior window (W, also the big GD west windows) and every leaf of a
+    french or terrace door (FD, GD from the floor) has one handle on its room side, on its stile towards the middle:
+    doors the lever of input/2026-11-16 input/klinke-balkontüre.webp (oval rose 9 high centred 1.05 above the sill,
+    ribbed neck, flat lever down to 13.5 under it); windows the turn handle of klinke-fenster.webp (pointed rose 7.5
+    high at the sash's mid height, lever down to 10 under it). Rose, neck and lever, the rose shaped (at least 10
+    corners; the old olive's was a box)."""
+    bp = house_core.build()
+    for o in [o for o in house_core.OPENINGS if o["kind"] in ("W", "FD", "GD")]:
+        k, floor = (0, 1) if o["ax"] == "x" else (1, 0), house_core.Z_OG if o["sill"] >= house_core.Z_OG - 1e-6 else 0.0
+        c = "OG" if floor else "EG"
+        key = (c, c + "_Fenster_Tueren")
+        corners = [len({tuple(round(x, 6) for x in v) for v in pts}) for pts in _solids_pts(bp, key)]
+        ps = [(lo, hi, n) for (m, lo, hi), n in zip(_parts(bp, key), corners) if m == "Metall"
+              and o["a"] < lo[k[0]] and hi[k[0]] < o["b"] and o["sill"] < lo[2] and hi[2] < o["head"]
+              and abs((lo[k[1]] + hi[k[1]]) / 2 - o["face"]) < 0.6]
+        groups = []                                                         # one handle = one axis u
+        for lo, hi, nc in sorted(ps, key=lambda p: p[0][k[0]] + p[1][k[0]]):
+            u = (lo[k[0]] + hi[k[0]]) / 2
+            if groups and abs(groups[-1][0] - u) < 0.01:
+                groups[-1][1].append((lo, hi, nc))
+            else:
+                groups.append((u, [(lo, hi, nc)]))
+        n = max(2, round((o["b"] - o["a"]) / 0.95)) if o["kind"] == "GD" else 2 if o["b"] - o["a"] > 0.75 else 1
+        assert len(groups) == n, (o, [g[0] for g in groups])
+        door = o["kind"] in ("FD", "GD") and o["sill"] - floor < 0.1
+        for u, g in groups:
+            assert len(g) == 3 and g[0][2] >= 20, (o, u)                         # rose (2 x >= 10 corners), neck, lever
+            top, bot = max(hi[2] for lo, hi, nc in g), min(lo[2] for lo, hi, nc in g)
+            if door:
+                assert abs(top - (o["sill"] + 1.05 + 0.045)) < 1e-6 and abs(bot - (o["sill"] + 1.05 - 0.135)) < 1e-6, (o, u)
+            else:
+                assert abs(top - bot - 0.1375) < 1e-6 and abs(top - 0.0375 - (o["sill"] + o["head"]) / 2) < 0.03, (o, u)
+
+
 def test_west_og_windows_wall_below_up_to_the_ceiling():
     """The three tall west windows in the OG (Yoga, Bad): no fixed glazing below any more but
     wall (sill 0.75 m above the floor: first 0.95, then twice 10 cm lower), and up to the ceiling."""

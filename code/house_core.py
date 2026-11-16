@@ -314,6 +314,11 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
         else:
             box(coll, o, m, ta, tb, ua, ub, za, zb, st["r"])
 
+    X = frame(ax)
+
+    def H(door, u, tf, s, z):                                    # handle on a sash's room side (shares its rnd)
+        (balkon_klinke if door else fenster_griff)(coll, fo, X, u, tf, s, z, st["r"])
+
     cur = u0
     for op in sorted(ops):
         st["r"] = random.random()
@@ -331,7 +336,7 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
             continue
         tm, fd, fw = (t0 + t1) / 2, 0.04, 0.06
         if kind == "GD":
-            glazed_door(B, fo, a, b, sill, head, tm, -out)
+            glazed_door(B, fo, a, b, sill, head, tm, -out, H)
             continue
         F = "Laerche"
         B(F, a, a + fw, tm - fd, tm + fd, sill, head, fo)
@@ -356,9 +361,9 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
                     zr = g0 + (g1 - g0) * (0.52 if rows == 2 else r / rows)
                     B(F, sa + sf, sb - sf, tm - 0.02, tm + 0.02, zr - gb / 2, zr + gb / 2, fo)
                 B("Glas", sa + sf, sb - sf, tm - 0.004, tm + 0.004, g0, g1, fo)
-                if kind == "FD" and out:                         # handle: room side, stile towards the middle
+                if out:                                          # handle: room side, stile towards the middle
                     u = sb - sf / 2 if (sa + sb) / 2 < (a + b) / 2 or n == 1 else sa + sf / 2
-                    olive(B, fo, u, tm + 0.03 * out * -1, -out, sill + 1.05)
+                    H(kind == "FD", u, tm - 0.03 * out, -out, sill + 1.05 if kind == "FD" else (za + zb) / 2)
         if sh and out:
             w = (b - a) / 2
             ta, tb = (t1, t1 + 0.03) if out > 0 else (t0 - 0.03, t0)
@@ -367,10 +372,11 @@ def wall(coll, x0, x1, y0, y1, z0, z1, ops=(), out=0, mat="Putz"):
     B(mat, cur, u1, t0, t1, z0, z1)
 
 
-def glazed_door(B, fo, a, b, sill, head, tm, s=0):
+def glazed_door(B, fo, a, b, sill, head, tm, s=0, H=None):
     """Terrace door after glass_door_to_terrasse.jpg: larch frame, leaves of ~0.95 m (at least
     two), each with 2 x 4 panes. Also used for the big west windows. s: +1 / -1 = the room side across
-    the wall, where each leaf gets a handle on its stile towards the middle (0: none)."""
+    the wall, where each leaf gets a handle on its stile towards the middle (0: none) from H (wall()'s
+    handle maker): a door the Balkontür lever at 1.05, a window (sill from 0.1) the Fenster handle mid-leaf."""
     M, fw = "Laerche", 0.07
     B(M, a, a + fw, tm - 0.045, tm + 0.045, sill, head, fo)
     B(M, b - fw, b, tm - 0.045, tm + 0.045, sill, head, fo)
@@ -395,7 +401,7 @@ def glazed_door(B, fo, a, b, sill, head, tm, s=0):
             B(M, ga, gb, tm - 0.025, tm + 0.025, zr - 0.017, zr + 0.017, fo)
         if s:
             u = lb - st / 2 if (la + lb) / 2 < (a + b) / 2 else la + st / 2
-            olive(B, fo, u, tm + 0.035 * s, s, sill + 1.05 if sill < 0.1 else (za + zb) / 2)
+            H(sill < 0.1, u, tm + 0.035 * s, s, sill + 1.05 if sill < 0.1 else (za + zb) / 2)
 
 
 def interior(coll, x0, x1, y0, y1, doors=(), z0=0.0, z1=Z_EG_TOP, head=DOOR_H, ops=()):
@@ -488,13 +494,45 @@ def sliding_pulls(part, LW, z=1.04):
             part(w, w + 0.02, min(s * 0.02, s * 0.024), max(s * 0.02, s * 0.024), z - 0.09, z + 0.11, 0.5, "Eisen")
 
 
-def olive(B, fo, u, tf, s, z):
-    """Window-type handle on the room side of a french or terrace door leaf: a rose on the stile's
-    face tf, the neck, the olive lever hanging down (s: +1 / -1 = direction into the room)."""
-    T = lambda a, b: (min(tf + s * a, tf + s * b), max(tf + s * a, tf + s * b))
-    B("Metall", u - 0.018, u + 0.018, *T(0, 0.012), z - 0.04, z + 0.04, fo)
-    B("Metall", u - 0.008, u + 0.008, *T(0.012, 0.05), z - 0.008, z + 0.008, fo)
-    B("Metall", u - 0.009, u + 0.009, *T(0.035, 0.05), z - 0.12, z + 0.008, fo)
+def uz_prism(coll, obj, mat, X, pts, ta, tb, rnd=None):
+    """Extrude an outline (u, z) in a wall's plane from t = ta to tb (X = frame(ax): wall frame -> world)."""
+    n = len(pts)
+    v = [X(u, ta, z) for u, z in pts] + [X(u, tb, z) for u, z in pts]
+    f = [list(range(n))[::-1], list(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+    add(coll, obj, mat, v, f, rnd)
+
+
+def _arc(cu, cz, ru, rz, a0, a1, k=6):
+    """Points of an elliptic arc (u, z) round (cu, cz) from angle a0 to a1 (degrees), both ends included."""
+    return [(cu + ru * math.cos(math.radians(a0 + (a1 - a0) * i / k)),
+             cz + rz * math.sin(math.radians(a0 + (a1 - a0) * i / k))) for i in range(k + 1)]
+
+
+def balkon_klinke(coll, obj, X, u, tf, s, z, rnd=None):
+    """Lever of a french or terrace door after input/2026-11-16 input/klinke-balkontüre.webp, satin metal, hanging
+    down (closed), on the stile's room face tf at height z (s: +1 / -1 = direction into the room): an oval rose
+    3.2 x 9 with round ends, a ribbed neck, the flat lever 1.2 thick from a rounded knuckle over the neck down to
+    13.5 under it, widening from 1.8 to 2.4 to its rounded foot."""
+    T = lambda a: tf + s * a
+    rose = _arc(u, z + 0.029, 0.016, 0.016, 0, 180) + _arc(u, z - 0.029, 0.016, 0.016, 180, 360)
+    uz_prism(coll, obj, "Metall", X, rose, T(0), T(0.008), rnd)
+    rib = [(0.012, 0), (0.012, 0.12)] + [(r, t) for i in range(4) for r, t in ((0.0095, 0.17 + 0.1 * i), (0.0115, 0.22 + 0.1 * i))]
+    turned(coll, obj, "Metall", X(u, T(0.008), z), X(u, T(0.044), z), rib + [(0.0105, 0.6), (0.0105, 1)], rnd=rnd)
+    lever = _arc(u, z - 0.125, 0.012, 0.010, 180, 360) + _arc(u, z + 0.006, 0.009, 0.008, 0, 180)
+    uz_prism(coll, obj, "Metall", X, lever, T(0.040), T(0.052), rnd)
+
+
+def fenster_griff(coll, obj, X, u, tf, s, z, rnd=None):
+    """Turn handle of a window sash after input/2026-11-16 input/klinke-fenster.webp, satin metal, hanging down
+    (closed), on the stile's room face tf at height z (s as balkon_klinke): a pointed rose 3.2 x 7.5, a smooth
+    tapering neck, the flat blade 2 wide and 1.2 thick from its rounded top over the neck down to 10 under it."""
+    T = lambda a: tf + s * a
+    rose = [(u, z + 0.0375), (u + 0.007, z + 0.031), (u + 0.016, z + 0.009), (u + 0.016, z - 0.009), (u + 0.007, z - 0.031),
+            (u, z - 0.0375), (u - 0.007, z - 0.031), (u - 0.016, z - 0.009), (u - 0.016, z + 0.009), (u - 0.007, z + 0.031)]
+    uz_prism(coll, obj, "Metall", X, rose, T(0), T(0.007), rnd)
+    turned(coll, obj, "Metall", X(u, T(0.007), z), X(u, T(0.036), z), [(0.0135, 0), (0.0115, 0.4), (0.011, 1)], rnd=rnd)
+    blade = _arc(u, z - 0.094, 0.010, 0.006, 180, 360, 4) + _arc(u, z + 0.010, 0.010, 0.010, 0, 180)
+    uz_prism(coll, obj, "Metall", X, blade, T(0.034), T(0.046), rnd)
 
 
 def six_panel_leaf(part, LW, LH):
