@@ -93,7 +93,9 @@ dazu Tag/Abend (nur Haus, ab Detailmodell) und **Reset**.
 - **Standpunkt:** benannte Blickpunkte aus `tour.py` – außen von den vier Ecken, im Erdgeschoss und
   1. Stock von oben und schräg, in jedem Raum aus einer Ecke in Augenhöhe (1,60 m), z. B.
   „Bibliothek - Ecke hinten rechts“ im Eck hinter dem Schreibtisch; dazu „Bibliothek - Klavierspieler“,
-  sitzend auf der Klavierbank (Augen auf 1,25 m) über die Tasten und den Flügel in den Raum; drinnen schaut man sich mit der Maus um, statt um
+  sitzend auf der Klavierbank (Augen auf 1,25 m) über die Tasten und den Flügel in den Raum; im 1. Stock
+  außerdem „Bad Nadine & Till“ (in der Tür, Blick auf die beiden Duschen), „Flur oben - Waschtisch“ und
+  „Gästebad“ (gleich hinter der Tür: vorn die Wanne, links Dusche und WC, rechts das Waschbecken); drinnen schaut man sich mit der Maus um, statt um
   einen Punkt zu kreisen. Wer die Kamera selbst bewegt, sieht „Eigene Ansicht“. In „Ganzes Haus“
   folgen die **Routen**: „Um und durch das Haus“ (die Kamerafahrt des Films) und „Durch die Stube &
   Küche“.

@@ -284,7 +284,9 @@ Blender backend. What the scripts make:
     the standard, Südwesten, Nordosten, Nordwesten), Übersicht (Von oben, Schräg von Südosten; EG
     and 1. Stock), Erdgeschoss (Stube, Küche, Speis, Bibliothek - Ecke hinten rechts, Bibliothek -
     Klavierspieler, Oma & Opa) and 1. Stock (Nadine & Till, Waschküche, Saschi, Bichlach, Jugend,
-    Yoga), each inside group at eye height (1.6 m) in the room, except Klavierspieler: seated on
+    Yoga, Bad Nadine & Till: in the door towards the two showers, Flur oben - Waschtisch: across the
+    Flur at the Waschtisch, Gästebad: just inside the door, tub ahead, shower and WC left, basin right),
+    each inside group at eye height (1.6 m) in the room, except Klavierspieler: seated on
     the piano bench (eye 1.25 m), looking over the keys and the piano into the room; listed in
     Ganzes Haus and its own storey. Sub-models list their own views (Schräg, Von oben, …). A group Routen (Ganzes Haus only) lists "Um und durch das Haus" and "Durch die
     Stube & Küche". After the user moves the camera the drop-down shows "Eigene Ansicht".
