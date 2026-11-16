@@ -2826,3 +2826,41 @@ def test_speis_essen():
     yN = min(a[1] for m, a, b in leaves["N"])
     assert 0 < yN - yS <= 0.01                                                         # they meet in the middle
     assert min(a[1] for m, a, b in leaves["S"]) - 4.33 <= 0.025 and 5.249 - max(b[1] for m, a, b in leaves["N"]) <= 0.025
+
+
+def test_kleiner_schreibtisch_schlafzimmer():
+    """Issue #44 (input/2026-11-15 input/kleiner-schreibtisch.webp): in the Schlafzimmer Nadine & Till a small
+    country desk (top 110 x 55 at 0.78, four turned legs, one drawer with a knob on the sitter's side) stands
+    behind the low wall at the bed's head end (x 11.48 .. 11.63, y 0.98 .. 3.98, 1.20 high), its back to it;
+    on its far side a small matching ladder-back chair, pushed in. One furniture object OG_Schreibplatz,
+    in nothing else, 60 cm walkways to the Kamin and the south wall."""
+    zo = house_core.Z_OG
+    assert "OG_Schreibplatz" in house_core.FURNITURE and "OG_Schreibplatz" in BP.furniture
+    parts = list(part_list(("OG", "OG_Schreibplatz")))
+    tops = [p for p in parts if abs(p[2][2] - (zo + 0.78)) < 1e-6]
+    assert len(tops) == 1
+    _, tlo, thi, _ = tops[0]
+    assert abs(thi[0] - tlo[0] - 0.55) < 1e-6 and abs(thi[1] - tlo[1] - 1.10) < 1e-6   # 55 deep, 110 long
+    assert 11.47 <= thi[0] < 11.48 and 0.98 < tlo[1] and thi[1] < 3.98                 # behind the low wall
+    legs = [p for p in parts if abs(p[1][2] - (zo + 0.012)) < 1e-6 and p[1][0] > tlo[0] and p[2][2] > zo + 0.6]
+    assert len(legs) == 4 and all(p[2][0] - p[1][0] < 0.065 for p in legs)              # four slim turned legs
+    knobs = [p for p in parts if p[2][0] < tlo[0] + 0.05 and p[1][0] > tlo[0] - 0.05 and zo + 0.62 < p[1][2] < zo + 0.75
+             and p[2][1] - p[1][1] < 0.05]
+    assert knobs and all(p[1][0] < tlo[0] + 0.04 for p in knobs)                        # drawer knob: sitter's side (west)
+    chair = [p for p in parts if p[2][2] < zo + 0.95 and p[1][0] < tlo[0] - 0.01                 # seat, back legs, slats
+             or p[2][2] < zo + 0.45 and p[1][0] > tlo[0] and abs((p[1][1] + p[2][1]) / 2 - (tlo[1] + thi[1]) / 2) < 0.2]
+    assert len(chair) == 10                          # + front legs, side and front stretchers
+    clo = [min(p[1][k] for p in chair) for k in range(3)]; chi = [max(p[2][k] for p in chair) for k in range(3)]
+    assert 0.85 < chi[2] - zo < 0.95 and chi[1] - clo[1] < 0.45 and chi[0] - clo[0] < 0.45   # small, high back
+    assert tlo[0] < chi[0] < thi[0] and tlo[1] < clo[1] and chi[1] < thi[1]             # pushed in, under the top
+    seat = [p for p in chair if abs(p[2][2] - (zo + 0.455)) < 1e-6]
+    assert len(seat) == 1
+    lo = [min(p[1][k] for p in parts) for k in range(3)]; hi = [max(p[2][k] for p in parts) for k in range(3)]
+    others = [(a, b) for (c, o) in BP.geo if c == "OG" and o != "OG_Schreibplatz" and not o.endswith("_Boden")
+              for _, a, b, _ in part_list((c, o)) if a[2] < zo + 1.0 and b[2] > zo + 0.02]
+    _clear([(m, a, b) for m, a, b, _ in parts], others, "OG part")                       # walls, bed, Kamin ...
+    _clear([(m, a, b) for m, a, b, _ in parts], _leaf_boxes(BP, "OG", zo), "door leaf")
+    ofen = [(a, b) for (c, o) in BP.geo if o == "OG_Werkstattofen" for _, a, b, _ in part_list((c, o))]
+    olo = [min(a[k] for a, _ in ofen) for k in range(2)]; ohi = [max(b[k] for _, b in ofen) for k in range(2)]
+    assert math.hypot(*[max(olo[k] - hi[k], lo[k] - ohi[k], 0) for k in range(2)]) >= 0.60   # walkway to the Kamin
+    assert lo[1] - 0.40 >= 0.60                                                         # and along the south wall

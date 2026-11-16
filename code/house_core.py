@@ -53,6 +53,7 @@ MAT_DEF = {
     "Laden":      dict(rgba=(0.30, 0.17, 0.08, 1)),
     "Tuer":       dict(wood=((0.07, 0.022, 0.006), (0.36, 0.11, 0.028), "z")),   # stained larch
     "Innentuer":  dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "z")),    # pine
+    "KieferY":    dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "y")),    # the same pine, grain along y (#44)
     "Kiefer":     dict(wood=((0.30, 0.21, 0.12), (0.55, 0.43, 0.29), "z")),    # limed pine (stair)
     "Stufe":      dict(wood=((0.20, 0.07, 0.02), (0.42, 0.17, 0.05), "x")),    # worn treads
     "Eiche":      dict(wood=((0.06, 0.025, 0.008), (0.26, 0.11, 0.035), "x")),    # oak planks
@@ -2026,7 +2027,8 @@ def build_annex():
 FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "EG_Geschirr", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
              "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse",
              "EG_Spiegel", "OG_Spiegel",   # the mirrors are furnishings: not on the plan sheets (#19)
-             "EG_Kleidung"}                # the Garderobe's coats and shoes (#27)
+             "EG_Kleidung",                # the Garderobe's coats and shoes (#27)
+             "OG_Schreibplatz"}            # the small desk and its chair in the Schlafzimmer (#44)
 
 
 def _grain(ax):
@@ -2252,6 +2254,60 @@ def side_table(c, cx, cy, turn=0.0):
             + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)])
 
 
+SCHREIBPLATZ = (10.925, 11.475, 1.25, 2.35)   # the small desk's top (#44): 5 mm off the low wall's west face,
+                                               # its south end 32 cm in from the wall's end, by the balcony door
+
+
+def schreibplatz(c, z):
+    """Small country desk after input/2026-11-15 input/kleiner-schreibtisch.webp (#44) in the Schlafzimmer
+    Nadine & Till, its back to the low wall at the bed's head, and a small ladder-back chair pushed in on its
+    west side (object <c>_Schreibplatz): top 110 x 55, 3.5 cm, at 0.78 over 4 cm overhang; four turned legs
+    (square block at the apron, vase, rings, long taper, ball foot); apron with one drawer and a round knob
+    on the sitter's side. Chair: plank seat at 0.455, turned legs, stretchers, back posts with finials, two
+    slats. Old pine like the doors (Innentuer; top and seat KieferY, grain along the desk).
+    Own random stream Random(44): one rnd for the desk, one for the chair."""
+    o, rng = c + "_Schreibplatz", random.Random(44)
+    rd, rc = rng.random(), rng.random()
+    x0, x1, y0, y1 = SCHREIBPLATZ
+    zf, zt, ov, lw = z + 0.012, z + 0.78, 0.04, 0.06                          # floor, top, overhang, leg
+    za = zt - 0.035                                                            # under the top
+    box(c, o, "KieferY", x0, x1, y0, y1, za, zt, rd)                           # top
+    leg = [(0.016, 0), (0.022, 0.02), (0.026, 0.05), (0.022, 0.085), (0.014, 0.11), (0.019, 0.13), (0.015, 0.15),
+           (0.018, 0.20), (0.024, 0.52), (0.019, 0.60), (0.025, 0.64), (0.019, 0.68), (0.027, 0.78), (0.019, 0.88),
+           (0.025, 0.92), (0.025, 0.96), (0.028, 1.0)]                         # bottom (ball foot) to the block
+    zb = za - 0.11                                                             # block / apron bottom
+    lx, ly = (x0 + ov, x1 - ov - lw), (y0 + ov, y1 - ov - lw)
+    for xa in lx:
+        for ya in ly:
+            box(c, o, "Innentuer", xa, xa + lw, ya, ya + lw, zb, za, rd)       # square block
+            turned(c, o, "Innentuer", (xa + lw / 2, ya + lw / 2, zf), (xa + lw / 2, ya + lw / 2, zb), leg, 16, rd)
+    e = 0.005                                                                  # apron set back from the blocks' faces
+    for xa in (lx[0] + e, lx[1] + lw - e - 0.02):                              # long sides
+        box(c, o, "Innentuer", xa, xa + 0.02, ly[0] + lw, ly[1], zb, za, rd)
+    for ya in (ly[0] + e, ly[1] + lw - e - 0.02):                              # short sides
+        box(c, o, "Innentuer", lx[0] + lw, lx[1], ya, ya + 0.02, zb, za, rd)
+    ym, xf = (y0 + y1) / 2, lx[0] + e                                          # drawer: middle of the west apron
+    box(c, o, "KieferY", xf - 0.008, xf, ym - 0.175, ym + 0.175, zb + 0.015, za - 0.012, rd)
+    turned(c, o, "Innentuer", (xf - 0.008, ym, zb + 0.05), (xf - 0.032, ym, zb + 0.05),
+           [(0.006, 0), (0.008, 0.3), (0.016, 0.7), (0.012, 0.95), (0.004, 1)], 12, rd)   # round knob
+    # chair: seat 38 x 38, its front 10 cm under the top, centred on the drawer
+    sx0, sx1, sy0, sy1, zs = x0 + 0.10 - 0.38, x0 + 0.10, ym - 0.19, ym + 0.19, z + 0.455
+    box(c, o, "KieferY", sx0, sx1, sy0, sy1, zs - 0.025, zs, rc)               # seat plank
+    cl = [(0.014, 0), (0.017, 0.1), (0.017, 0.55), (0.013, 0.65), (0.018, 0.75), (0.018, 1.0)]   # front legs
+    fx, bx = sx1 - 0.025, sx0 + 0.022
+    for ya in (sy0 + 0.025, sy1 - 0.025):
+        turned(c, o, "Innentuer", (fx, ya, zf), (fx, ya, zs - 0.025), cl, 12, rc)
+        turned(c, o, "Innentuer", (bx, ya, zf), (bx, ya, z + 0.86),            # back post with a finial
+               [(0.014, 0), (0.018, 0.05), (0.018, 0.82), (0.013, 0.88), (0.019, 0.93), (0.012, 0.98), (0.004, 1)],
+               12, rc)
+        turned(c, o, "Innentuer", (bx + 0.017, ya, z + 0.17), (fx - 0.017, ya, z + 0.17),
+               [(0.009, 0), (0.011, 0.5), (0.009, 1)], 8, rc)                  # side stretcher
+    turned(c, o, "Innentuer", (fx, sy0 + 0.042, z + 0.22), (fx, sy1 - 0.042, z + 0.22),
+           [(0.009, 0), (0.011, 0.5), (0.009, 1)], 8, rc)                      # front stretcher
+    for zs0 in (z + 0.60, z + 0.74):                                           # back slats
+        box(c, o, "KieferY", bx - 0.007, bx + 0.007, sy0 + 0.04, sy1 - 0.04, zs0, zs0 + 0.065, rc)
+
+
 def armchair(c, cx, cy, face):
     """Small cocktail armchair after sessel-klein.jpg, seat centred at (cx, cy), facing `face`
     degrees: bouclé seat box with piping and cushion, back curved in plan and flaring towards
@@ -2367,6 +2423,7 @@ def build_furniture():
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)
     cabinet("OG", 11.84, 14.348, 5.38, 6.058, "S", (11.84, 12.86, 13.34, 13.85, 14.348), zo)
+    schreibplatz("OG", zo)                                    # behind the low wall at the bed's head (#44)
     sitzecke()
     # Stube sofa: 3/4 of the way from the corner pier between the big windows (room corner) to the
     # Ofen block's room corner (bed included), facing the pier

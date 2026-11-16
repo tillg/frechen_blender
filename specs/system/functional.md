@@ -141,6 +141,14 @@ edited: 2026-11-16
     doors, its feet folded onto it. It shows how: it folds up in 3 s, rests 4 s, folds down, on the
     sub-model page and in the house in stage Eingerichtet (the film, the Rundgang and the plan sheets
     see it down). The left cabinet covers part of the west window's reveal (accepted)
+  - Schlafzimmer Nadine & Till (OG, SE; #44): a small country desk after `input/2026-11-15 input/
+    kleiner-schreibtisch.webp` (old pine, top 110 × 55 at 78 cm with 4 cm overhang, four turned legs
+    with ball feet, apron with one drawer and a round knob on the sitter's side) with its back to the
+    low wall (1.20 m) at the bed's head end, on the wall's west side, its south end 32 cm in from the
+    wall's end, by the balcony door; on its far side a small matching ladder-back chair (seat 38 × 38
+    at 45.5 cm, turned legs, stretchers, back posts with finials, two slats), pushed in 10 cm under
+    the top. Furniture (stage Eingerichtet, not on the plan sheets); the Rundgang passes it 0.25 m
+    clear in plan
   - the six washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
     52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
@@ -313,8 +321,8 @@ Blender backend. What the scripts make:
   film capture, `tmp/threejs_film.mjs`, always sets it) switches all of these shortcuts off.
 - **Fotos & Vorlagen** (`vorlagen.html`): every raster image of `input/` the model was built after, each photo
   once (a repeat of a shown one, another size of the same photo, is listed in `vorlagen.DOPPELT`, not shown),
-  sorted into ten Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC, Haupteingang & Windfang,
-  Bibliothek & Büro, Bad Oma & Opa, Gästebad, Außen & Garten, Ganzes Haus = elements found all over the house,
+  sorted into eleven Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC, Haupteingang & Windfang,
+  Bibliothek & Büro, Bad Oma & Opa, Gästebad, Schlafzimmer Nadine & Till (marker over its small desk), Außen & Garten, Ganzes Haus = elements found all over the house,
   Pläne); without `?b=` an index (cover picture and count per Bereich), with `?b=<key>` the
   Bereich's pictures with German captions, a click opens the copy (≤ 1600 px). Every page links the
   3D house, the index and every Bereich; the house page links the index under its title ("Fotos &

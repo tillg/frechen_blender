@@ -249,6 +249,11 @@ flowchart LR
   `wc_mirror()`, OG Flur without Ständer on `waschtisch()` (#40: the pine cabinet after `waschtisch.avif`, top 10 cm wider than the basin each side, in `OG_Sanitaer`, own `random.Random(40)`) with `wood_mirror()`, which the back hall's
   mirror in `gaeste_wc.py` and the mirrors in `gaestebad.py` and `elternbad.py` share with their own `rng`),
   `gaestebad.py`, `elternbad.py`, `gaeste_wc.py` and `bad.py`.
+- **Schreibplatz (#44).** `schreibplatz(c, z)` (from `build_furniture()`) builds the Schlafzimmer's small
+  country desk and its ladder-back chair into object `<c>_Schreibplatz` (in `FURNITURE`) at `SCHREIBPLATZ`
+  (the top's x/y range, west of the low wall at the bed's head); `Innentuer` pine, top and seat in
+  `KieferY` (the same pine, grain along y); own `random.Random(44)`, an explicit `rnd` on every part (one for the desk, one for the chair), so no other
+  object's shading shifts.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
   `build_gaeste_wc()` / `build_regal()` / `build_schrankbett()` / `build_gaestebad()` / `build_elternbad()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
   in `dims`) for `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html` /
