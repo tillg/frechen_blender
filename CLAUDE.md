@@ -76,6 +76,7 @@ Tests:
   - Stair: 15 risers at 18.0/25.5 need 3.57 m of run, more than the plan draws ("Treppe wird verschoben"). The OG stairwell opening confirms the full length.
   - To map world coordinates to plan pixels, use the page transform in `build_references()` (1:100, 28.3465 pt/m).
 - **Render look.** EEVEE with the AgX view transform washes out strong emission and bright saturated colours. Keep emission strengths low (the stove fire uses 1.2).
+- **Waiting for a background check.** `until ! pgrep -f "check.sh full"; do sleep 5; done` matches its own shell and never ends: wait on the PID, or write `pgrep -f "[c]heck.sh full"`.
 
 ## Claude config: everything comes from this repo
 
