@@ -145,6 +145,28 @@ def test_routes_and_spots_clear_the_waschkueche():
         assert gap(s[3]) >= 0.25, s[0]
 
 
+def test_routes_and_spots_clear_the_flur_waschtisch():
+    """Issue #40: every camera key of every route and every Standpunkt keeps 0.25 m from the OG Flur's Waschtisch
+    with its basin, mirror and two lamps, on the wall between the doors to Saschi and Waschküche."""
+    bp = house_core.build()
+    boxes, wood = [], 0
+    for o in ("Sanitaer", "Spiegel", "Wandlampen"):
+        g = bp.geo[("OG", "OG_" + o)]
+        for first, n in bp.parts[("OG", "OG_" + o)]:
+            vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
+            lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
+            if 4.87 < lo[0] and hi[0] < 7.15 and 6.35 <= lo[1] and hi[1] < 7.0:
+                boxes.append((lo, hi))
+                wood += o == "Sanitaer" and g["m"][first] in ("Innentuer", "Stufe")
+    assert len(boxes) > 40 and wood >= 12                                    # the Waschtisch is among them
+    gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
+    for name, route in tour.ROUTES:
+        for f in tour.build_tour(route):
+            assert gap(f[:3]) >= 0.25, (name, f[:3])
+    for s in tour.SPOTS:
+        assert gap(s[3]) >= 0.25, s[0]
+
+
 def test_routes_and_spots_clear_the_oberlicht():
     """Issue #30: every camera key of every route and every Standpunkt keeps 0.25 m from the glazing in the top
     metre of the Bad / Waschküche partition (frame, beads, glass; code/elternbad.py)."""
