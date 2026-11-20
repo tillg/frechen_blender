@@ -110,7 +110,7 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     floor(c, x0, y0)
     f, front = 0.06, NICHE + 0.06 + LT              # front: the front sliding leaf's room face
     return [((SHOWER + lt / 2, front, 0.02), (SHOWER + lt / 2, lv0, 0.02), f"Durchgang {round((lv0 - front) * 100, 1):g}"),
-            ((0, D - 0.15, 0.02), (SHOWER, D - 0.15, 0.02), "Dusche 80"),
+            ((0, 3.10, CLAD), (SHOWER, 3.10, CLAD), "Dusche 80"),            # over the low wall: seen from the room
             ((SHOWER - f, lv1, CLAD + 0.2), (SHOWER - f, D, CLAD + 0.2), "Glas 35"),
             ((SHOWER - f, lv0, lh), (SHOWER - f, lv1, lh), "Mauer 120"),
             ((SHOWER + lt / 2, lv0 - f, 0), (SHOWER + lt / 2, lv0 - f, lh), "100 hoch"),
