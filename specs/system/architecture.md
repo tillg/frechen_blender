@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-16
+edited: 2026-11-22
 ---
 
 # Architecture: Frechenlehen house model
@@ -549,6 +549,20 @@ sequenceDiagram
   file.
 - **`serve-build.js`** (Vite plugin, dev server only): serves the production build `web/dist/`
   under `/frechen_blender/`, the GitHub Pages path, so the one dev server shows source and build.
+- **Offline-App** ([ADR-004-CTPY](../architecture/adr-004-ctpy-offline-precache-service-worker.md)):
+  `offline-build.js` (Vite plugin, build only, `closeBundle`) walks `web/dist` and writes
+  `dist/sw.js` = `src/precache.js` `buildWorker()`: `VERSION` (content hash of every file plus the
+  worker body) and `FILES` (every file but `sw.js`, URL-encoded as the browser requests them) in
+  front of the worker body `src/sw.js`. The worker fetches all files (`cache: 'reload'`, four at a
+  time) into cache `frechenlehen-<VERSION>` on install, posting `offline-progress` /
+  `offline-failed` to every window; on activate it drops the other `frechenlehen-*` caches
+  (shared origin), takes control and posts `offline-ready`; it answers GETs in its scope from the
+  cache, query ignored, a directory URL as its `index.html`; the rest (the film, copied after the
+  build; Range requests) goes to the network. `src/offline.js`, imported by `main.js`,
+  `submodel.js` and `vorlagen.js`, registers it in production builds only, asks for persistent
+  storage and draws the badge (`.fl-offline`). `index.html` links `public/manifest.webmanifest`
+  and `icon-180.png` (192 and 512 in the manifest). The Playwright project `preview` blocks
+  service workers except in `e2e-preview/offline.spec.js`.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
   `project`, state getters incl. `lights` (visible room / outside lights), `hires`, `pixelRatio`,
   `tour`, `tourKey`, `slides`, `doors`), only outside production builds; `window.__ofen`
@@ -594,7 +608,8 @@ flowchart LR
 
 ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared core),
 [ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writer.md) (own glTF writer),
-[ADR-003-SKGB](../architecture/adr-003-skgb-webgpu-tsl.md) (WebGPURenderer + TSL).
+[ADR-003-SKGB](../architecture/adr-003-skgb-webgpu-tsl.md) (WebGPURenderer + TSL),
+[ADR-004-CTPY](../architecture/adr-004-ctpy-offline-precache-service-worker.md) (offline web app).
 
 | Decision | Alternatives considered | Why |
 |---|---|---|
@@ -619,7 +634,12 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | The Schrankbett folds by **`CRANK` without a `LIFT`, its feet by `FOLD`** on the lift clock | A new fold registry for the bed; an axis on `SWING`; parenting the feet to the bed | `CRANK` already carries axis + angle through core → glTF → `slides.js`; `FOLD` composes one hinge turn in the node's turning frame (a few lines in `liftingNodes`) without node hierarchies. The bed folds in step with the Büro desk in the house. |
 | Back door and Windfang door are **built by the Gäste-WC sub-model** | Only the WC door in the module | The page shows all three swinging doors; one builder for house and page. |
 | **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public. The viewer names the rooms (Standpunkte). |
-| **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. |
+| **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. The iPad gets the same build as an offline home-screen app, not tuned for it. |
+| Offline worker is **cache-first, query ignored** | Network-first | Offline works with deep links; online loads don't re-download ~60 MB. |
+| **Update:** new cache per build hash, old `frechenlehen-*` caches dropped on activate, `skipWaiting` + `clients.claim` | Ask the user to reload | Simplest; a deploy shows one load late. A tab opened before it is served from the new store (the viewer fetches its `.glb` once at start, so accepted). |
+| **Badge** only while storing, "Offline bereit" for 4 s, a failure stays | No indicator; always shown | The user must know when the store is complete; nothing on screen afterwards. |
+| Preview tests **block service workers** except the offline spec | Every preview test stores the build | The other specs count responses and must not race a 60 MB download. |
+| Vorlagen markers open in the **same window in a home-screen app** (`navigator.standalone`, `display-mode: standalone`) | Always the same window | Desktop keeps its new tab; a new window would leave the offline store. |
 | Look: **same palette, recognisably the same house** as the Blender renders | Pixel parity | A starting point, tuned in later iterations. |
 | The core holds the **garden layout**; each backend scatters and grows plants itself | Core computes every instance; web-only garden | Shared layout without forcing Geometry Nodes or `mathutils.noise` into pure Python. Blades and leaves differ in detail, by design. |
 | Browser grass at **25 %** of Blender's density, within 30 m | Full density | ~4 M triangles is too heavy; 25 % still reads as a meadow. |
