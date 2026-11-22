@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-16
+edited: 2026-11-22
 ---
 
 # Functional: Frechenlehen house model
@@ -267,6 +267,12 @@ Blender backend. What the scripts make:
 - "Frechenlehen — Vom Strich zum Haus", German UI, desktop browsers. It is live at
   `https://tillg.github.io/frechen_blender/` once `main` carries the viewer and the Pages
   source is set to "GitHub Actions".
+- **Offline-App** (e.g. on the iPad): the production build stores itself on the first visit
+  (Safari or "Zum Home-Bildschirm", web-app manifest and house icon); a badge at the bottom left
+  counts "Offline: n / m", then says "Offline bereit" for 4 s, or "Offline nicht möglich" when a
+  file can't be stored. Afterwards house, sub-models, plan sheets and Fotos & Vorlagen open without
+  network, deep links with their view query included; the film does not. A new deploy is fetched
+  on the next online load and shows from the load after that. The dev pages store nothing.
 - **Navigation panel** at the top right of every page (house and the five sub-models), the same
   place everywhere: three drop-downs that open below and a Reset button (house: plus the sun
   toggle). There is no timeline bar and no Play.
@@ -340,7 +346,8 @@ Blender backend. What the scripts make:
   (Ganzes Haus in the OG Flur, Außen & Garten before the terrace): shown from inside on its storey
   within 8 m, from above when Erdgeschoss / 1. Stock opens its storey, Außen from outside within
   15 m; never when a wall object lies between camera and anchor, in a route, with `?hires=on` or on a
-  plan sheet. A click opens the Bereich's page in a new tab.
+  plan sheet. A click opens the Bereich's page in a new tab (in the home-screen app in the same
+  window, inside its offline store).
 - Local: `cd web && npm install && npm run dev` (one server, port 5377). The `.glb` is regenerated
   from the core first, and again whenever a `code/*.py` file is saved; then open pages reload at
   the same view.

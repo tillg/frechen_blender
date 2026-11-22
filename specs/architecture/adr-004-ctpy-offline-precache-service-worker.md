@@ -3,7 +3,7 @@ type: ADR
 id: ADR-004-CTPY
 title: "Offline web app: a build-generated precaching service worker"
 description: The production build ships a service worker (sw.js, generated after vite build from the files in web/dist) that stores every file of the build on first visit and answers from that store, so the viewer runs offline, e.g. as a home-screen app on the iPad; dev pages register none.
-status: proposed
+status: accepted
 date: 2026-11-20
 supersedes: []
 superseded_by: []
