@@ -185,12 +185,19 @@ Gästebad (die Badewanne), Schlafzimmer Nadine & Till (der kleine Schreibtisch),
 Türen, Treppe, Werkstattofen) und Pläne. Die Übersicht erreicht man über „Fotos & Vorlagen“ unter dem
 Titel der Haus-Seite; jede Bereichsseite verlinkt alle anderen. Im Haus steht in jedem dieser Räume ein
 Schild „Fotos: …“: sichtbar von drinnen (im selben Geschoss, nicht durch Wände) und in Erdgeschoss / 1. Stock
-von oben, „Außen & Garten“ vor der Terrasse; ein Klick öffnet die Seite des Bereichs in einem neuen Tab. Im
+von oben, „Außen & Garten“ vor der Terrasse; ein Klick öffnet die Seite des Bereichs in einem neuen Tab (als App vom Home-Bildschirm im selben Fenster). Im
 Rundgang, beim Filmen und auf einem Planblatt sind die Schilder aus. Welches Bild wohin gehört und wo das
 Schild steht, steht einmal in `code/vorlagen.py` (jedes Foto nur einmal: dasselbe Foto in anderer Größe steht dort in `DOPPELT` und wird nicht gezeigt); die verkleinerten Kopien (≤ 1600 px) liegen in
 `web/public/vorlagen/` (neu erzeugen mit `python3 code/vorlagen.py --copy`, nur macOS).
 
 - Online: <https://tillg.github.io/frechen_blender/> (wird bei jedem Push auf `main` neu gebaut)
+- Offline, z. B. auf dem iPad: die Online-Seite in Safari öffnen, „Teilen → Zum Home-Bildschirm“, die App
+  vom Home-Bildschirm einmal mit Netz starten und warten, bis unten links „Offline bereit“ steht (vorher
+  zählt dort „Offline: n / m“ die Dateien, gut 60 MB). Danach läuft alles ohne Netz: Haus, Teilmodelle,
+  Pläne, Fotos & Vorlagen; nur der Film nicht. Ein neuer Stand kommt beim nächsten Start mit Netz und
+  ist beim Start danach zu sehen. Technik: ein Service Worker (`web/src/sw.js`), den der Build mit der
+  Liste aller Dateien von `web/dist` erzeugt (`web/offline-build.js`); die Seiten unter
+  `http://localhost:5377/` (Entwicklung) haben keinen.
 - Lokal: `cd web && npm install && npm run dev` – erzeugt zuerst das `.glb` aus dem Kern; danach Haus unter `http://localhost:5377/`, Ofen unter `http://localhost:5377/ofen.html`, Schreibtisch unter `http://localhost:5377/desk.html`, Bad unter `http://localhost:5377/bad.html`, Küche unter `http://localhost:5377/kueche.html`, Gäste-WC unter `http://localhost:5377/gaeste_wc.html`, Schrank im Büro unter `http://localhost:5377/regal.html`, Schrankbett unter `http://localhost:5377/schrankbett.html`, Gästebad unter `http://localhost:5377/gaestebad.html`, Bad Nadine & Till unter `http://localhost:5377/elternbad.html`, Fotos & Vorlagen unter `http://localhost:5377/vorlagen.html`, der Produktions-Build (`npm run build`, wie auf GitHub Pages) unter `http://localhost:5377/frechen_blender/` (immer nur ein Server, fester Port 5377; auch die Tests laufen gegen ihn). Wird eine Datei in `code/` gespeichert, erzeugt der Server das `.glb` neu und lädt die Seite nach – an derselben Stelle, denn die Ansicht steht in der URL (Haus: Kamera, Blickpunkt, Stufe, Schnitt, optional `fov=` als vertikales Sichtfeld in Grad, Standard 28, und `hires=on` für volle Qualität bei der Filmaufnahme: alle Lichter, volle Pixeldichte, Gras auch von innen – sonst gelten die Abkürzungen für flüssiges Drehen, auch im Rundgang; Teilmodelle: Kamera, Blickpunkt, Darstellung). So lässt sich eine Ansicht auch als Link weitergeben.
   (braucht `python3`) und öffnet dann die Seite.
 

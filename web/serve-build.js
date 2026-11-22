@@ -5,7 +5,7 @@ import { extname, join, normalize, resolve } from 'node:path';
 
 const BASE = '/frechen_blender/';
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.glb': 'model/gltf-binary',
-  '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+  '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' };
 
 export function serveBuild() {
   return {

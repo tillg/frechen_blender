@@ -18,8 +18,10 @@ export default defineConfig({
   projects: [
     { name: 'dev', testDir: 'e2e', use: { baseURL: `http://localhost:${APP}/` } },
     { name: 'build', testDir: 'e2e-preview', testMatch: /build\.setup\.js/ },
-    // the production build, under /frechen_blender/ as GitHub Pages serves it
-    { name: 'preview', testDir: 'e2e-preview', testMatch: /\.spec\.js/, dependencies: ['build'], use: { baseURL: `http://localhost:${APP}/` } },
+    // the production build, under /frechen_blender/ as GitHub Pages serves it; its service worker
+    // (offline, #56) only where a spec allows it: the others count responses
+    { name: 'preview', testDir: 'e2e-preview', testMatch: /\.spec\.js/, dependencies: ['build'],
+      use: { baseURL: `http://localhost:${APP}/`, serviceWorkers: 'block' } },
   ],
   // no server of its own: use the one on 5377, start it there only if none is running
   webServer: { command: 'npm run dev', url: `http://localhost:${APP}/`, reuseExistingServer: true, timeout: 120_000 },

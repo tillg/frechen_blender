@@ -29,8 +29,11 @@ export function createMarkers(bp, yup) {
   const ex = bp.extras;
   const walls = (ex.vorlagen_walls ?? []).map((n) => bp.byName[n]).filter(Boolean);
   const ray = new THREE.Raycaster(), v = new THREE.Vector3();
+  // a home-screen app (#56) opens a new window outside its offline store: there, the same window
+  const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
   const markers = (ex.vorlagen ?? []).map((b) => {
-    const a = Object.assign(document.createElement('a'), { className: 'fl-vorlage', href: pageUrl(b.key), target: '_blank', rel: 'noopener' });
+    const a = Object.assign(document.createElement('a'), { className: 'fl-vorlage', href: pageUrl(b.key) });
+    if (!standalone) Object.assign(a, { target: '_blank', rel: 'noopener' });
     a.innerHTML = `${ICON}<span></span>`;
     a.lastChild.textContent = `Fotos: ${b.title}`;
     a.title = `Fotos und Vorlagen: ${b.title}`;
