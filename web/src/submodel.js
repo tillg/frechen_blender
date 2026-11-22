@@ -13,6 +13,7 @@ import { makeMaterials, roomEnvironment, setReflections, updateStage } from './m
 import { liftingNodes, slidingNodes, swingingNodes } from './slides.js';
 import { createToolbar } from './toolbar.js';
 import { initialQuery, remove, safeStorage, storageKey, write } from './viewstate.js';
+import './offline.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 

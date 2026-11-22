@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import { blueprintWatch } from './blueprint-watch.js';
 import { serveBuild } from './serve-build.js';
+import { offlineBuild } from './offline-build.js';
 
 export default defineConfig(({ command, isPreview }) => ({
   base: command === 'build' || isPreview ? '/frechen_blender/' : '/',   // GitHub Pages sub-path
@@ -10,7 +11,8 @@ export default defineConfig(({ command, isPreview }) => ({
     target: 'es2022',                                        // top-level await in main.js
     rollupOptions: { input: ['index.html', 'ofen.html', 'desk.html', 'bad.html', 'kueche.html', 'gaeste_wc.html', 'regal.html', 'schrankbett.html', 'gaestebad.html', 'elternbad.html', 'vorlagen.html'] },  // the house, the sub-models, the photos
   },
-  plugins: [blueprintWatch(), serveBuild()],                // code/*.py saved: new .glb, reload;
-                                                             // web/dist/ under /frechen_blender/
+  plugins: [blueprintWatch(), serveBuild(), offlineBuild()], // code/*.py saved: new .glb, reload;
+                                                             // web/dist/ under /frechen_blender/;
+                                                             // build: dist/sw.js (offline, #56)
   test: { include: ['src/**/*.test.js'] },
 }));

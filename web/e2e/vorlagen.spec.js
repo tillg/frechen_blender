@@ -66,6 +66,16 @@ test('the Stube marker shows in the Stube and opens the Stube page with the Ofen
   await expect(popup.locator('figcaption', { hasText: 'Kachelofen' })).toBeVisible();
 });
 
+test('as a home-screen app (standalone) the marker opens the page in the same window (#56: stays offline)', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, 'standalone', { get: () => true }));
+  await house(page, 'cam=13.2,2.4,1.6&at=11.6,3.4,1.6&p=4&cut=all');
+  const m = page.locator('a.fl-vorlage[data-key="stube"]');
+  await expect(m).toBeVisible();
+  expect(await m.getAttribute('target')).toBeNull();
+  await m.click();
+  await expect(page).toHaveURL(/vorlagen\.html\?b=stube$/);
+});
+
 test('a marker hides behind a wall, in the Rundgang and on a plan sheet', async ({ page }) => {
   await house(page, 'cam=13.2,2.4,1.6&at=11.6,3.4,1.6&p=4&cut=all');
   await expect(page.locator('a.fl-vorlage[data-key="stube"]')).toBeVisible();

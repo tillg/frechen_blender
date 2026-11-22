@@ -3,6 +3,7 @@
 // pictures with captions; a click opens the copy at full size. The manifest is public/vorlagen.json
 // (npm run blueprint), the copies are public/vorlagen/<key>/<file>.
 import { pageUrl, pickBereich } from './vorlagen-data.js';
+import './offline.js';
 
 const base = import.meta.env.BASE_URL;
 const res = await fetch(`${base}vorlagen.json`);

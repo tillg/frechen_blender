@@ -14,6 +14,7 @@ import { liftingNodes, slidingNodes, swingingNodes } from './slides.js';
 import { createTour, drawDue, LOOK } from './tour.js';
 import { createUI } from './ui.js';
 import { cleanView, hasView, initialQuery, read, remove, safeStorage, storageKey, write } from './viewstate.js';
+import './offline.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
 // ?hires=on: full quality for the film capture, no speed shortcut that changes the picture
