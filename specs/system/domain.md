@@ -22,7 +22,7 @@ the team uses them:
 | Term | Meaning |
 |---|---|
 | **EG** (Erdgeschoss) | Ground floor, z = 0 … 2.40 m. |
-| **Offline-App** | The production viewer stored on a device by its service worker: every file of one build, so the pages open without network (iPad home screen); "Offline bereit" once complete. The next online load after a deploy fetches the new build. |
+| **Offline-App** | The production viewer stored on a device by its service worker: every file of one build, so the pages open without network (iPad home screen); "Offline bereit" once complete. The next online load after a deploy fetches the new build; the button "Neue Version nachladen" fetches it at once and reloads. |
 | **OG** (Obergeschoss) | Upper floor, z = 2.70 … 4.90 m (`Z_OG`, `Z_OG_TOP`). |
 | **Dach** | Roof: ridge runs east–west at 7.67 m, ~20° pitch, wide eaves (`EAVE_OH`) and gable overhangs (`GABLE_OH`). |
 | **Grundriss** | Floor plan, 1:100: the architect's input plan (`grundriss_eg.png`, `grundriss_og.png` in the folder of the current plans, see `LOG.md`) and our generated one, a horizontal section through a storey at its **cut height (Schnitthöhe)** seen from above. Parts the cut passes through are **cut** (walls hatched inside one heavy outline, other parts a thin one); parts below it are **projection** in thin lines; loose furniture and parts above the cut are left out. |

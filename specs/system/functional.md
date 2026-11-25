@@ -287,7 +287,11 @@ Blender backend. What the scripts make:
   counts "Offline: n / m", then says "Offline bereit" for 4 s, or "Offline nicht möglich" when a
   file can't be stored. Afterwards house, sub-models, plan sheets and Fotos & Vorlagen open without
   network, deep links with their view query included; the film does not. A new deploy is fetched
-  on the next online load and shows from the load after that. The dev pages store nothing.
+  on the next online load and shows from the load after that, or at once with the button
+  "↻ Neue Version nachladen" at the bottom right of every production page (2026-11-25): it asks for a
+  new build; is there one, it stores it (the badge counts) and reloads into it, else "Neueste Version ✓"
+  (offline: "Keine Verbindung – später nochmal"). A new build stored in the background while the page
+  is open turns it dark: "Neue Version bereit – neu laden". The dev pages store nothing.
 - **Navigation panel** at the top right of every page (house and the five sub-models), the same
   place everywhere: three drop-downs that open below and a Reset button (house: plus the sun
   toggle). There is no timeline bar and no Play.
