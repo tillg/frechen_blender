@@ -7,12 +7,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "code"))
 import film_release  # noqa: E402
 
 
-def test_keeps_the_newest_two_films():
+def test_keeps_only_the_newest_film():                                    # rule 2026-11-25 (was: two)
     names = ["2026-11-05_frechen_rundgang_threejs.mp4", "2026-11-08_frechen_rundgang_threejs.mp4",
              "2026-11-06_frechen_rundgang_threejs.mp4", "README.md", "frechenlehen_rundgang.mp4",
              "2026-11-07_frechen_rundgang_blender.mp4"]
-    assert film_release.to_delete(names) == ["2026-11-05_frechen_rundgang_threejs.mp4"]
-    assert film_release.to_delete(names[:2]) == []
+    assert film_release.to_delete(names) == ["2026-11-05_frechen_rundgang_threejs.mp4",
+                                             "2026-11-06_frechen_rundgang_threejs.mp4"]
+    assert film_release.to_delete(names[1:2]) == []
 
 
 def test_latest_is_the_newest_film():                                    # Pages serves it as rundgang.mp4

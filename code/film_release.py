@@ -1,6 +1,7 @@
 """Frechenlehen – releasing the Rundgang film (used by `just film`, pure Python + git, no bpy).
 
-- to_delete(names): the films (YYYY-MM-DD_frechen_rundgang_threejs.mp4) older than the newest two.
+- to_delete(names): the films (YYYY-MM-DD_frechen_rundgang_threejs.mp4) but the newest (rule 2026-11-25: only the newest film
+  stays in the repo, older ones also leave the git history).
 - latest(names): the newest film (GitHub Pages serves it as rundgang.mp4, see pages.yml).
 - video_kbps(seconds): the H.264 bitrate for a two-pass encode that ends near TARGET_MB, safely
   under GitHub's 100 MB file limit, whatever the film's length (25 fps stays).
@@ -14,7 +15,7 @@ import os, re, subprocess, sys
 from pathlib import Path
 
 FILM = re.compile(r"^(\d{4}-\d{2}-\d{2})_frechen_rundgang_threejs\.mp4$")
-KEEP, FPS, TARGET_MB = 2, 25, 90
+KEEP, FPS, TARGET_MB = 1, 25, 90
 
 
 def to_delete(names, keep=KEEP):

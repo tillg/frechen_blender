@@ -422,7 +422,7 @@ sequenceDiagram
 | In | Out |
 |---|---|
 | `input/*.pdf`, `grundriss_*.png` (plans) | `frechenlehen.blend` (frozen at `7805879`, Blender dormant) |
-| `input/*.png/jpg` detail photos, named after their component | `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (the two newest films) |
+| `input/*.png/jpg` detail photos, named after their component | `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (only the newest film) |
 | | `plans/*.svg` plan sheets for the architect (committed) |
 | `input/farben_*.png` colour references | `docs/images/ansicht_*.png` (README views) |
 | | `tmp/web/*.png` viewer screenshots, `tmp/check-*.log` check logs |

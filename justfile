@@ -6,7 +6,7 @@ today := `date +%F`
 film := today + "_frechen_rundgang_threejs.mp4"
 frames := "tmp/film_web"
 
-# Capture, encode, keep only this film and the one before (also in the git history), commit, force-push
+# Capture, encode, keep only this film (older ones also leave the git history), commit, force-push
 film: film-capture film-encode film-publish
 
 # Capture the viewer's Rundgang frame by frame (~26 min) on the dev server of this checkout
@@ -44,7 +44,7 @@ film-encode:
     echo "{{film}}: $((size / 1000000)) MB"
     [ "$size" -lt 99000000 ] || { echo "too big for GitHub"; exit 1; }
 
-# Delete all but the newest two films (also from main's git history), commit and force-push main
+# Delete all but the newest film (also from main's git history), commit and force-push main
 film-publish:
     #!/usr/bin/env bash
     set -euo pipefail
