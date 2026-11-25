@@ -412,6 +412,22 @@ side ≤ `MAX_PX` 1600, JPEG 80) to `web/public/vorlagen/<key>/` (committed: CI 
 exactly once and copied, and that every anchor stands in free air in its room (no wall Part between
 it and the room's `PLAN_ROOMS` anchor). No geometry: plan sheets, goldens and route are untouched.
 
+### `versionen.py` — plan versions
+
+Pure Python + git, stdlib only ([ADR-005-JXWL](../architecture/adr-005-jxwl-plan-versions-source-snapshots.md)).
+A version is a frozen plan state: id = date `YYYY-MM-DD` (unique), a name, and the snapshot
+`versionen/<id>.tar.gz` = `git archive HEAD code plans`, listed in `versionen/versionen.json` (sorted
+by id). `freeze(repo, name, id)` (`just version "<name>"`, id = today) refuses uncommitted
+`code/`/`plans/`, a used id and a non-date id. `build(repo, public, cache)` (the last command of
+`npm run blueprint`, so also CI) refuses a non-date id in the list, unpacks each snapshot (tar
+filter `data`, Python ≥ 3.11.4) and runs **its own** `code/export_gltf.py`; the result
+(`frechenlehen.glb` + the snapshot's `plans/*.svg`) is cached in `tmp/versionen/<id>-<sha12 of the
+tar.gz>/` and copied to `web/public/v/<id>/` only when it differs; unlisted version directories are
+removed. It writes `web/public/versionen.json` (`[{id, name}]`, newest first). The export is
+byte-identical across runs and Python versions, so a version's offline cache keeps its name across
+deploys. `tests/test_versionen.py` (the build test is `slow`). A committed snapshot never changes;
+the viewer must load every listed version (`web/e2e/versions.spec.js`).
+
 ### Other Blender scripts (dormant)
 
 Each one imports the core with `sys.path` + `importlib.reload(house_core)`, so a
@@ -437,7 +453,8 @@ sequenceDiagram
     participant Li as lighting.js
     participant U as toolbar.js
     participant S as stages.js
-    M->>L: load BASE_URL + frechenlehen.glb
+    M->>M: versionen.json, ?v= (versions.js)
+    M->>L: load BASE_URL [+ v/<id>/] + frechenlehen.glb
     L-->>M: {root, objects, byName, extras}
     M->>Ma: TSL materials from the material extras
     M->>M: ink.js lines, garden.js grass and shrubs
@@ -501,7 +518,15 @@ sequenceDiagram
   callbacks. The house entries switch the cutaway in place (`all` / `eg` / `noroof`, URL `cut=`
   kept); a sub-model entry navigates to its page (relative URLs).
 - **`ui.js`.** The house page's title and its toolbar wiring (stage labels as levels, light switch
-  enabled from p 1.5). `body.dataset.stage`/`cutaway` mirror the state.
+  enabled from p 1.5). `body.dataset.stage`/`cutaway` mirror the state. With a non-empty version
+  list the title box holds the drop-down **Version** (`toolbar.js` `dropdown()`: Aktuell, then the
+  versions as "<id> <name>"); a frozen version adds `fl-frozen` (tinted box). Choosing navigates
+  (`main.js` flushes the view, then `versionHref`).
+- **`versions.js`.** Pure, no three.js: `loadVersions(base)` (`versionen.json`, `[]` when missing),
+  `pick(list, search)` (the `?v=` entry, else `null` = Aktuell, also for an unknown id),
+  `dataBase(base, v)` (`base` or `base + 'v/<id>/'`: the house `.glb` and `createPlanView` read from
+  it; textures stay at `base`), `versionHref(search, id)` (sets or drops `v`, keeps the other pairs
+  raw), `versionLabel(v)`.
 - **`viewstate.js`.** Pure, no three.js. Saved views in `localStorage` under
   `frechenlehen:<page>:<entry>` (prefix: GitHub Pages shares its origin with other repos), value =
   the query string the URL carries; `initialQuery(search, storage, key)`: the URL's view wins, else
@@ -545,7 +570,7 @@ sequenceDiagram
   `toolbar.js` panel on every sub-model page: the page config `views` (`{key: [label, cam, at]}`)
   are its Standpunkte, the three looks its Darstellung (one constant in `submodel.js`).
 - **View in the URL.** `main.js` and `submodel.js` read `?cam=&at=` (model coordinates) plus
-  `p`/`cut` (house) or `look` (sub-models) on load (`viewstate.initialQuery`) and write them back
+  `p`/`cut` (house; `plan`, `hires` and `v` kept beside the view) or `look` (sub-models) on load (`viewstate.initialQuery`) and write them back
   with `history.replaceState`, debounced to 300 ms, on every controls change, stage, cutaway or look
   change, and into the saved view. Not while a route plays.
 - **`blueprint-watch.js`** (Vite plugin, dev server only, off under Vitest): watches `code/*.py`;
@@ -557,19 +582,22 @@ sequenceDiagram
   under `/frechen_blender/`, the GitHub Pages path, so the one dev server shows source and build.
 - **Offline-App** ([ADR-004-CTPY](../architecture/adr-004-ctpy-offline-precache-service-worker.md)):
   `offline-build.js` (Vite plugin, build only, `closeBundle`) walks `web/dist` and writes
-  `dist/sw.js` = `src/precache.js` `buildWorker()`: `VERSION` (content hash of every file plus the
-  worker body) and `FILES` (every file but `sw.js`, URL-encoded as the browser requests them) in
-  front of the worker body `src/sw.js`. The worker fetches all files (`cache: 'reload'`, four at a
-  time) into cache `frechenlehen-<VERSION>` on install, posting `offline-progress` /
-  `offline-failed` to every window; on activate it drops the other `frechenlehen-*` caches
-  (shared origin), takes control and posts `offline-ready`; it answers GETs in its scope from the
-  cache, query ignored, a directory URL as its `index.html`; the rest (the film, copied after the
+  `dist/sw.js` = `src/precache.js` `buildWorker()`: `CACHES` = `cacheGroups()`, `{cache name: [files]}`
+  (URL-encoded as the browser requests them, `sw.js` left out): the live build in
+  `frechenlehen-<hash of its files and the worker body>`, each plan version's `v/<id>/…` in
+  `frechenlehen-v-<id>-<hash of its files>`, in front of the worker body `src/sw.js`. On install the
+  worker fetches every file not yet in its cache (`cache: 'reload'`, four at a time; a version kept
+  from an earlier deploy costs nothing), posting `offline-progress` / `offline-failed` to every
+  window; on activate it drops the `frechenlehen-*` caches not in `CACHES` (shared origin), takes
+  control and posts `offline-ready`; it answers GETs in its scope from the cache of the URL's group
+  (`v/<id>/` → that version's, else the live one), query ignored, a directory URL as its
+  `index.html`; the rest (the film, copied after the
   build; Range requests) goes to the network. `src/offline.js`, imported by `main.js`,
   `submodel.js` and `vorlagen.js`, registers it in production builds only, asks for persistent
-  storage and draws the badge (`.fl-offline`) and the button "Neue Version nachladen" (`.fl-update`, bottom
+  storage and draws the badge (`.fl-offline`) and the button "Update laden" (`.fl-update`, bottom
   right: `registration.update()`, a new worker installing → reload on its `offline-ready` /
   `controllerchange`; a `controllerchange` the page did not ask for while it was already controlled marks
-  it stale, "Neue Version bereit – neu laden"). `index.html` links `public/manifest.webmanifest`
+  it stale, "Update bereit – neu laden"). `index.html` links `public/manifest.webmanifest`
   and `icon-180.png` (192 and 512 in the manifest). The Playwright project `preview` blocks
   service workers except in `e2e-preview/offline.spec.js`.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
@@ -618,7 +646,8 @@ flowchart LR
 ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared core),
 [ADR-002-MLQS](../architecture/adr-002-mlqs-gltf-own-writer.md) (own glTF writer),
 [ADR-003-SKGB](../architecture/adr-003-skgb-webgpu-tsl.md) (WebGPURenderer + TSL),
-[ADR-004-CTPY](../architecture/adr-004-ctpy-offline-precache-service-worker.md) (offline web app).
+[ADR-004-CTPY](../architecture/adr-004-ctpy-offline-precache-service-worker.md) (offline web app),
+[ADR-005-JXWL](../architecture/adr-005-jxwl-plan-versions-source-snapshots.md) (plan versions).
 
 | Decision | Alternatives considered | Why |
 |---|---|---|
@@ -645,9 +674,13 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public. The viewer names the rooms (Standpunkte). |
 | **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. The iPad gets the same build as an offline home-screen app, not tuned for it. |
 | Offline worker is **cache-first, query ignored** | Network-first | Offline works with deep links; online loads don't re-download ~60 MB. |
-| **Update:** new cache per build hash, old `frechenlehen-*` caches dropped on activate, `skipWaiting` + `clients.claim` | Ask the user to reload | Simplest; a deploy shows one load late. A tab opened before it is served from the new store (the viewer fetches its `.glb` once at start, so accepted). |
+| **Update:** new live cache per build hash, old `frechenlehen-*` caches dropped on activate, `skipWaiting` + `clients.claim` | Ask the user to reload | Simplest; a deploy shows one load late. A tab opened before it is served from the new store (the viewer fetches its `.glb` once at start, so accepted). |
 | **Badge** only while storing, "Offline bereit" for 4 s, a failure stays | No indicator; always shown | The user must know when the store is complete; nothing on screen afterwards. |
 | Preview tests **block service workers** except the offline spec | Every preview test stores the build | The other specs count responses and must not race a 60 MB download. |
+| **One offline cache per plan version**, named by its files' hash and kept across deploys | One cache for the whole build | A deploy would re-download ~43 MB per version. |
+| Switching the version **reloads the page** (`?v=` set, view kept) | Swap the `.glb` in place | The page is built around one Blueprint at load; a reload frees GPU memory; the view lives in the URL. |
+| Version id = **date**, unique | Date + slug | Short URLs; `freeze --id` allows another id. |
+| The **Version drop-down sits in the title box**, house page only | In the toolbar; on every page | Sub-models are not versioned; the toolbar is full on the iPad; the title box says what is shown. |
 | Vorlagen markers open in the **same window in a home-screen app** (`navigator.standalone`, `display-mode: standalone`) | Always the same window | Desktop keeps its new tab; a new window would leave the offline store. |
 | Look: **same palette, recognisably the same house** as the Blender renders | Pixel parity | A starting point, tuned in later iterations. |
 | The core holds the **garden layout**; each backend scatters and grows plants itself | Core computes every instance; web-only garden | Shared layout without forcing Geometry Nodes or `mathutils.noise` into pure Python. Blades and leaves differ in detail, by design. |
@@ -707,7 +740,8 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 - **Generated, committed:** `frechenlehen.blend` (frozen at `7805879`, Blender dormant), the two newest
   Rundgang films `YYYY-MM-DD_frechen_rundgang_threejs.mp4` (~88 MB each), `docs/images/*.png`,
   `plans/*.svg` (must equal a fresh export).
-- **Generated, git-ignored:** `web/public/frechenlehen.glb` (`npm run blueprint`, run before
+- **Committed snapshots:** `versionen/<id>.tar.gz` + `versionen/versionen.json` (plan versions, never changed once committed).
+- **Generated, git-ignored:** `web/public/frechenlehen.glb`, `web/public/v/`, `web/public/versionen.json` (`npm run blueprint`, run before
   `dev`, `build` and `test`, and by the dev server after each saved `code/*.py`), `web/dist/`,
   the test environment `.venv/`.
 - **Scratch:** `tmp/` (git-ignored): film frames, detail stills, web screenshots, logs.

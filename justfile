@@ -62,3 +62,7 @@ film-publish:
     git push --force-with-lease=main:"$lease" origin main
     git reflog expire --expire=now --all && git gc -q --prune=now
     echo "films: $(ls *_frechen_rundgang_threejs.mp4 | tr '\n' ' ')  .git: $(du -sh .git | cut -f1)"
+
+# Freeze today's committed code/ and plans/ as a plan version (issue #59): versionen/<date>.tar.gz + versionen.json
+version name:
+    python3 code/versionen.py freeze "{{name}}"

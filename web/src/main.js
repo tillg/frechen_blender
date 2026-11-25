@@ -14,6 +14,7 @@ import { liftingNodes, slidingNodes, swingingNodes } from './slides.js';
 import { createTour, drawDue, LOOK } from './tour.js';
 import { createUI } from './ui.js';
 import { cleanView, hasView, initialQuery, read, remove, safeStorage, storageKey, write } from './viewstate.js';
+import { dataBase, loadVersions, pick, versionHref } from './versions.js';
 import './offline.js';
 
 const yup = ([x, y, z]) => new THREE.Vector3(x, z, -y);        // model z-up -> three.js y-up
@@ -40,7 +41,10 @@ Object.assign(controls, ORBIT);
 // 1 = real materials; uInk = opacity of the ink lines (fade out across Massenmodell)
 const uPaper = uniform(1), uDetail = uniform(0), uInk = uniform(1);
 
-const bp = await loadBlueprint(import.meta.env.BASE_URL + 'frechenlehen.glb');
+// the plan versions (issue #59, ADR-005-JXWL): ?v=<id> shows a frozen version's house and sheets
+const VERSIONS = await loadVersions(import.meta.env.BASE_URL), version = pick(VERSIONS, location.search);
+const DATA = dataBase(import.meta.env.BASE_URL, version);
+const bp = await loadBlueprint(DATA + 'frechenlehen.glb');
 // the Standpunkte of code/tour.py; the first, "Von Südosten" (the README view, setup_scene in
 // build_house.py), is the opening view, and the sun is aimed at its target
 const SPOTS = bp.extras.spots;
@@ -154,7 +158,7 @@ function flushView() {
     + (viewFov !== FOV ? `&fov=${viewFov}` : '') + (sun !== null ? `&sun=${sun}` : '');   // sun: Tag/Abend set by hand
   // the entry's default (Reset) is kept as no saved view and a bare URL
   const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
-  const extra = [plan && `plan=${plan}`, hires && 'hires=on'].filter(Boolean);
+  const extra = [plan && `plan=${plan}`, hires && 'hires=on', version && `v=${version.id}`].filter(Boolean);
   const q = (home ? '' : view) + (extra.length ? (home ? '?' : '&') + extra.join('&') : '');
   if (tour.state !== 'off') return;                               // a route is not saved, not even in the URL
   if (q !== location.search) history.replaceState(history.state, '', q || location.pathname);
@@ -224,7 +228,7 @@ function goSpot(name) {
   saveView();
 }
 // a plan sheet of Ganzes Haus over the 3D view (plans.js), or null: back to the 3D view
-const planView = createPlanView(import.meta.env.BASE_URL);
+const planView = createPlanView(DATA);
 let plan = null;
 function setPlan(k) {
   plan = k;
@@ -256,6 +260,9 @@ const ui = createUI({
   onReset: () => { setPlan(null); setProgress(0); ui.refresh(); goSpot(standard(model).name); },
   isDusk,
   toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); dirty = true; saveView(); },
+  versions: VERSIONS,
+  version,
+  onVersion: (id) => { flushView(); location.href = location.pathname + versionHref(location.search, id); },   // a reload, the view kept
 });
 showSpot();
 if (urlPlan) { setPlan(urlPlan); ui.refresh(); }
