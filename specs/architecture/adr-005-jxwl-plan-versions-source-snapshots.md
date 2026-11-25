@@ -3,7 +3,7 @@ type: ADR
 id: ADR-005-JXWL
 title: "Plan versions: committed source snapshots, built by their own exporter"
 description: A plan version is a committed tar.gz snapshot of code/ and plans/ (versionen/<id>.tar.gz, listed in versionen/versionen.json); the build turns each into its house .glb with the snapshot's own export_gltf.py and copies its plan sheets, and the current viewer must load every listed version.
-status: proposed
+status: accepted
 date: 2026-11-25
 supersedes: []
 superseded_by: []
