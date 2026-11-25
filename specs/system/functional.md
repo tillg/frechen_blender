@@ -285,13 +285,22 @@ Blender backend. What the scripts make:
 - **Offline-App** (e.g. on the iPad): the production build stores itself on the first visit
   (Safari or "Zum Home-Bildschirm", web-app manifest and house icon); a badge at the bottom left
   counts "Offline: n / m", then says "Offline bereit" for 4 s, or "Offline nicht möglich" when a
-  file can't be stored. Afterwards house, sub-models, plan sheets and Fotos & Vorlagen open without
-  network, deep links with their view query included; the film does not. A new deploy is fetched
-  on the next online load and shows from the load after that, or at once with the button
-  "↻ Neue Version nachladen" at the bottom right of every production page (2026-11-25): it asks for a
-  new build; is there one, it stores it (the badge counts) and reloads into it, else "Neueste Version ✓"
-  (offline: "Keine Verbindung – später nochmal"). A new build stored in the background while the page
-  is open turns it dark: "Neue Version bereit – neu laden". The dev pages store nothing.
+  file can't be stored. Afterwards house, sub-models, plan sheets, Fotos & Vorlagen and every plan
+  version open without network, deep links with their view query included; the film does not. Each
+  version is stored once (~43 MB) and kept when a later deploy changes only the live build. A new
+  deploy is fetched on the next online load and shows from the load after that, or at once with the
+  button "↻ Update laden" at the bottom right of every production page: it asks for a new build; is
+  there one, it stores it (the badge counts) and reloads into it, else "Schon aktuell ✓" (offline:
+  "Keine Verbindung – später nochmal"). A new build stored in the background while the page is open
+  turns it dark: "Update bereit – neu laden". The dev pages store nothing.
+- **Plan versions** (house page): the title box under "Vom Strich zum Haus" has the drop-down
+  **Version**: Aktuell (the live model, default) and every frozen version as "<date> <name>", e.g.
+  "2026-11-25 Nach Vincent & Silvia-Ideen". A frozen version shows its own house (3D, Standpunkte,
+  Rundgang, Vorlagen markers) and its six plan sheets; the title box is tinted then. Choosing
+  reloads the page with `?v=<id>`, the view kept; an unknown id shows Aktuell. Sub-models, Fotos &
+  Vorlagen, image textures (desk screens) and the film exist only in their live state. Freezing:
+  `just version "<name>"` (committed `code/` and `plans/`, id = today), then commit
+  `versionen/`.
 - **Navigation panel** at the top right of every page (house and the five sub-models), the same
   place everywhere: three drop-downs that open below and a Reset button (house: plus the sun
   toggle). There is no timeline bar and no Play.
@@ -430,7 +439,8 @@ sequenceDiagram
 | | `plans/*.svg` plan sheets for the architect (committed) |
 | `input/farben_*.png` colour references | `docs/images/ansicht_*.png` (README views) |
 | | `tmp/web/*.png` viewer screenshots, `tmp/check-*.log` check logs |
-| | `web/public/frechenlehen.glb`, `web/public/vorlagen.json` (generated), `web/dist/` → GitHub Pages |
+| | `web/public/frechenlehen.glb`, `web/public/vorlagen.json`, `web/public/v/<id>/` + `versionen.json` (generated), `web/dist/` → GitHub Pages |
+| committed `code/` + `plans/` at a freeze | `versionen/<id>.tar.gz` + `versionen/versionen.json` (plan versions, committed) |
 | every raster image in `input/` (the Vorlagen) | `web/public/vorlagen/<Bereich>/*.jpg` downsized copies (committed) |
 
 ## States and transitions
@@ -442,7 +452,7 @@ built or its other state, or on the way); otherwise the state is the model entry
 (house progress `p` 0–4), the Standpunkt (or Eigene Ansicht), a forced dusk value from the light
 switch (cleared by any stage change, saved with the entry's view), the saved view per entry, the Rundgang
 (off / playing / paused, its time and the loop flag; `body.dataset.tour`) and the `hires` mode
-(fixed per page load).
+(fixed per page load) and the plan version shown (`?v=`, fixed per page load).
 
 ## Permissions and visibility
 
@@ -459,5 +469,7 @@ hook exists only in dev and test builds.
 - Headless e2e tests run the WebGL2 fallback; the WebGPU path is checked by hand.
 - `show.py` frames turned objects (front door, screen panes) in their unturned pose, and cuts the
   storeys for an inside object by the height of its box centre, not by its collection.
+- Versions start 2026-11-25; earlier states cannot be shown (the viewer cannot read their `.glb`).
+  One freeze per day with `just version` (another id only via `versionen.py freeze --id`).
 - `film.py` adds new `Innenlicht_*` lights with rising suffixes on each run (cosmetic).
 - Plan accuracy is about ±5 cm. The stair is longer than drawn ("Treppe wird verschoben").
