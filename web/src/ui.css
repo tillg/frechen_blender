@@ -64,3 +64,10 @@ div.fl-sun { display: flex; flex-direction: column; gap: 2px; }
   font: 13px system-ui, sans-serif; text-decoration: none; white-space: nowrap; }
 .fl-vorlage:hover { background: #fff; }
 .fl-vorlage[hidden] { display: none; }
+/* house page: the plan versions (issue #59) in the title box; a frozen version tints the box */
+.fl-title .fl-version { margin-top: 8px; pointer-events: auto; font: 13px system-ui, sans-serif; align-items: flex-start; }
+.fl-title .fl-version .fl-dd { font: inherit; color: inherit; background: transparent; border: 1px solid rgba(43,41,38,.3);
+  border-radius: 6px; cursor: pointer; white-space: nowrap; max-width: 320px; text-align: left; padding: 4px 24px 4px 8px;
+  position: relative; overflow: hidden; text-overflow: ellipsis; }
+.fl-title .fl-version .fl-dd:hover { border-color: #2b2926; }
+.fl-title.fl-frozen { background: rgba(236, 214, 170, .92); }
