@@ -99,6 +99,56 @@ test('a new build replaces the stored one; offline then the new one', async ({ p
   }
 });
 
+test('"Neue Version nachladen": the newest says so; after a new deploy it stores the new build and reloads into it', async ({ page }) => {
+  test.setTimeout(240_000);
+  const sw = new URL('../dist/sw.js', import.meta.url);
+  const built = readFileSync(sw, 'utf8');
+  const old = built.match(/const VERSION = "(\w+)";/)[1];
+  const keys = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('frechenlehen-')));
+  const button = page.locator('.fl-update');
+  try {
+    await firstVisit(page);
+    await expect(button).toHaveText('↻ Neue Version nachladen');
+    await button.click();
+    await expect(button).toHaveText('Neueste Version ✓', { timeout: 30_000 });
+    await expect(button).toHaveText('↻ Neue Version nachladen', { timeout: 10_000 });
+    expect(await keys()).toEqual([`frechenlehen-${old}`]);
+    writeFileSync(sw, built.replace(`"${old}"`, '"next000build"'));               // a new deploy
+    await page.evaluate(() => { window.__before = true; });
+    const reloaded = page.waitForEvent('load', { timeout: 120_000 });
+    await button.click();
+    await reloaded;                                                              // into the new build
+    expect(await page.evaluate(() => window.__before)).toBeUndefined();
+    expect(await keys()).toEqual(['frechenlehen-next000build']);
+    await expect(button).toHaveText('↻ Neue Version nachladen', { timeout: 30_000 });
+  } finally {
+    writeFileSync(sw, built);
+  }
+});
+
+test('a new build stored in the background while the page is open turns the button into "Neue Version bereit"', async ({ page }) => {
+  test.setTimeout(240_000);
+  const sw = new URL('../dist/sw.js', import.meta.url);
+  const built = readFileSync(sw, 'utf8');
+  const old = built.match(/const VERSION = "(\w+)";/)[1];
+  try {
+    await firstVisit(page);
+    await page.reload();                                                          // now a page of the stored build
+    await expect(page.locator('.fl-update')).toHaveText('↻ Neue Version nachladen', { timeout: 60_000 });
+    writeFileSync(sw, built.replace(`"${old}"`, '"next000build"'));
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());   // the browser's own check
+    await expect(page.locator('.fl-update')).toHaveText('↻ Neue Version bereit – neu laden', { timeout: 120_000 });
+    await page.evaluate(() => { window.__before = true; });
+    const reloaded = page.waitForEvent('load', { timeout: 60_000 });
+    await page.locator('.fl-update').click();
+    await reloaded;
+    expect(await page.evaluate(() => window.__before)).toBeUndefined();
+    await expect(page.locator('.fl-update')).toHaveText('↻ Neue Version nachladen', { timeout: 30_000 });
+  } finally {
+    writeFileSync(sw, built);
+  }
+});
+
 test('a file that can\'t be stored stops with a message', async ({ page }) => {
   test.setTimeout(120_000);
   const sw = new URL('../dist/sw.js', import.meta.url);

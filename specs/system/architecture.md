@@ -566,7 +566,10 @@ sequenceDiagram
   cache, query ignored, a directory URL as its `index.html`; the rest (the film, copied after the
   build; Range requests) goes to the network. `src/offline.js`, imported by `main.js`,
   `submodel.js` and `vorlagen.js`, registers it in production builds only, asks for persistent
-  storage and draws the badge (`.fl-offline`). `index.html` links `public/manifest.webmanifest`
+  storage and draws the badge (`.fl-offline`) and the button "Neue Version nachladen" (`.fl-update`, bottom
+  right: `registration.update()`, a new worker installing → reload on its `offline-ready` /
+  `controllerchange`; a `controllerchange` the page did not ask for while it was already controlled marks
+  it stale, "Neue Version bereit – neu laden"). `index.html` links `public/manifest.webmanifest`
   and `icon-180.png` (192 and 512 in the manifest). The Playwright project `preview` blocks
   service workers except in `e2e-preview/offline.spec.js`.
 - **Test hook.** `window.__fl` (`setProgress`, `setCutaway`, `setSurfaces`, `lookFrom`,
