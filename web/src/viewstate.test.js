@@ -45,6 +45,13 @@ describe('viewstate (the saved view per model entry)', () => {
     expect(initialQuery('?cam=1,2,3&at=0,0,0&p=2&fov=200', null, key)).toBe('?cam=1,2,3&at=0,0,0&p=2');
   });
 
+  it('the light set by hand (sun=0 Tag, 1 Abend) is part of the view; anything else is dropped', () => {
+    write(localStorage, key, '?cam=1,2,3&at=0,0,0&p=4&cut=all&sun=1');
+    expect(initialQuery('', localStorage, key)).toBe('?cam=1,2,3&at=0,0,0&p=4&cut=all&sun=1');
+    expect(initialQuery('?cam=1,2,3&at=0,0,0&p=4&sun=0', null, key)).toBe('?cam=1,2,3&at=0,0,0&p=4&sun=0');
+    expect(initialQuery('?cam=1,2,3&at=0,0,0&p=4&sun=2', null, key)).toBe('?cam=1,2,3&at=0,0,0&p=4');
+  });
+
   it('a malformed URL view falls back to the stored one', () => {
     write(localStorage, key, '?cam=1,2,3&at=0,0,0&look=mass');
     expect(initialQuery('?cam=abc', localStorage, key)).toBe('?cam=1,2,3&at=0,0,0&look=mass');

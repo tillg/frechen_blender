@@ -17,7 +17,7 @@ test('Gäste-WC page draws WC, Garderobe and basin with the core dimensions, wit
   expect(await page.evaluate(() => window.__gaeste_wc.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(10);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['WC 101', 'Garderobe 94', 'Tür 76', '40 frei', '83 frei', 'HWB 40', 'Spiegel 54 × 74',
+  for (const t of ['Raumbreite 101', 'Raumtiefe 110', 'WC 101', 'Garderobe 94', 'Tür 76', '40 frei', '83 frei', 'HWB 40', 'Spiegel 54 × 74',
                    'Kleiderstange 94 auf 178', 'Schuhregal 33 tief', 'Hakenbrett 110']) {
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }

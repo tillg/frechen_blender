@@ -1,5 +1,5 @@
 // The Schrankbett sub-model page (schrankbett.html): house_core.build_schrankbett() (code/schrankbett.py),
-// the Yoga room's wall bed with its dimensions; the bed folds up and down every few seconds (#7).
+// the Yoga room's wall bed (north wall since 2026-11-25) with its dimensions; the bed folds up and down every few seconds (#7).
 import { test, expect } from '@playwright/test';
 import { choose } from './menu.js';
 import { existsSync, readFileSync } from 'node:fs';
@@ -18,7 +18,7 @@ test('Schrankbett page draws the Schrankwand and the bed with the core dimension
   expect(await page.evaluate(() => window.__schrankbett.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(8);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['Schrank 36', 'Bett 206', 'Tiefe 45', 'Raumhöhe 220', 'Blende 10', 'Liegefläche 200', 'Liegehöhe 39']) {
+  for (const t of ['Schrankbett 150', 'Nische 146', 'Tiefe 45', 'Raumhöhe 220', 'Blende 10', 'Liegefläche 140', 'Liegehöhe 39']) {
     await expect(page.locator('.dim', { hasText: t }).first()).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Von vorn', 'Gerendert']]) {
@@ -37,11 +37,13 @@ test('the bed folds up into the Schrankwand in 3 s, its feet folding in, rests 4
   await page.goto('/schrankbett.html');
   await page.waitForFunction(() => window.__schrankbett?.ready === true);
   const at = () => page.evaluate(() => window.__schrankbett.lift());
-  expect(await at()).toEqual({ Schrankbett_Klappbett: { pos: 0, angle: 0 }, Schrankbett_Klappfuesse: { pos: 0, angle: 0 } });   // as built: down
+  const down = await at();                                                                   // as built: down
+  expect(Object.keys(down).sort()).toEqual(['Schrankbett_Klappbett', 'Schrankbett_Klappfuesse']);
+  for (const n of Object.values(down)) expect([n.pos, Math.abs(n.angle)]).toEqual([0, 0]);   // -0: the crank is negative
   await page.screenshot({ path: SHOTS + 'schrankbett_e2e_down.png', scale: 'css' });
   await page.waitForFunction(() => window.__schrankbett.lift().Schrankbett_Klappbett.pos === 1, null, { timeout: 12000 });
   const t0 = Date.now();
-  expect((await at()).Schrankbett_Klappbett.angle).toBeCloseTo(Math.PI / 2, 5);           // folded up
+  expect((await at()).Schrankbett_Klappbett.angle).toBeCloseTo(-Math.PI / 2, 5);          // folded up (towards the north wall)
   expect((await at()).Schrankbett_Klappfuesse.pos).toBe(1);                                 // the feet with it
   await page.screenshot({ path: SHOTS + 'schrankbett_e2e_up.png', scale: 'css' });
   await page.waitForTimeout(Math.max(0, 3000 - (Date.now() - t0)));

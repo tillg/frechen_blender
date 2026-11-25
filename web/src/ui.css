@@ -1,5 +1,5 @@
 /* Menu style of every page (toolbar.js): title panel top left, toolbar top right with the three
-   drop-downs, sun toggle and Reset; the Rundgang bar (tour.js) at the bottom. */
+   drop-downs, the light switch and Reset; the Rundgang bar (tour.js) at the bottom. */
 .fl-title { position: fixed; top: 20px; left: 24px; color: #2b2926; pointer-events: none; padding: 8px 14px 10px;
   background: rgba(243, 239, 230, .86); border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.12); }
 .fl-title h1 { margin: 0; font: 400 34px/1.1 Georgia, 'Times New Roman', serif; letter-spacing: .02em; }
@@ -16,13 +16,20 @@
 .fl-tools button:hover, .fl-bar button:hover { border-color: rgba(43,41,38,.3); }
 .fl-tools button:disabled { opacity: .4; cursor: default; border-color: transparent; }
 .fl-play { width: 34px; font-size: 15px !important; }
-.fl-tools .fl-sun { width: 84px; flex: none; box-sizing: border-box; }   /* same slot on every page (empty on sub-models) */
+.fl-tools .fl-sun { width: 124px; flex: none; box-sizing: border-box; }  /* same slot on every page (empty on sub-models) */
 span.fl-sun { align-self: stretch; }
+div.fl-sun { display: flex; flex-direction: column; gap: 2px; }
+/* the light switch Tag | Abend: one framed box like a drop-down, the current half dark (pressed) */
+.fl-seg { display: flex; border: 1px solid rgba(43,41,38,.3); border-radius: 6px; overflow: hidden; }
+.fl-tools .fl-seg button { flex: 1; border: 0; border-radius: 0; padding: 0 6px; height: 24px; }   /* 26 with the frame, as a drop-down (the ☀/☾ glyphs would set a taller line) */
+.fl-tools .fl-seg button:hover { background: rgba(43,41,38,.08); }
+.fl-tools .fl-seg button[aria-pressed="true"] { background: #2b2926; color: #f3efe6; cursor: default; }
+.fl-tools .fl-seg button:disabled { opacity: .4; }
 .fl-sep { width: 1px; height: 26px; background: rgba(43,41,38,.25); margin: 0 4px; }
 
 /* the drop-downs: caption above, button with the chosen entry, list always below */
 .fl-field { position: relative; display: flex; flex-direction: column; gap: 2px; }
-.fl-field > span { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; opacity: .75; padding-left: 2px; }
+.fl-field > span, div.fl-sun > span { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; opacity: .75; padding-left: 2px; }
 .fl-tools .fl-dd { width: 150px; text-align: left; padding: 4px 24px 4px 8px; position: relative;
   border-color: rgba(43,41,38,.3); overflow: hidden; text-overflow: ellipsis; }
 .fl-tools .fl-field:nth-child(3) .fl-dd { width: 200px; }                     /* Standpunkt: longer names */

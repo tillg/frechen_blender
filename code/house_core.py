@@ -54,6 +54,7 @@ MAT_DEF = {
     "Tuer":       dict(wood=((0.07, 0.022, 0.006), (0.36, 0.11, 0.028), "z")),   # stained larch
     "Innentuer":  dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "z")),    # pine
     "KieferY":    dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "y")),    # the same pine, grain along y (#44)
+    "KieferX":    dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "x")),    # and along x (OG Flur desk, 2026-11-25)
     "Kiefer":     dict(wood=((0.30, 0.21, 0.12), (0.55, 0.43, 0.29), "z")),    # limed pine (stair)
     "Stufe":      dict(wood=((0.20, 0.07, 0.02), (0.42, 0.17, 0.05), "x")),    # worn treads
     "Eiche":      dict(wood=((0.06, 0.025, 0.008), (0.26, 0.11, 0.035), "x")),    # oak planks
@@ -694,7 +695,7 @@ def build_eg():
     c, z0, z1 = "EG", 0.0, Z_EG_TOP
     # exterior walls (segments = PDF vector wall fills, gaps = openings)
     wall(c, 0, W_OUT, 12.473, D_OUT, z0, z1, [
-        (1.109, 2.008, 0, 2.0, "FD", 1), (3.866, 4.765, 0, 2.0, "FD", 1),
+        bad.FENSTER, (3.866, 4.765, 0, 2.0, "FD", 1),            # Bad Großeltern: a window (2026-11-25)
         (6.953, 7.852, 1.0, 2.0, "W", 1), (10.020, 10.919, 0, 2.0, "FD", 1),
         regal.BALKONTUER], out=+1)
     wall(c, 2.358, W_OUT, 0, 0.415, z0, z1, [
@@ -794,15 +795,14 @@ def toilet(coll, wx, wy, fx, fy, z=0.0):
     xy_prism(coll, o, "Metall", rect(0.215, 0.27, 0.16, 0.17), z + 0.73, z + 0.745)
 
 
-def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None, staender=True):
+def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None):
     """Waschbecken after input/2026-11-12 input/waschbecken_einzeln.jpeg / _doppelt.jpg on the
     Waschbeckenständer of waschbecken_staender.png: a rectangular ceramic basin w x d (centred on
     the wall point (wx, wy), facing (fx, fy), `tile` in front of the plaster), top 85, 17 high, a
     tap deck along the wall with `taps` mixers (1: einzeln, 2: doppelt, at u = -w/4, w/4) over one
     bowl with one drain. The Ständer in chrome tubes: two front legs with tapered feet and collars,
     a front rail and two side rails at 52 back to balls on wall rosettes, two back posts up to the
-    basin, a bottle trap to the wall. staender=False: neither Ständer nor trap, the basin stands on a
-    Waschtisch (#40). Own random stream (rng, else a new Random(16)), so the global one is not touched."""
+    basin, a bottle trap to the wall. Own random stream (rng, else a new Random(16)), so the global one is not touched."""
     rng = rng or random.Random(16)
     r = rng.random()
     o, M = coll + "_Sanitaer", at_wall(wx + fx * tile, wy + fy * tile, fx, fy)
@@ -825,8 +825,6 @@ def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None, sta
         T((u, vm, top), (u, vm, top + 0.13), [(0.018, 0), (0.016, 1)])
         T((u, vm, top + 0.12), (u, vm + 0.13, top + 0.10), [(0.009, 0), (0.008, 1)])
         T((u, vm, top + 0.13), (u, vm - 0.03, top + 0.18), [(0.006, 0), (0.005, 1)])
-    if not staender:
-        return
     lu, lv, rz = w / 2 - 0.05, d - 0.05, 0.52
     for s in (-1, 1):
         u = s * lu
@@ -843,49 +841,6 @@ def waschbecken(coll, wx, wy, fx, fy, w, d, taps, z=0.0, tile=0.0, rng=None, sta
     T((0, vd, 0.30), (0, vd, 0.42), [(0.018, 0), (0.028, 0.15), (0.028, 1)])      # bottle,
     T((0, vd, 0.38), (0, 0.008, 0.38), [(0.014, 0), (0.014, 1)])                   # arm to the wall
     T((0, 0.0, 0.38), (0, 0.008, 0.38), [(0.03, 0), (0.03, 1)])                    # rosette
-
-
-def waschtisch(coll, wx, wy, fx, fy, w, d, z=0.0):
-    """Waschtisch after input/2026-11-15 input/waschtisch.avif (#40): an old pine bedside cabinet carrying a
-    Waschbecken einzeln w x d (waschbecken(staender=False), its underside on the top at z + 0.68). Top 3 cm with
-    a moulded edge under it, 10 cm wider than the basin each side and 5 cm deeper; four square legs tapering
-    below the carcass; panelled sides and back; at the front a drawer with a knob, a protruding rail under it
-    and a door with a raised panel, its knob on the left (u < 0). Centred on the wall point (wx, wy) facing
-    (fx, fy), into object <coll>_Sanitaer (with the basin, in every stage). Reddish old pine: Innentuer (grain up)
-    for legs, sides, back and door, Stufe (worn, grain along x: a wall along x) for top, rails and drawer.
-    Own random stream Random(40)."""
-    o, M, rng = coll + "_Sanitaer", at_wall(wx, wy, fx, fy), random.Random(40)
-    r, rf = rng.random(), rng.random()                                           # carcass, fronts
-    B = lambda u0, u1, v0, v1, z0, z1, rnd, m="Innentuer": box(coll, o, m, *[c for p in zip(M(u0, v0), M(u1, v1))
-                                                                           for c in sorted(p)], z + z0, z + z1, rnd)
-    W, D, ht = w / 2 + 0.10, d + 0.05, 0.68
-    B(-W, W, 0.0, D, ht - 0.03, ht, r, "Stufe")                                  # top
-    B(-W + 0.015, W - 0.015, 0.0, D - 0.015, ht - 0.045, ht - 0.03, r, "Stufe")  # moulded edge under it
-    lu, lw, v0, v1, zc, zt = W - 0.03, 0.045, 0.02, D - 0.03, 0.14, ht - 0.045
-    for su in (-1, 1):
-        for vb in (v0, v1 - lw):                                                 # legs: square, tapering below zc
-            u0, u1 = sorted((su * lu, su * (lu - lw)))
-            B(u0, u1, vb, vb + lw, zc, zt, r)
-            n = 0.015                                                            # taper on the inner faces
-            ua, ub = (u0 + n, u1) if su > 0 else (u0, u1 - n)
-            va, vb2 = (vb + n, vb + lw) if vb == v0 else (vb, vb + lw - n)
-            low = [(*M(uu, vv), z) for uu, vv in ((ua, va), (ub, va), (ub, vb2), (ua, vb2))]
-            up = [(*M(uu, vv), z + zc) for uu, vv in ((u0, vb), (u1, vb), (u1, vb + lw), (u0, vb + lw))]
-            add(coll, o, "Innentuer", low + up, [(0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1), (1, 5, 6, 2),
-                                              (2, 6, 7, 3), (3, 7, 4, 0)], r)   # at_wall mirrors: faces reversed
-        B(*sorted((su * (lu - 0.01), su * (lu - 0.03))), v0 + lw, v1 - lw, zc, zt, r)   # side panel, set back
-    iu = lu - lw                                                                 # between the legs
-    B(-iu, iu, v0, v0 + 0.015, zc, zt, r)                                        # back
-    B(-iu, iu, v1 - 0.025, v1 - 0.02, zc, zt, r)                                 # front board behind the fronts
-    B(-iu, iu, v1 - 0.02, v1, zc, zc + 0.025, rf, "Stufe")                       # bottom rail
-    B(-iu, iu, v1 - 0.02, v1, zt - 0.025, zt, rf, "Stufe")                       # top rail
-    B(-iu + 0.015, iu - 0.015, v1 - 0.02, v1, zt - 0.125, zt - 0.03, rf, "Stufe")   # drawer front
-    B(-lu - 0.005, lu + 0.005, v1 - 0.025, v1 + 0.012, zt - 0.15, zt - 0.13, rf, "Stufe")   # rail under the drawer
-    B(-iu + 0.015, iu - 0.015, v1 - 0.02, v1, zc + 0.03, zt - 0.155, rf)         # door leaf
-    B(-iu + 0.075, iu - 0.075, v1, v1 + 0.008, zc + 0.08, zt - 0.205, rf)        # its raised panel
-    P = lambda u, v, h: (*M(u, v), z + h)
-    for u, h in ((0.0, zt - 0.078), (-iu + 0.06, (zc + zt - 0.125) / 2)):       # knobs: drawer, door (left)
-        turned(coll, o, "Eisen", P(u, v1, h), P(u, v1 + 0.025, h), [(0.006, 0), (0.008, 0.4), (0.012, 0.7), (0.004, 1)], k=12, rnd=rf)
 
 
 def wc_mirror(coll, wx, wy, fx, fy, z=0.0):
@@ -1029,15 +984,6 @@ def build_sanitary():
     waschbecken("OG", 9.92, 4.95, -1, 0, 0.50, 0.40, 1, z=zo, tile=WC_TILE_T)   # between toilet and door leaf
     wc_mirror("OG", 9.92, 4.95, -1, 0, z=zo)
     wandlampe("OG", 9.92, 4.95, -1, 0, zo + WANDLAMPE_SPIEGEL_H)                    # over the mirror (#19)
-    # OG Flur (plan: basin symbol): a Waschbecken einzeln 60 exactly between the doors to Saschi
-    # and Waschküche (openings 4.02 .. 4.87 and 7.15 .. 8.17 of the wall y 6.06 .. 6.35), on a Waschtisch (#40,
-    # the wall plain plaster), above it a mirror 110 x 85 in a 10 cm wooden frame, two Wandlampen over it (#19)
-    xf = (4.87 + 7.15) / 2
-    wood_mirror("OG", xf, 6.35, 0, 1, 1.10, 0.85, 0.10, zo + 1.17)
-    for d in (-0.275, 0.275):
-        wandlampe("OG", xf + d, 6.35, 0, 1, zo + WANDLAMPE_SPIEGEL_H)
-    waschtisch("OG", xf, 6.35, 0, 1, 0.60, 0.47, z=zo)
-    waschbecken("OG", xf, 6.35, 0, 1, 0.60, 0.47, 1, z=zo, staender=False)
     build_wandlampen()
     # OG Bad Nadine & Till (S, #3): shower, toilet with tiles, basin, mirror, lamps (code/elternbad.py); last,
     # so the Wandlampen of #19 keep their order in WALL_LIGHTS
@@ -1435,8 +1381,9 @@ def build_og():
     wall(c, 0, W_OUT, 12.485, D_OUT, z0, z1,
          [fd(3.88, 4.78), fd(6.97, 7.87), fd(10.03, 10.95), fd(12.91, 13.80)], out=+1)
     wall(c, 0, 0.31, 5.12, 12.485, z0, z1, [
-        (11.26, 12.23, z0 + 0.75, z1, "W"), (8.96, 9.95, z0 + 0.75, z1, "W"),   # wall below, up to
-        (6.77, 7.76, z0 + 0.75, z1, "W"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)   # the ceiling (request)
+        (8.96, 8.96 + 2 * 0.99, z0 + 0.75, z1, "W"),     # Yoga: twice as wide, the window behind the wall bed merged
+        (6.77, 7.76, z0 + 0.75, z1, "W"), (5.72, 6.32, 4.18, 4.78, "W")], out=-1)   # into it (2026-11-25); wall below,
+                                                                                    # up to the ceiling (request)
     wall(c, 0.31, 2.71, 5.12, 5.46, z0, z1)
     wall(c, 2.37, 2.71, 0, 5.12, z0, z1, [(2.03, 2.92, 3.70, 4.70, "W", 1)], out=-1)
     wall(c, 2.71, W_OUT, 0, 0.40, z0, z1,
@@ -1450,7 +1397,7 @@ def build_og():
     # interior
     H = DOOR_H
     interior(c, 0.31, 14.575, 8.57, 8.86,
-             [(3.17, 4.15, 1, "b"), (6.31, 7.20, 1, "a", False), (12.30, 13.18, 1, "a", False)], z0, z1, H)   # Jugend: 10 cm from
+             [(3.17, 4.15, 1, "b"), (6.31, 7.20, 1, "a", False), (11.40, 12.28, 1, "a", False)], z0, z1, H)   # Bichlach: 15 cm from the stair hole (2026-11-25); Jugend: 10 cm from
     # its west wall, clear of the stair hole (issue #6)
     interior(c, 6.05, 6.21, 8.86, 12.485, (), z0, z1)
     interior(c, 9.08, 9.25, 8.86, 12.485, (), z0, z1)
@@ -1858,14 +1805,14 @@ def wandlampe(coll, wx, wy, fx, fy, z):
 # request names, two in one span at its thirds ("vorne" = east). Over the mirrors: build_sanitary(), gaestebad.py
 WANDLAMPEN_OG = [
     ((4.15 + 6.31) / 2, 8.57, 0, -1),                                     # Flur: Yoga .. Jugend door
-    (7.20 + 5.10 / 3, 8.57, 0, -1), (7.20 + 2 * 5.10 / 3, 8.57, 0, -1),   # Flur: Jugend .. Bichlach door, over the stair
+    (7.20 + 4.20 / 3, 8.57, 0, -1), (7.20 + 2 * 4.20 / 3, 8.57, 0, -1),   # Flur: Jugend .. Bichlach door (11.40 since 2026-11-25), over the stair
     ((11.51 + 14.35) / 2, 6.35, 0, 1),                                    # Flur: Schlafzimmer door .. east end
     (6.05, (8.86 + 12.485) / 2, -1, 0),                                   # Yoga: middle of the wall to the Jugendzimmer
     ((0.31 + 3.88) / 2, 12.485, 0, -1),                                   # Yoga: NW corner .. balcony door
     ((5.074 + 6.05) / 2, 8.86, 0, 1),                                     # Yoga: end of the open door leaf .. SE corner
     ((7.20 + 8.13) / 2, 8.86, 0, 1),                                      # Jugend: door .. east ("front") bunk bed
     (9.08, (10.96 + 12.485) / 2, -1, 0),                                  # Jugend: that bunk bed .. north wall
-    ((13.18 + 14.575) / 2, 8.86, 0, 1),                                   # Bichlach: door .. east wall
+    ((12.28 + 14.575) / 2, 8.86, 0, 1),                                   # Bichlach: door .. east wall, over the sofa
     ((10.95 + 12.91) / 2, 12.485, 0, -1),                                 # Bichlach: between the two north balcony doors
     ((10.70 + 12.84) / 2, 0.40, 0, 1),                                    # Schlafzimmer: balcony door .. window
     (14.35, (2.67 + 4.15) / 2, -1, 0),                                    # Schlafzimmer: between the east balcony doors
@@ -2126,6 +2073,49 @@ def cabinet(c, x0, x1, y0, y1, front, cuts, z=0.0, h=2.0):
         lbox(c, o, "Metall", P, m - 0.008, m + 0.008, f - s * 0.025, f, z + min(1.0, h / 2), z + min(1.0, h / 2) + 0.20)
 
 
+def bauernschrank(c, xm, yw, z):
+    """Bauernschrank (request 2026-11-25, in the OG Flur where the Waschtisch with its basin, mirror and
+    lamps stood): a big old two-door farmhouse wardrobe in reddish old pine like the Waschtisch it replaces,
+    centred on xm against a wall along x at yw, facing +y, on floor z. 1.80 wide, 60 deep (request 2026-11-25;
+    the Rundgang passes it further north), 2.05 high: a plinth with a moulding, the carcass with corner and
+    middle pilasters and rails framing two doors, each with two raised panels (low, high), an iron escutcheon
+    with a knob and two strap hinges, a cornice stepping out three times. Into object <c>_Moebel (furniture);
+    Innentuer (grain up) for the uprights, Stufe (grain along x) for the horizontals. Own random stream."""
+    o, rng = c + "_Moebel", random.Random(25)
+    r, rf = rng.random(), rng.random()                                             # carcass, fronts
+    B = lambda u0, u1, v0, v1, h0, h1, rnd, m="Innentuer": box(c, o, m, xm + u0, xm + u1, yw + v0, yw + v1,
+                                                                 z + h0, z + h1, rnd)
+    W, D, hp, hb, hk, H = 1.80, 0.60, 0.12, 0.14, 1.90, 2.05                       # plinth, body, cornice
+    w, f = W / 2, 0.02                                                             # half width, frame depth
+    B(-w - 0.02, w + 0.02, 0.0, D + 0.02, 0.012, hp, r, "Stufe")                   # plinth
+    B(-w - 0.01, w + 0.01, 0.0, D + 0.01, hp, hb, r, "Stufe")                      # its moulding
+    for s in (-1, 1):
+        B(*sorted((s * w, s * (w - 0.025))), 0.0, D - f, hb, hk, r)                # sides
+        B(*sorted((s * w, s * (w - 0.08))), D - f, D, hb, hk, r)                   # corner pilasters
+    B(-w + 0.025, w - 0.025, 0.005, 0.02, hb, hk, r)                               # back
+    B(-w + 0.025, w - 0.025, 0.02, D - f, hb, hb + 0.02, r, "Stufe")               # bottom
+    B(-w + 0.025, w - 0.025, 0.02, D - f, hk - 0.02, hk, r, "Stufe")               # top
+    B(-0.05, 0.05, D - f, D, hb, hk, r)                                            # middle pilaster
+    for h0, h1 in ((hb, 0.22), (1.80, hk)):
+        for s in (-1, 1):
+            B(*sorted((s * 0.05, s * (w - 0.08))), D - f, D, h0, h1, r, "Stufe")    # bottom and top rails
+    for s in (-1, 1):                                                              # doors between them
+        da, db = sorted((s * 0.05, s * (w - 0.08)))
+        B(da + 0.003, db - 0.003, D - 0.025, D - 0.005, 0.223, 1.797, rf)          # leaf, 5 mm behind the frame
+        for p0, p1 in ((0.30, 0.70), (0.80, 1.72)):                                # raised panels
+            B(da + 0.07, db - 0.07, D - 0.005, D + 0.006, p0, p1, rf)
+        e = s * 0.09                                                               # escutcheon and knob by the middle
+        B(e - 0.015, e + 0.015, D - 0.005, D - 0.001, 1.02, 1.12, rf, "Eisen")
+        turned(c, o, "Eisen", (xm + e, yw + D - 0.001, z + 1.00), (xm + e, yw + D + 0.025, z + 1.00),
+               [(0.006, 0), (0.008, 0.4), (0.012, 0.7), (0.004, 1)], k=12, rnd=rf)
+        ue = s * (w - 0.08)                                                        # strap hinges on the outer edge
+        for hh in (0.255, 1.745):                                                  # on the leaf's frieze
+            B(*sorted((ue, ue - s * 0.14)), D - 0.005, D - 0.001, hh, hh + 0.025, rf, "Eisen")
+    for k, (h0, h1) in enumerate(((hk, 1.95), (1.95, 2.01), (2.01, H))):          # cornice
+        a = (0.01, 0.03, 0.045)[k]
+        B(-w - a, w + a, 0.0, D + a, h0, h1, r, "Stufe")
+
+
 def bunk_bed(c, x0, x1, y0, y1, ladder, z):
     """Spruce bunk bed along y, head at the south (wall) end: corner posts, two frames with
     mattress, duvet and pillow, end boards, guard rails up top, ladder at the north end on the
@@ -2300,20 +2290,33 @@ SCHREIBPLATZ = (10.925, 11.475, 1.25, 2.35)   # the small desk's top (#44): 5 mm
                                                # its south end 32 cm in from the wall's end, by the balcony door
 
 
-def schreibplatz(c, z):
+def schreibplatz(c, z, rect=SCHREIBPLATZ, at=None, o=None, seed=44):
     """Small country desk after input/2026-11-15 input/kleiner-schreibtisch.webp (#44) in the Schlafzimmer
     Nadine & Till, its back to the low wall at the bed's head, and a small ladder-back chair pushed in on its
     west side (object <c>_Schreibplatz): top 110 x 55, 3.5 cm, at 0.78 over 4 cm overhang; four turned legs
     (square block at the apron, vase, rings, long taper, ball foot); apron with one drawer and a round knob
     on the sitter's side. Chair: plank seat at 0.455, turned legs, stretchers, back posts with finials, two
     slats. Old pine like the doors (Innentuer; top and seat KieferY, grain along the desk).
-    Own random stream Random(44): one rnd for the desk, one for the chair."""
-    o, rng = c + "_Schreibplatz", random.Random(44)
+    Own random stream Random(44): one rnd for the desk, one for the chair.
+    The same desk elsewhere (request 2026-11-25, OG Flur): `at` = (wx, wy) turns it to stand with its back
+    to a wall along x at wy, centred on wx, the sitter south; `rect` is then local (x0..x1 = -0.55..0, the
+    sitter at x0; world x = wx - y, y = wy + x), the grain along x (KieferX); `o`, `seed` its object and stream."""
+    o, rng = o or c + "_Schreibplatz", random.Random(seed)
+    G = "KieferY" if at is None else "KieferX"                                  # grain along the desk
+    M = (lambda x, y: (x, y)) if at is None else (lambda x, y: (at[0] - y, at[1] + x))
+
+    def B(m, xa, xb, ya, yb, za, zb, r):                                       # box in the desk's frame
+        (p, q), (u, v) = M(xa, ya), M(xb, yb)
+        box(c, o, m, min(p, u), max(p, u), min(q, v), max(q, v), za, zb, r)
+
+    def T(m, p0, p1, prof, k, r):                                              # turned in the desk's frame
+        turned(c, o, m, (*M(p0[0], p0[1]), p0[2]), (*M(p1[0], p1[1]), p1[2]), prof, k, r)
+
     rd, rc = rng.random(), rng.random()
-    x0, x1, y0, y1 = SCHREIBPLATZ
+    x0, x1, y0, y1 = rect
     zf, zt, ov, lw = z + 0.012, z + 0.78, 0.04, 0.06                          # floor, top, overhang, leg
     za = zt - 0.035                                                            # under the top
-    box(c, o, "KieferY", x0, x1, y0, y1, za, zt, rd)                           # top
+    B(G, x0, x1, y0, y1, za, zt, rd)                           # top
     leg = [(0.016, 0), (0.022, 0.02), (0.026, 0.05), (0.022, 0.085), (0.014, 0.11), (0.019, 0.13), (0.015, 0.15),
            (0.018, 0.20), (0.024, 0.52), (0.019, 0.60), (0.025, 0.64), (0.019, 0.68), (0.027, 0.78), (0.019, 0.88),
            (0.025, 0.92), (0.025, 0.96), (0.028, 1.0)]                         # bottom (ball foot) to the block
@@ -2321,33 +2324,33 @@ def schreibplatz(c, z):
     lx, ly = (x0 + ov, x1 - ov - lw), (y0 + ov, y1 - ov - lw)
     for xa in lx:
         for ya in ly:
-            box(c, o, "Innentuer", xa, xa + lw, ya, ya + lw, zb, za, rd)       # square block
-            turned(c, o, "Innentuer", (xa + lw / 2, ya + lw / 2, zf), (xa + lw / 2, ya + lw / 2, zb), leg, 16, rd)
+            B("Innentuer", xa, xa + lw, ya, ya + lw, zb, za, rd)       # square block
+            T("Innentuer", (xa + lw / 2, ya + lw / 2, zf), (xa + lw / 2, ya + lw / 2, zb), leg, 16, rd)
     e = 0.005                                                                  # apron set back from the blocks' faces
     for xa in (lx[0] + e, lx[1] + lw - e - 0.02):                              # long sides
-        box(c, o, "Innentuer", xa, xa + 0.02, ly[0] + lw, ly[1], zb, za, rd)
+        B("Innentuer", xa, xa + 0.02, ly[0] + lw, ly[1], zb, za, rd)
     for ya in (ly[0] + e, ly[1] + lw - e - 0.02):                              # short sides
-        box(c, o, "Innentuer", lx[0] + lw, lx[1], ya, ya + 0.02, zb, za, rd)
+        B("Innentuer", lx[0] + lw, lx[1], ya, ya + 0.02, zb, za, rd)
     ym, xf = (y0 + y1) / 2, lx[0] + e                                          # drawer: middle of the west apron
-    box(c, o, "KieferY", xf - 0.008, xf, ym - 0.175, ym + 0.175, zb + 0.015, za - 0.012, rd)
-    turned(c, o, "Innentuer", (xf - 0.008, ym, zb + 0.05), (xf - 0.032, ym, zb + 0.05),
+    B(G, xf - 0.008, xf, ym - 0.175, ym + 0.175, zb + 0.015, za - 0.012, rd)
+    T("Innentuer", (xf - 0.008, ym, zb + 0.05), (xf - 0.032, ym, zb + 0.05),
            [(0.006, 0), (0.008, 0.3), (0.016, 0.7), (0.012, 0.95), (0.004, 1)], 12, rd)   # round knob
     # chair: seat 38 x 38, its front 10 cm under the top, centred on the drawer
     sx0, sx1, sy0, sy1, zs = x0 + 0.10 - 0.38, x0 + 0.10, ym - 0.19, ym + 0.19, z + 0.455
-    box(c, o, "KieferY", sx0, sx1, sy0, sy1, zs - 0.025, zs, rc)               # seat plank
+    B(G, sx0, sx1, sy0, sy1, zs - 0.025, zs, rc)               # seat plank
     cl = [(0.014, 0), (0.017, 0.1), (0.017, 0.55), (0.013, 0.65), (0.018, 0.75), (0.018, 1.0)]   # front legs
     fx, bx = sx1 - 0.025, sx0 + 0.022
     for ya in (sy0 + 0.025, sy1 - 0.025):
-        turned(c, o, "Innentuer", (fx, ya, zf), (fx, ya, zs - 0.025), cl, 12, rc)
-        turned(c, o, "Innentuer", (bx, ya, zf), (bx, ya, z + 0.86),            # back post with a finial
+        T("Innentuer", (fx, ya, zf), (fx, ya, zs - 0.025), cl, 12, rc)
+        T("Innentuer", (bx, ya, zf), (bx, ya, z + 0.86),            # back post with a finial
                [(0.014, 0), (0.018, 0.05), (0.018, 0.82), (0.013, 0.88), (0.019, 0.93), (0.012, 0.98), (0.004, 1)],
                12, rc)
-        turned(c, o, "Innentuer", (bx + 0.017, ya, z + 0.17), (fx - 0.017, ya, z + 0.17),
+        T("Innentuer", (bx + 0.017, ya, z + 0.17), (fx - 0.017, ya, z + 0.17),
                [(0.009, 0), (0.011, 0.5), (0.009, 1)], 8, rc)                  # side stretcher
-    turned(c, o, "Innentuer", (fx, sy0 + 0.042, z + 0.22), (fx, sy1 - 0.042, z + 0.22),
+    T("Innentuer", (fx, sy0 + 0.042, z + 0.22), (fx, sy1 - 0.042, z + 0.22),
            [(0.009, 0), (0.011, 0.5), (0.009, 1)], 8, rc)                      # front stretcher
     for zs0 in (z + 0.60, z + 0.74):                                           # back slats
-        box(c, o, "KieferY", bx - 0.007, bx + 0.007, sy0 + 0.04, sy1 - 0.04, zs0, zs0 + 0.065, rc)
+        B(G, bx - 0.007, bx + 0.007, sy0 + 0.04, sy1 - 0.04, zs0, zs0 + 0.065, rc)
 
 
 def armchair(c, cx, cy, face):
@@ -2382,31 +2385,32 @@ def armchair(c, cx, cy, face):
     add(c, o, "Boucle", v, f)
 
 
-def sofa(c, cx, cy, face):
-    """Three-seater sofa after sofa.tiff (2.25 x 0.98 m), centred at (cx, cy), facing `face`
-    degrees: linen base to the floor, square arms, back frame, three seat and three back cushions
-    (leaning back), a scatter pillow at each arm."""
+def sofa(c, cx, cy, face, n=3, z=0.0):
+    """Sofa after sofa.tiff (three seats: 2.25 x 0.98 m; n seats: 0.647 m each between the arms), centred
+    at (cx, cy) on floor z, facing `face` degrees: linen base to the floor, square arms, back frame, n seat and n back
+    cushions (leaning back), a scatter pillow at each arm."""
     o, a = c + "_Moebel", math.radians(face)
-    W = lambda u, v, z: (cx - u * math.sin(a) + v * math.cos(a), cy + u * math.cos(a) + v * math.sin(a), z)
+    W = lambda u, v, h: (cx - u * math.sin(a) + v * math.cos(a), cy + u * math.cos(a) + v * math.sin(a), z + h)
     faces = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
 
     def ubox(u0, u1, v0, v1, z0, z1):
-        add(c, o, "Leinen", [W(u, v, z) for z in (z0, z1) for u, v in ((u0, v0), (u1, v0), (u1, v1), (u0, v1))], faces)
+        add(c, o, "Leinen", [W(u, v, h) for h in (z0, z1) for u, v in ((u0, v0), (u1, v0), (u1, v1), (u0, v1))], faces)
 
     def cushion(u0, u1, prof):                                   # (v, z) profile extruded along u
         n = len(prof)
-        add(c, o, "Leinen", [W(u, v, z) for u in (u0, u1) for v, z in prof],
+        add(c, o, "Leinen", [W(u, v, h) for u in (u0, u1) for v, h in prof],
             [list(range(n))[::-1], list(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)])
 
-    ubox(-0.97, 0.97, -0.30, 0.47, 0.012, 0.40)                  # base
-    ubox(-0.97, 0.97, -0.49, -0.30, 0.012, 0.64)                 # back frame
+    w = 1.94 / 3                                                 # one seat
+    hw = n * w / 2                                               # half the width between the arms
+    ubox(-hw, hw, -0.30, 0.47, 0.012, 0.40)                      # base
+    ubox(-hw, hw, -0.49, -0.30, 0.012, 0.64)                     # back frame
     for s in (-1, 1):
-        ubox(s * 0.97, s * 1.125, -0.49, 0.49, 0.012, 0.64)      # arms
+        ubox(s * hw, s * (hw + 0.155), -0.49, 0.49, 0.012, 0.64)   # arms
     seat = [(-0.28, 0.40), (0.48, 0.40), (0.485, 0.50), (0.465, 0.53), (-0.28, 0.53)]
     back = [(-0.30, 0.53), (-0.09, 0.53), (-0.16, 0.83), (-0.20, 0.87), (-0.34, 0.87), (-0.38, 0.83)]
-    w = 1.94 / 3
-    for k in range(3):
-        u0 = -0.97 + k * w
+    for k in range(n):
+        u0 = -hw + k * w
         cushion(u0 + 0.004, u0 + w - 0.004, seat)
         cushion(u0 + 0.004, u0 + w - 0.004, back)
     for s in (-1, 1):                                            # pillows: tilted back, turned in their plane
@@ -2414,7 +2418,7 @@ def sofa(c, cx, cy, face):
         e1 = (math.cos(r), -math.sin(r) * math.sin(t), math.sin(r) * math.cos(t))    # (u, v, z)
         e2 = (-math.sin(r), -math.cos(r) * math.sin(t), math.cos(r) * math.cos(t))
         nv = (0, math.cos(t), math.sin(t))
-        m = (s * 0.68, -0.08, 0.71)
+        m = (s * (hw - 0.29), -0.08, 0.71)
         pts = [tuple(m[i] + p * 0.18 * e1[i] + q * 0.18 * e2[i] + h * 0.06 * nv[i] for i in range(3))
                for h in (-1, 1) for p, q in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
         add(c, o, "Leinen", [W(*p) for p in pts], faces)
@@ -2445,11 +2449,17 @@ def build_furniture():
     schrankbett.schrankbett_neu("OG", *schrankbett.SCHRANKBETT_AT, zo)      # Yoga: the wall bed, folded down (#7)
     bunk_bed("OG", 6.22, 7.17, 9.76, 11.82, "E", zo)          # middle of the west wall, past the door leaf (#6)
     bunk_bed("OG", 8.13, 9.07, 8.90, 10.96, "W", zo)
-    bed("OG", 9.86, 10.78, 8.862, 10.92, "S", zo)
-    bed("OG", 10.80, 11.72, 8.862, 10.92, "S", zo)
-    nightstand("OG", 9.36, 9.84, 8.865, 9.25, zo)
-    nightstand("OG", 11.74, 12.23, 8.865, 9.25, zo)
+    # Bichlach (2026-11-25): the door moved west, so the bed turned, head on the west wall: a double bed (two
+    # mattresses) with a nightstand either side, 90 cm before the north balcony door; a two-seater sofa on the
+    # south wall between door and east wall, facing north. The small desk of #44 on the same wall piece's
+    # other face, in the Flur, the chair to the south
+    bed("OG", 9.27, 11.27, 9.68, 11.54, "W", zo, n=2)
+    nightstand("OG", 9.265, 9.65, 9.18, 9.66, zo)
+    nightstand("OG", 9.265, 9.65, 11.56, 12.04, zo)
+    sofa("OG", (12.35 + 14.575) / 2, 8.86 + 0.01 + 0.49, 90, n=2, z=zo)
+    schreibplatz("OG", zo, (-0.55, 0.0, -0.55, 0.55), ((12.35 + 14.575) / 2, 8.565), "OG_Moebel", 45)
     cabinet("OG", 13.95, 14.573, 10.95, 12.483, "W", (10.95, 11.44, 11.96, 12.483), zo)
+    bauernschrank("OG", (4.87 + 7.15) / 2, 6.35, zo)        # Flur: between the doors to Saschi and Waschküche
     cabinet("OG", 2.712, 3.35, 3.52, 6.058, "E", (3.52, 4.03, 4.54, 5.0, 5.53, 6.058), zo)
     bed("OG", 3.37, 5.438, 1.01, 2.87, "E", zo, n=2)
     nightstand("OG", 5.02, 5.438, 2.89, 3.37, zo)
@@ -2762,9 +2772,8 @@ def build_elternbad():
 
 
 def build_schrankbett():
-    """The Schrankbett sub-model alone (web/schrankbett.html): the wall bed with its Schrankwand and the
-    pieces of the west and south wall at the origin (the Yoga room's inner SW corner), plus its
-    dimension lines."""
+    """The Schrankbett sub-model alone (web/schrankbett.html): the wall bed in its case and the pieces
+    of the west and north wall at the origin (the Yoga room's inner NW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
     LEAVES.clear(); SWING.clear(); DOORS.clear(); OPENINGS.clear(); LIFT.clear(); CRANK.clear(); FOLD.clear()
     random.seed(22)

@@ -1,9 +1,11 @@
 """Frechenlehen – the Bad Großeltern (EG, NW corner) as a sub-model (web/bad.html), after the user's
 sketch input/2026-11-08 input/plan_grosseltern_bad.jpeg and the agreed drawing
-input/2026-11-08 input/grosseltern_v4.svg. From north to south: a walk-in shower 0.80 wide in the NW corner
-(clear of the north french door), east of it a wall 1.20 m long, 1.00 m high, 12 cm thick and one
-L-shaped clear glass pane on its shower edge, flush with the north french door's jamb (above it to
-the ceiling, 35 cm from the north wall down to the floor); a Waschbecken doppelt 100 x 47 (two
+input/2026-11-08 input/grosseltern_v4.svg. From north to south: a walk-in shower 0.95 wide in the NW corner
+(request 2026-11-25: the low wall moved 15 cm east), east of it a wall 1.20 m long, 1.00 m high, 12 cm thick
+and a clear glass pane on its shower edge (above it to the ceiling, by the north wall down to the floor)
+that turns the corner in front of the north wall: the north french door became a window (FENSTER, sill
+1.00), whose west 15 cm now lie in the shower, so a return pane closes them off up to the north wall's
+limestone, the water kept off sill and window; a Waschbecken doppelt 100 x 47 (two
 deck mixers, one bowl, input/2026-11-12 input/) on its chrome Ständer on that wall's east face; in the south a niche 1.20 m deep over the full width, split
 by a 12 cm wall into WC (west) and Schrank (east), closed by two interlocking sliding leaves on two
 offset tracks (the WC leaf open, slid behind the Schrank leaf). The floor: a limestone strip as wide as the WC along the west wall, oak
@@ -21,9 +23,11 @@ import house_core as hc
 BAD_AT = (0.31, 8.656)                       # house: the room's inner SW corner
 W, D = 2.048, 3.817                          # room (x, y); ceiling hc.Z_EG_TOP
 NICHE, NW, HALF = 1.20, 0.12, 0.964          # niche depth, its middle wall, WC / Schrank width
-SHOWER = 0.80                                # walk-in shower width (west)
+SHOWER = 0.95                                # walk-in shower width (west; 0.80 till 2026-11-25)
 GLASS = 0.35                                 # thin glass from the north wall
-FD_JAMB = 1.109                              # house x: west jamb of the north french door (build_eg)
+FENSTER = (1.109, 2.008, 1.0, 2.0, "W", 1)   # the north window (house x; build_eg), the french door till 2026-11-25
+FD_JAMB = FENSTER[0]                         # house x: its west jamb
+RET = 0.025                                  # the glass's return: its centre plane off the north wall
 LOW = (2.267, 3.467, 1.00, 0.12)             # low wall: v from, v to, height, thickness
 TROG = (0.47, 1.00, 0.85)                    # Waschbecken doppelt: depth, width, top (hc.waschbecken's)
 LIN = 2.05                                   # lintel underside / rail top
@@ -51,12 +55,17 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     lv0, lv1, lh, lt = LOW
     B("_Waende", "Putz", SHOWER, SHOWER + lt, lv0, lv1, 0, lh, rng.random())
 
-    # glass: one L-shaped pane on the low wall's shower edge, up to the ceiling and 35 cm from the
-    # north wall down to the floor; towards the north french door flush with its jamb
-    um = FD_JAMB - BAD_AT[0] - 0.006
+    # glass (request 2026-11-25): a pane on the low wall's shower edge, up to the ceiling and by the north
+    # wall down to the floor, ending 1 mm short of the return; the return, 12 mm thick, RET off the north
+    # wall, from the main pane's east face west over the window's jamb onto the north wall's limestone, a
+    # chrome profile between its end and the slabs: so the window's west part lies outside the shower
+    gx, yr = SHOWER - 0.007, D - RET                  # centre planes of the main pane and the return
     hc.prism(c, c + "_Sanitaer", "Glas", lambda u, t, z: (x0 + t, y0 + u, z),
-             [(lv0, lh), (lv1, lh), (lv1, 0.0), (D, 0.0), (D, H), (lv0, H)], um - 0.006, um + 0.006, rng.random())
-    rng.random()                                 # the second pane's draw: later parts keep their rnd
+             [(lv0, lh), (lv1, lh), (lv1, 0.0), (yr - 0.007, 0.0), (yr - 0.007, H), (lv0, H)],
+             gx - 0.006, gx + 0.006, rng.random())
+    r, xw = rng.random(), FD_JAMB - BAD_AT[0] - 0.012 - 0.04  # the second pane's draw; 4 cm over the slabs
+    B("_Sanitaer", "Glas", xw, gx + 0.006, yr - 0.006, yr + 0.006, 0.0, H, r)
+    B("_Sanitaer", "Metall", xw, xw + 0.015, yr + 0.006, D - 0.0125, 0.0, H, r)   # wall profile
 
     # niche: interlocking sliding leaves on two tracks (rear = WC, front = Schrank), both over the
     # Schrank half (the WC leaf open behind the Schrank leaf); closed, the WC leaf spans 0 .. HALF + NW
@@ -110,8 +119,9 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     floor(c, x0, y0)
     f, front = 0.06, NICHE + 0.06 + LT              # front: the front sliding leaf's room face
     return [((SHOWER + lt / 2, front, 0.02), (SHOWER + lt / 2, lv0, 0.02), f"Durchgang {round((lv0 - front) * 100, 1):g}"),
-            ((0, 3.10, CLAD), (SHOWER, 3.10, CLAD), "Dusche 80"),            # over the low wall: seen from the room
-            ((SHOWER - f, lv1, CLAD + 0.2), (SHOWER - f, D, CLAD + 0.2), "Glas 35"),
+            ((0, 3.10, CLAD), (SHOWER, 3.10, CLAD), f"Dusche {round(SHOWER * 100)}"),   # over the low wall: seen from the room
+            ((SHOWER - f, lv1, CLAD + 0.2), (SHOWER - f, yr - 0.007, CLAD + 0.2), f"Glas {round((yr - 0.007 - lv1) * 100)}"),
+            ((xw, yr - f, CLAD + 0.2), (gx + 0.006, yr - f, CLAD + 0.2), f"Ecke {round((gx + 0.006 - xw) * 100)}"),
             ((SHOWER - f, lv0, lh), (SHOWER - f, lv1, lh), "Mauer 120"),
             ((SHOWER + lt / 2, lv0 - f, 0), (SHOWER + lt / 2, lv0 - f, lh), "100 hoch"),
             ((ub + f, va, tt), (ub + f, vb, tt), "Waschbecken 100"),
@@ -119,7 +129,9 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
             ((HALF, NICHE + 0.35, 0.02), (HALF + NW, NICHE + 0.35, 0.02), "12"),
             ((HALF + NW, 0.08, LIN + 0.05), (W, 0.08, LIN + 0.05), "Schrank 96.4"),
             ((W - 0.08, 0, 0.02), (W - 0.08, NICHE, 0.02), "120 tief"),
-            ((W - 0.08, 0, LIN + 0.05), (W - 0.08, 0.60, LIN + 0.05), "60")]
+            ((W - 0.08, 0, LIN + 0.05), (W - 0.08, 0.60, LIN + 0.05), "60"),
+            ((0, 1.80, LIN + 0.25), (W, 1.80, LIN + 0.25), f"Raumbreite {round(W * 100, 1):g}"),   # the room (request
+            ((W - 0.30, 0, LIN + 0.25), (W - 0.30, D, LIN + 0.25), f"Raumtiefe {round(D * 100, 1):g}")]   # 2026-11-25)
 
 
 def floor(c, x0, y0):
@@ -135,7 +147,7 @@ def floor(c, x0, y0):
     hc.tiles(c, c + "_Bodenbelag", "Kalkstein", x0, x0 + HALF, y0, y0 + D, 0.002, 0.018, [0.5, 0.4, 0.55, 0.45],
              (0.35, 0.8), 0.006, [wall(SHOWER, SHOWER + lt, lv0, lv1)], rng)
     hc.tiles(c, c + "_Bodenbelag", "Eiche", x0 + HALF, x0 + W, y0, y0 + D, 0.002, 0.014, [0.2], (1.2, 2.4), 0.003,
-             [wall(HALF, HALF + NW, 0, NICHE)], rng)
+             [wall(HALF, HALF + NW, 0, NICHE), wall(SHOWER, SHOWER + lt, lv0, lv1)], rng)
 
 
 def stone(c, x0, y0, side, rng):

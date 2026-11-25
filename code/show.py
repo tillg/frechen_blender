@@ -30,7 +30,7 @@ FOV = {"house": 28.0, "sub": 35.0}       # vertical field of view of main.js / s
 MARGIN = 1.15                             # bounding sphere radius x MARGIN fills half the frame height
 EDGE = 0.2                                # closer to the outer face than this: an outside object
 SIDES = {"n": (0, 1), "e": (1, 0), "s": (0, -1), "w": (-1, 0), "se": (1, -1), "top": (0, -1)}
-FACING = {"kueche": "s", "gaeste_wc": "n", "regal": "w", "schrankbett": "n", "gaestebad": "top", "elternbad": "top"}                  # a sub-model seen from the SE unless its page opens elsewhere
+FACING = {"kueche": "s", "gaeste_wc": "n", "regal": "w", "schrankbett": "s", "gaestebad": "top", "elternbad": "top"}                  # a sub-model seen from the SE unless its page opens elsewhere
 UP = {"outside": 20.0, "inside": 55.0, "sub": 30.0, "top": 85.0}   # elevation, degrees
 
 

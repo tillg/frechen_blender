@@ -17,7 +17,7 @@ test('Bad Nadine & Till page draws showers, toilet and basin with the core dimen
   expect(await page.evaluate(() => window.__elternbad.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(10);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['Duschen 90', 'Durchgang 60', 'Waschbecken 60', 'Spiegel 80 × 85', 'Tür 93', 'Fenster 88']) {   // #33
+  for (const t of ['Raumbreite 300', 'Raumtiefe 222', 'Duschen 90', 'Durchgang 60', 'Waschbecken 60', 'Spiegel 80 × 85', 'Tür 93', 'Fenster 88']) {   // #33
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Von der Tür', 'Gerendert']]) {

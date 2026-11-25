@@ -120,7 +120,7 @@ def test_garden_extras(glb):
     assert len(ex["garden"]["no_grass"]) == len(lay.no_grass) and len(ex["garden"]["windrose"]) == 5
     assert len(ex["garden"]["shrubs"]) == len(lay.shrubs)
     assert ex["garden"]["DENSITY"] == house_core.DENSITY and ex["garden"]["FAR_DENS"] == house_core.FAR_DENS
-    assert len(ex["room_lights"]) == 1 and len(ex["wall_lights"]) == 65 and ex["Z_OG"] == house_core.Z_OG
+    assert len(ex["room_lights"]) == 1 and len(ex["wall_lights"]) == 63 and ex["Z_OG"] == house_core.Z_OG
     assert ex["ROOM_LIGHT_H"] == house_core.ROOM_LIGHT_H
     assert ex["outside_lights"] == [list(p) for p in BP.outside_lights] and len(ex["outside_lights"]) == 8
     assert "lamp_lights" not in ex                                        # no always-on lamps (#22)
@@ -302,7 +302,7 @@ def test_elternbad_export(tmp_path):
 
 def test_schrankbett_export(tmp_path):
     """--schrankbett: the wall bed sub-model with its wall pieces and dimension lines, no Rundgang; the
-    bed (origin on its hinge axis) folds 90 deg about x (glTF x) on the lift clock (extras.crank)."""
+    bed (origin on its hinge axis) folds -90 deg about x (glTF x) on the lift clock (extras.crank)."""
     out = tmp_path / "schrankbett.glb"
     subprocess.run([sys.executable, str(ROOT / "code" / "export_gltf.py"), str(out), "--schrankbett"], check=True)
     data = out.read_bytes()
@@ -313,7 +313,7 @@ def test_schrankbett_export(tmp_path):
     crank = {n["name"]: n["extras"]["crank"] for n in g["nodes"] if "crank" in n["extras"]}
     assert sorted(crank) == ["Schrankbett_Klappbett", "Schrankbett_Klappfuesse"]
     assert crank["Schrankbett_Klappbett"][:3] == [1, 0, 0]
-    assert crank["Schrankbett_Klappbett"][3] == pytest.approx(math.pi / 2)
+    assert crank["Schrankbett_Klappbett"][3] == pytest.approx(-math.pi / 2)          # towards the north wall
     bp = house_core.build_schrankbett()
     house_core.build()
     node = next(n for n in g["nodes"] if n["name"] == "Schrankbett_Klappbett")

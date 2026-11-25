@@ -2,7 +2,7 @@
 // kept in localStorage under frechenlehen:<page>:<entry>. A URL that carries a view wins (shared
 // links, show.py, the reload after a core change); otherwise the stored view applies, plus the URL's
 // other keys (hires=on). Storage may be missing or throw (private window): then nothing is stored.
-const VIEW_KEYS = ['cam', 'at', 'p', 'cut', 'look', 'fov'];
+const VIEW_KEYS = ['cam', 'at', 'p', 'cut', 'look', 'fov', 'sun'];
 
 export const storageKey = (page, entry) => `frechenlehen:${page}:${entry}`;
 
@@ -36,6 +36,7 @@ const VALID = {
   at: (v) => nums(v).length === 3 && nums(v).every(Number.isFinite),
   p: (v) => v !== '' && Number.isFinite(Number(v)),
   fov: (v) => v !== '' && Number(v) >= 10 && Number(v) <= 90,
+  sun: (v) => v === '0' || v === '1',                              // Tag / Abend set by hand
 };
 // raw pairs, not URLSearchParams.toString(): that would escape the commas of cam=x,y,z
 const pairs = (search) => (search ?? '').replace(/^\?/, '').split('&').filter(Boolean);

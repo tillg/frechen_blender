@@ -139,5 +139,5 @@ def elternbad_neu(c="Elternbad", x0=0.0, y0=0.0, z=0.0, walls=False):
             S(FENSTER[0], YS + 0.05, top, FENSTER[1], YS + 0.05, top, f"Fenster {cm(*FENSTER)}"),
             S(WO - 0.05, YS, f, WO - 0.05, TUER[0], f, cm(YS, TUER[0])),
             S(WO - 0.05, TUER[0], f, WO - 0.05, TUER[1], f, f"Tür {cm(*TUER)}"),
-            S(WI, YM, top, WO, YM, top, cm(WI, WO)),
-            S(WI + 0.30, YS, top, WI + 0.30, YN, top, cm(YS, YN))]
+            S(WI, YM, top, WO, YM, top, f"Raumbreite {cm(WI, WO)}"),                 # the room (request 2026-11-25:
+            S(WI + 0.30, YS, top, WI + 0.30, YN, top, f"Raumtiefe {cm(YS, YN)}")]    # every bath sub-model)

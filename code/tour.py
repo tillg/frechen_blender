@@ -84,9 +84,11 @@ ROUTE = [
                                                                           # Wandlampe on the south wall; into the Bad to the showers' glass (#33)
     turn((8.6, 1.15), R), ("hold", PAUSE),                                # right round past WC and basin: back to the glass
     ("path", [(6.85, 1.15), (10.0, 1.15), (10.45, 2.6), (10.6, 3.6), (10.75, 4.6), (11.2, 5.3), (11.1, 6.2), (11.4, 7.3),
-              (12.74, 7.9), (12.74, 9.7)], OG, WALK),                     # the NE room opposite
-    *peek((10.2, 11.6, Z_OG + 0.5), (14.4, 10.2)),         # in to the end of the open leaf; the beds
-    ("path", [(12.74, 9.7), (12.6, 7.7), (11.1, 7.15), (4.45, 7.15), (4.45, 6.3)], OG, WALK),  # back left in the Flur
+              (11.84, 7.9), (11.84, 9.7)], OG, WALK),                     # the NE room opposite (door 2026-11-25)
+    *peek((9.6, 10.1, Z_OG + 0.5), (14.4, 9.4)),           # in to the end of the open leaf; the bed, the sofa
+    ("path", [(11.84, 9.7), (11.84, 7.7), (11.1, 7.15), (7.6, 7.15), (7.3, 7.29), (4.45, 7.29), (4.45, 6.3)],
+     OG, WALK),                                                           # back left in the Flur: by the stair
+                                                                          # rail, then past the Bauernschrank (60 deep)
     *peek((5.14, 4.5), (3.0, 0.7)),                        # right: past the open leaf
     ("path", [(4.45, 6.3), (4.2, 7.4), (3.4, 8.07), (2.8, 8.07)], OG, WALK),    # the Bad at the end
     *peek((1.5, 6.85), (1.5, 8.3)),
@@ -142,7 +144,7 @@ SPOTS = [
     ("Jugend", "1. Stock", ("haus", "og"), (7.6, 12.2, OG), (7.6, 9.0, Z_OG + 1.0), SEE),
     ("Yoga", "1. Stock", ("haus", "og"), (5.6, 9.4, OG), (1.5, 11.8, Z_OG + 1.0), SEE),
     ("Bad Nadine & Till", "1. Stock", ("haus", "og"), (8.7, 1.115, OG), (5.59, 1.51, Z_OG + 1.0), SEE),   # in the door, at the two showers
-    ("Flur oben - Waschtisch", "1. Stock", ("haus", "og"), (6.4, 8.15, OG), (6.01, 6.35, Z_OG + 0.9), SEE),
+    ("Flur oben - Bauernschrank", "1. Stock", ("haus", "og"), (6.4, 8.15, OG), (6.01, 6.6, Z_OG + 1.1), SEE),
     ("Gästebad", "1. Stock", ("haus", "og"), (2.2, 8.0, OG), (0.31, 7.3, Z_OG + 1.0), SEE),   # just inside the door: tub ahead, shower and WC left, basin right
 ]
 

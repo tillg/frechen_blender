@@ -1,5 +1,6 @@
 // The one toolbar of every page (house and sub-models), top right: three drop-downs, Modell /
-// Darstellung / Standpunkt, then the sun toggle (house only; an empty slot of its width elsewhere,
+// Darstellung / Standpunkt, then the light switch Tag | Abend (house only; the current one pressed, so it
+// reads as the state, not as the action; an empty slot of its width elsewhere,
 // so the drop-downs sit at the same place on every page) and Reset. The drop-downs are our own (button +
 // listbox) so they always open below the box; a native macOS <select> opens over the chosen entry,
 // i.e. upwards when that entry is far down the list.
@@ -123,9 +124,23 @@ export function createToolbar(cfg) {
   const spot = dropdown('Standpunkt', (v) => cfg.onSpot(v));
   spot.setItems(cfg.spots);
 
-  // the sun toggle; on the sub-model pages an empty slot of the same width
-  const sun = el(cfg.sun ? 'button' : 'span', cfg.sun ? { type: 'button', className: 'fl-sun' } : { className: 'fl-sun' });
-  if (cfg.sun) sun.onclick = () => { cfg.sun.toggle(); refresh(); };
+  // the light switch, captioned like the drop-downs: Tag | Abend, the current one pressed; on the
+  // sub-model pages an empty slot of the same width
+  const sun = el(cfg.sun ? 'div' : 'span', { className: 'fl-sun' });
+  const lightButtons = [];
+  if (cfg.sun) {
+    const seg = el('div', { className: 'fl-seg' });
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Licht');
+    for (const [dusk, text] of [[false, '☀ Tag'], [true, '☾ Abend']]) {
+      const b = el('button', { type: 'button' }, text);
+      b.dataset.dusk = String(dusk);
+      b.onclick = () => { if (cfg.sun.isDusk() !== dusk) { cfg.sun.toggle(); refresh(); } };
+      lightButtons.push(b);
+      seg.append(b);
+    }
+    sun.append(el('span', {}, 'Licht'), seg);
+  }
   const reset = el('button', { type: 'button', className: 'fl-reset' }, '↺ Reset');
   reset.title = 'Niedrigste Darstellung, Standard-Standpunkt';
   reset.onclick = () => cfg.onReset();
@@ -136,10 +151,11 @@ export function createToolbar(cfg) {
 
   function refresh() {
     if (!cfg.sun) return;
-    const dusk = cfg.sun.isDusk();
-    sun.textContent = dusk ? '☾ Abend' : '☀ Tag';
-    sun.setAttribute('aria-label', dusk ? 'Abend – zu Tag wechseln' : 'Tag – zu Abend wechseln');
-    sun.disabled = !cfg.sun.enabled();
+    const dusk = cfg.sun.isDusk(), enabled = cfg.sun.enabled();
+    for (const b of lightButtons) {
+      b.setAttribute('aria-pressed', String((b.dataset.dusk === 'true') === dusk));
+      b.disabled = !enabled;
+    }
   }
   refresh();
   return { tools, model, level, spot, refresh };

@@ -159,7 +159,7 @@ test('schrankbett page is part of the build', async ({ page }) => {
   await page.goto(BASE);
   await choose(page, 'Modell', 'Schrankbett');
   await page.waitForURL(/\/frechen_blender\/schrankbett\.html$/);
-  await expect(page.locator('.dim', { hasText: 'Bett 206' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.dim', { hasText: 'Nische 146' })).toBeVisible({ timeout: 30_000 });
   expect(failed).toEqual([]);
   expect(errors).toEqual([]);
   expect(glb).toBe(1);

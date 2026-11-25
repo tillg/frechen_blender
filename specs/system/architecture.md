@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-22
+edited: 2026-11-25
 ---
 
 # Architecture: Frechenlehen house model
@@ -119,7 +119,8 @@ flowchart LR
 - **Bad Großeltern.** `code/bad.py` the same way: `bad_neu(c, x0, y0)` builds the bathroom into
   collection `c` with the room's inner SW corner at (x0, y0) (`EG` at `BAD_AT`, or `Bad` at the
   origin), after `input/2026-11-08 input/grosseltern_v4.svg`: its own walls (12 cm niche wall,
-  lintel, 1 m low wall), glass, walk-in shower with limestone cladding (`stone()` → `house_core.limestone()`), the Waschbecken doppelt
+  lintel, 1 m low wall at `SHOWER` = 0.95), glass (the main pane and its return `RET` off the north wall in
+  front of the north window `FENSTER`, defined here and used by `build_eg()`, with a wall profile), walk-in shower with limestone cladding (`stone()` → `house_core.limestone()`), the Waschbecken doppelt
   (`waschbecken(…, rng=random.Random(rng.random()))`: one draw from its stream), toilet + WC
   tiles (`toilet()`, `wainscot()`), the white Schrank (`_Schrank`) and the two interlocking
   sliding leaves (WC leaf open, both in `LEAVES`); own `random.Random(5)`. Its floor too, last
@@ -168,18 +169,20 @@ flowchart LR
   (`waende()`, global random stream). `tuer(c)` gives the Büro door's leaf an object of its own
   (`<c>_Buerotuer`) with a `PIVOT` at the hinge and a `SWING`.
 - **Schrankbett.** `code/schrankbett.py` the same way: `schrankbett_neu(c, x0, y0, z=0, walls=False)` builds
-  the Yoga room's wall bed into collection `c` with the room's inner SW corner (west wall × south wall)
-  at (x0, y0) on floor z (`OG` at `SCHRANKBETT_AT` = (0.31, 8.86), carcass into `OG_Moebel`; or
-  `Schrankbett` at the origin, `walls=True` adding the west wall with its window and the south wall with
-  the Yoga door via `waende()`), after `input/2026-11-13 input/schrankbett_v1.svg` (generated from the
-  module's numbers by `schrankbett_svg.py` beside it). Carcass: back, two side cabinets (`SW` ≈ 0.36,
-  door, handle, hinge fitting), the 2.06 niche, top board and Blende from `BLENDE` = 2.10 to `TOP`. The
-  bed is built folded down, `<c>_Klappbett` (underside: board, frame 8 mm proud, six raised fields;
-  side rails, head and foot boards, slatted base, two mattresses, pillows, duvet) with `PIVOT` on its
-  hinge axis (`A` = 0.20 from the head end, `DU` = 0.08 above the underside, `ZU` = 0.16 above the
-  floor) and `CRANK` ((1, 0, 0), 90); folded up its underside is flush with the door fronts (`D` = 0.45)
-  and the swing peaks at 2.08, under the Blende. Its feet `<c>_Klappfuesse` share pivot and crank and
-  carry a `FOLD` (hinge at the underside, (1, 0, 0), −90): they fold onto the underside meanwhile.
+  the Yoga room's wall bed into collection `c` with the room's inner NW corner (west wall × north wall,
+  since 2026-11-25) at (x0, y0) on floor z (`OG` at `SCHRANKBETT_AT` = (0.31, 12.485), case into `OG_Moebel`;
+  or `Schrankbett` at the origin, the room at y < 0, `walls=True` adding the west wall (plain since its
+  window merged into the room's other one) and the north wall via `waende()`). Written in local coordinates (y from the north wall into the room) and
+  mirrored into the house (y0 − y). (`input/2026-11-13 input/schrankbett_v1.svg` and its generator
+  `schrankbett_svg.py` show the former south-wall version and no longer run against the module.) Case:
+  back, two sides to the front (`D`), hinge fittings, the 1.46 niche (`NW`, width `W` = 1.498), top board and
+  Blende from `BLENDE` = 2.10 to `TOP`. The bed (`BW` = 1.44) is built folded down, `<c>_Klappbett`
+  (underside: board, frame 8 mm proud, six raised fields; side rails, head and foot boards, slatted base,
+  one mattress, two pillows, duvet) with `PIVOT` on its hinge axis (`A` = 0.20 from the head end, `DU` = 0.08
+  above the underside, `ZU` = 0.16 above the floor) and `CRANK` ((1, 0, 0), −90: towards the north wall);
+  folded up its underside is flush with the case's front (`D` = 0.45) and the swing peaks at 2.08, under
+  the Blende. Its feet `<c>_Klappfuesse` share pivot and crank and carry a `FOLD` (hinge at the underside,
+  (1, 0, 0), +90): they fold onto the underside meanwhile.
   Furniture (`OG_Klappbett`, `OG_Klappfuesse` in `FURNITURE`). Own `random.Random(16)`; it replaces the
   Yoga room's `bed()`.
 - **Gästebad.** `code/gaestebad.py` the same way: `gaestebad_neu(c, x0, y0, z=0, walls=False)` builds the
@@ -242,20 +245,23 @@ flowchart LR
   shower wall in `<coll>_Fliesen`: a `Fuge` backing 2 mm off the wall, `Kalkstein` slabs 6..12 mm proud,
   rows of about 0.5 m, slabs 0.4..0.8 long from `rng`, joints 4 mm. Used by `bad.stone()` and
   `elternbad.py`. `shower(…, tray=True)` builds a ceramic tray; `tray=False` a walk-in shower on the floor.
-- **Waschbecken.** `waschbecken(coll, wx, wy, fx, fy, w, d, taps, z, tile, rng, staender)` builds one
+- **Waschbecken.** `waschbecken(coll, wx, wy, fx, fy, w, d, taps, z, tile, rng)` builds one
   washbasin into `<coll>_Sanitaer` in the wall frame of `at_wall()`: the hollow `Keramik` basin
-  (top z + 0.85, 17 cm high, `taps` mixers), the `Metall` Waschbeckenständer and the bottle trap
-  (`staender=False`: neither, the basin stands on a Waschtisch);
+  (top z + 0.85, 17 cm high, `taps` mixers), the `Metall` Waschbeckenständer and the bottle trap;
   `tile` puts it in front of WC tiles. Every Part shares one `rnd` from `rng`, else a new
   `random.Random(16)` per call. Callers: `build_sanitary()` (OG WC with
-  `wc_mirror()`, OG Flur without Ständer on `waschtisch()` (#40: the pine cabinet after `waschtisch.avif`, top 10 cm wider than the basin each side, in `OG_Sanitaer`, own `random.Random(40)`) with `wood_mirror()`, which the back hall's
-  mirror in `gaeste_wc.py` and the mirrors in `gaestebad.py` and `elternbad.py` share with their own `rng`),
+  `wc_mirror()`; the OG Flur's basin on its Waschtisch went on 2026-11-25 for `bauernschrank()`, furniture
+  from `build_furniture()`, own `random.Random(25)`), `wood_mirror()` for the back hall's mirror in
+  `gaeste_wc.py` and the mirrors in `gaestebad.py` and `elternbad.py`, each with its own `rng`,
   `gaestebad.py`, `elternbad.py`, `gaeste_wc.py` and `bad.py`.
 - **Schreibplatz (#44).** `schreibplatz(c, z)` (from `build_furniture()`) builds the Schlafzimmer's small
   country desk and its ladder-back chair into object `<c>_Schreibplatz` (in `FURNITURE`) at `SCHREIBPLATZ`
   (the top's x/y range, west of the low wall at the bed's head); `Innentuer` pine, top and seat in
   `KieferY` (the same pine, grain along y); own `random.Random(44)`, an explicit `rnd` on every part (one for the desk, one for the chair), so no other
-  object's shading shifts.
+  object's shading shifts. `schreibplatz(c, z, rect, at, o, seed)` builds the same desk turned against a wall
+  along x (`at` = (wx, wy), sitter south, `rect` local, grain `KieferX`): the OG Flur's at the Bichlach wall
+  (2026-11-25), into `OG_Moebel`, `random.Random(45)`. `sofa(c, cx, cy, face, n=3, z=0)`: the Stube's
+  three-seater, or with `n=2` the Bichlach's two-seater.
 - **Sub-models.** `build_ofen()` / `build_desk()` / `build_bad()` / `build_kueche()` /
   `build_gaeste_wc()` / `build_regal()` / `build_schrankbett()` / `build_gaestebad()` / `build_elternbad()` return a Blueprint of the sub-model alone (`garden=None`, its dimension lines
   in `dims`) for `web/ofen.html` / `web/desk.html` / `web/bad.html` / `web/kueche.html` /
@@ -283,7 +289,7 @@ flowchart LR
   `build_wandlampen()` (from `build_sanitary()`) builds `WANDLAMPEN_OG` and `WANDLAMPEN_EG` (wall
   point, facing, height; the EG list after `input/2026-11-14 input/lampen_eg_v1.svg`, drawn from
   it by `lampen_eg_svg.py`, without its lamps 11, 12 on the Essen west wall, where cabinet C stands;
-  13, 14 hang on B's board back) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, `build_sanitary()`, the Waschküche's in `WANDLAMPEN_OG`;
+  13, 14 hang on B's board back) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, the Waschküche's in `WANDLAMPEN_OG`;
   over the Ofen bed: `ofen.py` (its light moved with the Ofen by `ofen_im_haus()`); the hood's spots:
   `kueche.py` (one light). "Wandlampen" in `PLAN["skip_words"]`
   keeps them off the Grundriss (the Ansichten show them through openings).
@@ -488,13 +494,13 @@ sequenceDiagram
   and level (`Ink_EG_base`) and follow the same rule.
 - **`toolbar.js`.** The one navigation panel of every page (house and sub-models): three custom
   drop-downs (button + `role="listbox"`, always open below; keys ↑ ↓ Enter Esc), Reset and, on
-  the house, the sun toggle. Modell (house entries Ganzes Haus / Erdgeschoss / 1. Stock, a
+  the house, the light switch (Tag | Abend, `aria-pressed` on the current half). Modell (house entries Ganzes Haus / Erdgeschoss / 1. Stock, a
   separator, the sub-model pages grouped by storey under the headings Erdgeschoss and 1. Stock: `PAGES`
   entries carry `eg` / `og`), Darstellung (levels) and Standpunkt (group headings; "Eigene
   Ansicht" appears after a camera move). A page passes its entries, levels, spots, routes and
   callbacks. The house entries switch the cutaway in place (`all` / `eg` / `noroof`, URL `cut=`
   kept); a sub-model entry navigates to its page (relative URLs).
-- **`ui.js`.** The house page's title and its toolbar wiring (stage labels as levels, sun toggle
+- **`ui.js`.** The house page's title and its toolbar wiring (stage labels as levels, light switch
   enabled from p 1.5). `body.dataset.stage`/`cutaway` mirror the state.
 - **`viewstate.js`.** Pure, no three.js. Saved views in `localStorage` under
   `frechenlehen:<page>:<entry>` (prefix: GitHub Pages shares its origin with other repos), value =
@@ -593,7 +599,7 @@ flowchart LR
     sphere × 1.15 fits the vertical field of view (28° house, 35° sub-model). A box within
     `EDGE` = 0.2 m of the footprint `W_OUT × D_OUT` or beyond it is outside: nearest facade, 20° up,
     `cut=all`. Otherwise inside: SE diagonal, 55° up, `cut=eg` below `Z_EG_TOP`, `noroof` below
-    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; Gäste-WC: N, from the back hall; Schrank im Büro: W, from the room; Schrankbett: N, from the room; Gästebad and Bad Nadine & Till: `top`, since their four walls stand full height; `FACING`).
+    `Z_OG_TOP`, else `all`, by the box centre. Sub-model (`bp.garden is None`): SE, 30° up (Küche: S, its open side; Gäste-WC: N, from the back hall; Schrank im Büro: W, from the room; Schrankbett: S, from the room; Gästebad and Bad Nadine & Till: `top`, since their four walls stand full height; `FACING`).
     `side` (`--from`) picks n/e/s/w (or `top`, 85° up from the south). `p = 4` unless `--p`
     (house only).
   - `url()` writes the viewer's format (`+n.toFixed(3)`, ties away from zero); `server_is_ours()`
@@ -648,7 +654,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | **Skizze is hidden-line**; no lines for `SMOOTH` objects | X-ray lines; lines everywhere | Interior parts and ~1,600 pebbles would be ink noise. |
 | Garden per stage: circles → clay blobs → grass and leaves | Edge lines for every leaf | ~1,400 leaves per shrub would be ink noise. |
 | The **cutaway hides whole collections**; `Verschalung_West` goes with `Dach` | Section planes with caps | Simplest; section cuts are a later candidate. |
-| The page **opens at Skizze** (the lowest Darstellung, with no saved view); the sun toggle is off below p 1.5 | Autoplay | Starting from the first line is the point of "Vom Strich zum Haus". |
+| The page **opens at Skizze** (the lowest Darstellung, with no saved view); the light switch is off below p 1.5 | Autoplay | Starting from the first line is the point of "Vom Strich zum Haus". |
 | **Room-light height** `ROOM_LIGHT_H` is a core fact read by `film.py` and the viewer | A height per backend | One source of truth (ADR-001-XEWL). |
 | Shrub leaves grow about a **per-instance centre** attribute | `positionLocal.mul(uDetail)` | In three.js 0.187 `positionLocal` is already instance-transformed when `positionNode` runs. `instancedBufferAttribute(typedArray, 'vec3')` drops the instanced flag, so a real `InstancedBufferAttribute` is needed. |
 | e2e runs headless Chromium with `--use-angle=metal` (WebGL2 path) | SwiftShader | SwiftShader took 1.6 s per frame; headless Chromium has no WebGPU. The WebGPU path is checked by hand. |

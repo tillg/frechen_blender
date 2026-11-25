@@ -118,6 +118,45 @@ test('Erdgeschoss and Ganzes Haus remember their own Darstellung; the bare URL o
   expect(await page.evaluate(() => document.body.dataset.cutaway)).toBe('all');
 });
 
+test('the light switch shows the light it is in; set by hand it is kept with the entry, in the URL and over a reload', async ({ page }) => {
+  // request 2026-11-25: the toggle read as where a click leads; now Tag | Abend with the current one pressed,
+  // and Tag/Abend comes back with the entry's view like stage and camera
+  const pressed = () => page.evaluate(() => [...document.querySelectorAll('.fl-seg button')]
+    .filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.textContent));
+  const tag = page.getByRole('button', { name: '☀ Tag', exact: true });
+  const abend = page.getByRole('button', { name: '☾ Abend', exact: true });
+  await open(page);
+  await expect(page.getByRole('group', { name: 'Licht' })).toBeVisible();
+  expect(await pressed()).toEqual(['☀ Tag']);
+  await expect(abend).toBeDisabled();                                    // Skizze: light does not matter yet
+  await choose(page, 'Darstellung', 'Detailmodell');
+  expect(await pressed()).toEqual(['☀ Tag']);
+  expect(await page.evaluate(() => window.__fl.dusk)).toBe(false);
+  await abend.click();
+  expect(await pressed()).toEqual(['☾ Abend']);
+  expect(await page.evaluate(() => window.__fl.dusk)).toBe(true);
+  await abend.click();                                                   // the current one: nothing changes
+  expect(await page.evaluate(() => window.__fl.dusk)).toBe(true);
+  await page.waitForTimeout(500);                                        // the view is written after 300 ms
+  expect(new URL(page.url()).searchParams.get('sun')).toBe('1');
+  await choose(page, 'Modell', 'Erdgeschoss');
+  await tag.click();
+  expect(await pressed()).toEqual(['☀ Tag']);
+  await page.waitForTimeout(500);
+  await choose(page, 'Modell', 'Ganzes Haus');
+  expect(await pressed()).toEqual(['☾ Abend']);
+  expect(await page.evaluate(() => window.__fl.dusk)).toBe(true);
+  await choose(page, 'Modell', 'Erdgeschoss');
+  expect(await page.evaluate(() => window.__fl.dusk)).toBe(false);
+  await page.waitForTimeout(500);
+  await page.goto('/');                                                  // bare URL: the last entry, its view
+  await page.waitForFunction(() => window.__fl?.ready === true);
+  expect(await btnText(page, 'Modell')).toBe('Erdgeschoss');
+  expect(await pressed()).toEqual(['☀ Tag']);
+  await choose(page, 'Darstellung', 'Gebaut');                           // a stage chosen: the light follows it again
+  expect(await pressed()).toEqual(['☾ Abend']);
+});
+
 test('a ?cam= link wins over the saved view', async ({ page }) => {
   await open(page, '/ofen.html', '__ofen');
   await choose(page, 'Darstellung', 'Masse');

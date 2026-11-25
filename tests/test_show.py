@@ -138,13 +138,13 @@ def test_regal_page(capsys):
 
 
 def test_schrankbett_page(capsys):
-    """The Schrankbett sub-model page (schrankbett.html) is a --page, seen from the room (north),
-    facing the Schrankwand on the south wall."""
+    """The Schrankbett sub-model page (schrankbett.html) is a --page, seen from the room (south),
+    facing the wall bed on the north wall (since 2026-11-25)."""
     assert show.main(["Schrankbett_Moebel", "--page", "schrankbett", "--print"]) == 0
     link = capsys.readouterr().out.strip()
     assert link.startswith("http://localhost:5377/schrankbett.html?cam=") and link.endswith("&look=full")
     cam, at = (tuple(map(float, q.split("=")[1].split(","))) for q in link.split("?")[1].split("&")[:2])
-    assert cam[1] > at[1] and cam[0] == at[0]
+    assert cam[1] < at[1] and cam[0] == at[0]
 
 
 def test_speis_objects_are_shown_in_erdgeschoss(bp):

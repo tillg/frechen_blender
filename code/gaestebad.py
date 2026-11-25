@@ -166,5 +166,5 @@ def gaestebad_neu(c="Gaestebad", x0=0.0, y0=0.0, z=0.0, walls=False):
             S(ma, YN - 0.06, MZ + MH + 0.05, mb, YN - 0.06, MZ + MH + 0.05, f"Spiegel {cm(ma, mb)} × {cm(0, MH)}"),
             S(ma - 0.05, YN - 0.06, 0.0, ma - 0.05, YN - 0.06, MZ, f"UK {cm(0, MZ)}"),
             S(WO - 0.05, TUER[0], f, WO - 0.05, TUER[1], f, f"Tür {cm(*TUER)}"),
-            S(WI, YT + 0.35, top, WO, YT + 0.35, top, cm(WI, WO)),
-            S(WI + 0.30, YS, top, WI + 0.30, YN, top, cm(YS, YN))]
+            S(WI, YT + 0.35, top, WO, YT + 0.35, top, f"Raumbreite {cm(WI, WO)}"),   # the room (request 2026-11-25:
+            S(WI + 0.30, YS, top, WI + 0.30, YN, top, f"Raumtiefe {cm(YS, YN)}")]    # every bath sub-model)

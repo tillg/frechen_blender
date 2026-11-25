@@ -112,7 +112,9 @@ def gaeste_wc_neu(c="GaesteWC", x0=0.0, y0=0.0):
     # dimension lines (sub-model coordinates), the drawing's numbers
     S = lambda xa, ya_, za_, xb, yb_, zb_, s: ((xa - WC_AT[0], ya_ - WC_AT[1], za_), (xb - WC_AT[0], yb_ - WC_AT[1], zb_), s)
     f, ba, bb = 0.02, BM - BW / 2, BM + BW / 2
-    return [S(WI, YS + 0.05, 2.30, PA, YS + 0.05, 2.30, f"WC {cm(WI, PA)}"),
+    return [S(WI, YN - 0.05, f, PA, YN - 0.05, f, f"Raumbreite {cm(WI, PA)}"),     # the WC room on the floor (request
+            S(WI + 0.05, YS, f, WI + 0.05, YN, f, f"Raumtiefe {cm(YS, YN)}"),      # 2026-11-25: every bath sub-model)
+            S(WI, YS + 0.05, 2.30, PA, YS + 0.05, 2.30, f"WC {cm(WI, PA)}"),
             S(PA, YS + 0.05, 2.30, PB, YS + 0.05, 2.30, cm(PA, PB)),
             S(PB, YS + 0.05, 2.30, WO, YS + 0.05, 2.30, f"Garderobe {cm(PB, WO)}"),
             S(WI, YF + 0.05, f, DA, YF + 0.05, f, cm(WI, DA)),

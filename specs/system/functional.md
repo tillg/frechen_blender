@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-22
+edited: 2026-11-25
 ---
 
 # Functional: Frechenlehen house model
@@ -22,6 +22,7 @@ edited: 2026-11-22
     after klinke-fenster.webp (pointed rose, lever hanging down), at the sash's mid height
   - blue shutters with white cross boards
   - larch terrace doors; tall OG west windows (Yoga, Bad): wall below up to a 0.75 m sill, glazed up to the ceiling
+    (the Yoga room's two merged into one twice as wide, 1.98, on 2026-11-25)
   - larch cladding of the whole west side and the east gable, cut around the openings; spaced
     slats over the gable windows
   - larch balconies with cut-out balusters
@@ -98,11 +99,16 @@ edited: 2026-11-22
     bouclé cocktail armchairs either side of it
   - Stube sofa after sofa.tiff: linen three-seater, 3/4 of the way from the corner pier between
     the big windows to the Ofen, facing the pier
+  - every sub-model page with a bath, toilet or shower (Bad Großeltern, Gäste-WC, Gästebad, Bad Nadine &
+    Till) dimensions the room's width (west–east, "Raumbreite") and depth (south–north, "Raumtiefe") from
+    wall face to wall face (2026-11-25; the Gäste-WC's: the WC's)
   - Bad Großeltern after `input/2026-11-08 input/grosseltern_v4.svg` (also a sub-model page),
-    open to the bedroom: walk-in shower 0.80 m in the NW corner with limestone cladding to 2.0 m
-    and a rain head; east of it a 1.20 m wall 1.00 m high and one L-shaped clear glass pane on
-    its shower edge, flush with the north french door's jamb, on the wall to the ceiling and 35 cm
-    from the north wall down to the floor;
+    open to the bedroom: walk-in shower 0.95 m in the NW corner (2026-11-25: the low wall moved 15 cm
+    east) with limestone cladding to 2.0 m and a rain head; east of it a 1.20 m wall 1.00 m high and a
+    clear glass pane on its shower edge, on the wall to the ceiling and by the north wall down to the
+    floor, turning the corner in front of the north wall: the north french door became a window (sill
+    1.00, same jambs), its west 15 cm now in the shower, so a 20 cm return pane 2.5 cm off the wall runs
+    west over the jamb onto the limestone, a wall profile closing it, and keeps water off sill and window;
     on the wall's east face a Waschbecken doppelt 100 × 47; in the south a 1.20 m niche
     split by a 12 cm wall into WC and an open white Schrank (cabinet 60 cm deep over the full
     width, nothing in front of it), closed by two interlocking sliding doors (the WC leaf open,
@@ -139,15 +145,17 @@ edited: 2026-11-22
     the south column; it shows how: it swings shut in 2 s, rests 4 s, swings open, rests 4 s, on
     the sub-model page and in the house in stage Eingerichtet (the film and the Rundgang see it
     open). Depths and shelf heights estimated from the photo
-  - Schrankbett in the Yoga room (OG, NW) after `input/2026-11-13 input/schrankbett_v1.svg` (also a
-    sub-model page): a 2 × 2 m wall bed (lying area 2.00 × 2.00, spruce) in a 45 cm deep Schrankwand on
-    the south wall, from the west wall to 5 mm short of the Yoga door's architrave (278), up to the
-    2.20 m ceiling: a 36 cabinet each side of the 206 niche, a 10 cm Blende over it. Folded down the
-    bed lies with its head at the south wall (to 2.21 m from it, mattress top 39 cm); folded up its
-    underside, framed with six raised panels like the doors, closes the niche flush with the cabinet
-    doors, its feet folded onto it. It shows how: it folds up in 3 s, rests 4 s, folds down, on the
-    sub-model page and in the house in stage Eingerichtet (the film, the Rundgang and the plan sheets
-    see it down). The left cabinet covers part of the west window's reveal (accepted)
+  - Schrankbett in the Yoga room (OG, NW) (also a sub-model page; first drawn as
+    `input/2026-11-13 input/schrankbett_v1.svg`, 2 × 2 m on the south wall with side cabinets): since
+    2026-11-25 on the opposite, north wall, slid into the corner with the west (back) outer wall, without
+    side cabinets: a wall bed 1.40 wide (lying area 1.40 × 2.00, one mattress, spruce) in a 45 cm deep
+    case 150 wide (the 146 niche and its two sides) up to the 2.20 m ceiling, a 10 cm Blende over the
+    niche. Folded down the bed lies with its head at the north wall (to 2.21 m from it, mattress top
+    39 cm); folded up its underside, framed with six raised panels like the doors, closes the niche flush
+    with the case, its feet folded onto it. It shows how: it folds up in 3 s, rests 4 s, folds down, on
+    the sub-model page and in the house in stage Eingerichtet (the film, the Rundgang and the plan sheets
+    see it down). The west window behind it is gone, merged into the room's other west window (2026-11-25),
+    which is twice as wide (1.98, from its old south jamb northwards to 5 cm before the case), so the case stands against plain wall
   - Schlafzimmer Nadine & Till (OG, SE; #44): a small country desk after `input/2026-11-15 input/
     kleiner-schreibtisch.webp` (old pine, top 110 × 55 at 78 cm with 4 cm overhang, four turned legs
     with ball feet, apron with one drawer and a round knob on the sitter's side) with its back to the
@@ -156,11 +164,18 @@ edited: 2026-11-22
     at 45.5 cm, turned legs, stretchers, back posts with finials, two slats), pushed in 10 cm under
     the top. Furniture (stage Eingerichtet, not on the plan sheets); the Rundgang passes it 0.25 m
     clear in plan
-  - the six washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
+  - Bichlach (OG, NE; 2026-11-25): its door in the Flur wall moved towards the stair, the opening 15 cm
+    east of the stair hole (11.40 .. 12.28, hinged west, opened 90°); a double bed (two mattresses, 1.86 ×
+    2.00) with its head on the west wall and a nightstand either side, clear of the leaf and 90 cm before
+    the north balcony door; on the freed wall between door and east wall a two-seater linen sofa (`sofa(n=2)`,
+    the Stube's one seat narrower), its back to the wall, under the room's Wandlampe; on the same wall
+    piece's Flur face the small country desk (`schreibplatz(at=…)`, top 110 × 55, grain along x) with its
+    chair to the south; furniture. The Rundgang walks in through the new door
+  - the five washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
     52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
-    (100 × 47), einzeln in the back hall (40 × 28), the OG WC 2,30 (50 × 40), the OG Flur
-    (60 × 47), the Gästebad and the Bad Nadine & Till (60 × 47 under a mirror 80 × 85 in the
+    (100 × 47), einzeln in the back hall (40 × 28), the OG WC 2,30 (50 × 40) (the OG Flur's went
+    on 2026-11-25 for the Bauernschrank), the Gästebad and the Bad Nadine & Till (60 × 47 under a mirror 80 × 85 in the
     wooden frame)
   - Gästebad at the end of the OG Flur (NW; also a sub-model page with its four walls and
     dimensions): from the Flur door one faces the back (west, outer) wall; on the left the walk-in
@@ -191,12 +206,12 @@ edited: 2026-11-22
     row, floor-standing toilet with a close-coupled cistern; in the WC 2,30 (next to the
     Waschküche) a Waschbecken einzeln 50 × 40 under a mirror in a black frame, clear of the open
     door leaf
-  - OG Flur, exactly midway between the doors to Saschi and the Waschküche: a Waschbecken einzeln
-    60 × 47 without its Ständer on a **Waschtisch** (#40, `waschtisch()`, after `input/2026-11-15 input/
-    waschtisch.avif`): an old pine cabinet, top 80 (10 cm wider than the basin each side) × 52 with a
-    moulded edge, a drawer, a protruding rail, a door with a raised panel, two knobs, four slim legs
-    tapering below; the wall behind plain white plaster (no tiles); above it a mirror 110 × 85 in a
-    10 cm wooden frame (`wood_mirror()`, as the back hall's 54 × 74 with 7 cm)
+  - OG Flur, exactly midway between the doors to Saschi and the Waschküche: a big **Bauernschrank**
+    (2026-11-25, `bauernschrank()`, furniture; it replaced the Waschtisch of #40 with its basin, mirror
+    and two Wandlampen): old pine like that Waschtisch (`input/2026-11-15 input/waschtisch.avif`), 1.80
+    wide, 60 deep (the Rundgang passes it along the stair rail, 0.33 m clear), 2.05 high: plinth with a moulding,
+    corner and middle pilasters, two doors with two raised panels each, iron escutcheons, knobs and
+    strap hinges, a cornice stepping out three times; the wall behind plain white plaster
   - Waschküche: a washer tower at the east wall (a dryer stacked on the front loader), 4 cm from the table; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the
     right wall from the door (west) an open spruce cupboard, 2.0 m high, continuous shelves
@@ -248,7 +263,7 @@ Blender backend. What the scripts make:
 - `paint.py`: RAL colours for facade, windows, shutters and stove tiles.
 - `garden.py`: meadow grass (Geometry Nodes) and leafy shrubs.
 - `windrose.py`: compass rose to the SW.
-- **Film** (`film.py`, route in `tour.py`): a walkthrough of 305 s, 7632 frames at 1280×720,
+- **Film** (`film.py`, route in `tour.py`): a walkthrough of about 304 s, 7590 frames at 1280×720,
   25 fps. Slow turns on the spot (`TURN` °/s), pauses (`PAUSE` s) and the camera height
   (`EYE`, 1.60 m above the floor) are one variable each:
   1. orbit outside, enter at the east door, which swings open
@@ -292,8 +307,8 @@ Blender backend. What the scripts make:
     the standard, Südwesten, Nordosten, Nordwesten), Übersicht (Von oben, Schräg von Südosten; EG
     and 1. Stock), Erdgeschoss (Stube, Küche, Speis, Bibliothek - Ecke hinten rechts, Bibliothek -
     Klavierspieler, Oma & Opa) and 1. Stock (Nadine & Till, Waschküche, Saschi, Bichlach, Jugend,
-    Yoga, Bad Nadine & Till: in the door towards the two showers, Flur oben - Waschtisch: across the
-    Flur at the Waschtisch, Gästebad: just inside the door, tub ahead, shower and WC left, basin right),
+    Yoga, Bad Nadine & Till: in the door towards the two showers, Flur oben - Bauernschrank: across the
+    Flur at the Bauernschrank, Gästebad: just inside the door, tub ahead, shower and WC left, basin right),
     each inside group at eye height (1.6 m) in the room, except Klavierspieler: seated on
     the piano bench (eye 1.25 m), looking over the keys and the piano into the room; listed in
     Ganzes Haus and its own storey. Sub-models list their own views (Schräg, Von oben, …). A group Routen (Ganzes Haus only) lists "Um und durch das Haus" and "Durch die
@@ -326,8 +341,8 @@ Blender backend. What the scripts make:
   mouse; the page draws at most 30 frames per second. A playing route is neither saved nor
   written to the URL.
 - **The view lives in the URL** (and in the saved view), written as it changes: house `?cam=x,y,z&at=x,y,z&p=…&cut=…`
-  (model coordinates; optional `&fov=…`, vertical field of view in degrees, default 28, and
-  `&hires=on`, full quality), sub-model
+  (model coordinates; optional `&fov=…`, vertical field of view in degrees, default 28, `&sun=0|1`, Tag/Abend
+  set by hand with the light switch, and `&hires=on`, full quality), sub-model
   pages `?cam=…&at=…&look=wire|mass|full`. A reload or a shared link opens the same view.
 - **Light on the GPU:** a frame is drawn only when something changes (camera, stage, cutaway,
   sun, window size); a burning fire in view is redrawn at most 30 times a second. In fast mode
@@ -399,7 +414,7 @@ sequenceDiagram
     V-->>Visitor: Skizze
     Visitor->>V: choose Darstellung (Massenmodell … Eingerichtet)
     V-->>Visitor: Massenmodell → Detailmodell → Gebaut → Eingerichtet
-    Visitor->>V: orbit, Modell "Erdgeschoss", Standpunkt "Bibliothek - Ecke hinten rechts", a route, sun toggle
+    Visitor->>V: orbit, Modell "Erdgeschoss", Standpunkt "Bibliothek - Ecke hinten rechts", a route, light switch
 ```
 
 ## Inputs and outputs
@@ -420,8 +435,8 @@ The model has no runtime state. In Blender (dormant) the one animated part is th
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
 the Bad's sliding leaves, the back hall's three doors, the Speis's saloon leaves and the Büro door move on their own clocks (each one at its
 built or its other state, or on the way); otherwise the state is the model entry (cutaway all / noroof / eg or a sub-model), the Darstellung
-(house progress `p` 0–4), the Standpunkt (or Eigene Ansicht), a forced dusk value from the sun
-toggle (cleared by any stage change), the saved view per entry, the Rundgang
+(house progress `p` 0–4), the Standpunkt (or Eigene Ansicht), a forced dusk value from the light
+switch (cleared by any stage change, saved with the entry's view), the saved view per entry, the Rundgang
 (off / playing / paused, its time and the loop flag; `body.dataset.tour`) and the `hires` mode
 (fixed per page load).
 

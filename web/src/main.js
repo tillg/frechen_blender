@@ -151,7 +151,7 @@ function flushView() {
   clearTimeout(saveTimer);
   saveTimer = 0;
   const view = `?cam=${zup(camera.position)}&at=${zup(controls.target)}&p=${+progress.toFixed(3)}&cut=${cut}`
-    + (viewFov !== FOV ? `&fov=${viewFov}` : '');
+    + (viewFov !== FOV ? `&fov=${viewFov}` : '') + (sun !== null ? `&sun=${sun}` : '');   // sun: Tag/Abend set by hand
   // the entry's default (Reset) is kept as no saved view and a bare URL
   const std = standard(model), home = view === `?cam=${std.cam}&at=${std.at}&p=0&cut=${cutOf(model)}`;
   const extra = [plan && `plan=${plan}`, hires && 'hires=on'].filter(Boolean);
@@ -189,6 +189,7 @@ function applyView(q) {                                             // camera an
   else place(std.cam, std.at, std.fov, false);
   spot = SPOTS.find((s) => s.entries.includes(model) && at(s))?.name ?? null;
   if (q.has('p')) setProgress(Number(q.get('p')));
+  if (q.has('sun')) { sun = Number(q.get('sun')); lights.setDusk(sun); }   // after the stage, which resets it
 }
 applyView(query);
 controls.addEventListener('change', () => {
@@ -254,7 +255,7 @@ const ui = createUI({
   onSpot: (v) => (v.startsWith('route:') ? tour.enter(Number(v.slice(6))) : goSpot(v.slice(5))),
   onReset: () => { setPlan(null); setProgress(0); ui.refresh(); goSpot(standard(model).name); },
   isDusk,
-  toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); dirty = true; },
+  toggleSun: () => { sun = isDusk() ? 0 : 1; lights.setDusk(sun); dirty = true; saveView(); },
 });
 showSpot();
 if (urlPlan) { setPlan(urlPlan); ui.refresh(); }
@@ -328,6 +329,7 @@ if (import.meta.env.MODE !== 'production') {
     objectCount: bp.objects.length,
     lineSources: ink.sources,
     get progress() { return progress; },
+    get dusk() { return isDusk(); },                                // the light: Abend
     get linesVisible() { return ink.group.visible; },
     get garden() { return garden.state; },
     hires,
