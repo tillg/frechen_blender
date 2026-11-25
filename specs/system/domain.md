@@ -22,7 +22,10 @@ the team uses them:
 | Term | Meaning |
 |---|---|
 | **EG** (Erdgeschoss) | Ground floor, z = 0 … 2.40 m. |
-| **Offline-App** | The production viewer stored on a device by its service worker: every file of one build, so the pages open without network (iPad home screen); "Offline bereit" once complete. The next online load after a deploy fetches the new build; the button "Neue Version nachladen" fetches it at once and reloads. |
+| **Offline-App** | The production viewer stored on a device by its service worker: every file of one build and every plan version, so the pages open without network (iPad home screen); "Offline bereit" once complete. The next online load after a deploy fetches the new build (a stored version is kept); the button "Update laden" fetches it at once and reloads. |
+| **Version** (Planversion) | A frozen plan state on one timeline: id = its date (`YYYY-MM-DD`, unique), a name, and the snapshot of the committed `code/` + `plans/` that day (`versionen/<id>.tar.gz`). Never changed after it was frozen. Covers the house (3D, Standpunkte, Rundgang, Vorlagen anchors) and the six plan sheets. |
+| **Aktuell** | The live model of `main`, the viewer's default; not a version. **Einfrieren** (`just version "<name>"`) copies it into a new version. |
+| **Update** | A new deploy of the web app, fetched by the button "Update laden"; not a version (an update may bring new versions). |
 | **OG** (Obergeschoss) | Upper floor, z = 2.70 … 4.90 m (`Z_OG`, `Z_OG_TOP`). |
 | **Dach** | Roof: ridge runs east–west at 7.67 m, ~20° pitch, wide eaves (`EAVE_OH`) and gable overhangs (`GABLE_OH`). |
 | **Grundriss** | Floor plan, 1:100: the architect's input plan (`grundriss_eg.png`, `grundriss_og.png` in the folder of the current plans, see `LOG.md`) and our generated one, a horizontal section through a storey at its **cut height (Schnitthöhe)** seen from above. Parts the cut passes through are **cut** (walls hatched inside one heavy outline, other parts a thin one); parts below it are **projection** in thin lines; loose furniture and parts above the cut are left out. |
@@ -245,7 +248,9 @@ flowchart LR
    them live and `just film` captures and encodes it (the Blender render of the same keys is
    dormant).
 5. **Refresh the README views:** `docs/images/ansicht_*.png`.
-6. **Publish the viewer:** merge to `main`; the Pages workflow builds and deploys.
+6. **Freeze a plan version** when a planning round is settled: commit, `just version "<name>"`,
+   commit `versionen/`; the build makes it selectable and stores it offline.
+7. **Publish the viewer:** merge to `main`; the Pages workflow builds and deploys.
 
 ## Rules and constraints
 
@@ -275,5 +280,8 @@ flowchart LR
   millimetres, or they z-fight.
 - **Colours:** facade and windows RAL 9010, shutters RAL 5014. Doors stay
   natural wood.
+- **Every frozen version stays loadable** by today's viewer
+  ([ADR-005-JXWL](../architecture/adr-005-jxwl-plan-versions-source-snapshots.md)): a viewer change
+  reads extras an old version lacks with defaults; a committed snapshot is never edited.
 - **Every route camera** (film and viewer Rundgang, all routes) and every inside Standpunkt stay ≥ 0.25 m from all geometry and never
   passes through a wall.

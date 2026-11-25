@@ -4,10 +4,10 @@
 // "Offline bereit" for a few seconds; "Offline nicht möglich" (and no more counting) when a file
 // can't be stored. The dev pages never do. Imported for its effect by main.js, submodel.js and
 // vorlagen.js.
-// A button at the bottom right, "Neue Version nachladen" (request 2026-11-25), makes sure the page runs
+// A button at the bottom right, "Update laden" (request 2026-11-25), makes sure the page runs
 // the newest deploy: it asks the server for a new worker; is there one, it stores the new build (the
-// badge counts) and reloads into it, else it says "Neueste Version". When a new build was stored while
-// the page was open (the worker took over: controllerchange), the button turns dark, "Neue Version
+// badge counts) and reloads into it, else it says "Schon aktuell". When a new build was stored while
+// the page was open (the worker took over: controllerchange), the button turns dark, "Update
 // bereit – neu laden", and a click reloads.
 const SHOW_READY = 4000, SHOW_NOTE = 3000;   // ms
 
@@ -24,7 +24,7 @@ function say(text) {
   badge.textContent = text;
 }
 
-const LABEL = '↻ Neue Version nachladen', READY = '↻ Neue Version bereit – neu laden';
+const LABEL = '↻ Update laden', READY = '↻ Update bereit – neu laden';
 let button = null, noteTimer = 0, wanted = false, stale = false;
 function updateButton() {
   button = Object.assign(document.createElement('button'), { type: 'button', className: 'fl-update', textContent: LABEL });
@@ -50,15 +50,15 @@ async function check() {
   const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
   if (!reg) { location.reload(); return; }                          // no worker (blocked): a plain reload
   button.disabled = true;
-  note('Suche neue Version …');
+  note('Suche Update …');
   try {
     await reg.update();                                             // fetches sw.js past the HTTP cache
   } catch {
     note('Keine Verbindung – später nochmal', SHOW_NOTE);
     return;
   }
-  if (reg.installing) { wanted = true; note('Lade neue Version …'); return; }   // the badge counts, then reload
-  note('Neueste Version ✓', SHOW_NOTE);
+  if (reg.installing) { wanted = true; note('Lade Update …'); return; }   // the badge counts, then reload
+  note('Schon aktuell ✓', SHOW_NOTE);
 }
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

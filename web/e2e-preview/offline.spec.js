@@ -8,6 +8,10 @@ import { shot } from '../e2e/pixels.js';
 const BASE = '/frechen_blender/';
 test.use({ serviceWorkers: 'allow' });
 
+// the live build's cache in a generated sw.js (the one key that is not a version's, issue #59)
+const liveCache = (src) => src.match(/"(frechenlehen-[0-9a-f]{12})":\[/)[1];
+const VERSION_ID = '2026-11-25';                                          // the first plan version (#59)
+
 async function firstVisit(page) {
   await page.goto(BASE);
   await expect.poll(() => page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())),
@@ -43,6 +47,11 @@ test('offline after the first visit: house, sub-model, plan sheet, Vorlagen', as
   await page.goto(`${BASE}plans/eg.svg`);
   expect(await page.content()).toContain('Grundriss EG');
 
+  await page.goto(`${BASE}?m=haus&v=${VERSION_ID}`);                       // a plan version (#59)
+  await expect(page.getByRole('button', { name: 'Version', exact: true })).toContainText(VERSION_ID, { timeout: 60_000 });
+  await page.goto(`${BASE}v/${VERSION_ID}/plans/eg.svg`);
+  expect(await page.content()).toContain('Grundriss EG');
+
   await page.goto(`${BASE}vorlagen.html?b=garderobe`);
   await expect(page.locator('figcaption', { hasText: 'Toilette in Mallnitz' })).toBeVisible();
   const ok = await page.evaluate(async () => Promise.all([...document.querySelectorAll('img')].map((i) =>
@@ -51,7 +60,7 @@ test('offline after the first visit: house, sub-model, plan sheet, Vorlagen', as
   expect(ok.every(Boolean)).toBe(true);
 
   expect(ours.length).toBeGreaterThan(10);
-  for (const g of ['frechenlehen.glb', 'bad.glb']) expect(ours.some(([u]) => u.endsWith(`${BASE}${g}`)), g).toBe(true);
+  for (const g of ['frechenlehen.glb', 'bad.glb', `v/${VERSION_ID}/frechenlehen.glb`]) expect(ours.some(([u]) => u.endsWith(`${BASE}${g}`)), g).toBe(true);
   expect(ours.filter(([, s, sw]) => s !== 200 || !sw)).toEqual([]);         // all from the worker's store
   expect(errors).toEqual([]);
 });
@@ -83,14 +92,14 @@ test('a new build replaces the stored one; offline then the new one', async ({ p
   test.setTimeout(180_000);
   const sw = new URL('../dist/sw.js', import.meta.url);
   const built = readFileSync(sw, 'utf8');
-  const old = built.match(/const VERSION = "(\w+)";/)[1];
+  const old = liveCache(built);
   try {
     await firstVisit(page);
-    const keys = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('frechenlehen-')));
-    expect(await keys()).toEqual([`frechenlehen-${old}`]);
-    writeFileSync(sw, built.replace(`"${old}"`, '"next000build"'));               // a new deploy
+    const keys = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('frechenlehen-') && !k.startsWith('frechenlehen-v-')));
+    expect(await keys()).toEqual([old]);
+    writeFileSync(sw, built.replace(`"${old}"`, '"frechenlehen-next000build"'));               // a new deploy
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
-    await expect.poll(keys, { timeout: 90_000 }).toEqual(['frechenlehen-next000build']);   // the old store is gone
+    await expect.poll(keys, { timeout: 90_000 }).toEqual(['frechenlehen-next000build']);   // the old live store is gone
     await context.setOffline(true);
     await page.reload();
     await expect(page.getByRole('button', { name: 'Darstellung', exact: true })).toBeVisible({ timeout: 60_000 });
@@ -99,51 +108,52 @@ test('a new build replaces the stored one; offline then the new one', async ({ p
   }
 });
 
-test('"Neue Version nachladen": the newest says so; after a new deploy it stores the new build and reloads into it', async ({ page }) => {
+test('"Update laden": the newest says so; after a new deploy it stores the new build and reloads into it', async ({ page }) => {
   test.setTimeout(240_000);
   const sw = new URL('../dist/sw.js', import.meta.url);
   const built = readFileSync(sw, 'utf8');
-  const old = built.match(/const VERSION = "(\w+)";/)[1];
-  const keys = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('frechenlehen-')));
+  const old = liveCache(built);
+  const keys = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('frechenlehen-') && !k.startsWith('frechenlehen-v-')));
   const button = page.locator('.fl-update');
   try {
     await firstVisit(page);
-    await expect(button).toHaveText('↻ Neue Version nachladen');
+    await expect(page.getByRole('button', { name: '↻ Update laden', exact: true })).toBeVisible();
+    await expect(button).toHaveText('↻ Update laden');
     await button.click();
-    await expect(button).toHaveText('Neueste Version ✓', { timeout: 30_000 });
-    await expect(button).toHaveText('↻ Neue Version nachladen', { timeout: 10_000 });
-    expect(await keys()).toEqual([`frechenlehen-${old}`]);
-    writeFileSync(sw, built.replace(`"${old}"`, '"next000build"'));               // a new deploy
+    await expect(button).toHaveText('Schon aktuell ✓', { timeout: 30_000 });
+    await expect(button).toHaveText('↻ Update laden', { timeout: 10_000 });
+    expect(await keys()).toEqual([old]);
+    writeFileSync(sw, built.replace(`"${old}"`, '"frechenlehen-next000build"'));               // a new deploy
     await page.evaluate(() => { window.__before = true; });
     const reloaded = page.waitForEvent('load', { timeout: 120_000 });
     await button.click();
     await reloaded;                                                              // into the new build
     expect(await page.evaluate(() => window.__before)).toBeUndefined();
     expect(await keys()).toEqual(['frechenlehen-next000build']);
-    await expect(button).toHaveText('↻ Neue Version nachladen', { timeout: 30_000 });
+    await expect(button).toHaveText('↻ Update laden', { timeout: 30_000 });
   } finally {
     writeFileSync(sw, built);
   }
 });
 
-test('a new build stored in the background while the page is open turns the button into "Neue Version bereit"', async ({ page }) => {
+test('a new build stored in the background while the page is open turns the button into "Update bereit"', async ({ page }) => {
   test.setTimeout(240_000);
   const sw = new URL('../dist/sw.js', import.meta.url);
   const built = readFileSync(sw, 'utf8');
-  const old = built.match(/const VERSION = "(\w+)";/)[1];
+  const old = liveCache(built);
   try {
     await firstVisit(page);
     await page.reload();                                                          // now a page of the stored build
-    await expect(page.locator('.fl-update')).toHaveText('↻ Neue Version nachladen', { timeout: 60_000 });
-    writeFileSync(sw, built.replace(`"${old}"`, '"next000build"'));
+    await expect(page.locator('.fl-update')).toHaveText('↻ Update laden', { timeout: 60_000 });
+    writeFileSync(sw, built.replace(`"${old}"`, '"frechenlehen-next000build"'));
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());   // the browser's own check
-    await expect(page.locator('.fl-update')).toHaveText('↻ Neue Version bereit – neu laden', { timeout: 120_000 });
+    await expect(page.locator('.fl-update')).toHaveText('↻ Update bereit – neu laden', { timeout: 120_000 });
     await page.evaluate(() => { window.__before = true; });
     const reloaded = page.waitForEvent('load', { timeout: 60_000 });
     await page.locator('.fl-update').click();
     await reloaded;
     expect(await page.evaluate(() => window.__before)).toBeUndefined();
-    await expect(page.locator('.fl-update')).toHaveText('↻ Neue Version nachladen', { timeout: 30_000 });
+    await expect(page.locator('.fl-update')).toHaveText('↻ Update laden', { timeout: 30_000 });
   } finally {
     writeFileSync(sw, built);
   }
@@ -154,10 +164,28 @@ test('a file that can\'t be stored stops with a message', async ({ page }) => {
   const sw = new URL('../dist/sw.js', import.meta.url);
   const built = readFileSync(sw, 'utf8');
   try {
-    writeFileSync(sw, built.replace(/const VERSION = "\w+";/, 'const VERSION = "failing00000";')
-      .replace('const FILES = [', 'const FILES = ["missing.bin",'));                // a 404 in the list
+    writeFileSync(sw, built.replace(`"${liveCache(built)}":[`, '"frechenlehen-failing00000":["missing.bin",'));   // a 404 in the list
     await page.goto(BASE);
     await expect(page.locator('.fl-offline')).toHaveText('Offline nicht möglich', { timeout: 60_000 });
+  } finally {
+    writeFileSync(sw, built);
+  }
+});
+
+test('a new deploy keeps a stored plan version: its cache is neither dropped nor fetched again (#59)', async ({ page }) => {
+  test.setTimeout(180_000);
+  const sw = new URL('../dist/sw.js', import.meta.url);
+  const built = readFileSync(sw, 'utf8');
+  const vcache = built.match(new RegExp(`"(frechenlehen-v-${VERSION_ID}-[0-9a-f]{12})":\\[`))[1];
+  const keys = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('frechenlehen-')).sort());
+  try {
+    await firstVisit(page);
+    expect(await keys()).toEqual([liveCache(built), vcache].sort());
+    await page.evaluate(async (n) => (await caches.open(n)).put('marker', new Response('kept')), vcache);   // survives only if kept
+    writeFileSync(sw, built.replace(`"${liveCache(built)}"`, '"frechenlehen-next000build"'));        // a new deploy, same version
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
+    await expect.poll(keys, { timeout: 90_000 }).toEqual(['frechenlehen-next000build', vcache].sort());
+    expect(await page.evaluate(async (n) => (await (await caches.open(n)).match('marker'))?.text(), vcache)).toBe('kept');
   } finally {
     writeFileSync(sw, built);
   }

@@ -17,6 +17,8 @@ web/public/gaestebad.glb
 web/public/elternbad.glb
 web/public/plans/
 web/public/vorlagen.json
+web/public/v/
+web/public/versionen.json
 web/test-results/
 web/playwright-report/
 .venv/

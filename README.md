@@ -27,7 +27,8 @@ geprüft mit grünem Paritätstest). Wieder einschalten: die sechs Skripte in Bl
 | `tests/` | Python-Tests (`pytest`); keiner startet Blender (die Blender-Skripte werden nur übersetzt) |
 | `frechenlehen.blend` | das Blender-Modell, eingefroren auf dem Stand von `7805879` (Blender ruht, siehe oben) |
 | `JJJJ-MM-TT_frechen_rundgang_blender.mp4`, `…_threejs.mp4` | Film: Rundgang außen, dann EG und OG (Blender-Render bzw. Web-Ansicht); der neueste `…_threejs.mp4` liegt auch auf GitHub Pages als [`rundgang.mp4`](https://tillg.github.io/frechen_blender/rundgang.mp4) und läuft dort im Browser |
-| `justfile` | `just film`: nimmt den Rundgang der Web-Ansicht Bild für Bild auf (`web/film.mjs`, ca. 26 min, Dev-Server dieses Checkouts auf 5377), kodiert ihn mit 25 fps auf knapp 90 MB, löscht alle Filme außer dem neuen und dem davor – auch aus der Git-Historie von `main` –, committet und pusht mit Force-Push. Einzeln: `film-capture`, `film-encode`, `film-publish` |
+| `justfile` | `just film`: nimmt den Rundgang der Web-Ansicht Bild für Bild auf (`web/film.mjs`, ca. 26 min, Dev-Server dieses Checkouts auf 5377), kodiert ihn mit 25 fps auf knapp 90 MB, löscht alle Filme außer dem neuen und dem davor – auch aus der Git-Historie von `main` –, committet und pusht mit Force-Push. Einzeln: `film-capture`, `film-encode`, `film-publish`. `just version "Name"` friert den heutigen Stand als Planversion ein (siehe Web-Ansicht › Versionen) |
+| `versionen/` | eingefrorene Planversionen (Issue #59): je Version `JJJJ-MM-TT.tar.gz` (der eingecheckte Stand von `code/` und `plans/` an diesem Tag), Liste mit Datum und Name in `versionen.json` |
 | `docs/images/` | Ansichten für dieses README |
 | `tmp/` | Zwischenstände (Einzelbilder, Testrender, Logs) – kann gelöscht werden |
 
@@ -58,6 +59,7 @@ geprüft mit grünem Paritätstest). Wieder einschalten: die sechs Skripte in Bl
 | `tour.py` | die Route des Rundgangs (ohne Blender): außen herum, durch EG und OG (langsame Drehungen und Blicke in die Räume, auch in Dusche und WC der Großeltern; ins Bad Nadine & Till hinein bis vor die Glaswände der Duschen, rechts herum mit dem Rücken zum Glas drehen, kurz warten, geradeaus wieder hinaus; Drehgeschwindigkeit `TURN`, Pausendauer `PAUSE` und Kamerahöhe `EYE` = 1,60 m über dem Boden sind je eine Variable), über Treppe und Haustür zurück zum Startpunkt; daraus die Kamera pro Bild – für den Film und den Rundgang in der Web-Ansicht. Dazu die kürzeren Routen der Web-Ansicht (`ROUTES`, z. B. „Durch die Stube & Küche“) und ihre Standpunkte (`SPOTS`: Name, Gruppe, Modelle, Kamera, Blickpunkt, Blickwinkel; je eine Zeile) |
 | `film.py` | Kamerafahrt nach `tour.py`, Raumlicht der Speis und die Lichter der Wandlampen, geöffnete Haustür; Renderausgabe nach `tmp/film/` |
 | `show.py` | ohne Blender: berechnet aus dem Kern einen Blickpunkt auf die genannten Objekte und öffnet die Web-Ansicht dort im Browser (siehe Tests) |
+| `versionen.py` | Planversionen (ohne Blender, Issue #59): `freeze` legt den eingecheckten Stand von `code/` und `plans/` als `versionen/<Datum>.tar.gz` ab und trägt ihn in `versionen/versionen.json` ein (verweigert bei nicht eingecheckten Änderungen dort; `just version "Name"`); `build` erzeugt daraus je Version das Haus-`.glb` mit dem Exporter **dieses** Stands und kopiert seine Planblätter nach `web/public/v/<Datum>/` (macht `npm run blueprint`; zwischengespeichert in `tmp/versionen/`) |
 | `film_release.py` | für `just film` (ohne Blender): welche alten Filme weg können (es bleibt nur der neueste, auch in der Git-Historie), die Bitrate für knapp 90 MB (GitHub nimmt nur Dateien unter 100 MB), das Entfernen alter Filme aus der Git-Historie und welcher Film der neueste ist (für GitHub Pages) |
 
 Ausführen in Blender (ruht, nur zum Wieder-Einschalten): `exec(open("/Users/tgartner/git/frechen_blender/code/<skript>.py").read())`
@@ -197,16 +199,24 @@ Rundgang, beim Filmen und auf einem Planblatt sind die Schilder aus. Welches Bil
 Schild steht, steht einmal in `code/vorlagen.py` (jedes Foto nur einmal: dasselbe Foto in anderer Größe steht dort in `DOPPELT` und wird nicht gezeigt); die verkleinerten Kopien (≤ 1600 px) liegen in
 `web/public/vorlagen/` (neu erzeugen mit `python3 code/vorlagen.py --copy`, nur macOS).
 
+- **Versionen** (Issue #59): im Titelkasten oben links das Menü „Version“: „Aktuell“ (das laufende Modell)
+  oder ein eingefrorener Stand, z. B. „2026-11-25 Nach Vincent & Silvia-Ideen“. Ein eingefrorener Stand zeigt
+  sein Haus (3D, Standpunkte, Rundgang) und seine sechs Planblätter, der Titelkasten ist dann gelblich; die
+  Kamera bleibt beim Wechsel, die Wahl steht in der URL (`?v=2026-11-25`). Teilmodelle, Fotos & Vorlagen, die
+  Bild-Texturen (die Bildschirme am Schreibtisch, `web/public/textures/`) und der Film gibt es nur aktuell. Einfrieren: `just version "Name"` (Datum = heute; vorher `code/` und `plans/`
+  committen), dann die neue Datei in `versionen/` committen. Jede Änderung an der Web-Ansicht muss alle
+  eingefrorenen Stände weiter laden können (`web/e2e/versions.spec.js`).
 - Online: <https://tillg.github.io/frechen_blender/> (wird bei jedem Push auf `main` neu gebaut)
 - Offline, z. B. auf dem iPad: die Online-Seite in Safari öffnen, „Teilen → Zum Home-Bildschirm“, die App
   vom Home-Bildschirm einmal mit Netz starten und warten, bis unten links „Offline bereit“ steht (vorher
-  zählt dort „Offline: n / m“ die Dateien, gut 60 MB). Danach läuft alles ohne Netz: Haus, Teilmodelle,
-  Pläne, Fotos & Vorlagen; nur der Film nicht. Ein neuer Stand kommt beim nächsten Start mit Netz und
-  ist beim Start danach zu sehen; sofort geht es mit dem Knopf **„↻ Neue Version nachladen“** unten rechts: er
+  zählt dort „Offline: n / m“ die Dateien, gut 60 MB und gut 40 MB je Version). Danach läuft alles ohne Netz:
+  Haus, Teilmodelle, Pläne, Fotos & Vorlagen, alle Versionen; nur der Film nicht. Eine Version wird nur einmal
+  geladen, ein neuer Stand lädt sie nicht noch einmal. Ein neuer Stand kommt beim nächsten Start mit Netz und
+  ist beim Start danach zu sehen; sofort geht es mit dem Knopf **„↻ Update laden“** unten rechts: er
   fragt nach einem neuen Stand, lädt ihn (unten links zählt es) und lädt die Seite neu, sonst sagt er
-  „Neueste Version ✓“. Hat der Browser im Hintergrund schon einen neuen Stand geholt, wird der Knopf dunkel:
-  „Neue Version bereit – neu laden“. Technik: ein Service Worker (`web/src/sw.js`), den der Build mit der
-  Liste aller Dateien von `web/dist` erzeugt (`web/offline-build.js`); die Seiten unter
+  „Schon aktuell ✓“. Hat der Browser im Hintergrund schon einen neuen Stand geholt, wird der Knopf dunkel:
+  „Update bereit – neu laden“. Technik: ein Service Worker (`web/src/sw.js`), den der Build mit der
+  Liste aller Dateien von `web/dist` erzeugt (`web/offline-build.js`), je Version ein eigener Speicher; die Seiten unter
   `http://localhost:5377/` (Entwicklung) haben keinen.
 - Lokal: `cd web && npm install && npm run dev` – erzeugt zuerst das `.glb` aus dem Kern; danach Haus unter `http://localhost:5377/`, Ofen unter `http://localhost:5377/ofen.html`, Schreibtisch unter `http://localhost:5377/desk.html`, Bad unter `http://localhost:5377/bad.html`, Küche unter `http://localhost:5377/kueche.html`, Gäste-WC unter `http://localhost:5377/gaeste_wc.html`, Schrank im Büro unter `http://localhost:5377/regal.html`, Schrankbett unter `http://localhost:5377/schrankbett.html`, Gästebad unter `http://localhost:5377/gaestebad.html`, Bad Nadine & Till unter `http://localhost:5377/elternbad.html`, Fotos & Vorlagen unter `http://localhost:5377/vorlagen.html`, der Produktions-Build (`npm run build`, wie auf GitHub Pages) unter `http://localhost:5377/frechen_blender/` (immer nur ein Server, fester Port 5377; auch die Tests laufen gegen ihn). Wird eine Datei in `code/` gespeichert, erzeugt der Server das `.glb` neu und lädt die Seite nach – an derselben Stelle, denn die Ansicht steht in der URL (Haus: Kamera, Blickpunkt, Stufe, Schnitt, optional `fov=` als vertikales Sichtfeld in Grad, Standard 28, und `hires=on` für volle Qualität bei der Filmaufnahme: alle Lichter, volle Pixeldichte, Gras auch von innen – sonst gelten die Abkürzungen für flüssiges Drehen, auch im Rundgang; Teilmodelle: Kamera, Blickpunkt, Darstellung). So lässt sich eine Ansicht auch als Link weitergeben.
   (braucht `python3`) und öffnet dann die Seite.
