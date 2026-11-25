@@ -18,12 +18,15 @@ not work; a page served from the web can only work offline through a service wor
 
 ## Decision
 
-- After `vite build`, a Vite plugin walks `web/dist`, writes the list of its files and a content
-  hash of all of them into `web/dist/sw.js` (scope `/frechen_blender/`). Nothing is listed by hand.
-- On install the worker fetches every listed file (`cache: 'reload'`) into one cache
-  `frechenlehen-<hash>`; on activate it deletes the other `frechenlehen-*` caches (the origin
-  `tillg.github.io` is shared with other repos: never touch foreign caches) and takes control.
-- It answers GET requests from that cache, ignoring the query (the view lives in the URL), the
+- After `vite build`, a Vite plugin walks `web/dist` and writes its files, grouped into caches, into
+  `web/dist/sw.js` (scope `/frechen_blender/`): the live build in `frechenlehen-<hash>` (content hash
+  of its files and the worker body), each plan version's files (`v/<id>/…`, ADR-005-JXWL) in
+  `frechenlehen-v-<id>-<hash>` (hash of its files only). Nothing is listed by hand.
+- On install the worker fetches every listed file not yet in its cache (`cache: 'reload'`), so a
+  version stored by an earlier deploy is not fetched again; on activate it deletes the
+  `frechenlehen-*` caches not in its list (the origin `tillg.github.io` is shared with other repos:
+  never touch foreign caches) and takes control.
+- It answers GET requests from the cache of the URL's group, ignoring the query (the view lives in the URL), the
   directory URL as its `index.html`; anything not in the list (the film `rundgang.mp4`, copied after
   the build, and Range requests) goes to the network.
 - A new deploy changes `sw.js`; the browser installs the new worker on the next online load; the
@@ -36,6 +39,8 @@ not work; a page served from the web can only work offline through a service wor
 - **A local web server app on the iPad (a-Shell):** iPadOS suspends it in the background; no updates.
 - **A library (Workbox / vite-plugin-pwa):** a dependency for ~60 lines; the file list is all we need.
 - **Network-first with cache fallback:** every online load would re-download up to 62 MB.
+- **One cache for the whole build (until 2026-11-25):** every deploy would re-download every plan
+  version (~43 MB each).
 
 ## Consequences
 
@@ -43,3 +48,7 @@ not work; a page served from the web can only work offline through a service wor
 - A worker once deployed stays on the devices that loaded it: removing it later needs a deploy of
   a `sw.js` that unregisters itself, not just deleting the file.
 - The film is not offline.
+
+## History
+
+- 2026-11-25 — one cache per plan version beside the live build's, kept across deploys (issue #59, ADR-005-JXWL).

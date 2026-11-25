@@ -4,7 +4,8 @@
 // toggle and Reset. body.dataset.stage / .cutaway reflect the state (for tests).
 import { PLANS } from './plans.js';
 import { STAGES, stageAt } from './stages.js';
-import { createToolbar, HOUSE } from './toolbar.js';
+import { createToolbar, dropdown, HOUSE } from './toolbar.js';
+import { versionLabel } from './versions.js';
 
 const LABELS = { sketch: 'Skizze', massing: 'Massenmodell', detail: 'Detailmodell', built: 'Gebaut', furnished: 'Eingerichtet' };
 
@@ -21,11 +22,22 @@ const levelItems = (key) => (key === 'haus'
   : STAGE_ITEMS);
 
 // api: { model (entry key), spots (drop-down items), getProgress(), setProgress(p), getPlan(),
-// setPlan(key | null), setCutaway(c), onModel(key), onSpot(value), onReset(), isDusk(), toggleSun() }
+// setPlan(key | null), setCutaway(c), onModel(key), onSpot(value), onReset(), isDusk(), toggleSun(),
+// versions [{id, name}] (versionen.json), version (the one shown, null = Aktuell), onVersion(id | null) }
 export function createUI(api) {
   const title = el('div', { className: 'fl-title' });
   title.append(el('h1', {}, 'Frechenlehen'), el('p', {}, 'Vom Strich zum Haus'),
     el('a', { className: 'fl-photos', href: 'vorlagen.html' }, 'Fotos & Vorlagen'));   // the reference photos by Bereich
+  // the plan versions (issue #59): a drop-down in the title box, naming what is shown; a frozen
+  // version tints the box, so it is not taken for Aktuell
+  if (api.versions?.length) {
+    const version = dropdown('Version', (id) => api.onVersion(id || null));
+    version.field.classList.add('fl-version');
+    version.setItems([{ value: '', label: 'Aktuell' }, ...api.versions.map((v) => ({ value: v.id, label: versionLabel(v) }))]);
+    version.set(api.version?.id ?? '');
+    title.append(version.field);
+    title.classList.toggle('fl-frozen', !!api.version);
+  }
   document.body.append(title);
 
   const tb = createToolbar({
