@@ -6,7 +6,7 @@ its back (west) and side (south) wall in limestone to 2.0, the head on the south
 the pane, a freestanding slipper tub 165 x 75 on claw feet along the back wall under the big window (after
 input/2026-11-15 input/badewanne.webp: the raised head end 74 to the shower, the foot end 60, both under
 the 75 sill, so one looks out of it; the tap out of the outer wall at the foot end). Between shower and WC
-a glass wall (where the partition over the EG Gäste-WC's stood, code/gaeste_wc.py) from the south wall to
+a glass wall (over where the EG Gäste-WC's partition stood till #61) from the south wall to
 YG, 19 cm further forward than that wall reached; north of it the way into the shower. East of
 it the open WC (toilet centred on the south wall, facing north; Taubenblau tiles on the south and east
 wall); the Waschbecken einzeln 60 on the north wall between tub and door under a mirror 80 x 85 in a 10 cm
@@ -20,11 +20,10 @@ web/gaestebad.html. The floor stays the house's limestone (BATHS_OG).
 import math
 import random
 import house_core as hc
-import gaeste_wc
 
 GAESTEBAD_AT = (0.31, 5.46)                  # house: the room's inner SW corner
 WI, WO, YS, YN = 0.31, 2.57, 5.46, 8.57      # room: west and east (Flur wall) faces, south and north faces
-PA = gaeste_wc.PA                            # the glass between shower and WC: over the EG partition's west face
+PA = 1.319                                   # the glass between shower and WC: over the former EG partition's west face
 YG = 6.34                                    # its north end, 19 cm before the partition's (6.15); the way in north of it
 TUER = (7.66, 8.47)                          # Flur door in the east wall, hinged south, open flat into the Bad
 SN = 6.865                                   # shower's north edge: the glass pane to the tub

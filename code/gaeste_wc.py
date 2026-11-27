@@ -1,40 +1,36 @@
-"""Frechenlehen – the Gäste-WC by the back hall (EG) as a sub-model (web/gaeste_wc.html), after the
-agreed drawing input/2026-11-10 input/gaeste_wc_v3.svg (generator gaeste_wc_svg.py beside it) and the
-Mallnitz photos of the same folder. The old WC (2.05 x 1.10 m) is split by a new 10 cm partition,
-its east face flush with the old door's west jamb: in the west the WC with a new 76 opening in the
-north wall, its leaf opened outward into the Flur (90 deg, hinged at the partition side: laid flat it
-would cover the Garderobe's opening), the toilet centred on the south wall, Taubenblau tiles; in the
-east the Garderobe, open to the Flur through the old 80 opening, without a bench (issue #27): on its
-left (east) wall a hook board with 23 hooks and a hat shelf (garderobe mallnitz.jpeg), across its back
-end a hanging rod with five coats, under them a shoe shelf of two 20 cm levels with six pairs of shoes. The WC's hand basin stands outside, on
-its Waschbeckenständer (input/2026-11-12 input/), at the Flur east wall between the WC wall and the
-Windfang door, tiles behind it and a mirror in a wooden frame above.
+"""Frechenlehen – the Duschbad by the back hall (EG) as a sub-model (web/gaeste_wc.html), issue #61 (variant B of the
+drawing input/2026-11-27 input/hintereingang_optionen.svg, the user 2026-11-27): the old Gäste-WC and Garderobe of
+input/2026-11-10 input/gaeste_wc_v3.svg are one room, its north wall moved 20 cm north (room 204.8 x 129.9). In the
+east a walk-in shower 90 x 130 (no tray: the room's limestone runs through; limestone on its walls to 2.0, the head
+on the east wall), a glass pane 75 from the south wall on its west side, the entry 55 north of it; in the west the
+toilet on the south wall (Taubenblau tiles on the WC part's walls) and the basin einzeln 40 x 28 on its Ständer on
+the west wall north of the window, a mirror 40 x 60 in a wooden frame above it. The door 76 in the north wall (west
+part) opens outward into the back hall, hinged east (laid flat it would cover the shoe rack). In the back hall east
+of the door a shoe rack 2 m high, nine levels of about 20 cm, about half full of shoes. The Garderobe moved to the Flur
+(code/garderobe.py).
 
-Pure Python like house_core.py, which imports this module: build_eg() calls gaeste_wc_neu() at
-WC_AT; house_core.build_gaeste_wc() wraps it at the origin as the Blueprint of web/gaeste_wc.html.
-Positions are written in house coordinates (those of the drawing) and shifted by (x0, y0) - WC_AT,
-as the basin lies outside the room. Like the Bad it brings walls of its own: the partition and the
-WC's north wall (Bestand) with both openings; the floor stays the house's limestone.
+Pure Python like house_core.py, which imports this module: build_eg() calls gaeste_wc_neu() at WC_AT;
+house_core.build_gaeste_wc() wraps it at the origin as the Blueprint of web/gaeste_wc.html. Positions are written
+in house coordinates and shifted by (x0, y0) - WC_AT. It brings the room's north wall (with its door) and the back
+hall's two other doors; the floor stays the house's limestone.
 """
-import math, random
+import random
 import house_core as hc
 
-WC_AT = (0.31, 5.475)                        # house: the old WC room's inner SW corner
-WI, WO = 0.31, 2.358                         # room: west wall face, east face (= the Flur east wall's face)
-YS, YN, YF = 5.475, 6.574, 6.723             # south wall face, north wall: room face, Flur face
-PA, PB = 1.319, 1.419                        # partition; its east face = the old door's west jamb
-DA, DB = 0.48, 1.24                          # new WC door opening (76), hinged at DB
-GA, GB = 1.419, 2.218                        # old opening (80) to the Garderobe, no door
-FWA, FWB = 7.408, 8.506                      # Windfang door's jambs; its architrave 7 cm
-TX = (WI + PA) / 2                           # toilet axis: centred in the WC
-TD = 0.70                                    # toilet depth incl. tiles (hc.toilet's seat; drawing: 69)
-BW, BD = 0.40, 0.28                          # Waschbecken einzeln (hc.waschbecken), centred on the Flur wall piece
-BM = (YF + FWA) / 2
-MF, MGW, MGH, MZ = 0.07, 0.40, 0.60, 1.20    # mirror: frame width, glass width x height, frame bottom
-HOOK_Z, BOARD_Z, BOARD_TOP = (1.50, 1.65), 1.35, 2.00   # Garderobe (#27): hook rows, hook board on the east wall
-SHELF_D, SHELF_Z, BRACKET = 0.28, 1.95, 0.14            # hat shelf: depth, bottom, its brackets' reach
-ROD_Y, ROD_Z, ROD_R = YS + 0.27, 1.78, 0.0125           # hanging rod across the back end (south wall)
-SHOE_D, SHOE_Z, SHOE_T = 0.33, (0.04, 0.26, 0.48), 0.02  # shoe shelf: depth, its three boards' bottoms, thickness
+WC_AT = (0.31, 5.475)                        # house: the room's inner SW corner
+WI, WO = 0.31, 2.358                         # room: west wall face, east face
+YS, YN, YF = 5.475, 6.774, 6.923             # south wall face, north wall (#61: 20 cm north): room face, hall face
+XS, GL = 1.458, 0.75                         # shower: its glass line (shower x XS .. WO, 90), glass from the south wall
+DA, DB = 0.68, 1.44                          # door opening (76) in the north wall, hinged at DB, outward 90 deg
+TX = 0.85                                    # toilet axis on the south wall
+BW, BD, BM = 0.40, 0.28, 6.55                # Waschbecken einzeln on the west wall: its axis north of the window (5.724 .. 6.324)
+MW, MH, MF, MZ = 0.40, 0.60, 0.05, 1.20      # mirror: outer width x height, frame width, bottom
+HY, CLAD, ST = 6.05, 2.0, 0.012              # shower head on the east wall at y HY; limestone to CLAD, slab face
+SX = 1.56                                    # shoe rack: from x SX to the east wall, on the north wall's hall face
+SHOE_D, SHOE_T = 0.33, 0.02                  # shoe rack: depth, board thickness
+SHOE_Z = tuple(0.04 + k * (1.98 - 0.04) / 9 for k in range(10))   # its ten boards' bottoms: 2 m high (#61), 9 levels
+SHOE_PAIRS = 14                              # pairs of shoes on it: about half of its 9 x 3 places, spread at random
+OLD_DRAWS = 44                               # global draws of the Gäste-WC + Garderobe till #61 (burnt: later parts keep theirs)
 
 
 def cm(a, b):
@@ -42,143 +38,87 @@ def cm(a, b):
 
 
 def gaeste_wc_neu(c="GaesteWC", x0=0.0, y0=0.0):
-    """The Gäste-WC with Garderobe and the Flur basin, built into collection c with the old WC
-    room's inner SW corner at (x0, y0). The north wall and the toilet draw their rnd from the global
-    stream (as everywhere in the house), the tiles from wainscot()'s own, the rest from this
-    module's generator. Returns the dimension lines (sub-model coordinates)."""
+    """The Duschbad and the back hall's doors and shoe rack, built into collection c with the room's inner SW corner
+    at (x0, y0). The north wall, the doors, toilet and shower draw from the global stream, which is then set to where
+    the former Gäste-WC left it (OLD_DRAWS); limestone and mirror from this module's generator, tiles and basin from
+    their own. Returns the dimension lines (sub-model coordinates)."""
     dx, dy = x0 - WC_AT[0], y0 - WC_AT[1]
-    rng = random.Random(12)
-    H = hc.Z_EG_TOP
-    B = lambda o, m, xa, xb, ya, yb, za, zb, r=None: hc.box(c, c + o, m, xa + dx, xb + dx, ya + dy, yb + dy, za, zb,
-                                                         rng.random() if r is None else r)
+    st, rng = random.getstate(), random.Random(12)
 
-    # walls: the partition; the north wall with the new WC door (outward, 90 deg) and the old
-    # opening as an open passage to the Garderobe
-    B("_Waende", "Putz", PA, PB, YS, YN, 0.0, H)
+    # the north wall with the door (outward, 90 deg); the back door (closed; in the west wall's opening) and the
+    # glazed Windfang door (open 90 deg into the back hall; in the wall x 2.358 .. 2.657), each leaf its own object so
+    # the viewer can swing it, both hinged north: open they lie along the hall's north wall (request 2026-11-10)
     hc.interior(c, WI + dx, WO + dx, YN + dy, YF + dy, [(DA + dx, DB + dx, 1, "b", False, "panel", "Innentuer",
-                                                         c + "_WC_Tuer"), (GA + dx, GB + dx)])
-    # the other two doors of the back hall, each leaf its own object so the viewer can swing it:
-    # the back door (closed; in the west wall's opening) and the glazed Windfang door (open 90 deg
-    # into the Flur; in the wall x 2.358 .. 2.657); both hinged north, so open they lie along the
-    # back hall's north wall (request 2026-11-10)
+                                                         c + "_WC_Tuer")])
     hc.back_door(c, dx, dy)
-    hc.panel_door(c, "y", FWA + dy, FWB + dy, WO + dx, 2.657 + dx, 0.0, hc.DOOR_H, -1, "b", False, "glazed",
+    hc.panel_door(c, "y", 7.408 + dy, 8.506 + dy, WO + dx, 2.657 + dx, 0.0, hc.DOOR_H, -1, "b", False, "glazed",
                   leaf=c + "_Windfangtuer")
 
-    # WC: toilet centred on the south wall, Taubenblau tiles on its four walls (door left free)
+    # WC part: toilet on the south wall, Taubenblau tiles on its walls (door left free), the basin with its mirror
     hc.toilet(c, TX + dx, YS + dy, 0, 1)
-    hc.wainscot(c, 0.0, WI + dx, PA + dx, YS + dy, YN + dy, (DA + dx, DB + dx))
+    hc.wainscot(c, 0.0, WI + dx, XS + dx, YS + dy, YN + dy, (DA + dx, DB + dx), sides="snw")
+    hc.waschbecken(c, WI + dx, BM + dy, 1, 0, BW, BD, 1, tile=hc.WC_TILE_T)
+    hc.wood_mirror(c, WI + dx, BM + dy, 1, 0, MW, MH, MF, MZ, rng)
 
-    # Flur east wall: hand basin on its Ständer, tiles behind it up to the Windfang door's architrave, mirror
-    # 40 x 60 in a 7 cm wooden frame (2.5 cm deep), its glass set back in the frame
-    hc.waschbecken(c, WO + dx, BM + dy, -1, 0, BW, BD, 1, tile=hc.WC_TILE_T)
-    hc.wainscot(c, 0.0, WO + dx - 1.0, WO + dx, YF + dy, FWA - 0.07 + dy, None, sides="e")
-    ya, yb, za, zb = BM - MGW / 2 - MF, BM + MGW / 2 + MF, MZ, MZ + MGH + 2 * MF
-    hc.wood_mirror(c, WO + dx, BM + dy, -1, 0, yb - ya, zb - za, MF, za, rng)
+    # shower: limestone on the east wall and on the shower's parts of the south and north wall, head and drain, the pane
+    hc.limestone(c, False, WO + dx, -1, YS + dy, YN + dy, 0.018, CLAD, rng)
+    hc.limestone(c, True, YS + dy, 1, XS + 0.005 + dx, WO - ST + dx, 0.018, CLAD, rng)
+    hc.limestone(c, True, YN + dy, -1, XS + 0.005 + dx, WO - ST + dx, 0.018, CLAD, rng)
+    hc.shower(c, XS + dx, WO + dx, YS + dy, YN + dy, [(XS + dx, YS + dy, XS + dx, YS + GL + dy)],
+              (WO - ST + dx, HY + dy, -1, 0), tray=False)
 
-    # Garderobe after garderobe mallnitz.jpeg, without the bench (issue #27): walking in from the
-    # passage (heading south), on the left (east) wall the old-spruce hook board over the whole wall
-    # with 23 iron hooks in two staggered rows and the hat shelf on three brackets above; across the
-    # back end (south wall) a steel hanging rod from wall to wall, under it a shoe shelf with two
-    # levels of 20 cm
-    o, r = "_Garderobe", rng.random()
-    B(o, "FichteZ", WO - 0.02, WO, YS, YN, BOARD_Z, BOARD_TOP, r)                           # hook board
-    B(o, "FichteY", WO - SHELF_D, WO, YS, YN, SHELF_Z, SHELF_Z + 0.03, r)                   # hat shelf (28 from the wall)
-    P = lambda u, t, z: (u + dx, t + dy, z)                                                  # (x, z) profiles, t = y
-    bracket = [(WO - 0.02, SHELF_Z), (WO - 0.02 - BRACKET, SHELF_Z)] + \
-              [(WO - 0.02 - BRACKET * math.cos(math.pi / 2 * i / 6), SHELF_Z - 0.20 * math.sin(math.pi / 2 * i / 6))
-               for i in range(1, 7)]
-    for y in (YS + 0.06, (YS + YN) / 2, YN - 0.06):
-        hc.prism(c, c + o, "FichteZ", P, bracket, y - 0.0125, y + 0.0125, r)
-    n = 12                                                                                   # hooks: 12 above, 11 between them below
-    ys = [YS + 0.10 + i * (YN - YS - 0.20) / (n - 1) for i in range(n)]
-    for z, row in ((HOOK_Z[1], ys), (HOOK_Z[0], [(a + b) / 2 for a, b in zip(ys, ys[1:])])):
-        for y in row:
-            B(o, "Eisen", WO - 0.12, WO - 0.02, y - 0.006, y + 0.006, z - 0.005, z + 0.007, 0.5)
-            B(o, "Eisen", WO - 0.12, WO - 0.108, y - 0.006, y + 0.006, z + 0.007, z + 0.04, 0.5)
-    rod = lambda xa, xb, rr: hc.turned(c, c + o, "Stahl", (xa + dx, ROD_Y + dy, ROD_Z), (xb + dx, ROD_Y + dy, ROD_Z),
-                                       [(rr, 0), (rr, 1)], 12, 0.5)
-    rod(PB, WO - 0.02, ROD_R)                                                                # rod, into the hook board
-    rod(PB, PB + 0.008, 0.03)                                                                # its wall flanges
-    rod(WO - 0.028, WO - 0.02, 0.03)
-    for xa, xb in ((PB, PB + 0.02), (WO - 0.02, WO)):                                        # shoe shelf: sides,
-        B(o, "FichteZ", xa, xb, YS, YS + SHOE_D, 0.0, SHOE_Z[-1] + SHOE_T, r)
-    for z in SHOE_Z:                                                                         # three boards,
-        B(o, "FichteX", PB + 0.02, WO - 0.02, YS, YS + SHOE_D, z, z + SHOE_T, r)
-    B(o, "FichteX", PB + 0.02, WO - 0.02, YS + SHOE_D - 0.04, YS + SHOE_D - 0.02, 0.0, SHOE_Z[0], r)   # recessed plinth
+    schuhregal(c, dx, dy, rng)
+    hc.restream(st, OLD_DRAWS)
 
-    kleidung(c, dx, dy)
-
-    # dimension lines (sub-model coordinates), the drawing's numbers
+    # dimension lines (sub-model coordinates)
     S = lambda xa, ya_, za_, xb, yb_, zb_, s: ((xa - WC_AT[0], ya_ - WC_AT[1], za_), (xb - WC_AT[0], yb_ - WC_AT[1], zb_), s)
-    f, ba, bb = 0.02, BM - BW / 2, BM + BW / 2
-    return [S(WI, YN - 0.05, f, PA, YN - 0.05, f, f"Raumbreite {cm(WI, PA)}"),     # the WC room on the floor (request
-            S(WI + 0.05, YS, f, WI + 0.05, YN, f, f"Raumtiefe {cm(YS, YN)}"),      # 2026-11-25: every bath sub-model)
-            S(WI, YS + 0.05, 2.30, PA, YS + 0.05, 2.30, f"WC {cm(WI, PA)}"),
-            S(PA, YS + 0.05, 2.30, PB, YS + 0.05, 2.30, cm(PA, PB)),
-            S(PB, YS + 0.05, 2.30, WO, YS + 0.05, 2.30, f"Garderobe {cm(PB, WO)}"),
+    f, ba, bb, ma, mb = 0.02, BM - BW / 2, BM + BW / 2, BM - MW / 2, BM + MW / 2
+    return [S(WI, YN - 0.05, f, WO, YN - 0.05, f, f"Raumbreite {cm(WI, WO)}"),       # the room on the floor (every
+            S(WI + 0.65, YS, f, WI + 0.65, YN, f, f"Raumtiefe {cm(YS, YN)}"),        # bath sub-model)
+            S(XS, YS + 0.05, 2.10, WO, YS + 0.05, 2.10, f"Dusche {cm(XS, WO)}"),
+            S(XS - 0.05, YS, 2.10, XS - 0.05, YS + GL, 2.10, f"Glas {cm(0, GL)}"),
+            S(XS - 0.05, YS + GL, 2.10, XS - 0.05, YN, 2.10, f"Einstieg {cm(YS + GL, YN)}"),
+            S(WI, YS + 0.80, f, TX, YS + 0.80, f, cm(WI, TX)),
             S(WI, YF + 0.05, f, DA, YF + 0.05, f, cm(WI, DA)),
             S(DA, YF + 0.05, f, DB, YF + 0.05, f, f"Tür {cm(DA, DB)}"),
-            S(WI, YN - 0.25, f, TX, YN - 0.25, f, cm(WI, TX)),
-            S(TX, YN - 0.25, f, PA, YN - 0.25, f, cm(TX, PA)),
-            S(TX, YS + TD, f, TX, YN, f, f"{cm(YS + TD, YN)} frei"),
-            S(PB, ROD_Y, ROD_Z + 0.05, WO, ROD_Y, ROD_Z + 0.05, f"Kleiderstange {cm(PB, WO)} auf {cm(0, ROD_Z)}"),
-            S((PB + WO) / 2, YS, SHOE_Z[-1] + SHOE_T + f, (PB + WO) / 2, YS + SHOE_D, SHOE_Z[-1] + SHOE_T + f,
-              f"Schuhregal {cm(0, SHOE_D)} tief"),
-            S(PB + 0.06, YS + SHOE_D + 0.02, SHOE_Z[0] + SHOE_T, PB + 0.06, YS + SHOE_D + 0.02, SHOE_Z[1], cm(SHOE_Z[0] + SHOE_T, SHOE_Z[1])),
-            S(PB + 0.06, YS + SHOE_D + 0.02, SHOE_Z[1] + SHOE_T, PB + 0.06, YS + SHOE_D + 0.02, SHOE_Z[2], cm(SHOE_Z[1] + SHOE_T, SHOE_Z[2])),
-            S(WO - 0.06, YS, BOARD_TOP + 0.05, WO - 0.06, YN, BOARD_TOP + 0.05, f"Hakenbrett {cm(YS, YN)}"),
-            S(DB, YF + 0.35, f, WO - BD - 0.01, YF + 0.35, f, f"{cm(DB, WO - BD - 0.01)} frei"),
-            S(WO - BD - 0.06, YF, 0.85, WO - BD - 0.06, ba, 0.85, cm(YF, ba)),
-            S(WO - BD - 0.06, ba, 0.85, WO - BD - 0.06, bb, 0.85, f"HWB {cm(ba, bb)}"),
-            S(WO - BD - 0.06, bb, 0.85, WO - BD - 0.06, FWA, 0.85, cm(bb, FWA)),
-            S(WO - 0.06, ya - 0.05, 0.0, WO - 0.06, ya - 0.05, MZ, f"UK {cm(0, MZ)}"),
-            S(WO - 0.06, ya, zb + 0.05, WO - 0.06, yb, zb + 0.05, f"Spiegel {cm(ya, yb)} × {cm(za, zb)}")]
+            S(WI + BD + 0.05, YS, 0.85, WI + BD + 0.05, ba, 0.85, cm(YS, ba)),
+            S(WI + BD + 0.05, ba, 0.85, WI + BD + 0.05, bb, 0.85, f"HWB {cm(ba, bb)}"),
+            S(WI + 0.06, ma, MZ + MH + 0.05, WI + 0.06, mb, MZ + MH + 0.05, f"Spiegel {cm(ma, mb)} × {cm(0, MH)}"),
+            S(SX, YF + SHOE_D + 0.05, SHOE_Z[-1] + SHOE_T + f, WO, YF + SHOE_D + 0.05, SHOE_Z[-1] + SHOE_T + f,
+              f"Schuhregal {cm(SX, WO)}"),
+            S((SX + WO) / 2, YF, SHOE_Z[-1] + SHOE_T + f, (SX + WO) / 2, YF + SHOE_D, SHOE_Z[-1] + SHOE_T + f,
+              f"{cm(0, SHOE_D)} tief"),
+            S(WO - 0.05, YF + SHOE_D + 0.05, 0.0, WO - 0.05, YF + SHOE_D + 0.05, SHOE_Z[-1] + SHOE_T,
+              f"{cm(0, SHOE_Z[-1] + SHOE_T)} hoch")]
 
 
-def kleidung(c, dx, dy):
-    """The Garderobe's illustrating clothes (#27), object <c>_Kleidung (furniture): five coats in
-    five fabrics on wooden hangers on the rod, between the partition's Wandlampe (reaching x 1.63)
-    and the east wall's hooks (from x 2.238), and a dozen shoes, 6 pairs (Halbschuhe, Turnschuhe,
-    Stiefel), three on each level of the shoe shelf, toes to the room. Own random.Random(27), an
-    explicit rnd for every part, so nothing else in the house changes."""
+def schuhregal(c, dx, dy, rng):
+    """The shoe rack in the back hall (#61, object <c>_Schuhregal, furniture): on the room's north wall, from SX to
+    the east wall, SHOE_D deep, 2 m high (#61), two sides, ten boards (nine levels of about 20 cm), a recessed plinth;
+    SHOE_PAIRS pairs of shoes (Halbschuhe, Turnschuhe, Stiefel), about half full, at random places on all levels, toes to the hall (<c>_Kleidung, furniture).
+    Spruce from one draw of rng, the shoes from an own random.Random(27), an explicit rnd for every part."""
+    o, r = c + "_Schuhregal", rng.random()
+    B = lambda m, xa, xb, ya, yb, za, zb, rr=r: hc.box(c, o, m, xa + dx, xb + dx, ya + dy, yb + dy, za, zb, rr)
+    y0, y1 = YF, YF + SHOE_D
+    for xa, xb in ((SX, SX + 0.02), (WO - 0.02, WO)):                                       # sides
+        B("FichteZ", xa, xb, y0, y1, 0.0, SHOE_Z[-1] + SHOE_T)
+    for z in SHOE_Z:                                                                         # ten boards
+        B("FichteX", SX + 0.02, WO - 0.02, y0, y1, z, z + SHOE_T)
+    B("FichteX", SX + 0.02, WO - 0.02, y0 + 0.02, y0 + 0.04, 0.0, SHOE_Z[0])                # plinth, recessed
     rk, o = random.Random(27), c + "_Kleidung"
-    X = lambda m, xa, xb, prof, r: hc.prism_x(c, o, m, xa + dx, xb + dx, [(y + dy, z) for y, z in prof], r)
-    Bx = lambda m, xa, xb, ya, yb, za, zb, r: hc.box(c, o, m, xa + dx, xb + dx, ya + dy, yb + dy, za, zb, r)
-
-    def T(m, xc, half, prof, r):                                        # (y, z) profile, its thickness half(z) about xc
-        n = len(prof)
-        v = [(xc + k * half(z) + dx, y + dy, z) for k in (-1, 1) for y, z in prof]
-        f = [list(range(n))[::-1], list(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
-        hc.add(c, o, m, v, f, r)
-    fabrics = ["Loden", "Kamel", "Anthrazit", "Jeans", "Wolle"]
-    rk.shuffle(fabrics)
-    yc, s = ROD_Y, ROD_Z - 0.08                                         # hanger plane, shoulder line
-    for i, m in enumerate(fabrics):
-        xc, ln, hw, r = 1.71 + 0.10 * i + rk.uniform(-0.004, 0.004), rk.uniform(0.85, 1.05), rk.uniform(0.22, 0.25), rk.random()
-        T(m, xc, lambda z: 0.02 + 0.02 * (z - s + ln) / ln,                                         # body, from 8 cm
-          [(yc - hw, s - ln), (yc + hw, s - ln), (yc + 0.20, s - 0.30), (yc + 0.21, s - 0.05),            # thick at the
-           (yc + 0.07, s + 0.02), (yc - 0.07, s + 0.02), (yc - 0.21, s - 0.05), (yc - 0.20, s - 0.30)], r)  # shoulders to 4
-        for k in (-1, 1):                                                                          # sleeves
-            T(m, xc, lambda z: 0.045 - 0.01 * (s - z) / 0.62, [(yc + k * 0.20, s - 0.04), (yc + k * 0.245, s - 0.10),
-                                                               (yc + k * 0.255, s - 0.60), (yc + k * 0.20, s - 0.62)], r)
-        Bx(m, xc - 0.03, xc + 0.03, yc - 0.07, yc + 0.07, s + 0.02, s + 0.06, r)                   # collar
-        X("Kiefer", xc - 0.006, xc + 0.006, [(yc - 0.20, s - 0.03), (yc + 0.20, s - 0.03), (yc + 0.20, s - 0.015),
-                                             (yc + 0.05, s + 0.035), (yc - 0.05, s + 0.035), (yc - 0.20, s - 0.015)], r)
-        w, f = 0.002, ROD_R + 0.002                                                                # hook over the rod
-        Bx("Stahl", xc - w, xc + w, yc + f, yc + f + 2 * w, s + 0.06, ROD_Z + f + 2 * w, 0.5)
-        Bx("Stahl", xc - w, xc + w, yc - f - 2 * w, yc + f, ROD_Z + f, ROD_Z + f + 2 * w, 0.5)
-        Bx("Stahl", xc - w, xc + w, yc - f - 2 * w, yc - f, ROD_Z, ROD_Z + f, 0.5)
+    X = lambda m, xa, xb, prof, rr: hc.prism_x(c, o, m, xa + dx, xb + dx, [(y + dy, z) for y, z in prof], rr)
+    Bx = lambda m, xa, xb, ya, yb, za, zb, rr: hc.box(c, o, m, xa + dx, xb + dx, ya + dy, yb + dy, za, zb, rr)
     kinds = [("Halbschuh", 0.08, ["Leder", "Anthrazit"]), ("Turnschuh", 0.085, ["Leinen", "Jeans", "Wolle"]),
-             ("Stiefel", 0.15, ["Leder", "Kamel"])] * 2
-    rk.shuffle(kinds)
-    xa, xb = PB + 0.02, WO - 0.02                                                                  # between the sides
-    for j, (kind, hh, mats) in enumerate(kinds):
-        b = SHOE_Z[j // 3] + SHOE_T + 0.001                                                         # on its board
-        xp = xa + (xb - xa) * (j % 3 + 0.5) / 3
-        m, ls, y0, r = rk.choice(mats), rk.uniform(0.26, 0.29), YS + 0.02 + rk.uniform(0, 0.01), rk.random()
-        y1, z0, sh = y0 + ls, b + 0.019, 0.12 if kind == "Stiefel" else 0.09                        # toe, upper's base, shaft
-        for xs in (xp - 0.055, xp + 0.055):
-            Bx("Gummi", xs - 0.045, xs + 0.045, y0, y1, b, b + 0.02, r)                            # sole
-            X(m, xs - 0.04, xs + 0.04, [(y0 + 0.005, z0), (y1 - 0.005, z0), (y1 - 0.005, z0 + 0.025), (y1 - 0.05, z0 + 0.045),
-                                       (y0 + sh + 0.01, z0 + 0.06), (y0 + sh, z0 + hh), (y0 + 0.005, z0 + hh)], r)   # upper
+             ("Stiefel", 0.15, ["Leder", "Kamel"])]
+    slots = rk.sample([(lv, k) for lv in range(len(SHOE_Z) - 1) for k in range(3)], SHOE_PAIRS)   # about half full,
+    xa, xb = SX + 0.02, WO - 0.02                                                            # spread over the levels
+    for lv, k in sorted(slots):
+        kind, hh, mats = rk.choice(kinds)
+        b = SHOE_Z[lv] + SHOE_T + 0.001                                                      # on its board
+        xp = xa + (xb - xa) * (k + 0.5) / 3
+        m, ls, r0, rr = rk.choice(mats), rk.uniform(0.26, 0.29), y0 + 0.02 + rk.uniform(0, 0.01), rk.random()
+        r1, z0, sh = r0 + ls, b + 0.019, 0.12 if kind == "Stiefel" else 0.09                 # heel at the wall, toe
+        for xs in (xp - 0.055, xp + 0.055):                                                  # to the hall
+            Bx("Gummi", xs - 0.045, xs + 0.045, r0, r1, b, b + 0.02, rr)                     # sole
+            X(m, xs - 0.04, xs + 0.04, [(r0 + 0.005, z0), (r1 - 0.005, z0), (r1 - 0.005, z0 + 0.025), (r1 - 0.05, z0 + 0.045),
+                                       (r0 + sh + 0.01, z0 + 0.06), (r0 + sh, z0 + hh), (r0 + 0.005, z0 + hh)], rr)   # upper

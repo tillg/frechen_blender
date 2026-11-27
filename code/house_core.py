@@ -13,12 +13,13 @@ import ofen  # the stoves (code/ofen.py); it uses the primitives below via house
 import desk  # the Büro desk sub-model (code/desk.py), the same way
 import bad   # the Bad Großeltern sub-model (code/bad.py), the same way
 import kueche  # the Küche sub-model (code/kueche.py), the same way
-import gaeste_wc  # the Gäste-WC by the back hall (code/gaeste_wc.py), the same way
+import gaeste_wc  # the Duschbad by the back hall (code/gaeste_wc.py), the same way
+import garderobe  # the Garderobe in the EG Flur (code/garderobe.py, #61), the same way
 import regal  # the Büro bookcase "Schrank im Büro" (code/regal.py), the same way
 import schrankbett  # the Yoga room's wall bed (code/schrankbett.py), the same way
 import gaestebad  # the Gästebad im 1. Stock (code/gaestebad.py), the same way
 import elternbad  # the Bad Nadine & Till im 1. Stock (code/elternbad.py), the same way
-import waschkueche  # basin and shower in the Waschküche (code/waschkueche.py), the same way
+import waschkueche  # the basin in the Waschküche (code/waschkueche.py), the same way
 
 W_OUT, D_OUT = 14.885, 12.887           # outer footprint of main house
 RIDGE_Y, RIDGE_Z = D_OUT / 2, 7.67      # ridge runs east-west (elevations: 7.65-7.69)
@@ -49,6 +50,8 @@ MAT_DEF = {
     "Decke":      dict(rgba=(0.80, 0.80, 0.78, 1)),
     "Dach":       dict(rgba=(0.17, 0.17, 0.19, 1)),
     "Holz":       dict(wood=(*WOOD_OLD, "z")),
+    "HolzX":      dict(wood=(*WOOD_OLD, "x")),                                 # the same, grain along x (#61: the Flur bench)
+    "Gruen":      dict(rgba=(0.13, 0.30, 0.15, 1), rough=0.7),               # #61: the Flur bench's painted legs
     "Rahmen":     dict(rgba=(0.45, 0.28, 0.14, 1)),
     "Laden":      dict(rgba=(0.30, 0.17, 0.08, 1)),
     "Tuer":       dict(wood=((0.07, 0.022, 0.006), (0.36, 0.11, 0.028), "z")),   # stained larch
@@ -57,6 +60,7 @@ MAT_DEF = {
     "KieferX":    dict(wood=((0.22, 0.11, 0.035), (0.42, 0.25, 0.09), "x")),    # and along x (OG Flur desk, 2026-11-25)
     "Kiefer":     dict(wood=((0.30, 0.21, 0.12), (0.55, 0.43, 0.29), "z")),    # limed pine (stair)
     "Stufe":      dict(wood=((0.20, 0.07, 0.02), (0.42, 0.17, 0.05), "x")),    # worn treads
+    "StufeY":     dict(wood=((0.20, 0.07, 0.02), (0.42, 0.17, 0.05), "y")),    # the same, grain along y (#61)
     "Eiche":      dict(wood=((0.06, 0.025, 0.008), (0.26, 0.11, 0.035), "x")),    # oak planks
     "Kalkstein":  dict(speck=((0.40, 0.28, 0.16), (0.62, 0.48, 0.32), 25), hue=0.04),
     "Laerche":    dict(wood=((0.38, 0.14, 0.040), (0.62, 0.27, 0.085), "z")),   # fresh larch
@@ -102,7 +106,7 @@ MAT_DEF = {
     "Metall":     dict(rgba=(0.60, 0.60, 0.62, 1), metal=1.0, rough=0.3),
     "Gitter":     dict(rgba=(0.72, 0.67, 0.55, 1), rough=0.6),
     "Emaille":    dict(rgba=(0.86, 0.86, 0.84, 1), rough=0.2),
-"Stahl":      dict(rgba=(0.55, 0.56, 0.57, 1), metal=0.45, rough=0.25),   # Küche: hood, sink, Wamsler (metal < 0.5: the viewer has no env map)
+"Stahl":      dict(rgba=(0.55, 0.56, 0.57, 1), metal=0.45, rough=0.25),   # Küche: sink, Wamsler (metal < 0.5: the viewer has no env map)
     "Weide":      dict(speck=((0.30, 0.19, 0.08), (0.62, 0.45, 0.22), 150)),     # wicker laundry baskets
     "Jeans":      dict(rgba=(0.12, 0.18, 0.30, 1), rough=0.9),               # folded clothes
     "Wolle":      dict(rgba=(0.45, 0.14, 0.10, 1), rough=0.95),
@@ -717,7 +721,8 @@ def build_eg():
              [(4.406, 5.335, 1, "a"), (7.333, 8.282, 1, "a"), regal.tuer(c)])   # Büro: hinged east, moved west of the bookcase (code/regal.py)
     # 9.78-10.72 is pink-hatched wall in the plan (closed up), not an opening – it sat behind the stair
     interior(c, 0.31, 2.358, 8.506, 8.656)              # Flur / WC Großeltern: door closed up (plan)
-    gaeste_wc.gaeste_wc_neu(c, *gaeste_wc.WC_AT)           # Gäste-WC + Garderobe with the WC's north wall
+    gaeste_wc.gaeste_wc_neu(c, *gaeste_wc.WC_AT)           # Duschbad (#61) with its north wall, the hall's doors
+    garderobe.garderobe_neu(c)                              # the Garderobe on the Flur's south wall (#61)
     # Großeltern: the Bad is open to the bedroom from its niche front (code/bad.py) to the shaft
     interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506), (9.856, 12.33)])   # back Windfang (its door: code/gaeste_wc.py)
     interior(c, 2.358, 10.804, 5.849, 6.349, [(6.10, 6.96, -1, "a", False)],   # Küche door as built (photo,
@@ -726,16 +731,19 @@ def build_eg():
     stube_niche()                                                         # 10.804 .. 12.003
     interior(c, 12.003, 14.351, 5.849, 6.349)
     interior(c, 8.557, 9.056, 0.415, 5.849, [(0.54, 2.938)])
-    interior(c, 5.240, 5.490, 3.73, 5.849, [(4.33, 5.249)])  # Speis / Küche: open over the aisle (saloon leaves)
+    st = random.getstate()
+    interior(c, 5.240, 5.490, 3.73, 5.849, [(4.33, 5.249, 1, "a")])   # Speis / Küche: a panel door (#61), hinged
+    restream(st, 1)                                         # south, open flat into the Küche; the open passage's draw
     speis()
     vorrat()                                                # its shelves stocked (illustration)
-    speis_essen()                                           # C on the Essen's west wall, B's back, saloon leaves (#5)
-    geschirr()                                              # C's open niche stocked (#34 follow-up)
+    speis_essen()                                           # B's back, drywall, the Essen's Bauernschrank (#5, #61)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
     bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
+    st = random.getstate()
     ofen.ofen_im_haus()
+    restream(st, ofen.OLD_DRAWS)                            # #61: the corner stove's draws
     ofen.werkstattofen("EG", 9.351 + 0.10 + 0.21 * 2 ** 0.5, 8.876 + 0.10 + 0.21 * 2 ** 0.5, 0.0, -45)   # Bibliothek:
     # corner of the Flur wall and the wall stub, turned 45° to face the room (request 2026-11-08)
     ofen.werkstattofen("EG", 2.657 + 0.10 + 0.21 * 2 ** 0.5, 12.473 - 0.10 - 0.21 * 2 ** 0.5, 0.0, -135,
@@ -755,6 +763,14 @@ def build_eg():
 
 
 # ---------------------------------------------------------------- sanitary (positions from the plans)
+def restream(state, n):
+    """Set the global random stream to `state`, then draw n: the count a rebuilt builder's former parts drew (#61), so
+    every later part keeps its rnd."""
+    random.setstate(state)
+    for _ in range(n):
+        random.random()
+
+
 def xy_prism(coll, obj, mat, pts, z0, z1, rnd=None):
     """Extrude a horizontal (x, y) outline from z0 to z1."""
     n = len(pts)
@@ -988,7 +1004,7 @@ def build_sanitary():
     # OG Bad Nadine & Till (S, #3): shower, toilet with tiles, basin, mirror, lamps (code/elternbad.py); last,
     # so the Wandlampen of #19 keep their order in WALL_LIGHTS
     elternbad.elternbad_neu("OG", *elternbad.ELTERNBAD_AT, z=zo)
-    # OG Waschküche (#29): shower cabin on the west wall, basin on the east wall (code/waschkueche.py)
+    # OG Waschküche (#29): basin on the east wall (code/waschkueche.py; its shower cabin gone, #61)
     waschkueche.waschkueche_neu("OG", zo)
 
 
@@ -1125,108 +1141,36 @@ def speis():
     shelves(3.732, 4.33)                                                      # B
 
 
-ESSEN_SCHRANK = (0.417, 3.712, 2.774, 3.372)     # cabinet C: y from, to (south wall .. B's back); x wall, fronts
-OPEN, NICHE = (1, 2), (1.05, 2.0)                # its columns with the upper half open (#34 follow-up), z of that half
-SHELVES = (1.37, 1.675)                          # the niche's shelf boards (underside)
+BAUERNSCHRANK_EG = ((0.415 + 3.64) / 2, 2.774, 2.10, 2.25)   # #61: the Essen's Bauernschrank: centre y (the middle of
+                                                 # the west wall, south wall .. drywall), the wall's face, width, height
+TROCKENWAND = (2.772, 5.49, 3.64, 3.714)         # drywall on the Essen side of B (#61): x from the Essen's west wall
+                                                 # to the Küche wall's end, y 7.4 thick, 1 mm off B's board back
 
 
 def speis_essen():
-    """The layout Alternativ (issue #5; the only EG layout since #34): cabinet C stands against the
-    Essen's west wall over its full width, from the south wall to shelf B's back, six leaf columns
-    of painted Mallnitz fronts (kueche.py; each a top door, a door over the upper half and three
-    drawers below); in the two columns on the dining table's axis the upper half open (no door, #34
-    follow-up): a niche with two shelves per column, stocked by geschirr(); B gets a closed back of
-    vertical spruce boards towards the Essen; the Speis/Küche
-    wall ends at B, and two half-height saloon leaves without handles hang in the opening, closed
-    (PIVOT on their jambs, SWING into the Speis: the viewer swings them). Own random stream, no
-    global draw."""
+    """The Essen side of the Speis (issue #5; #61): B gets a closed back of vertical spruce boards towards the Essen and
+    on the Essen side of it a drywall (TROCKENWAND) from the Bauernschrank's corner to the Küche wall; on the Essen's
+    west wall a big wooden Bauernschrank in the middle of the wall (#61, in place of the painted cabinet C). Own random
+    stream, no global draw; the draws of the former cabinet C and saloon leaves are burnt, so B's back and the drywall
+    keep theirs."""
     c, rng, top = "EG", random.Random(25), Z_EG_TOP - 0.003
-    o, P = "EG_Essen_Schrank", frame("y")                        # u along y, t = x
-    ua, ub, xw, xf = ESSEN_SCHRANK                               # south wall .. B's back; wall .. fronts
-    n, d, rc = 6, 0.019, rng.random()                            # columns, board thickness
-    na, nb = ua + (ub - ua) * OPEN[0] / n, ua + (ub - ua) * (OPEN[-1] + 1) / n
-    for u0, u1, z0, z1 in ((ua, ub, 0.10, NICHE[0] + d), (ua, ub, NICHE[1] - d, top),     # carcass round the niche
-                           (ua, na + d / 2, NICHE[0] + d, NICHE[1] - d), (nb - d / 2, ub, NICHE[0] + d, NICHE[1] - d)):
-        lbox(c, o, "Front", P, u0, u1, xw, xf - 0.02, z0, z1, rc)
-    lbox(c, o, "Front", P, na + d / 2, nb - d / 2, xw, xw + d, NICHE[0] + d, NICHE[1] - d, rc)   # its back
-    for k in OPEN[1:]:                                                                        # dividers
-        um = ua + (ub - ua) * k / n
-        lbox(c, o, "Front", P, um - d / 2, um + d / 2, xw + d, xf - 0.02, NICHE[0] + d, NICHE[1] - d, rc)
-    for k in OPEN:                                                                            # shelf boards
-        u0, u1 = ua + (ub - ua) * k / n + d / 2, ua + (ub - ua) * (k + 1) / n - d / 2
-        for z in SHELVES:
-            lbox(c, o, "Front", P, u0, u1, xw + d, xf - 0.04, z, z + d, rc)
-    lbox(c, o, "Fuge", P, ua, ub, xw, xf - 0.08, 0.005, 0.10, rng.random())
-    for k in range(n):                       # cup pulls where pairs meet
-        a, b = ua + (ub - ua) * k / n, ua + (ub - ua) * (k + 1) / n
-        hu = b - 0.08 if k % 2 == 0 else a + 0.08
-        for za, zb, zk in ((NICHE[0] + 0.0015, NICHE[1] - 0.005, 1.13), (2.005, top - 0.003, 2.07)):
-            r = rng.random()                 # drawn also for an open field: the stream stays as it was
-            if not (k in OPEN and zk < 2):
-                mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, r, [(hu, zk)])
-        for j in range(3):
-            za, zb = 0.105 + 0.315 * j + 0.0015, 0.105 + 0.315 * (j + 1) - 0.0015
-            mallnitz_front(c, o, P, a + 0.003, b - 0.003, xf, -1, za, zb, rng.random(), [((a + b) / 2, zb - 0.07)])
+    for _ in range(32):                                          # cabinet C's draws (till #61)
+        rng.random()
     o, x0, x1 = "EG_Speis_Rueckwand", 2.774, 5.238              # B's back: vertical boards, 2 mm gaps
     k = round((x1 - x0) / 0.20)
     for i in range(k):
         box(c, o, "FichteZ", x0 + (x1 - x0) * i / k + 0.001, x0 + (x1 - x0) * (i + 1) / k - 0.001,
             3.715, 3.731, 0.012, top, rng.random())
-    # saloon leaves in the opening y 4.33 .. 5.249 of the wall x 5.24 .. 5.49, in its middle plane,
-    # 2 cm off the jambs, 6 mm apart; bottom 0.35, top 1.65 at the hinge curving down to 1.50
-    xm, T, zb0, gap = 5.365, 0.025, 0.35, 0.02
-    W = (5.249 - 4.33 - 2 * gap - 0.006) / 2
-    tops = lambda w: 1.50 + 0.15 * math.cos(math.pi / 2 * w / W)
-    for s, uh, d, sw in (("S", 4.33 + gap, 1, 90.0), ("N", 5.249 - gap, -1, -90.0)):
-        o = "EG_Pendeltuer_" + s
-        PIVOT[o], SWING[o], r = (xm, uh, 0.0), sw, 0.8 + 0.2 * rng.random()
-        Q = lambda w, t, z, uh=uh, d=d: (xm + t, uh + d * w, z)      # leaf-local: w from the hinge
-        part = lambda w0, w1, za, zb, t=T / 2, o=o, Q=Q: box(c, o, "Innentuer", *[v for pair in zip(
-            Q(w0, -t, za), Q(w1, t, zb)) for v in pair], r)
-        part(0, 0.06, zb0, tops(0))                                                # hinge stile
-        part(W - 0.06, W, zb0, tops(W))                                            # meeting stile
-        part(0.06, W - 0.06, zb0, zb0 + 0.12)                                      # bottom rail
-        ws = [0.06 + (W - 0.12) * i / 8 for i in range(9)]                          # top rail, curved
-        pts = [(w, tops(w)) for w in ws] + [(w, tops(w) - 0.10) for w in ws[::-1]]
-        add(c, o, "Innentuer", [Q(w, t, z) for t in (-T / 2, T / 2) for w, z in pts],
-            [list(range(18))[::-1], list(range(18, 36))] + [(i, (i + 1) % 18, 18 + (i + 1) % 18, 18 + i) for i in range(18)], r)
-        for i in range(4):                                                         # slats, thinner
-            w0 = 0.06 + (W - 0.12) * (2 * i + 1) / 9
-            part(w0, w0 + (W - 0.12) / 9, zb0 + 0.12, tops(w0 + (W - 0.12) / 18) - 0.10, T / 4)
-
-
-def geschirr():
-    """Cabinet C's open niche stocked (#34 follow-up, user 2026-11-16): on the bottom stacks of white plates (dinner
-    Ø 26 and dessert Ø 20 in the one column, soup Ø 23 and dessert in the other), on the middle shelf two rows of
-    tumblers, on the top shelf two rows of wine glasses (foot, stem, bowl). Loose things (FURNITURE), own random
-    stream."""
-    c, o, rng = "EG", "EG_Geschirr", random.Random(26)
-    ua, ub, xw, xf = ESSEN_SCHRANK
-    n, d = 6, 0.019
-    ring = lambda cx, cy, r, k=16: [(cx + r * math.cos(2 * math.pi * (i + 0.5) / k), cy + r * math.sin(2 * math.pi * (i + 0.5) / k))
-                                    for i in range(k)]
-    floors = (NICHE[0] + d, SHELVES[0] + d, SHELVES[1] + d)                  # what the things stand on
-    xm = (xw + d + xf - 0.04) / 2                                            # middle of the niche's depth
-    for j, k in enumerate(OPEN):
-        y0, y1 = ua + (ub - ua) * k / n + d / 2, ua + (ub - ua) * (k + 1) / n - d / 2
-        y, z = y0 + 0.02, floors[0] + 0.001
-        for rad, cnt, step in ((0.13, 10, 0.014), (0.10, 8, 0.014)) if j == 0 else ((0.115, 7, 0.022), (0.10, 6, 0.014)):
-            r, cy = rng.random(), y + rad                                    # a stack: per plate a foot and the plate
-            for i in range(cnt):
-                zp = z + i * step
-                xy_prism(c, o, "Keramik", ring(xm, cy, rad * 0.6), zp, zp + 0.004, r)
-                xy_prism(c, o, "Keramik", ring(xm, cy, rad), zp + 0.004, zp + step, r)
-            y = cy + rad + 0.03
-        for row, xc in enumerate((xm + 0.10, xm - 0.02)):                   # two rows, the back one shifted
-            yc = y0 + 0.05 + 0.04 * row
-            while yc < y1 - 0.045:
-                r, z = rng.random(), floors[1] + 0.001                       # a tumbler
-                xy_prism(c, o, "Glas", ring(xc, yc, 0.037, 12), z, z + 0.10, r)
-                r, z = rng.random(), floors[2] + 0.001                       # a wine glass
-                xy_prism(c, o, "Glas", ring(xc, yc, 0.032, 12), z, z + 0.004, r)
-                xy_prism(c, o, "Glas", ring(xc, yc, 0.004, 6), z + 0.004, z + 0.09, r)
-                xy_prism(c, o, "Glas", ring(xc, yc, 0.040, 12), z + 0.09, z + 0.19, r)
-                yc += 0.09
+    for _ in range(2):                                           # the saloon leaves' draws (till #61)
+        rng.random()
+    # the drywall on the Essen side of B (#61), last from this stream: from the west wall to the Küche wall, whose
+    # end (x 5.24 .. 5.49, from y 3.73) it closes
+    xa, xb, ya, yb = TROCKENWAND
+    r = rng.random()
+    box(c, "EG_Waende", "Putz", xa, 5.24, ya, yb, 0.0, Z_EG_TOP, r)
+    box(c, "EG_Waende", "Putz", 5.24, xb, ya, 3.73, 0.0, Z_EG_TOP, r)
+    ym, xw, w, h = BAUERNSCHRANK_EG
+    bauernschrank(c, ym, xw, 0.0, ax="y", W=w, H=h)
 
 
 def vorrat():
@@ -1494,16 +1438,16 @@ def slab(coll, obj, mat, z0, z1, inset=0.0, hole=None):
             box(coll, obj, mat, x0, x1, y0, y1, z0, z1)
 
 
-CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.657, 6.723, 8.506)]   # Flur/Windfang, back hall
+CORRIDOR_EG = [(2.657, 14.575, 6.349, 8.576), (0.31, 2.657, gaeste_wc.YF, 8.506)]   # Flur/Windfang, back hall
 # (the back hall's stone runs through the door to the Flur, no threshold: request 2026-11-10)
-GAESTE_WC_EG = (gaeste_wc.WI, gaeste_wc.WO, gaeste_wc.YS, gaeste_wc.YN)    # WC + Garderobe: limestone,
-TRENNWAND_EG = (gaeste_wc.PA, gaeste_wc.PB, gaeste_wc.YS, gaeste_wc.YN)    # none under their partition
+GAESTE_WC_EG = (gaeste_wc.WI, gaeste_wc.WO, gaeste_wc.YS, gaeste_wc.YN)    # the Duschbad (#61): limestone
+EG_FLOOR_DRAWS = 1575       # global draws of the EG floor cover before #61 changed its rooms: burnt, so later parts keep their rnd
 BAD_EG = (bad.BAD_AT[0], bad.BAD_AT[0] + bad.W, bad.BAD_AT[1], bad.BAD_AT[1] + bad.D)   # the Bad Großeltern
                                          # lays its own floor (code/bad.py): left out of the EG's
 # OG Gästebad (room, WC niche, shower niche; none under their partition), Bad Nadine & Till and Waschküche
 BATHS_OG = [(gaestebad.WI, gaestebad.WO, gaestebad.YG, gaestebad.YN), (gaestebad.WI, gaestebad.PA, gaestebad.YS, gaestebad.YG),
             (gaestebad.PA, gaestebad.WO, gaestebad.YS, gaestebad.YG), elternbad.ROOM,   # Gästebad: the slabs end under its glass
-            waschkueche.ROOM]                    # the Waschküche (#28), its shower cabin's floor included
+            waschkueche.ROOM]                    # the Waschküche (#28)
 
 
 def tiles(coll, obj, mat, x0, x1, y0, y1, z0, z1, widths, lengths, joint, excl=(), rng=random):
@@ -1553,7 +1497,9 @@ def build_slabs():
     slab("OG", "OG_Decke_EG", "Decke", Z_EG_TOP, Z_OG, hole=STAIR_HOLE)
     slab("OG", "OG_Boden", "Fuge", Z_OG, Z_OG + 0.01, inset=0.2, hole=STAIR_HOLE)
     wcs = lambda c: [r for k, _, r, _ in WCS if k == c]     # all toilets: stone floors
-    floor_cover("EG", 0.0, CORRIDOR_EG + wcs("EG") + [GAESTE_WC_EG], [BAD_EG, TRENNWAND_EG])
+    st = random.getstate()
+    floor_cover("EG", 0.0, CORRIDOR_EG + wcs("EG") + [GAESTE_WC_EG], [BAD_EG])
+    restream(st, EG_FLOOR_DRAWS)                             # #61: the floor's draws before the rebuilt rooms
     floor_cover("OG", Z_OG, BATHS_OG + wcs("OG"), [STAIR_HOLE])     # OG corridor: oak like the rooms
     slab("Dach", "Decke_OG", "Decke", Z_OG_TOP, Z_ATTIC)
 
@@ -1844,15 +1790,15 @@ WANDLAMPEN_EG = [
     (14.351, _mid(0.415, 1.254), -1, 0, WANDLAMPE_H),        # 4 Stube: SE corner, the east pier between the windows
     (9.056, 4.64 - (4.64 - 2.938) / 3, 1, 0, WANDLAMPE_H), # 5 Stube: over the bench, 1/3 from the Ofen to the wall's end
     (7.46, 5.849, 0, -1, WANDLAMPE_H),                     # 7 Küche: over the sink
-    (8.557, _mid(3.66, 4.26), -1, 0, WANDLAMPE_H),           # 8 Küche: over the Ostzeile, right of the hood
+    (8.557, _mid(3.66, 4.26), -1, 0, WANDLAMPE_H),           # 8 Küche: over the Ostzeile, right of the Wamsler
     (_mid(4.73, 6.618), 0.415, 0, 1, WANDLAMPE_H),           # 10 Essen: window .. terrace door
-    (_mid(3.802, 4.005), 3.715, 0, -1, WANDLAMPE_H),               # 13, 14 Essen: on B's wooden back beside C, each
-    (_mid(4.623, 4.826), 3.715, 0, -1, WANDLAMPE_H),               # centred on the board nearest the thirds (no joint)
+    (_mid(3.802, 4.005), TROCKENWAND[2], 0, -1, WANDLAMPE_H),      # 13, 14 Essen: on the drywall behind B (#61), where
+    (_mid(4.623, 4.826), TROCKENWAND[2], 0, -1, WANDLAMPE_H),      # they hung on B's boards (thirds, no joint)
     (_mid(11.19, 12.25), 8.576, 0, -1, WANDLAMPE_H),         # 15 Flur: stair's foot .. Windfangtür
     (_mid(5.405, 7.263), 8.576, 0, -1, WANDLAMPE_H),         # 16 Flur: Oma & Opa door .. Bibliothek door
     (_mid(2.657, 4.336), 8.576, 0, -1, WANDLAMPE_H),         # 17 Flur: back Windfang .. Oma & Opa door
-    (_third(2.657, 6.03, 1), 6.349, 0, 1, WANDLAMPE_H),        # 18, 19 Flur: back Windfang's wall .. Küche door
-    (_third(2.657, 6.03, 2), 6.349, 0, 1, WANDLAMPE_H),
+    (_third(2.657, 6.03, 1), 6.349, 0, 1, garderobe.LAMPE_H),  # 18, 19 Flur: back Windfang's wall .. Küche door,
+    (_third(2.657, 6.03, 2), 6.349, 0, 1, garderobe.LAMPE_H),  # over the Garderobe's hat shelf (#61)
     (_mid(7.03, 9.54), 6.349, 0, 1, WANDLAMPE_H),            # 20 Flur: Küche door .. the Ofen's back door
     (_third(9.351, 12.947, 1), 8.876, 0, 1, WANDLAMPE_H),      # 21, 22 Bibliothek: stub behind the Werkstattofen .. Bürotür
     (_third(9.351, 12.947, 2), 8.876, 0, 1, WANDLAMPE_H),
@@ -1864,12 +1810,9 @@ WANDLAMPEN_EG = [
     (_mid(2.657, 3.866), 12.473, 0, -1, WANDLAMPE_H),        # 28 Oma & Opa: the stub .. balcony door
     (0.31, _mid(9.95, 10.923), 1, 0, WANDLAMPE_H),           # 29 Bad: sliding leaves .. limestone shower wall
     (0.792, 8.656, 0, 1, WANDLAMPE_H),                     # 30 WC Großeltern: over the cistern
-    (1.394, _mid(9.256, 9.856), 1, 0, WANDLAMPE_H),          # 31 Schrank: its right wall, in front of the shelves
-    (2.358, 7.0655, -1, 0, WANDLAMPE_SPIEGEL_H),           # 32 back hall: over the mirror
-    (1.419, _third(5.475, 6.574, 1), 1, 0, WANDLAMPE_H),       # 33, 34 Garderobe: the partition, opposite the hooks
-    (1.419, _third(5.475, 6.574, 2), 1, 0, WANDLAMPE_H),
-    (0.8145, 5.475, 0, 1, WANDLAMPE_H),                    # 35 Gäste-WC: over the cistern
-    (0.31, _mid(6.723, 7.408), 1, 0, WANDLAMPE_H),           # 36 back hall: WC door .. back door
+    (0.31, gaeste_wc.BM, 1, 0, WANDLAMPE_SPIEGEL_H),       # 32 Duschbad (#61): over the mirror (33, 34: gone)
+    (gaeste_wc.TX, 5.475, 0, 1, WANDLAMPE_H),              # 35 Duschbad: over the cistern
+    (0.31, _mid(gaeste_wc.YF, 7.408), 1, 0, WANDLAMPE_H),    # 36 back hall: north wall .. back door
 ]
 
 
@@ -2012,10 +1955,11 @@ def build_annex():
 # Loose furniture appears in the viewer's last stage "Eingerichtet" (Blueprint.furniture); the
 # built-ins (kitchen, sanitary, Ofen) belong to the house. Positions from the plan, snapped
 # to the model's wall faces. Built last, so the random shading of everything else stays as it was.
-FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "EG_Geschirr", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
+FURNITURE = {"EG_Tisch", "EG_Stuehle", "EG_Moebel", "EG_Vorrat", "OG_Moebel", "EG_Geraete", "EG_Bildschirm_L", "EG_Bildschirm_R",
              "EG_Schreibtisch", "EG_Handrad", "OG_Klappbett", "OG_Klappfuesse",
              "EG_Spiegel", "OG_Spiegel",   # the mirrors are furnishings: not on the plan sheets (#19)
-             "EG_Kleidung",                # the Garderobe's coats and shoes (#27)
+             "EG_Kleidung", "EG_Schuhregal",   # the Garderobe's coats, the shoe rack and its shoes (#27, #61)
+             "EG_Garderobenbank",          # the bench under the Flur's Garderobe (#61)
              "OG_Schreibplatz",            # the small desk and its chair in the Schlafzimmer (#44)
              "EG_Buerostuhl"}              # the office chair at the Büro desk (#48)
 
@@ -2073,19 +2017,28 @@ def cabinet(c, x0, x1, y0, y1, front, cuts, z=0.0, h=2.0):
         lbox(c, o, "Metall", P, m - 0.008, m + 0.008, f - s * 0.025, f, z + min(1.0, h / 2), z + min(1.0, h / 2) + 0.20)
 
 
-def bauernschrank(c, xm, yw, z):
+def bauernschrank(c, xm, yw, z, ax="x", W=1.80, H=2.05, face=1):
     """Bauernschrank (request 2026-11-25, in the OG Flur where the Waschtisch with its basin, mirror and
     lamps stood): a big old two-door farmhouse wardrobe in reddish old pine like the Waschtisch it replaces,
     centred on xm against a wall along x at yw, facing +y, on floor z. 1.80 wide, 60 deep (request 2026-11-25;
     the Rundgang passes it further north), 2.05 high: a plinth with a moulding, the carcass with corner and
     middle pilasters and rails framing two doors, each with two raised panels (low, high), an iron escutcheon
     with a knob and two strap hinges, a cornice stepping out three times. Into object <c>_Moebel (furniture);
-    Innentuer (grain up) for the uprights, Stufe (grain along x) for the horizontals. Own random stream."""
+    Innentuer (grain up) for the uprights, Stufe (grain along the front) for the horizontals. Own random stream.
+    ax="y" (#61, the Essen's): against a wall along y at x = yw, facing +x, centred on y = xm; W x H its width and
+    height (its heights scale with H); face=-1 (#61, Schlafzimmer, Bichlach): facing -y (ax "x") or -x (ax "y")."""
     o, rng = c + "_Moebel", random.Random(25)
     r, rf = rng.random(), rng.random()                                             # carcass, fronts
-    B = lambda u0, u1, v0, v1, h0, h1, rnd, m="Innentuer": box(c, o, m, xm + u0, xm + u1, yw + v0, yw + v1,
-                                                                 z + h0, z + h1, rnd)
-    W, D, hp, hb, hk, H = 1.80, 0.60, 0.12, 0.14, 1.90, 2.05                       # plinth, body, cornice
+    q = H / 2.05                                                                    # height scale
+
+    def B(u0, u1, v0, v1, h0, h1, rnd, m="Innentuer"):
+        va, vb = sorted((yw + face * v0, yw + face * v1))
+        if ax == "x":
+            box(c, o, m, xm + u0, xm + u1, va, vb, z + h0 * q, z + h1 * q, rnd)
+        else:
+            box(c, o, "StufeY" if m == "Stufe" else m, va, vb, xm + u0, xm + u1, z + h0 * q, z + h1 * q, rnd)
+    D, hp, hb, hk = 0.60, 0.12, 0.14, 1.90                                         # plinth, body, cornice
+    H = 2.05                                                                        # (scaled by q)
     w, f = W / 2, 0.02                                                             # half width, frame depth
     B(-w - 0.02, w + 0.02, 0.0, D + 0.02, 0.012, hp, r, "Stufe")                   # plinth
     B(-w - 0.01, w + 0.01, 0.0, D + 0.01, hp, hb, r, "Stufe")                      # its moulding
@@ -2106,7 +2059,8 @@ def bauernschrank(c, xm, yw, z):
             B(da + 0.07, db - 0.07, D - 0.005, D + 0.006, p0, p1, rf)
         e = s * 0.09                                                               # escutcheon and knob by the middle
         B(e - 0.015, e + 0.015, D - 0.005, D - 0.001, 1.02, 1.12, rf, "Eisen")
-        turned(c, o, "Eisen", (xm + e, yw + D - 0.001, z + 1.00), (xm + e, yw + D + 0.025, z + 1.00),
+        Q = (lambda u, v: (xm + u, yw + face * v)) if ax == "x" else (lambda u, v: (yw + face * v, xm + u))
+        turned(c, o, "Eisen", (*Q(e, D - 0.001), z + 1.00 * q), (*Q(e, D + 0.025), z + 1.00 * q),
                [(0.006, 0), (0.008, 0.4), (0.012, 0.7), (0.004, 1)], k=12, rnd=rf)
         ue = s * (w - 0.08)                                                        # strap hinges on the outer edge
         for hh in (0.255, 1.745):                                                  # on the leaf's frieze
@@ -2434,6 +2388,9 @@ def sitzecke():
     armchair("EG", xc - 0.49, yc + 1.22, 205)
 
 
+OLD_WARDROBE_DRAWS = (11, 9, 7)   # global draws of the built-in wardrobes of Saschi, Schlafzimmer, Bichlach (till #61)
+
+
 def build_furniture():
     zo = Z_OG
     # EG: Großeltern, Musikraum, Büro (dining table and chairs, Speis built-ins: build_eg)
@@ -2458,9 +2415,13 @@ def build_furniture():
     nightstand("OG", 9.265, 9.65, 11.56, 12.04, zo)
     sofa("OG", (12.35 + 14.575) / 2, 8.86 + 0.01 + 0.49, 90, n=2, z=zo)
     schreibplatz("OG", zo, (-0.55, 0.0, -0.55, 0.55), ((12.35 + 14.575) / 2, 8.565), "OG_Moebel", 45)
-    cabinet("OG", 13.95, 14.573, 10.95, 12.483, "W", (10.95, 11.44, 11.96, 12.483), zo)
+    st = random.getstate()                                  # Bichlach (#61): a Bauernschrank on the east wall north
+    bauernschrank("OG", (10.95 + 12.473) / 2, 14.573, zo, ax="y", W=1.40, face=-1)   # of the balcony door, facing
+    restream(st, OLD_WARDROBE_DRAWS[2])                     # west, in place of the wardrobe; its draws
     bauernschrank("OG", (4.87 + 7.15) / 2, 6.35, zo)        # Flur: between the doors to Saschi and Waschküche
-    cabinet("OG", 2.712, 3.35, 3.52, 6.058, "E", (3.52, 4.03, 4.54, 5.0, 5.53, 6.058), zo)
+    st = random.getstate()                                  # Saschi (#61): a freestanding Bauernschrank on the west
+    bauernschrank("OG", (3.52 + 6.058) / 2, 2.712, zo, ax="y")   # wall in place of the built-in wardrobe; its draws
+    restream(st, OLD_WARDROBE_DRAWS[0])
     bed("OG", 3.37, 5.438, 1.01, 2.87, "E", zo, n=2)
     nightstand("OG", 5.02, 5.438, 2.89, 3.37, zo)
     nightstand("OG", 5.02, 5.438, 0.53, 0.99, zo)
@@ -2469,12 +2430,15 @@ def build_furniture():
     desk.desk("OG", 5.592, 8.588, 2.792, 3.592, zo)                     # full width of the back wall
     folded_stack("OG", 6.45, 3.20, zo + 0.75, ("Jeans", "Jeans", "Wolle", "Bettwaesche", "Creme", "Leinen"))
     folded_stack("OG", 7.15, 3.20, zo + 0.75, ("Bettwaesche", "Creme", "Bettwaesche", "Leinen", "Bettwaesche"))
-    basket_cupboard("OG", 5.59, 6.19, 3.612, waschkueche.DUSCHE[2] - 0.20, zo, n=2)   # right wall from the door:
-                                                                        # 20 cm before the shower cabin (#29)
+    st = random.getstate()
+    basket_cupboard("OG", 5.59, 6.19, 3.612, 5.95, zo)                  # right wall from the door (#61: to 5.95 again,
+    restream(st, 103)                                                   # the shower gone); the draws of the #29 one
     bed("OG", 11.63, 13.69, 1.57, 3.43, "W", zo, n=2)
     nightstand("OG", 11.65, 12.02, 3.45, 3.94, zo)
     nightstand("OG", 11.65, 12.02, 1.08, 1.55, zo)
-    cabinet("OG", 11.84, 14.348, 5.38, 6.058, "S", (11.84, 12.86, 13.34, 13.85, 14.348), zo)
+    st = random.getstate()                                  # Schlafzimmer Nadine & Till (#61): a Bauernschrank on
+    bauernschrank("OG", (11.84 + 14.348) / 2, 6.058, zo, face=-1)   # the north wall, facing south, in place of the wardrobe
+    restream(st, OLD_WARDROBE_DRAWS[1])
     schreibplatz("OG", zo)                                    # behind the low wall at the bed's head (#44)
     sitzecke()
     # Stube sofa: 3/4 of the way from the corner pier between the big windows (room corner) to the
@@ -2495,11 +2459,11 @@ ROOM_NAMES = [
 
 # the architect's room names for the plan sheets (export_plans.py): (name, storey, anchor x, y). The
 # room is the region round its anchor in a section just below the ceiling; its area is computed there.
-# Where the model changed a room, the model's room wins: Gäste-WC + Garderobe, the Bad Großeltern's
+# Where the model changed a room, the model's room wins: the Duschbad by the back hall (#61), the Bad Großeltern's
 # niche (its WC = "WC Großeltern"), and Musikraum + Büro are one open room, "Bibliothek" (2026-11-11)
 PLAN_ROOMS = [
-    ("Großeltern", "EG", 4.3, 10.8), ("Bad Großeltern", "EG", 1.7, 10.6), ("WC Großeltern", "EG", 0.79, 9.62),
-    ("Flur", "EG", 1.75, 7.15), ("WC", "EG", 0.81, 6.45), ("Garderobe", "EG", 1.85, 6.4), ("Flur", "EG", 5.0, 7.4),
+    ("Großeltern", "EG", 4.3, 10.8), ("Bad Großeltern", "EG", 1.7, 10.6), ("WC Großeltern", "EG", 1.45, 9.53),
+    ("Flur", "EG", 1.75, 7.5), ("Duschbad", "EG", 0.95, 6.3), ("Flur", "EG", 5.0, 7.4),
     ("Neuer Windfang", "EG", 13.5, 7.5), ("Bibliothek", "EG", 12.9, 10.7), ("Küche", "EG", 7.0, 4.4),
     ("Speis", "EG", 3.9, 4.79), ("Stube", "EG", 11.7, 3.2), ("Elektroraum", "EG", 0.35, 3.9),
     ("Heizung", "EG", 0.35, 1.5),
@@ -2727,8 +2691,8 @@ def build_bad():
 
 
 def build_gaeste_wc():
-    """The Gäste-WC sub-model alone (web/gaeste_wc.html): WC, Garderobe, the Flur basin and their
-    walls at the origin (the old WC room's inner SW corner), plus its dimension lines."""
+    """The Duschbad sub-model alone (web/gaeste_wc.html, #61): WC, basin, shower, the back hall's doors and shoe
+    rack at the origin (the room's inner SW corner), plus its dimension lines."""
     GEO.clear(); PARTS.clear(); FIRES.clear(); SMOOTH.clear(); PIVOT.clear(); TURN.clear(); SLIDE.clear()
     LEAVES.clear(); SWING.clear(); DOORS.clear()
     random.seed(22)

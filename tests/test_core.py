@@ -26,7 +26,7 @@ CODE = Path(__file__).resolve().parent.parent / "code"
 def test_paint_and_room_lights_live_in_the_core():
     ral9010, ral5014 = (241, 236, 225), (99, 125, 150)
     assert house_core.PAINT == {"Putz": ral9010, "Rahmen": ral9010, "Laden": ral5014, "Front": ral5014}
-    assert len(house_core.ROOM_LIGHTS) == 1 and len(BP.wall_lights) == 29 + 33 + 1   # OG (#33, #32, 2026-11-25: Flur mirror's 2 gone), EG (#22, #34), hood spots
+    assert len(house_core.ROOM_LIGHTS) == 1 and len(BP.wall_lights) == 29 + 30   # OG (#33, #32, 2026-11-25: Flur mirror's 2 gone), EG (#22, #34; #61: 29 Wandlampen + the Ofen bed's)
     assert BP.paint == house_core.PAINT and BP.room_lights == house_core.ROOM_LIGHTS
     assert "RAL =" not in (CODE / "paint.py").read_text()
     assert "ROOM_LIGHTS =" not in (CODE / "film.py").read_text()
@@ -131,77 +131,61 @@ def test_parts_cover_all_faces():
 
 
 def test_ofen_submodel_after_the_sketches():
-    """input/2026-11-04 input: corner stove 1.20 x 1.20 x 1.15 m with the free corner cut 0.70/0.70 (fire
-    door over the whole diagonal), bed above it 1.90 along one wall (sketch: 2.00, shortened for the
-    Stube door), 1.20 deep at the stove, 0.70 deep beyond it (along +y), underside at 1.45 m; long
-    bench 1.60 (sketch: 2.00, shortened for the passage to the Essen). Corner of the room at the origin, walls along +x and +y."""
+    """input/2026-11-04 input, made narrow on request (#61): the stove a block 1.20 along the Flur wall (x = 0) and only
+    0.50 deep into the Stube, 1.15 m high, its free corner and top edge rounded; the fire door (65) centred in the front
+    face, an arch under it, open underneath on legs; the bed above it straight, 0.70 wide and 1.90 long along the Flur
+    wall (sketch: 2.00, shortened for the Stube door), underside at 1.45 m, one rim board along its free side, a post
+    and a ladder at the foot; the bench beside the stove's east end and the long bench 1.60 along the west wall, 70 cm
+    clear of the fire door. Corner of the room at the origin, walls along +x and +y."""
     bp = house_core.build_ofen()
     assert {c for c, _ in bp.geo} == {"Ofen"}
+    L, D = ofen.OFEN_L, ofen.OFEN_D
+    assert (L, D, ofen.OFEN_BED_W) == (1.20, 0.50, 0.70)
 
     def bbox(name):
         v = bp.geo[("Ofen", name)]["v"]
         return [round(min(p[k] for p in v), 3) for k in range(3)], [round(max(p[k] for p in v), 3) for k in range(3)]
 
-    assert bbox("Ofen_Koerper") == ([0, 0, 0], [1.2, 1.2, 1.15])
+    assert bbox("Ofen_Koerper") == ([0, 0, 0], [D, L, 1.15])
     v = bp.geo[("Ofen", "Ofen_Koerper")]["v"]
-    assert all(x + y <= 1.9 + 1e-9 for x, y, _ in v)                    # the chamfer
-    r, H = ofen.OFEN_ASSUMED["r"], ofen.OFEN_H                           # top edge rounded like the
-    top = [(x, y) for x, y, z in v if z > H - 1e-9]                       # vertical kinks: the top face
-    assert top and all(x <= 1.2 - r + 0.003 and y <= 1.2 - r + 0.003 and x + y <= 1.9 - r * 2 ** 0.5 + 0.004
-                       for x, y in top)                                   # is inset by r from the free faces
+    r, H = ofen.OFEN_ASSUMED["r"], ofen.OFEN_H
+    top = [(x, y) for x, y, z in v if z > H - 1e-9]                       # top edge rounded: the top face
+    assert top and all(x <= D - r + 0.003 and y <= L - r + 0.003 for x, y in top)   # inset by r from the free faces
     assert min(x for x, y in top) == 0 and min(y for x, y in top) == 0    # but reaches the walls
-    assert all(z <= H - r + 1e-9 for x, y, z in v if x > 1.2 - 1e-9)      # free faces end where the round starts
-    lo, hi = bbox("Ofen_Feuertuer")
-    assert 1.85 < lo[0] + hi[1] and lo[1] + hi[0] < 2.0                   # on the diagonal face
-    door = bp.geo[("Ofen", "Ofen_Feuertuer")]["v"]
-    along = [(x - y) / 2 ** 0.5 for x, y, _ in door]
-    assert round(max(along) - min(along), 3) == 0.65 and round(max(along) + min(along), 3) == 0  # centred
-    assert hi[2] == 1.05                                                  # 10 cm below the top
+    lo, hi = bbox("Ofen_Feuertuer")                                       # in the front face, centred, 65 wide
+    assert D - 1e-6 <= lo[0] and hi[0] <= D + 0.04 and round(hi[1] - lo[1], 3) == 0.65
+    assert abs((lo[1] + hi[1]) / 2 - L / 2) < 1e-6 and hi[2] == 1.05      # 10 cm below the top
+    floor = [(x, y) for x, y, z in v if z == 0]                           # open underneath: only the legs on the floor
+    tl = ofen.OFEN_ASSUMED["leg"]
+    assert all(x >= D - tl - 1e-9 or y >= L - tl - 1e-9 for x, y in floor)
+    assert {(D, 0.35), (D, 0.85)} <= {(round(x, 3), round(y, 3)) for x, y in floor}   # the arch under the door
     bank = bp.geo[("Ofen", "Ofen_Bank")]["v"]
-    right = [p for p in bank if p[1] > 1.2]                               # right of the door
-    left = [p for p in bank if p[0] > 1.2]                                # along the wall, left
+    right = [p for p in bank if p[1] > L]                                 # beside the stove's east end
+    left = [p for p in bank if p[0] > 1.2]                                # along the west wall
     span = lambda ps, k: round(max(p[k] for p in ps) - min(p[k] for p in ps), 3)
     assert span(right, 1) == 0.6 and max(p[0] for p in right) <= 0.7
     assert span(left, 0) == 1.6 and span(left, 1) == 0.6 and max(p[1] for p in left) <= 0.7
     assert len(left) + len(right) == len(bank)
-    g, seat = bp.geo[("Ofen", "Ofen_Bank")], ofen.OFEN_ASSUMED["seat"]   # plain legs like
-    parts = []                                                            # bank-schlicht.png: per bench
-    for first, n in bp.parts[("Ofen", "Ofen_Bank")]:                     # four square legs and a
-        ps = [g["v"][i] for f in g["f"][first:first + n] for i in f]     # stretcher across each end
-        parts.append([round(max(p[k] for p in ps) - min(p[k] for p in ps), 3) for k in range(3)] + [min(p[2] for p in ps)])
-    legs = [p for p in parts if p[0] == p[1] == 0.06 and p[3] == 0]
-    rails = [p for p in parts if p[2] == 0.04 and 0.1 < p[3] < 0.25]
-    assert len(legs) == 8 and all(abs(p[2] - (seat - 0.045)) < 1e-6 for p in legs)
-    assert len(rails) == 4 and len(parts) == 2 + 8 + 4
-    floor = [(x, y) for x, y, z in v if z == 0]                           # open underneath: only the
-    tl = ofen.OFEN_ASSUMED["leg"]                                           # legs stand on the floor
-    assert all(x >= 1.2 - tl - 1e-9 or y >= 1.2 - tl - 1e-9 or x + y >= 1.9 - tl * 2 ** 0.5 - 1e-9
-               for x, y in floor)
-    gaps = {(round(x, 3), round(y, 3)) for x, y in floor}                 # arches in all three faces
-    assert {(1.2, 0.09), (1.2, 0.59), (0.09, 1.2), (0.59, 1.2)} <= gaps
-    assert sum(1.899 < x + y < 1.901 and abs(abs(x - y) - 0.25 * 2 ** 0.5) < 1e-3 for x, y in floor) >= 2
+    assert min(p[0] for p in left) - D >= 0.70                            # clear of the fire door
     lo, hi = bbox("Ofen_Bett")
-    assert lo[:2] == [0, 0] and hi[:2] == [1.2, 1.9]
+    assert lo[:2] == [0, 0] and hi[:2] == [0.7, 1.9]                       # straight, 70 wide
     bed = bp.geo[("Ofen", "Ofen_Bett")]["v"]
-    assert round(min(z for x, y, z in bed if y < 1.2), 3) == 1.45        # sitting height above the bench
-    assert all(x <= 0.7 + 1e-9 for x, y, z in bed if y > 1.2 + 1e-9)
-    g, BL = bp.geo[("Ofen", "Ofen_Bett")], ofen.OFEN_BED_L                # foot end: 3 rungs from the
-    rungs = []                                                            # wall to the post (a ladder)
+    assert round(min(z for x, y, z in bed if y < 1.2 and x < D), 3) == 1.45
+    g, BL = bp.geo[("Ofen", "Ofen_Bett")], ofen.OFEN_BED_L                # foot end: 3 rungs from the wall to the post
+    rungs = []
     for first, n in bp.parts[("Ofen", "Ofen_Bett")]:
         ps = [g["v"][i] for f in g["f"][first:first + n] for i in f]
         lo = [min(p[k] for p in ps) for k in range(3)]; hi = [max(p[k] for p in ps) for k in range(3)]
         if lo[0] < 0.02 and abs(hi[0] - 0.62) < 1e-9 and lo[1] >= BL - 0.08 - 1e-9 and hi[2] < 1.4:
             rungs.append((lo[2] + hi[2]) / 2)
     assert len(rungs) == 3 and all(abs(z - ofen.OFEN_BED * k / 4) < 1e-9 for z, k in zip(sorted(rungs), (1, 2, 3)))
-    rim = bp.geo[("Ofen", "Ofen_Bettrand")]["v"]                          # rim: free edges only
+    rim = bp.geo[("Ofen", "Ofen_Bettrand")]["v"]                          # rim: the free long side only
     top, bottom = max(z for *_, z in rim), min(z for *_, z in rim)
-    assert bottom == 1.49 and abs(top - (1.49 + 0.05)) < 1e-9             # 5 cm boards, upright
-    assert max(x for x, y, z in rim if z == top) == max(x for x, y, z in rim if z == bottom) <= 1.2  # straight up
-    assert len(bp.parts[("Ofen", "Ofen_Bettrand")]) == 3                  # one board per free edge
-    assert min(x for x, y, z in rim) > 0.6                                # no board along the walls
-    assert min(y for x, y, z in rim) >= 0.1 - 1e-9 and max(y for x, y, z in rim) <= 1.8 + 1e-9  # 10 cm at the ends
-    assert not any(1.2 - 0.03 < x and 0.65 < y < 0.75 for x, y, z in rim if z == bottom)  # gap at the corner
+    assert bottom == 1.49 and abs(top - (1.49 + 0.05)) < 1e-9
+    assert len(bp.parts[("Ofen", "Ofen_Bettrand")]) == 1 and min(x for x, y, z in rim) > 0.6
+    assert min(y for x, y, z in rim) >= 0.1 - 1e-9 and max(y for x, y, z in rim) <= 1.8 + 1e-9
     assert bp.dims and all(len(d) == 3 for d in bp.dims)
+    assert {"Ofen 120", "50 tief", "Bett 190", "70"} <= {t for _, _, t in bp.dims}
 
 
 def test_ofen_bed_mattress_without_blanket():
@@ -238,7 +222,7 @@ def test_ofen_built_into_the_stube():
         v = BP.geo[("EG", name)]["v"]
         return [round(min(p[k] for p in v), 3) for k in range(3)], [round(max(p[k] for p in v), 3) for k in range(3)]
 
-    assert bbox("EG_Ofen_Koerper") == ([9.06, 4.645, 0], [10.26, 5.845, 1.15])
+    assert bbox("EG_Ofen_Koerper") == ([9.06, 5.345, 0], [10.26, 5.845, 1.15])    # 50 deep (#61)
     assert bbox("EG_Ofen_Bett")[1][0] <= 11.004 - 0.04                     # clear of the Stube door
     assert bbox("EG_Ofen_Bank")[0][1] >= 2.938 + 0.1                       # clear of the passage to Essen
     g = BP.geo[("EG", "EG_Ofen_Bank")]                                   # grain along the seats
@@ -893,69 +877,18 @@ def test_waschkueche_dryer_on_the_washer_and_table_along_the_back_wall():
                 and p[1][0] > 7.9 and p[2][1] < 3.4]                          # SE corner cupboard gone
 
 
-def test_waschkueche_shower_cabin():
-    """Issue #29, the user's change (run-2026-11-15-1633-24): „Gleich rechts in dem Eck … mit zwei Glaswänden, die man
-    aufklappen kann. Und dann noch ein Spalt von 20 cm bis zu dem Schrank.“ A floor-level shower cabin 1.10 x 1.10 in
-    the NW corner, right of the door as one comes in (outer x 5.59 .. 6.69, y 4.96 .. 6.06): limestone slabs on the
-    floor (top +0.018, no tray; since #28 the whole room's limestone runs through it); limestone on the west and north wall to 2.0, the head
-    on the west wall, a drain in the middle; its south and east side each a glass bifold door (two 8 mm panels on a
-    wall profile, two hinges at the fold, a bar handle each side of the free panel), folding into the cabin; exactly
-    20 cm free to the basket cupboard south of it; the room door opens 90° and its leaf stays clear; nothing on the
-    south wall (#30 glazes its top metre)."""
-    zo = house_core.Z_OG
-    x0, x1, y0, y1 = waschkueche.DUSCHE
-    assert (x0, x1, y1, round(y1 - y0, 3)) == (5.59, 6.69, 6.06, 1.10)          # NW corner: west wall x Flur wall
-    door, = [d for d in BP.doors if d["c"] == "OG" and abs(d["hinge"][1] - 6.06) < 0.01 and 7.1 < d["hinge"][0] < 7.2]
-    leaf = [p[:2] for p in door["leaf"]]
-    assert x1 < door["hinge"][0] and min(p[0] for p in leaf) > 7.1 and min(p[1] for p in leaf) < 5.2   # open 90°
-    pts = lambda ps: {_floor_at("OG", x, y) for x, y in ps} - {None}
-    assert pts([(5.7, 5.05), (6.6, 5.95), (6.1, 5.5), (5.65, 6.0)]) == {"Kalkstein"}
-    assert pts([(6.8, 5.5), (6.1, 4.85), (7.5, 5.5), (7.0, 3.5)]) == {"Kalkstein"}   # the room around it too (#28)
-    stone = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Bodenbelag")) if m == "Kalkstein"
-             and x0 < hi[0] and lo[0] < x1 and y0 < hi[1] and lo[1] < y1]
-    assert stone and all(abs(hi[2] - zo - 0.018) < 1e-6 for lo, hi in stone)          # tile plane
-    near = lambda key, a, b: [(m, lo, hi) for m, lo, hi in _parts(BP, key)
-                              if all(lo[k] < b[k] - 1e-6 and hi[k] > a[k] + 1e-6 for k in range(3))]
-    san = near(("OG", "OG_Sanitaer"), (x0 - 0.1, y0 - 0.1, zo), (x1 + 0.1, y1, zo + 2.2))
-    glass = [(lo, hi) for m, lo, hi in san if m == "Glas"]
-    assert len(glass) == 4 and all(zo + 0.018 < lo[2] and hi[2] < zo + 2.0 for lo, hi in glass)   # four panels, gaps
-    south = sorted(((lo, hi) for lo, hi in glass if abs(hi[1] - lo[1] - 0.008) < 1e-6), key=lambda b: b[0][0])
-    east = sorted(((lo, hi) for lo, hi in glass if abs(hi[0] - lo[0] - 0.008) < 1e-6), key=lambda b: b[0][1])
-    assert len(south) == len(east) == 2
-    assert all(abs(lo[1] - y0) < 1e-6 for lo, hi in south) and all(abs(hi[0] - x1) < 1e-6 for lo, hi in east)
-    for (a, b), u in ((south, 0), (east, 1)):                                   # two equal panels, a fold between
-        wa, wb = a[1][u] - a[0][u], b[1][u] - b[0][u]
-        assert abs(wa - wb) < 0.01 and 0.45 < wa < 0.56 and 0 < b[0][u] - a[1][u] < 0.01
-    assert south[1][1][0] == x1 and east[0][0][1] - y0 < 0.02                   # the free panels meet at the corner
-    met = [(lo, hi) for m, lo, hi in san if m == "Metall"]
-    profiles = [(lo, hi) for lo, hi in met if hi[2] - lo[2] > 1.9]
-    assert len(profiles) == 2 and any(lo[0] < x0 + 0.04 and lo[1] < y0 + 0.01 for lo, hi in profiles) \
-        and any(hi[1] > y1 - 0.04 and hi[0] > x1 - 0.01 for lo, hi in profiles)     # on the west and north wall
-    folds = [south[0][1][0], east[0][1][1]]
-    hinges = [(lo, hi) for lo, hi in met if hi[2] - lo[2] < 0.12 and zo + 0.1 < lo[2] < zo + 1.9
-              and ((lo[0] < folds[0] < hi[0] and hi[1] < y0 + 0.03) or (lo[1] < folds[1] < hi[1] and lo[0] > x1 - 0.03))]
-    assert len(hinges) == 4
-    grips = [(lo, hi) for lo, hi in met if 0.25 < hi[2] - lo[2] < 1.0]
-    assert len(grips) == 4
-    assert len([1 for lo, hi in grips if hi[1] < y0 or lo[0] > x1]) == 2         # one outside, one inside each
-    head = [(lo, hi) for lo, hi in met if hi[0] < x0 + 0.06 and 1.0 < hi[2] - lo[2] < 1.9]
-    assert len(head) == 1 and y0 < head[0][0][1] and head[0][1][1] < y1                 # riser on the west wall
-    drain = [(lo, hi) for lo, hi in met if abs(lo[2] - zo - 0.018) < 1e-6 and hi[2] - lo[2] < 0.01]
-    assert len(drain) == 1 and abs((drain[0][0][0] + drain[0][1][0]) / 2 - (x0 + x1) / 2) < 1e-6
-    fl = ("OG", "OG_Fliesen")
-    assert {_part_at(fl, 5.598, y, z) for y in (5.2, 5.8) for z in (zo + 0.3, zo + 1.9)} == {"Kalkstein"}
-    assert {_part_at(fl, x, 6.052, z) for x in (5.9, 6.4) for z in (zo + 0.3, zo + 1.9)} == {"Kalkstein"}
-    assert _part_at(fl, 5.598, 5.5, zo + 2.05) is None and _part_at(fl, 6.1, 6.052, zo + 2.05) is None   # to 2.0
-    carcass = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Moebel")) if m in ("FichteY", "FichteZ")
-               and 5.59 <= lo[0] and hi[0] < 6.3 and 3.6 < lo[1] and hi[1] < 6.06]
-    assert abs(max(hi[1] for lo, hi in carcass) - (y0 - 0.20)) < 1e-6            # 20 cm to the Schrank
-    assert not near(("OG", "OG_Moebel"), (x0, y0 - 0.20, zo), (x1, y1, zo + 2.1))  # free gap, nothing in the cabin
-    cabin = [(m, lo, hi) for m, lo, hi in san]
-    _clear(cabin, _leaf_boxes(BP, "OG", zo), "door leaf")
-    assert all(hi[0] < door["hinge"][0] - 0.4 for m, lo, hi in cabin)            # far outside the leaf's sweep
-    south_wall = [(o, m, lo, hi) for o in ("Sanitaer", "Fliesen", "Spiegel") for m, lo, hi in _parts(BP, ("OG", "OG_" + o))
-                  if 5.59 < hi[0] and lo[0] < 8.59 and 2.79 <= hi[1] and lo[1] < 2.81 and hi[2] > zo + 1.20]
-    assert south_wall == []                                                     # nothing on the south wall (#30)
+def test_waschkueche_ohne_dusche():
+    """Issue #61: the shower cabin of #29 in the Waschküche's NW corner is gone: no glass, no shower head or drain,
+    no limestone on the west and north walls; the floor stays the room's limestone (#28); the basket cupboard runs
+    again up to y 5.95 (as before #29) and the room door's leaf (open 90°) stays clear of it."""
+    zo, (x0, x1, y0, y1) = house_core.Z_OG, waschkueche.ROOM
+    assert not hasattr(waschkueche, "DUSCHE") and not hasattr(waschkueche, "dusche")
+    room = lambda lo, hi: x0 - 0.05 < lo[0] and hi[0] < x1 + 0.05 and y0 - 0.05 < lo[1] and hi[1] < y1 + 0.05
+    san = [(m, lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Sanitaer")) if room(lo, hi)]
+    assert not [1 for m, lo, hi in san if m == "Glas"]
+    assert not [1 for m, lo, hi in san if hi[0] < 7.0]                         # only the Briol on the east wall
+    assert not [1 for m, lo, hi in _parts(BP, ("OG", "OG_Fliesen")) if room(lo, hi) and m == "Kalkstein"]
+    assert _floor_at("OG", 6.1, 5.5) == "Kalkstein"
 
 
 def test_waschkueche_basin():
@@ -1013,8 +946,8 @@ def test_waschkueche_basin():
 
 def test_waschkueche_open_cupboard_with_laundry_baskets_on_the_west_wall():
     """Waschküche: on the right-hand wall seen from the door (west, x 5.59) an open spruce
-    cupboard, 2.0 m high, from the table to 20 cm before the shower cabin in the NW corner (#29): two sides,
-    continuous shelves without dividers, two (#29; before: three) coarsely woven wicker laundry baskets per shelf."""
+    cupboard, 2.0 m high, from the table to y 5.95 (#61: the shower cabin of #29 gone, as before it): two sides,
+    continuous shelves without dividers, three coarsely woven wicker laundry baskets per shelf."""
     zo = house_core.Z_OG
     room = [p for p in part_list(("OG", "OG_Moebel")) if 5.59 <= p[1][0] and p[2][0] <= 8.59 and 2.79 <= p[1][1] and p[2][1] <= 6.06]
     table = [p for p in room if p[0] == "FichteX" and p[2][2] > zo + 0.7][0]
@@ -1025,16 +958,16 @@ def test_waschkueche_open_cupboard_with_laundry_baskets_on_the_west_wall():
     assert abs(hi[2] - zo - 2.0) < 0.01
     leaf = [l for c, l in house_core.LEAVES if c == "OG" and 7.0 < max(l[0][0], l[1][0]) < 7.3
             and 5.0 < min(l[0][1], l[1][1]) < 6.06][0]                       # (open 90°, #29)
-    assert table[2][1] < lo[1] and hi[1] < min(leaf[0][1], leaf[1][1])        # clear of table and leaf
-    assert abs(hi[1] - (waschkueche.DUSCHE[2] - 0.20)) < 1e-6                 # 20 cm to the shower cabin (#29)
+    assert table[2][1] < lo[1] and hi[0] < min(leaf[0][0], leaf[1][0])        # clear of table and leaf
+    assert abs(hi[1] - 5.95) < 1e-6                                           # to 5.95 (#61)
     uprights = [p for p in carcass if p[0] == "FichteZ" and p[2][0] - p[1][0] > 0.3]
     assert len(uprights) == 2                                                 # the two sides, no dividers
     boards = [p for p in carcass if p[0] == "FichteY" and p[2][2] - p[1][2] < 0.03]
     assert len(boards) == 4 and all(b[2][1] - b[1][1] > hi[1] - lo[1] - 0.05 for b in boards)   # continuous
     baskets = [p for p in room if p[0] == "Weide"]
     bottoms = [p for p in baskets if p[2][2] - p[1][2] < 0.02]
-    assert len(bottoms) == 6
-    assert len(baskets) > 6 * 100                                             # woven from strands
+    assert len(bottoms) == 9
+    assert len(baskets) > 9 * 100                                             # woven from strands
     front = [p for p in baskets if 0.02 < p[2][2] - p[1][2] < 0.04 and p[1][2] - bottoms[0][1][2] < 0.2
              and abs(p[2][0] - bottoms[0][2][0]) < 0.015 and p[2][1] - p[1][1] > p[2][0] - p[1][0]]
                                                                               # weavers along the fronts
@@ -1109,36 +1042,30 @@ def test_kueche_wamsler_herd_at_the_north_end_of_the_east_run():
 
 def _kochfeld():
     """The Halbinsel's cooktop: the Eisen plate on the worktop (lo, hi)."""
-    (_, lo, hi, _), = [p for p in part_list(("EG", "EG_Kueche")) if p[0] == "Eisen" and p[1][2] > 0.89]
+    (_, lo, hi, _), = [p for p in part_list(("EG", "EG_Kueche")) if p[0] == "Eisen" and 0.89 < p[1][2] < 0.901]   # (not the Muldenlüfter's slot on it)
     return lo, hi
 
 
-def _hood_canopy():
-    """The hood's canopy: its one 8-vertex Stahl part on two levels that narrows upwards along x and y."""
-    def width(vs, z, k):                                                      # extent along axis k at height z
-        return max(v[k] for v in vs if v[2] == z) - min(v[k] for v in vs if v[2] == z)
-    return [p for p in part_list(("EG", "EG_Haube")) if p[0] == "Stahl" and len(set(p[3])) == 8
-            and len({v[2] for v in p[3]}) == 2 and all(width(p[3], p[2][2], k) < width(p[3], p[1][2], k) - 0.2
-                                                       for k in (0, 1))]
-
-
-def test_kueche_hood_over_the_cooktop():
-    """Issue #26: the steel hood of the old form hangs from the ceiling over the Halbinsel's cooktop, centred on it
-    and covering it: a rolled lip 65 cm above the cooktop, a straight skirt, a rail on the north (cook's) side, a
-    canopy narrowing upwards to a stack that runs into the ceiling; clear of the Küche's cabinets and worktop."""
+def test_kueche_muldenluefter():
+    """Issue #61: the hood over the Halbinsel is gone (with its spot strip and light, #22, #26); the cooktop draws the
+    air down at its middle: a Muldenlüfter, a slotted vent along y between the left and the right burners, on the
+    cooktop, inside its outline and clear of the burner rings; nothing hangs over the Halbinsel any more."""
+    assert ("EG", "EG_Haube") not in BP.geo
     clo, chi = _kochfeld()
-    hood = [p for p in part_list(("EG", "EG_Haube")) if p[0] == "Stahl"]   # (+ the spot strip, #22)
-    lo = [min(p[1][k] for p in hood) for k in range(3)]; hi = [max(p[2][k] for p in hood) for k in range(3)]
-    taper = _hood_canopy()
-    assert len(taper) == 1                                                    # narrows upwards on all sides
-    _, tlo, thi, _ = taper[0]
-    for k in (0, 1):
-        assert abs((tlo[k] + thi[k]) / 2 - (clo[k] + chi[k]) / 2) < 0.01 and tlo[k] < clo[k] and thi[k] > chi[k]
-    assert abs(lo[2] - (chi[2] + 0.65)) < 0.01 and hi[2] > house_core.Z_EG_TOP              # up into the ceiling
-    assert 0.8 <= hi[0] - lo[0] <= 1.0 and 0.5 <= hi[1] - lo[1] <= 0.7
-    rail = [p for p in hood if p[2][0] - p[1][0] > 0.8 and p[2][1] - p[1][1] < 0.03 and p[2][2] - p[1][2] < 0.03]
-    assert len(rail) == 1 and rail[0][1][1] > (lo[1] + hi[1]) / 2               # on the north side
-    _clear([p[:3] for p in part_list(("EG", "EG_Haube"))], [p[1:3] for p in part_list(("EG", "EG_Kueche"))], "Haube")
+    vent = [p for p in part_list(("EG", "EG_Kueche")) if p[1][2] >= chi[2] - 1e-6 and p[2][2] <= chi[2] + 0.01
+            and clo[0] < p[1][0] and p[2][0] < chi[0] and clo[1] < p[1][1] and p[2][1] < chi[1]
+            and p[0] in ("Fuge", "Metall") and p[2][1] - p[1][1] > 0.3]
+    assert vent, "no vent along y on the cooktop"
+    lo = [min(p[1][k] for p in vent) for k in range(3)]; hi = [max(p[2][k] for p in vent) for k in range(3)]
+    assert 0.08 <= hi[0] - lo[0] <= 0.14 and abs((lo[0] + hi[0]) / 2 - (clo[0] + chi[0]) / 2) < 0.03
+    rings = [p for p in part_list(("EG", "EG_Kueche")) if p[0] == "Metall" and clo[0] < p[1][0] and p[2][0] < chi[0]
+             and clo[1] < p[1][1] and p[2][1] < chi[1] and 0.1 < p[2][1] - p[1][1] < 0.2
+             and abs((p[2][0] - p[1][0]) - (p[2][1] - p[1][1])) < 1e-6]                   # round: as wide as deep
+    assert len(rings) == 4 and all(p[2][0] < lo[0] or p[1][0] > hi[0] for p in rings)
+    above = [(k[1], m) for k in BP.geo if k[0] == "EG" and k[1] not in ("EG_Waende", "EG_Decke")
+             for m, plo, phi in _parts(BP, k) if plo[2] > chi[2] + 0.3 and plo[2] < house_core.Z_EG_TOP
+             and plo[0] < chi[0] and phi[0] > clo[0] and plo[1] < chi[1] and phi[1] > clo[1]]
+    assert above == [], above
 
 
 def test_nothing_above_the_wamsler_but_its_pipe():
@@ -1196,7 +1123,7 @@ def test_wamsler_pipe_from_its_left_into_the_kaminschacht():
     shaft = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Waende"))
              if abs(lo[0] - ax0) < 1e-6 and abs(lo[1] - ay0) < 1e-6 and abs(lo[2] - az) < 1e-6]
     assert len(shaft) == 1
-    others = [(lo, hi) for o in ("EG_Kueche", "EG_Haube", "EG_Waende", "EG_Wandlampen", "EG_Fenster_Tueren")
+    others = [(lo, hi) for o in ("EG_Kueche", "EG_Waende", "EG_Wandlampen", "EG_Fenster_Tueren")
               for m, lo, hi in _parts(BP, ("EG", o)) if (lo, hi) not in shaft]
     _clear([p[:3] for p in pipe], others, "Ofenrohr")
 
@@ -1208,7 +1135,6 @@ def test_kueche_hood_sink_tap_and_wamsler_in_steel():
     d = house_core.MAT_DEF["Stahl"]
     assert min(d["rgba"][:3]) >= 0.5 and d["metal"] < 0.5
     assert "Herd" not in house_core.MAT_DEF
-    assert {p[0] for p in part_list(("EG", "EG_Haube"))} == {"Stahl", "Metall", "Opalglas"}   # spot strip (#22)
     assert {p[0] for p in part_list(("EG", "EG_Herd"))} == {"Stahl", "Eisen", "Ofenglas"}
     assert len(_herd_body()) == 1
     zt = max(p[2][2] for p in part_list(("EG", "EG_Kueche")) if p[0] == "Granit")
@@ -1271,28 +1197,6 @@ def test_kueche_and_speis_fronts_after_mallnitz():
     assert not [p for p in k if p[0] == "Metall" and len(set(map(tuple, p[3]))) >= 48]
     sink = [p for p in k if hood(p) and p[1][1] > 5.2 and p[2][2] < 0.86]
     assert len(sink) == 2 and all(p[2][0] < 7.85 for p in sink)               # the blind corner has none
-    # cabinet C on the Essen's west wall (doors at x 3.352 .. 3.372 towards the dining table, #5, #34)
-    c = list(part_list(("EG", "EG_Essen_Schrank")))
-    assert {p[0] for p in c} == {"Front", "Metall", "Fuge"}
-    assert len([p for p in c if hood(p)]) == 6 * 5 - 2 and len([p for p in c if p[0] == "Metall"]) == (6 * 5 - 2) * 2
-    assert all(p[1][0] > 3.372 - 1e-6 for p in c if p[0] == "Metall")
-    panels = [p for p in c if p[0] == "Front" and p[1][0] > 3.35 and p[2][0] <= 3.365]
-    assert len(panels) == 6 * 5 - 2              # per leaf column (request 2026-11-10): top door, a door
-    w = (3.712 - 0.417) / 6                      # over the upper half, three drawers in the lower half
-    for i in range(6):                           # (columns 1, 2: the upper half open, #34 follow-up)
-        col = sorted((p for p in panels if 0.417 + w * i < (p[1][1] + p[2][1]) / 2 < 0.417 + w * (i + 1)),
-                     key=lambda p: p[1][2])
-        assert len(col) == (4 if i in (1, 2) else 5)
-        top = max(p[2][2] for p in col)
-        assert col[-1][1][2] > 2.0 and top > 2.25                             # top door as before (its panel)
-        if i in (1, 2):
-            continue
-        door, drawers = col[3], col[:3]
-        assert 1.05 < door[1][2] - 0.06 < 1.06 and 1.99 < door[2][2] + 0.06 < 2.0         # panel + 6 cm frame
-        hs = [p[2][2] - p[1][2] for p in drawers]
-        assert max(hs) - min(hs) < 1e-6 and drawers[2][2][2] < door[1][2]
-    cups = [p for p in c if hood(p)]
-    assert len([p for p in cups if p[1][2] < 1.0]) == 18                     # one per drawer
     besen = [p for p in k if p[2][0] < 6.01 and p[1][1] > 5.2 and p[0] == "Metall"]
     assert len(besen) == 2 and len([p for p in besen if hood(p)]) == 1        # its cup pull
 
@@ -1474,7 +1378,7 @@ def test_bathrooms_have_limestone_like_the_eg_corridor():
     assert pts("OG", [(5.65, 0.45), (7.0, 1.5), (8.55, 2.55)]) == {"Kalkstein"}                       # Bad S
     assert pts("OG", [(4.0, 7.5)]) == {"Eiche"} and pts("OG", [(7.0, 4.0)]) == {"Kalkstein"}          # Flur; HWR (#28)
     assert pts("EG", [(0.71, 11.656)]) == {"Kalkstein"} and pts("EG", [(1.81, 10.7)]) == {"Eiche"}   # Bad Großeltern
-    assert pts("EG", [(1.6, 9.3)]) == {"Eiche"}                                                        # its Schrank
+    assert pts("EG", [(1.6, 9.3)]) == {"Kalkstein"}                                                    # its WC (#61)
     assert pts("EG", [(5.0, 7.5)]) == {"Kalkstein"}                                                    # EG Flur
 
 
@@ -1491,18 +1395,20 @@ def _part_at(key, x, y, z):
 
 # the WCs walled on three sides: (collection, floor z, interior rectangle, door span on the north wall); the
 # Gästebad's WC (glass on its west side since #32) is checked in test_gaestebad_clearances
-WCS = [("EG", 0.0, (0.31, 1.319, 5.475, 6.574), (0.48, 1.24)),                   # Gäste-WC by the back hall
-       ("EG", 0.0, (0.31, 1.274, 8.656, 9.856), (0.31, 1.274)),                  # WC Großeltern: niche, north open
+WCS = [("EG", 0.0, (0.31, 1.458, 5.475, 6.774), (0.68, 1.44), "snw"),          # Duschbad by the back hall (#61):
+                                                                                 # its WC part, east the shower glass
+       ("EG", 0.0, (0.31, 1.392, 8.656, 9.856), (0.31, 1.392), "sw"),            # WC Großeltern: niche, north open,
+                                                                                 # east its Einbauschrank (#61)
        ("OG", house_core.Z_OG, (8.72, 9.92, 3.98, 6.06), (8.69, 9.72))]          # WC 2,30
 
 
 def test_wcs_have_green_tiles_to_hip_height():
     """Request 2026-11-08 after input/2026-11-08 input/bad_mallnitz.jpeg: green subway tiles about
     1.1 m high (with a cap row) on all WC walls, cut at the door; the Bäder have none."""
-    for c, z, (x0, x1, y0, y1), (da, db) in WCS:
+    for c, z, (x0, x1, y0, y1), (da, db), *sides in WCS:
         key, d = (c, c + "_Fliesen"), 0.008
         na, nb = max(((x0, da), (db, x1)), key=lambda s: s[1] - s[0])            # wider tiled part
-        walls = [((x0 + x1) / 2, y0 + d), (x0 + d, (y0 + y1) / 2), (x1 - d, (y0 + y1) / 2)]
+        walls = [((x0 + x1) / 2, y0 + d), (x0 + d, (y0 + y1) / 2)] + [(x1 - d, (y0 + y1) / 2)] * ("e" in (sides or ["e"])[0])
         if nb - na > 0.05:                                                       # north wall not all open
             walls.append(((na + nb) / 2 - 0.025, y1 - d))
         for x, y in walls:
@@ -1731,7 +1637,7 @@ def test_wandlampen_eg_placements():
     """Issue #22: the Wandlampen of the EG at the places agreed on the drawing (input/2026-11-14 input/
     lampen_eg_v1.svg; numbers as there), at WANDLAMPE_H, over the back hall's mirror at WANDLAMPE_SPIEGEL_H.
     Lamp 1 sits between the open Windfang leaf (13.324) and the front door's leaf opened by the film (13.825).
-    11, 12 (the Essen's west wall) went with the default layout (#34); 13, 14 hang on B's wooden back.
+    11, 12 (the Essen's west wall) went with the default layout (#34); 13, 14 hang on the drywall behind B (#61).
     Off the plan sheets (PLAN skip_words)."""
     L, S = house_core.WANDLAMPE_H, house_core.WANDLAMPE_SPIEGEL_H
     n, s, e, w = (0, 1), (0, -1), (1, 0), (-1, 0)                         # facing: into the room
@@ -1743,45 +1649,22 @@ def test_wandlampen_eg_placements():
             ((7.46, 5.849), L, s), ((8.557, 3.96), L, w),                 # 7, 8 Küche: sink; right of the Wamsler
             ((5.674, 0.415), L, n),                                       # 10 Essen: terrace door .. window
             ((11.72, 8.576), L, s), ((6.334, 8.576), L, s), ((3.4965, 8.576), L, s),   # 15-17 Flur, north
-            ((3.7813, 6.349), L, n), ((4.9057, 6.349), L, n), ((8.285, 6.349), L, n),  # 18-20 Flur, south
+            ((3.7813, 6.349), 2.2, n), ((4.9057, 6.349), 2.2, n),         # 18, 19 Flur, south: over the Garderobe (#61)
+            ((8.285, 6.349), L, n),                                       # 20
             ((10.5497, 8.876), L, n), ((11.7483, 8.876), L, n), ((8.7015, 8.876), L, n),   # 21-23 Bibliothek
             ((6.174, 9.89), L, e), ((6.174, 10.904), L, e), ((8.4515, 12.473), L, s),       # 24-26
             ((2.657, 9.366), L, e), ((3.2615, 12.473), L, s),             # 27, 28 Oma & Opa
-            ((0.31, 10.4365), L, e), ((0.792, 8.656), L, n), ((1.394, 9.556), L, e),       # 29-31 Bad, WC, Schrank
-            ((2.358, 7.0655), S, w),                                      # 32 back hall: over the mirror
-            ((1.419, 5.8413), L, e), ((1.419, 6.2077), L, e),             # 33, 34 Garderobe
-            ((0.8145, 5.475), L, n), ((0.31, 7.0655), L, e),              # 35, 36 Gäste-WC; back hall
-            ((3.9035, 3.715), L, s), ((4.7245, 3.715), L, s)]             # 13, 14 Essen: B's back, on boards
+            ((0.31, 10.4365), L, e), ((0.792, 8.656), L, n),              # 29, 30 Bad, WC (31 Schrank: gone, #61)
+            ((0.31, 6.55), S, e),                                         # 32 Duschbad: over the mirror (#61; 33, 34 gone)
+            ((0.85, 5.475), L, n), ((0.31, 7.1655), L, e),                # 35, 36 Duschbad; back hall
+            ((3.9035, 3.64), L, s), ((4.7245, 3.64), L, s)]               # 13, 14 Essen: on the drywall behind B (#61)
     same = lambda a, b: math.dist(a[0], b[0]) < 0.0015 and abs(a[1] - b[1]) < 0.0015 and a[2] == b[2]
     got = [((x, y), z, f) for (x, y), z, f in _rosettes(BP, ("EG", "EG_Wandlampen"))]
     miss = ([g for g in got if not any(same(g, x) for x in both)], [x for x in both if not any(same(g, x) for g in got)])
-    assert len(got) == len(both) == 32 and miss == ([], []), miss
+    assert len(got) == len(both) == 29 and miss == ([], []), miss
     near = lambda pts, xs: all(any(math.dist(p[:2], (x + 0.5 * f[0], y + 0.5 * f[1])) < 0.002 for p in pts) for (x, y), _, f in xs)
     assert near(BP.wall_lights, both)
     assert "Wandlampen" in house_core.PLAN["skip_words"]
-
-
-def test_haube_spots():
-    """Issue #22, moved with the hood over the cooktop (#26): along the hood's middle a Metall strip under the lip
-    with 4 built-in spots (Opalglas: its material glows at dusk) evenly along it; one light for the four, under
-    the hood's centre, among the wall lights."""
-    key = ("EG", "EG_Haube")
-    parts = list(_parts(BP, key))
-    stahl = [(lo, hi) for m, lo, hi in parts if m == "Stahl"]
-    hlo = [min(lo[k] for lo, hi in stahl) for k in range(3)]
-    strip = [(lo, hi) for m, lo, hi in parts if m == "Metall"]
-    spots = sorted(((lo, hi) for m, lo, hi in parts if m == "Opalglas"), key=lambda b: b[0][0])
-    assert len(strip) == 1 and len(spots) == 4
-    (slo, shi), = strip
-    assert abs(shi[2] - hlo[2]) < 1e-6 and shi[0] - slo[0] > shi[1] - slo[1]            # under the lip, along x
-    (_, tlo, thi, _), = _hood_canopy()
-    xm, ym = (tlo[0] + thi[0]) / 2, (tlo[1] + thi[1]) / 2
-    assert abs((slo[0] + shi[0]) / 2 - xm) < 1e-6 and abs((slo[1] + shi[1]) / 2 - ym) < 1e-6   # in the middle
-    xs = [(lo[0] + hi[0]) / 2 for lo, hi in spots]
-    assert all(abs((xs[k + 1] - xs[k]) - (xs[1] - xs[0])) < 1e-6 for k in range(3))                  # evenly
-    assert all(slo[0] < x < shi[0] and abs(hi[2] - slo[2]) < 1e-6 for x, (lo, hi) in zip(xs, spots))
-    lights = [p for p in BP.wall_lights if math.dist(p[:2], (xm, ym)) < 0.01]
-    assert len(lights) == 1 and lights[0][2] < slo[2]
 
 
 def test_eg_lamps_clear():
@@ -1836,25 +1719,27 @@ def test_bad_submodel():
     corner, 2.048 x 3.817 m): walk-in shower 0.95 wide in the NW corner (2026-11-25, was 0.80), glass from the
     north wall, a 1.20 m wall 1.00 high with glass to the ceiling, the glass turning the corner in front of
     the north wall (2026-11-25), the Waschbecken doppelt on the wall's east face; in the
-    south a 1.20 m niche split by a 12 cm wall into WC and Schrank, closed by two interlocking
-    sliding leaves (the WC leaf open behind the Schrank leaf)."""
+    south a 1.20 m niche, one room since #61: the WC in its west part behind an opening of 102.4 under a lintel, a
+    white Einbauschrank (50 deep, to the ceiling, two doors towards the WC) on its east wall behind the front wall; one sliding
+    leaf, built open in front of that wall, rolls over the opening and closes the room."""
     import bad
     bp = house_core.build_bad()
     leaves = [pts for c, pts in house_core.LEAVES if c == "Bad"]
     house_core.build()                                                    # restore the registries
     assert {c for c, _ in bp.geo} == {"Bad"} and bp.garden is None
     assert {n for _, n in bp.geo} == {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank",
-                                      "Bad_Bodenbelag", "Bad_Boden", "Bad_Schiebetuer_hinten", "Bad_Schiebetuer_vorne"}
+                                      "Bad_Bodenbelag", "Bad_Boden", "Bad_Schiebetuer"}
     W, D, H = 2.048, 3.817, 2.40
     assert all(-1e-9 <= x <= W + 1e-9 and -1e-9 <= y <= D + 1e-9 and -1e-9 <= z <= H + 1e-9
                for g in bp.geo.values() for x, y, z in g["v"])                # no part outside the room
     box = lambda m, lo, hi: [m, [round(a, 3) for a in lo], [round(a, 3) for a in hi]]
     walls = [box(*p) for p in _parts(bp, ("Bad", "Bad_Waende"))]
-    assert ["Putz", [0.964, 0, 0], [1.084, 1.2, 2.4]] in walls                # niche wall: WC, Schrank 96.4 each
+    assert ["Putz", [1.024, 1.08, 0], [W, 1.2, 2.4]] in walls                 # front wall before the Einbauschrank
+    assert not [w for w in walls if w[1][1] < 1.0]                            # the niche's middle wall is gone (#61)
     assert ["Putz", [0.95, 2.267, 0], [1.07, 3.467, 1.0]] in walls            # low wall 120 x 12, 1.00 high
-    for u in (0.5, 1.5):                                                       # lintel over the niche
+    for u in (0.5, 1.5):                                                       # lintel over the opening
         assert _mat_at(bp, ("Bad", "Bad_Waende"), u, 1.14, 2.2) == "Putz"
-        assert _mat_at(bp, ("Bad", "Bad_Waende"), u, 1.14, 2.0) is None
+    assert _mat_at(bp, ("Bad", "Bad_Waende"), 0.5, 1.14, 2.0) is None and _mat_at(bp, ("Bad", "Bad_Waende"), 1.5, 1.14, 1.0)
     san = ("Bad", "Bad_Sanitaer")
     # glass: an L-shaped pane on the low wall's shower edge (request 2026-11-09): on the wall to the
     # ceiling, and by the north wall down to the floor; 2026-11-25: it turns the corner, a return 12 mm
@@ -1868,34 +1753,32 @@ def test_bad_submodel():
                                                 (3.785, 2.4), (2.267, 2.4)}
     assert {round(x, 3) for x, _, _ in panes[1]} == {0.747, 0.949}
     assert {y for _, y, _ in panes[1]} == {3.786, 3.798} and {z for _, _, z in panes[1]} == {0.0, 2.4}
-    # the passage between the low wall's south end and the front sliding leaf
+    # the passage between the low wall's south end and the sliding leaf
     pas = [(p0, p1) for p0, p1, t in bp.dims if t.startswith("Durchgang")]
-    assert len(pas) == 1 and sorted(round(p[1], 3) for p in pas[0]) == [1.3, 2.267]
+    assert len(pas) == 1 and sorted(round(p[1], 3) for p in pas[0]) == [1.25, 2.267]
     assert {round(p[0], 3) for p in pas[0]} == {1.01}                          # on the wall's centre line
-    # sliding leaves: two tracks 5 cm apart, both over the Schrank half (WC leaf open behind it)
-    assert len(leaves) == 2
-    lb = sorted(([min(p[k] for p in l) for k in range(3)], [max(p[k] for p in l) for k in range(3)]) for l in leaves)
-    lb.sort(key=lambda b: b[0][1])
-    (rlo, rhi), (flo, fhi) = lb                                                # rear = WC, front = Schrank
-    for lo, hi in lb:
-        assert abs(lo[0] - 0.964) < 0.005 and abs(hi[0] - W) < 0.005 and hi[2] >= 1.98
-    assert abs((flo[1] - rlo[1]) - 0.05) < 0.002 and rhi[1] < flo[1] and rlo[1] > 1.20
-    inn = ("Bad", "Bad_Innentueren")
-    rear, front = ("Bad", "Bad_Schiebetuer_hinten"), ("Bad", "Bad_Schiebetuer_vorne")   # one object each (animated)
-    assert {_mat_at(bp, k, 0.48, y, z) for k, y in ((rear, 1.23), (front, 1.28)) for z in (0.5, 1.0, 1.5)} == {None}   # WC half open
-    assert _mat_at(bp, rear, 1.5, 1.23, 1.0) and _mat_at(bp, front, 1.5, 1.28, 1.0)  # both leaves over the Schrank
+    # one sliding leaf (#61), built open in front of the front wall, 4 cm over the opening
+    assert len(leaves) == 1
+    lb = [([min(p[k] for p in l) for k in range(3)], [max(p[k] for p in l) for k in range(3)]) for l in leaves]
+    (llo, lhi), = lb
+    assert abs(llo[0] - 0.979) < 0.005 and abs(lhi[0] - (W - 0.005)) < 0.005 and lhi[2] >= 1.98 and llo[1] > 1.20
+    inn, leaf = ("Bad", "Bad_Innentueren"), ("Bad", "Bad_Schiebetuer")
+    assert {_mat_at(bp, leaf, 0.48, 1.23, z) for z in (0.5, 1.0, 1.5)} == {None}           # the opening free
+    assert _mat_at(bp, leaf, 1.5, 1.23, 1.0)                                                # the leaf over the wall
     assert not [1 for m, lo, hi in _parts(bp, inn) if m != "Metall"]          # Innentueren: only the rail
-    # each leaf rolls to the other end of the rail: over the WC half, HALF to the west
-    assert bp.slide == {"Bad_Schiebetuer_hinten": (-0.964, 0.0, 0.0), "Bad_Schiebetuer_vorne": (-0.964, 0.0, 0.0)}
+    # it rolls west to x 0: closed it covers the opening and 4 cm of the wall
+    assert bp.slide == {"Bad_Schiebetuer": (-0.979, 0.0, 0.0)}
+    assert llo[0] - 0.979 <= 1e-3 and lhi[0] - 0.979 >= 1.024 + 0.04 - 1e-3
     assert any(m == "Metall" and lo[0] <= 0.01 and hi[0] >= W - 0.01 and 1.999 <= lo[2] for m, lo, hi in _parts(bp, inn))  # rail
     for lo, hi in lb:                                                          # no leaf in a wall
         assert not any(all(a[k] < hi[k] - 1e-6 and lo[k] + 1e-6 < b[k] for k in range(3)) for _, a, b in _parts(bp, ("Bad", "Bad_Waende")))
-    # WC half: toilet in its middle on the south wall, green tiles; none in the Schrank
+    # WC: toilet in the opening on the south wall, Taubenblau tiles on the south wall up to the Einbauschrank and
+    # on the west wall
     assert _mat_at(bp, san, 0.482, 0.10, 0.60) == "Keramik" and _mat_at(bp, san, 0.482, 0.40, 0.03) == "Keramik"
     til = ("Bad", "Bad_Fliesen")
-    for x, y in ((0.482, 0.008), (0.008, 0.6), (0.956, 0.6)):
+    for x, y in ((0.482, 0.008), (0.008, 0.6), (1.0, 0.008)):
         assert "Fliese" in {_mat_at(bp, til, x + dx, y, h) for h in (0.3, 0.45, 0.6) for dx in (0.0, 0.05)}, (x, y)
-    assert not any(m == "Fliese" and hi[0] > 0.97 for m, lo, hi in _parts(bp, til))
+    assert not any(m == "Fliese" and hi[0] > 1.548 for m, lo, hi in _parts(bp, til))
     # walk-in shower: limestone on the west and north walls to 2.0, on the low wall's west face to 1.0
     for x, y, z in ((0.009, 3.0, 1.9), (0.4, 3.808, 1.9), (0.941, 2.8, 0.5)):
         assert _mat_at(bp, til, x, y, z) == "Kalkstein", (x, y, z)
@@ -1909,16 +1792,18 @@ def test_bad_submodel():
     assert mix == {2.62, 3.12}
     assert "Waschbecken 100" in [t for _, _, t in bp.dims] and not [t for _, _, t in bp.dims if "Waschtrog" in t]
     assert not any("Spiegel" in g["m"] for g in bp.geo.values())
-    # Schrank: back cabinet 60 deep over the full width; nothing in front of it, so it can be reached
-    # (request 2026-11-09: the hanging wardrobe against the niche wall is gone)
+    # Einbauschrank (#61, turned 90° on request): white, floor to ceiling, on the east wall from the south wall to the
+    # front wall (y 0 .. 1.078), 50 deep with its doors (x 1.548 .. W), two doors towards the WC with chrome knobs
     sch = ("Bad", "Bad_Schrank")
-    cab = [(lo, hi) for m, lo, hi in _parts(bp, sch) if hi[1] <= 0.6 + 1e-9]
-    assert round(min(b[0][0] for b in cab), 3) == 1.084 and round(max(b[1][0] for b in cab), 3) == W
-    assert sum(1 for lo, hi in cab if hi[0] - lo[0] > 0.9 and hi[2] - lo[2] < 0.04) >= 4   # shelves
-    assert not [1 for m, lo, hi in _parts(bp, sch) if hi[1] > 0.6 + 1e-9]
-    assert all(m == "Rahmen" for m, lo, hi in _parts(bp, sch))                                        # white
+    cab = list(_parts(bp, sch))
+    assert round(min(lo[0] for m, lo, hi in cab if m != "Metall"), 3) == 1.548 and round(max(hi[0] for m, lo, hi in cab), 3) == W
+    assert max(hi[2] for m, lo, hi in cab) >= H - 1e-6 and min(lo[2] for m, lo, hi in cab) <= 1e-6
+    assert round(min(lo[1] for m, lo, hi in cab), 3) == 0.0 and round(max(hi[1] for m, lo, hi in cab), 3) == 1.078
+    assert min(lo[0] for m, lo, hi in cab) - (0.482 + 0.185) >= 0.85                    # 88 clear beside the toilet
+    assert {m for m, lo, hi in cab} == {"Rahmen", "Metall", "Fuge"}                              # white, knobs, plinth
+    assert len([1 for m, lo, hi in cab if m == "Metall"]) == 2
     nums = sorted(float(t.split()[0] if t[0].isdigit() else t.split()[-1]) for _, _, t in bp.dims)
-    assert nums == sorted([95, 32, 20, 120, 100, 100, 96.4, 12, 96.4, 120, 60, 96.7, 204.8, 381.7])
+    assert nums == sorted([101.7, 95, 32, 20, 120, 100, 100, 102.4, 107.8, 50, 88, 120, 204.8, 381.7])
     # floor (request 2026-11-09): part of the sub-model; a limestone strip as wide as the WC from the
     # south wall behind the toilet to the north wall at the shower's end, oak elsewhere, none under
     # the walls; a dark base under the joints
@@ -1926,10 +1811,13 @@ def test_bad_submodel():
     at = lambda x, y: {m for m, lo, hi in fl if lo[0] < x < hi[0] and lo[1] < y < hi[1]}
     for x, y in ((0.3, 0.6), (0.4, 3.0), (0.94, 2.0), (0.94, 3.6), (0.05, 3.79)):
         assert at(x, y) <= {"Kalkstein"} and at(x + 0.004, y + 0.004) | at(x, y) == {"Kalkstein"}, (x, y)
-    for x, y in ((1.5, 2.0), (1.5, 0.3), (1.2, 3.6), (2.03, 3.79)):
+    for x, y in ((1.5, 2.0), (1.2, 3.6), (2.03, 3.79)):
         assert at(x, y) <= {"Eiche"} and at(x + 0.004, y + 0.004) | at(x, y) == {"Eiche"}, (x, y)
-    assert max(hi[0] for m, lo, hi in fl if m == "Kalkstein") <= 0.964 <= min(lo[0] for m, lo, hi in fl if m == "Eiche")
-    assert at(0.96, 2.8) == set() and at(1.01, 2.8) == set() and at(1.02, 0.6) == set()   # low wall, niche wall
+    for x, y in ((1.5, 0.3), (1.02, 0.6)):                                    # the whole WC in limestone (#61)
+        assert at(x, y) <= {"Kalkstein"} and at(x + 0.004, y + 0.004) | at(x, y) == {"Kalkstein"}, (x, y)
+    assert max(hi[0] for m, lo, hi in fl if m == "Kalkstein" and lo[1] > 1.20) <= 0.964 <= min(lo[0] for m, lo, hi in fl if m == "Eiche")
+    assert min(lo[1] for m, lo, hi in fl if m == "Eiche") >= 1.20 - 1e-6                           # limestone to the leaf line
+    assert at(0.96, 2.8) == set() and at(1.01, 2.8) == set() and at(1.5, 1.14) == set()   # low wall, front wall
     assert [m for m, lo, hi in _parts(bp, ("Bad", "Bad_Boden"))] == ["Fuge"]
 
 
@@ -1948,18 +1836,17 @@ def test_bad_built_into_the_grosseltern():
         return {tuple(sorted({(round(g["v"][i][0] + dx, 6), round(g["v"][i][1] + dy, 6), round(g["v"][i][2], 6))
                               for f in g["f"][a:a + n] for i in f})) for a, n in bp.parts[key]}
 
-    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Schrank", "Bodenbelag", "Boden", "Schiebetuer_hinten",
-              "Schiebetuer_vorne"):
+    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Schrank", "Bodenbelag", "Boden", "Schiebetuer"):
         assert solids(sub, ("Bad", "Bad_" + n), x0, y0) <= solids(BP, ("EG", "EG_" + n)), n
-    assert BP.slide == {"EG_Schiebetuer_hinten": (-0.964, 0.0, 0.0), "EG_Schiebetuer_vorne": (-0.964, 0.0, 0.0)}
+    assert BP.slide == {"EG_Schiebetuer": (-0.979, 0.0, 0.0)}
     wl = list(_parts(BP, ("EG", "EG_Waende")))
     assert not any(lo[1] > 10.0 and hi[1] < 10.3 and lo[0] >= 0.3 and hi[0] <= 2.36 for _, lo, hi in wl)   # WC/Bad wall
     assert not any(lo[0] >= 2.35 and hi[0] <= 2.66 and lo[1] < 12.3 and hi[1] > 9.9 and lo[2] < 2.0 for _, lo, hi in wl)
     assert any(lo[0] >= 2.35 and hi[0] <= 2.66 and abs(hi[1] - 9.856) < 1e-6 and lo[2] < 0.1 for _, lo, hi in wl)
     assert not any(lo[1] > 10.2 and hi[1] < 10.35 and hi[0] < 2.36 for _, lo, hi in _parts(BP, ("EG", "EG_Innentueren")))
-    assert len([1 for c, l in house_core.LEAVES if c == "EG" and 0.3 < l[0][0] < 2.4 and 9.8 < l[0][1] < 10.0]) == 2
+    assert len([1 for c, l in house_core.LEAVES if c == "EG" and 0.3 < l[0][0] < 2.4 and 9.8 < l[0][1] < 10.0]) == 1
     assert _floor_at("EG", 0.71, 11.656) == "Kalkstein" and _floor_at("EG", 1.81, 10.7) == "Eiche"   # shower, Bad
-    assert _floor_at("EG", 0.8, 9.3) == "Kalkstein" and _floor_at("EG", 1.6, 9.3) == "Eiche"   # WC, Schrank
+    assert _floor_at("EG", 0.8, 9.3) == "Kalkstein" and _floor_at("EG", 1.6, 9.3) == "Kalkstein"   # WC, its Einbauschrank (#61)
 
 
 def test_gaestebad_og_walls():
@@ -2117,11 +2004,11 @@ def test_elternbad_layout():
     Schlafzimmer at the south end of the east wall (0.65 .. 1.58, hinged south, open 90 deg into the Bad), the old
     opening is wall. Issue #33: two walk-in showers on one strip 90 deep along the back wall (west, opposite the
     door): heads in the back corners (SW, NW), one pane each from its side wall, 60 clear between them in the
-    middle; limestone on the strip's walls, on the north wall (the Waschküche partition, #30 glazes its top metre)
-    only to 1.20. The toilet on the north wall between glass and basin (≥ 20 free each side, ≥ 60 in front), the
+    middle; limestone on the strip's walls, on the north wall (the Waschküche partition, #30 glazes its top, #61
+    its top half metre) only to 1.70. The toilet on the north wall between glass and basin (≥ 20 free each side, ≥ 60 in front), the
     basin (single 60) with a wood mirror 80 x 85 and two Wandlampen on the east wall north of the door, a lamp
     left of the window; Taubenblau tiles on the north wall from the glass and on the east wall down to the door.
-    Nothing on the north wall above 1.20; the open leaf touches nothing; the passage is free."""
+    Nothing on the north wall above 1.70; the open leaf touches nothing; the passage is free."""
     zo, T = house_core.Z_OG, house_core.WC_TILE_T
     near = lambda a, b: all(abs(p - q) < 1e-6 for p, q in zip(a, b))
     box = lambda lo, hi: (tuple(lo), tuple(hi))
@@ -2188,10 +2075,10 @@ def test_elternbad_layout():
     assert all(stone(x, 2.62 - 0.009, h, 1, 0) for x in (5.65, 6.0, 6.4) for h in (0.1, 1.0))                  # north
     slabs = [(lo, hi) for m, lo, hi in _parts(BP, fk) if m == "Kalkstein" and room(lo, hi)]
     assert max(hi[0] for lo, hi in slabs) < 6.49 - 0.004 and max(hi[2] for lo, hi in slabs) <= zo + 2.0 + 1e-6
-    # #30: nothing on the north wall (the Waschküche partition) above 1.20, but the panes' ends
+    # #30: nothing on the north wall (the Waschküche partition) above its sill (1.70, #61), but the panes' ends
     for o in ("Fliesen", "Sanitaer", "Spiegel", "Wandlampen"):
         on = [(m, lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_" + o)) if room(lo, hi) and lo[1] > 2.62 - 0.03
-              and hi[2] > zo + 1.20 + 1e-6 and not lo[0] < 6.49 < hi[0]]
+              and hi[2] > zo + 1.70 + 1e-6 and not lo[0] < 6.49 < hi[0]]
         assert not on, (o, on)
     # lamps: two over the mirror, one left of the window (seen from inside)
     S, L = round(zo + house_core.WANDLAMPE_SPIEGEL_H, 3), round(zo + house_core.WANDLAMPE_H, 3)
@@ -2208,7 +2095,8 @@ def test_elternbad_layout():
 
 def test_oberlicht_bad_waschkueche():
     """Issue #30: the partition between the Bad Nadine & Till and the Waschküche (y 2.62 .. 2.79) is glazed in its
-    top metre: a pine lining of the full wall depth from its sill at 1.20 up to the 2.20 ceiling, 10 cm short of the
+    top half metre (#61: half as high as the first metre, at the ceiling): a pine lining of the full wall depth from
+    its sill at 1.70 up to the 2.20 ceiling, 10 cm short of the
     side walls, three panes of Milchglas between two mullions, one of them on the shower glass line (x 6.49);
     plaster below and in the piers. Nothing of either room reaches into the glazing but the north shower pane and
     its rail, which end on that mullion; the same in the sub-model (web/elternbad.html). The plans still part the
@@ -2219,7 +2107,7 @@ def test_oberlicht_bad_waschkueche():
     own = [(m, lo, hi) for m, lo, hi in _parts(BP, ft) if wall(lo, hi) and lo[2] >= zo + 1.0]
     glass = sorted((lo, hi) for m, lo, hi in own if m == "Milchglas")
     assert len(glass) == 3 and {m for m, lo, hi in own} == {"Innentuer", "Milchglas"}
-    assert abs(min(lo[2] for m, lo, hi in own) - (zo + 1.20)) < 1e-6                  # 1.00 high,
+    assert e.SILL == 1.70 and abs(min(lo[2] for m, lo, hi in own) - (zo + 1.70)) < 1e-6   # 0.50 high (#61),
     assert abs(max(hi[2] for m, lo, hi in own) - (zo + 2.20)) < 1e-6                  # its top at the ceiling
     assert abs(min(lo[0] for m, lo, hi in own) - 5.69) < 1e-6 and abs(max(hi[0] for m, lo, hi in own) - 8.49) < 1e-6
     assert all(abs((lo[1] + hi[1]) / 2 - 2.705) < 1e-6 and hi[1] - lo[1] < 0.01 for lo, hi in glass)   # in the middle
@@ -2227,15 +2115,15 @@ def test_oberlicht_bad_waschkueche():
                and hi[0] > 6.49 + 0.012 for m, lo, hi in own)                         # mullion on the glass line
     post = [(lo, hi) for m, lo, hi in own if m == "Innentuer" and lo[0] < e.XG < hi[0] and hi[0] - lo[0] < 0.1]
     end = [(lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Sanitaer")) if lo[0] < e.XG < hi[0] and 2.5 < hi[1] < 2.64
-           and hi[2] > zo + 1.20]                                             # the north pane and its rail, above the sill
+           and hi[2] > zo + 1.70]                                             # the north pane and its rail, above the sill
     assert len(post) == 1 and len(end) == 2
     assert all(post[0][0][0] <= lo[0] and hi[0] <= post[0][1][0] and post[0][0][1] <= hi[1] for lo, hi in end)  # end on it
     wk = ("OG", "OG_Waende")
-    assert all(_part_at(wk, x, 2.70, zo + h) is None for x in (6.0, 7.0, 8.0) for h in (1.25, 1.7, 2.15))
-    assert all(_part_at(wk, x, 2.70, zo + h) == "Putz" for x in (6.0, 7.0, 8.0) for h in (0.6, 1.15))
-    assert all(_part_at(wk, x, 2.70, zo + 1.7) == "Putz" for x in (5.64, 8.54))      # the piers
+    assert all(_part_at(wk, x, 2.70, zo + h) is None for x in (6.0, 7.0, 8.0) for h in (1.75, 1.95, 2.15))
+    assert all(_part_at(wk, x, 2.70, zo + h) == "Putz" for x in (6.0, 7.0, 8.0) for h in (0.6, 1.15, 1.65))
+    assert all(_part_at(wk, x, 2.70, zo + 1.9) == "Putz" for x in (5.64, 8.54))      # the piers
     # nothing of the OG reaches into the glazing (3 cm in front of each face), but the north shower pane's end
-    box = ((5.69, 2.62 - 0.03, zo + 1.20), (8.49, 2.79 + 0.03, zo + 2.20))
+    box = ((5.69, 2.62 - 0.03, zo + 1.70), (8.49, 2.79 + 0.03, zo + 2.20))
     for key in BP.geo:
         if key[0] == "OG":
             _clear([(m, lo, hi) for m, lo, hi in _parts(BP, key) if not (key == ft and wall(lo, hi))
@@ -2294,8 +2182,8 @@ def test_elternbad_submodel():
 
 def test_waschkueche_has_a_tile_floor():
     """Issue #28: „Die Waschküche soll keinen Holzboden bekommen, sondern einen Fliesenboden.“ The whole Waschküche
-    (x 5.59 .. 8.59, y 2.79 .. 6.06) gets the limestone of the OG baths, none under its walls, no oak left in it; the
-    shower cabin's floor is part of that tiling, so no two floor slabs overlap (no z-fight)."""
+    (x 5.59 .. 8.59, y 2.79 .. 6.06) gets the limestone of the OG baths, none under its walls, no oak left in it, no
+    two floor slabs overlap (no z-fight)."""
     zo, (x0, x1, y0, y1) = house_core.Z_OG, waschkueche.ROOM
     assert (x0, x1, y0, y1) == (5.59, 8.59, 2.79, 6.06)
     fl = [(m, lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Bodenbelag"))
@@ -2308,18 +2196,16 @@ def test_waschkueche_has_a_tile_floor():
     assert not [(a, b) for i, a in enumerate(fl) for b in fl[i + 1:]                 # no slab twice (the cabin's)
                 if all(a[1][k] < b[2][k] - 1e-6 and b[1][k] < a[2][k] - 1e-6 for k in range(2))]
     pts = lambda ps: {_floor_at("OG", x, y) for x, y in ps} - {None}
-    sx, sy = waschkueche.DUSCHE[1], waschkueche.DUSCHE[2]                            # across the cabin's outline
-    assert pts([(sx - 0.05, 5.5), (sx + 0.05, 5.5), (6.1, sy - 0.05), (6.1, sy + 0.05), (8.5, 2.85)]) == {"Kalkstein"}
+    assert pts([(6.64, 5.5), (6.74, 5.5), (6.1, 4.91), (6.1, 5.01), (8.5, 2.85)]) == {"Kalkstein"}
     assert pts([(7.0, 6.3), (5.0, 4.0)]) == {"Eiche"}                                # Flur, Bad side: unchanged
 
 
 def test_wcs_have_limestone_floors():
     """Request 2026-11-08: all toilets get stone floors (the limestone of the EG Flur and the
-    Bäder): the three WCs of WCS and the WC half of the Bad Großeltern's niche; its Schrank half
-    keeps oak."""
-    for c, z, (x0, x1, y0, y1), _ in WCS:                                   # incl. the WC Großeltern
+    Bäder): the three WCs of WCS and the Bad Großeltern's niche (since #61 one room with its Einbauschrank)."""
+    for c, z, (x0, x1, y0, y1), *_ in WCS:                                  # incl. the WC Großeltern
         assert _floor_at(c, (x0 + x1) / 2 + 0.02, (y0 + y1) / 2 + 0.03) == "Kalkstein", (c, x0, y0)
-    assert _floor_at("EG", 1.6, 9.3) == "Eiche"                           # its Schrank
+    assert _floor_at("EG", 1.6, 9.3) == "Kalkstein"                       # its Einbauschrank's part (#61)
 
 
 def _solids(bp, key, dx=0.0, dy=0.0):
@@ -2341,11 +2227,11 @@ def test_kueche_submodel():
     assert kueche.KUECHE_AT == (5.49, 5.849)
     x0, y0 = kueche.KUECHE_AT
     assert {c for c, _ in sub.geo} == {"Kueche"} and sub.garden is None
-    assert {n for _, n in sub.geo} == {"Kueche_Kueche", "Kueche_Herd", "Kueche_Haube", "Kueche_Waende"}
+    assert {n for _, n in sub.geo} == {"Kueche_Kueche", "Kueche_Herd", "Kueche_Waende"}   # no hood (#61)
     assert all(-1e-9 <= x <= 3.067 + 1e-9 and -2.845 <= y <= 1e-9 for (_, n), g in sub.geo.items() for x, y, z in g["v"]
                if n != "Kueche_Herd")                                # (the Wamsler's pipe runs into the wall;
                                                                      # y: the cup pulls towards the dining table)
-    for n in ("Kueche", "Herd", "Haube", "Waende"):
+    for n in ("Kueche", "Herd", "Waende"):
         assert _solids(sub, ("Kueche", "Kueche_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
     k = list(part_list(("EG", "EG_Kueche")))
     base = [p for p in k if p[2][2] <= 0.901 and p[1][2] < 0.2]
@@ -2391,7 +2277,7 @@ def test_speis_v6():
     """Speis after speis_kueche_v6.svg: from the Flur wall south shelf A (60, open), the aisle 91.9
     (west end free), shelf B (60, open to the aisle) and its closed back towards the Essen in
     place of the Speis/Essen wall, all to the ceiling; the Speis/Küche wall ends at B's back (y 3.73)
-    and is open over the aisle, without a door leaf (#34: the saloon leaves, test_speis_essen)."""
+    and has a panel door over the aisle (#61: in place of the saloon leaves, test_speis_essen)."""
     w = ("EG", "EG_Waende")
     assert _mat_at(BP, w, 4.0, 3.2, 1.0) is None                                          # Speis/Essen wall gone
     assert _mat_at(BP, w, 5.36, 3.5, 1.0) is None and ("EG", "EG_Speis_Waende") not in BP.geo   # no stub (#34)
@@ -2407,7 +2293,8 @@ def test_speis_v6():
     assert not any(p[2][1] > 4.34 and p[1][1] < 5.24 for p in sp)                          # the aisle is free
     assert not any(p[2][0] > 2.78 and p[1][0] < 5.24 and p[2][1] > 3.13 and p[1][1] < 5.85
                    for p in part_list(("EG", "EG_Moebel")))                                # old shelves gone
-    assert not [l for c, l in house_core.LEAVES if c == "EG" and 5.49 < min(l[0][0], l[1][0]) < 5.6]   # no sliding leaf
+    leaves = [l for c, l in house_core.LEAVES if c == "EG" and 5.49 < min(l[0][0], l[1][0]) < 5.6]
+    assert len(leaves) == 1 and max(l[1] for l in leaves[0]) <= 4.33 + 1e-6    # the Speis door (#61), open flat
 
 
 def test_bad_north_window_and_corner_glass():
@@ -2427,7 +2314,7 @@ def test_bad_north_window_and_corner_glass():
     assert bad.SHOWER == 0.95 and bad.FD_JAMB == win[0]["a"]
     low = [p for p in part_list(("EG", "EG_Waende")) if abs(p[2][2] - 1.0) < 1e-9 and y0 + 2 < p[1][1] and p[2][1] < y0 + D]
     assert len(low) == 1 and abs(low[0][1][0] - (x0 + 0.95)) < 1e-9          # its west face: shower 95
-    glass = sorted((p for p in part_list(("EG", "EG_Sanitaer")) if p[0] == "Glas"), key=lambda p: p[2][1] - p[1][1])
+    glass = sorted((p for p in part_list(("EG", "EG_Sanitaer")) if p[0] == "Glas" and p[1][1] > y0), key=lambda p: p[2][1] - p[1][1])
     assert len(glass) == 2
     (_, rlo, rhi, _), (_, mlo, mhi, _) = glass                                 # return (thin in y), main pane
     lw = x0 + 0.95
@@ -2492,14 +2379,13 @@ def test_speis_shelves_stocked():
 
 
 def test_gaeste_wc_submodel():
-    """code/gaeste_wc.py: the back hall's WC after the agreed drawing input/2026-11-10 input/gaeste_wc_v3.svg,
-    at its own origin (the old WC room's inner SW corner): a new 10 cm partition splits it into WC
-    (west, 101) and Garderobe (east, 94); the WC gets a new 76 opening in the north wall (17 from
-    the west wall), its leaf opened outward into the Flur, 90 deg, hinged at the partition side;
-    the toilet centred (50/50), 40 free in front of it (drawing: 41, its toilet 1 cm shorter); Taubenblau tiles in the WC only. The
-    Garderobe keeps the old 80 opening without a door (its furnishing: test_garderobe_jacken). On the Flur east wall a Waschbecken
-    einzeln 40/28 at 85 on its Ständer (input/2026-11-12 input/), 14/40/14 on the 69 wall piece, 83 from the WC door's hinge jamb; tiles behind it to
-    about 112, up to the Windfang door's architrave; a mirror 40 x 60 in a 7 cm wooden frame from 120."""
+    """Issue #61 (variant B, the user 2026-11-27): the back hall's Gäste-WC and Garderobe are one Duschbad, its north
+    wall 20 cm further north (room 205 x 130), at its own origin (the room's inner SW corner): no partition; a walk-in
+    shower 90 x 130 in the east (glass 75 from the south wall, entry 55, limestone to 2.0, head on the east wall, the
+    drain in its middle, no tray), the toilet on the south wall in the west (Taubenblau tiles on the WC part's walls,
+    60 free in front), a Waschbecken einzeln 40 on its Ständer on the west wall north of the window under a mirror
+    40 x 60 in a wooden frame; the door 76 in the north wall's west part, opened 90 deg outward into the back hall,
+    hinged east; the Flur basin is gone."""
     import gaeste_wc as g
     bp = house_core.build_gaeste_wc()
     leaves = [pts for c, pts in house_core.LEAVES if c == "GaesteWC"]
@@ -2507,7 +2393,7 @@ def test_gaeste_wc_submodel():
     assert g.WC_AT == (0.31, 5.475) and bp.garden is None
     assert {c for c, _ in bp.geo} == {"GaesteWC"}
     assert {n for _, n in bp.geo} == {"GaesteWC_Waende", "GaesteWC_Innentueren", "GaesteWC_Sanitaer", "GaesteWC_Spiegel",
-                                      "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_Kleidung", "GaesteWC_WC_Tuer",
+                                      "GaesteWC_Fliesen", "GaesteWC_Schuhregal", "GaesteWC_Kleidung", "GaesteWC_WC_Tuer",
                                       "GaesteWC_Windfangtuer", "GaesteWC_Hintertuer", "GaesteWC_Fenster_Tueren"}
     x0, y0 = g.WC_AT
     cm = lambda a, b: round(abs(b - a) * 100)
@@ -2515,192 +2401,119 @@ def test_gaeste_wc_submodel():
     H = (lambda p: [m for m, lo, hi in _parts(bp, K("Waende"))
                     if lo[0] - 1e-6 <= p[0] - x0 <= hi[0] + 1e-6 and lo[1] - 1e-6 <= p[1] - y0 <= hi[1] + 1e-6
                     and lo[2] < p[2] < hi[2]])                              # wall material at a house point
-    # partition 10 cm, full height; WC 101, Garderobe 94
-    walls = [[m, [round(a, 3) for a in lo], [round(a, 3) for a in hi]] for m, lo, hi in _parts(bp, K("Waende"))]
-    assert ["Putz", [1.009, 0, 0], [1.109, 1.099, 2.4]] in walls
-    assert (cm(0.31, g.PA), cm(g.PA, g.PB), cm(g.PB, 2.358)) == (101, 10, 94)
-    # north wall: new WC opening 76 (17 from the west wall), the old 80 opening stays, both 2.00 high
-    for x in (0.86, 1.81):
-        assert H((x, 6.65, 1.0)) == [] and H((x, 6.65, 2.2)) == ["Putz"]
-    for x in (0.40, 1.33, 2.30):
-        assert H((x, 6.65, 1.0)) == ["Putz"]
-    assert (cm(0.31, g.DA), cm(g.DA, g.DB), cm(g.GA, g.GB)) == (17, 76, 80)
-    # the WC leaf (the other one: the Windfang door's), opened 90 deg into the Flur, at the partition-side jamb
+    # the room: 205 x 130, the north wall 20 cm north of the old one, no partition
+    assert (cm(g.WI, g.WO), cm(g.YS, g.YN), cm(g.YN, g.YF), round(g.YN - 6.574, 3)) == (205, 130, 15, 0.2)
+    assert not [1 for m, lo, hi in _parts(bp, K("Waende")) if lo[1] + y0 < g.YN - 1e-6]
+    for x in (0.40, 1.80, 2.30):
+        assert H((x, 6.85, 1.0)) == ["Putz"] and H((x, 6.65, 1.0)) == []
+    assert H((1.06, 6.85, 1.0)) == [] and H((1.06, 6.85, 2.2)) == ["Putz"]      # the door, 2.00 high
+    assert (cm(g.WI, g.DA), cm(g.DA, g.DB)) == (37, 76)
+    # the WC leaf (the other: the Windfang door's), opened 90 deg into the back hall, at its east jamb
     assert len(leaves) == 2
     lo, hi = ([f(a, b) for a, b in zip(*leaves[0])] for f in (min, max))
     assert hi[0] - lo[0] < 0.05 and g.DB - 0.10 < lo[0] + x0 and hi[0] + x0 <= g.DB
-    assert lo[1] + y0 >= 6.723 - 1e-6 and hi[1] + y0 > 6.723 + 0.65
-    # toilet centred between west wall and partition, 41 free in front of it
+    assert lo[1] + y0 >= g.YF - 1e-6 and hi[1] + y0 > g.YF + 0.65
+    # shower: 90 wide, the pane 75 from the south wall, entry 55; drain in its middle, head on the east wall
     san = list(_parts(bp, K("Sanitaer")))
-    toilet = [(lo, hi) for m, lo, hi in san if m == "Keramik" and hi[1] < 1.0]
-    cis = [(lo, hi) for lo, hi in toilet if abs(hi[2] - 0.78) < 1e-6]        # cistern
-    assert len(cis) == 1 and abs((cis[0][0][0] + cis[0][1][0]) / 2 - (g.PA - x0) / 2) < 1e-6
-    assert (cm(0.31, g.TX), cm(g.TX, g.PA)) == (50, 50)
-    assert cm(max(hi[1] for lo, hi in toilet), g.YN - y0) == 40           # drawing 41: the model's seat is 1 cm deeper
-    # tiles: in the WC (west of the partition) and on the Flur wall piece only, to about 112
-    til = [(lo, hi) for m, lo, hi in _parts(bp, K("Fliesen")) if m == "Fliese"]
-    assert til and all(hi[0] <= g.PA - x0 + 1e-6 or lo[0] >= 2.358 - x0 - 0.02 for lo, hi in til)
-    flur = [(lo, hi) for lo, hi in til if lo[0] >= 2.358 - x0 - 0.02]
-    assert min(lo[1] for lo, hi in flur) + y0 > 6.723 - 1e-6 and max(hi[1] for lo, hi in flur) + y0 <= 7.408 - 0.07 + 1e-6
-    assert cm(0, max(hi[2] for lo, hi in flur)) == 112 and cm(0, max(hi[2] for lo, hi in til)) == 112
-    # hand basin on the Flur east wall: 14 / 40 / 14, top 85, 83 from the WC door's hinge jamb
-    bas = [(lo, hi) for m, lo, hi in san if m == "Keramik" and lo[1] + y0 > 6.723]
-    ya, yb = min(lo[1] for lo, hi in bas) + y0, max(hi[1] for lo, hi in bas) + y0
-    assert (cm(6.723, ya), cm(ya, yb), cm(yb, 7.408)) == (14, 40, 14)
-    assert cm(0, max(hi[2] for lo, hi in bas)) == 85
-    assert cm(g.DB, min(lo[0] for lo, hi in bas) + x0) == 83
-    # ... a Waschbecken einzeln on its Ständer (input/2026-11-12 input/), clear of the three leaves
-    # in both states and of the Windfang leaf's sweep; 65 free beside it from the Garderobe passage
-    wb = _waschbecken(K("Sanitaer"), (2.358 - x0, g.BM - y0, -1, 0), g.BW, g.BD, 1, 0.0, house_core.WC_TILE_T, bp=bp)
+    glass = [(lo, hi) for m, lo, hi in san if m == "Glas"]
+    assert len(glass) == 1 and abs((glass[0][0][0] + glass[0][1][0]) / 2 + x0 - g.XS) < 1e-6
+    assert (cm(g.XS, g.WO), cm(0, glass[0][1][1] - 0.004 + y0 - g.YS), cm(g.YS + g.GL, g.YN)) == (90, 75, 55)
+    drain = [(lo, hi) for m, lo, hi in san if m == "Metall" and abs(lo[2] - 0.018) < 1e-6 and hi[2] - lo[2] < 0.01]
+    assert len(drain) == 1 and abs((drain[0][0][0] + drain[0][1][0]) / 2 + x0 - (g.XS + g.WO) / 2) < 1e-6
+    riser = [(lo, hi) for m, lo, hi in san if m == "Metall" and hi[2] - lo[2] > 1.0]
+    assert len(riser) == 1 and riser[0][1][0] + x0 > g.WO - 0.06                  # on the east wall
+    til = list(_parts(bp, K("Fliesen")))
+    stone = [(lo, hi) for m, lo, hi in til if m == "Kalkstein"]
+    assert stone and all(lo[0] + x0 >= g.XS - 1e-6 and hi[2] <= 2.0 + 1e-6 for lo, hi in stone)
+    for x, y in ((g.WO - 0.009, 5.8), (g.WO - 0.009, 6.6), (1.9, g.YS + 0.009), (1.9, g.YN - 0.009)):
+        assert _mat_at(bp, K("Fliesen"), x - x0, y - y0, 1.5) in ("Kalkstein", "Fuge"), (x, y)
+    assert not [1 for m, lo, hi in san if m == "Keramik" and lo[0] + x0 > g.XS]           # no tray
+    # toilet on the south wall in the WC part, 60 free in front of it, clear of the glass
+    toilet = [(lo, hi) for m, lo, hi in san if m == "Keramik" and lo[1] + y0 < g.YS + 0.8 and lo[0] + x0 > g.WI + 0.3]
+    cis = [(lo, hi) for lo, hi in toilet if abs(hi[2] - 0.78) < 1e-6]
+    assert len(cis) == 1 and abs((cis[0][0][0] + cis[0][1][0]) / 2 + x0 - g.TX) < 1e-6
+    assert cm(max(hi[1] for lo, hi in toilet) + y0, g.YN) >= 55 and max(hi[0] for lo, hi in toilet) + x0 < g.XS - 0.2
+    # Taubenblau tiles only in the WC part, to about 112
+    fl = [(lo, hi) for m, lo, hi in til if m == "Fliese"]
+    assert fl and all(hi[0] + x0 <= g.XS + 1e-6 for lo, hi in fl) and cm(0, max(hi[2] for lo, hi in fl)) == 112
+    # basin on the west wall north of the window, its mirror above, both clear of the window (y 5.724 .. 6.324)
+    wb = _waschbecken(K("Sanitaer"), (g.WI - x0, g.BM - y0, 1, 0), g.BW, g.BD, 1, 0.0, house_core.WC_TILE_T, bp=bp)
+    assert min(lo[1] for m, lo, hi in wb) + y0 > 6.324 and max(hi[1] for m, lo, hi in wb) + y0 < g.YN
+    mir = list(_parts(bp, K("Spiegel")))
+    assert min(lo[1] for m, lo, hi in mir) + y0 > 6.324 and max(hi[1] for m, lo, hi in mir) + y0 < g.YN
+    gl, = [(lo, hi) for m, lo, hi in mir if m == "Spiegel"]
+    flo = [min(lo[k] for m, lo, hi in mir) for k in range(3)]; fhi = [max(hi[k] for m, lo, hi in mir) for k in range(3)]
+    assert (cm(flo[1], fhi[1]), cm(flo[2], fhi[2]), cm(0, flo[2])) == (40, 60, 120)
+    # the basin and toilet clear of the three leaves in both states
     for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):
         (px, py, _), vs = bp.pivot["GaesteWC_" + n], bp.geo[K(n)]["v"]
         for a in (0.0, math.radians(bp.swing["GaesteWC_" + n])):
             rot = [(px + (x - px) * math.cos(a) - (y - py) * math.sin(a),
                     py + (x - px) * math.sin(a) + (y - py) * math.cos(a), z) for x, y, z in vs]
-            _clear(wb, [tuple(tuple(f(v[k] for v in rot) for k in range(3)) for f in (min, max))], n)
-    (px, py, _), vs = bp.pivot["GaesteWC_Windfangtuer"], bp.geo[K("Windfangtuer")]["v"]
-    sweep = max(math.hypot(x - px, y - py) for x, y, z in vs)
-    for m, lo, hi in wb:
-        assert math.dist((min(max(px, lo[0]), hi[0]), min(max(py, lo[1]), hi[1])), (px, py)) > sweep, (m, lo, hi)
-    assert min(lo[0] for m, lo, hi in wb) + x0 - g.GA >= 0.64
-    # mirror: glass 40 x 60 in a 7 cm wooden frame, outside 54 x 74 from 120, centred over the basin
-    mir = list(_parts(bp, K("Spiegel")))                                  # a furnishing: own object (#19)
-    gl = [(lo, hi) for m, lo, hi in mir if m == "Spiegel"]
-    fr = [(lo, hi) for m, lo, hi in mir if m == "Kiefer"]
-    assert len(gl) == 1 and fr
-    (glo, ghi) = gl[0]
-    assert (cm(glo[1], ghi[1]), cm(glo[2], ghi[2])) == (40, 60)
-    flo = [min(lo[k] for lo, hi in fr) for k in range(3)]
-    fhi = [max(hi[k] for lo, hi in fr) for k in range(3)]
-    assert (cm(flo[1], fhi[1]), cm(flo[2], fhi[2]), cm(0, flo[2])) == (54, 74, 120)
-    assert abs((flo[1] + fhi[1]) / 2 - (ya + yb) / 2 + y0) < 1e-6
-    assert fhi[1] + y0 < 7.408 - 0.07                                      # clear of the Windfang architrave
-    # Garderobe (issue #27; test_garderobe_jacken): inside the niche, no bench any more
-    gar = list(_parts(bp, K("Garderobe")))
-    assert all(lo[0] >= g.PB - x0 - 1e-6 and hi[0] <= 2.358 - x0 + 1e-6 for m, lo, hi in gar)
-    assert not [(lo, hi) for m, lo, hi in gar if abs(hi[2] - 0.45) < 1e-6]
+            _clear(wb + list(_parts(bp, K("Schuhregal"))), [tuple(tuple(f(v[k] for v in rot) for k in range(3)) for f in (min, max))], n)
     # everything below the ceiling; dimension lines from the core
     assert all(-1e-9 <= z <= 2.40 + 1e-9 for gg in bp.geo.values() for x, y, z in gg["v"])
     labels = [d[2] for d in bp.dims]
-    for t in ("WC 101", "10", "Garderobe 94", "Tür 76", "17", "40 frei", "83 frei", "HWB 40", "Spiegel 54 × 74"):
+    for t in ("Raumbreite 205", "Raumtiefe 130", "Dusche 90", "Glas 75", "Einstieg 55", "Tür 76", "HWB 40",
+              "Spiegel 40 × 60", "Schuhregal 80", "33 tief", "200 hoch"):
         assert t in labels, t
 
 
-def test_garderobe_jacken():
-    """Issue #27: the Garderobe without its bench. Walking in through the open passage in the north wall
-    (heading south), the left wall is the east wall: a wooden hook board over its whole length with
-    many iron hooks in two staggered rows (150 / 165) and the hat shelf above (195, 28 deep); at the
-    back end (the south wall) a hanging rod from wall to wall at 178; under it a shoe shelf 33 deep
-    with two levels of 20 cm."""
+def test_schuhregal():
+    """Issue #61: in the back hall, on the Duschbad's north wall east of its door, a spruce shoe rack 80 wide (to the
+    east wall), 33 deep, 2 m high with nine levels of about 20 cm, about half full of shoes spread over the levels (<c>_Kleidung); rack and shoes
+    are furniture (stage Eingerichtet); nothing clashes with walls, lamps and the three door leaves in both states."""
     import gaeste_wc as g
-    bp = house_core.build_gaeste_wc()
-    house_core.build()                                                    # restore the registries
-    x0, y0 = g.WC_AT
+    assert {"EG_Schuhregal", "EG_Kleidung"} <= house_core.FURNITURE
     cm = lambda a, b: round(abs(b - a) * 100)
-    gar = [(m, [lo[0] + x0, lo[1] + y0, lo[2]], [hi[0] + x0, hi[1] + y0, hi[2]])
-           for m, lo, hi in _parts(bp, ("GaesteWC", "GaesteWC_Garderobe"))]      # house coordinates
-    # no bench: nothing between the shoe shelf (top 50) and the hook board (from 1.35)
-    assert not [p for p in gar if p[1][2] < 1.30 and p[2][2] > 0.55]
-    # hook board over the whole east wall; >= 20 hooks in two rows, staggered, on the east wall
-    board = [(lo, hi) for m, lo, hi in gar if m == "FichteZ" and hi[0] - lo[0] < 0.03 and hi[1] - lo[1] > 1.0]
-    assert len(board) == 1 and abs(board[0][1][0] - 2.358) < 1e-6 and cm(board[0][0][1], board[0][1][1]) == 110
-    arms = [(lo, hi) for m, lo, hi in gar if m == "Eisen" and abs(hi[0] - lo[0] - 0.10) < 1e-6]
-    rows = {}
-    for lo, hi in arms:
-        rows.setdefault(round(lo[2] + 0.005, 2), []).append(round((lo[1] + hi[1]) / 2, 4))
-    assert sorted(rows) == [1.50, 1.65] and (len(rows[1.65]), len(rows[1.50])) == (12, 11)
-    up, dn = sorted(rows[1.65]), sorted(rows[1.50])
-    assert all(min(abs(y - u) for u in up) > 0.03 for y in dn)              # staggered
-    assert all(g.YS < y < g.YN for y in up + dn)
-    shelf = [(lo, hi) for m, lo, hi in gar if abs(lo[2] - 1.95) < 1e-6]
-    assert len(shelf) == 1 and cm(shelf[0][0][0], shelf[0][1][0]) == 28
-    # rod wall to wall across the back end, 1.70 .. 1.80 high
-    rod = [(lo, hi) for m, lo, hi in gar if m == "Stahl" and hi[0] - lo[0] > 0.8]
-    assert len(rod) == 1
-    lo, hi = rod[0]
-    assert lo[0] <= g.PB + 0.03 and hi[0] >= 2.358 - 0.03 and 1.70 <= (lo[2] + hi[2]) / 2 <= 1.80
-    assert g.YS + 0.2 < (lo[1] + hi[1]) / 2 < g.YS + 0.35
-    # shoe shelf along the south wall: boards over the whole width, 33 deep, two levels of 20 cm clear
-    boards = sorted([(lo, hi) for m, lo, hi in gar if m == "FichteX" and hi[0] - lo[0] > 0.85 and hi[1] - lo[1] > 0.3
-                     and hi[2] < 0.6],
-                    key=lambda b: b[0][2])
-    assert len(boards) == 3 and all(cm(lo[1], hi[1]) == 33 and abs(lo[1] - g.YS) < 1e-6 for lo, hi in boards)
-    assert [cm(a[1][2], b[0][2]) for a, b in zip(boards, boards[1:])] == [20, 20]
-    labels = [d[2] for d in bp.dims]
-    for t in ("Kleiderstange 94 auf 178", "Schuhregal 33 tief", "Hakenbrett 110"):
-        assert t in labels, t
-    assert not [t for t in labels if "Bank" in t]
-
-
-def test_garderobe_kleidung():
-    """Issue #27: five coats on hangers on the Garderobe's rod and a dozen shoes (6 pairs, 3 per level) in its
-    shoe shelf, object <c>_Kleidung (furniture: stage Eingerichtet, not on the plan sheets). The coats, five
-    fabrics, hang clear of the partition's Wandlampe and the east wall's hooks, their hems above the shoe
-    shelf; the shoes stand on the shelf's boards, lower than the 20 cm levels; nothing clashes with the
-    house (walls, lamps, Garderobe, the three door leaves in both states)."""
-    import gaeste_wc as g
-    assert "EG_Kleidung" in house_core.FURNITURE and ("EG", "EG_Kleidung") in BP.geo
-    kl = list(_parts(BP, ("EG", "EG_Kleidung")))
-    gar = list(_parts(BP, ("EG", "EG_Garderobe")))
-    assert all(g.PB - 1e-6 <= lo[0] and hi[0] <= g.WO + 1e-6 and g.YS - 1e-6 <= lo[1] and hi[1] <= g.YN + 1e-6
-               for m, lo, hi in kl)                                                  # inside the niche
-    fabrics = {"Loden", "Kamel", "Anthrazit", "Jeans", "Wolle"}
-    bodies = [(m, lo, hi) for m, lo, hi in kl if m in fabrics and hi[2] - lo[2] > 0.6]
-    assert len(bodies) == 5 and {m for m, lo, hi in bodies} == fabrics
-    assert len([p for p in kl if p[0] == "Kiefer"]) == 5                             # five hangers
-    coats = [(m, lo, hi) for m, lo, hi in kl if lo[2] > 0.55]
-    top = max(z + g.SHOE_T for z in g.SHOE_Z)
-    assert min(lo[2] for m, lo, hi in coats) > top + 0.05                           # hems above the shoe shelf
-    assert all(1.66 - 1e-6 <= lo[0] and hi[0] <= 2.20 for m, lo, hi in coats)       # lamp | coats | hooks
-    xs = sorted([min(lo[0] for m_, lo, hi in coats if m_ == m), max(hi[0] for m_, lo, hi in coats if m_ == m)]
-                for m in fabrics)
-    assert all(a[1] < b[0] for a, b in zip(xs, xs[1:]))                              # coats don't touch each other
-    soles = [(lo, hi) for m, lo, hi in kl if m == "Gummi" and hi[2] - lo[2] < 0.03]
-    assert len(soles) == 12
-    boards = [z + g.SHOE_T for z in g.SHOE_Z[:2]]
-    assert sorted(sum(abs(lo[2] - b) < 0.003 for lo, hi in soles) for b in boards) == [6, 6]
-    shoes = [(m, lo, hi) for m, lo, hi in kl if hi[2] < top]
+    rack = list(_parts(BP, ("EG", "EG_Schuhregal")))
+    assert all(g.SX - 1e-6 <= lo[0] and hi[0] <= g.WO + 1e-6 and g.YF - 1e-6 <= lo[1] and hi[1] <= g.YF + g.SHOE_D + 1e-6
+               for m, lo, hi in rack)
+    boards = sorted([(lo, hi) for m, lo, hi in rack if m == "FichteX" and hi[1] - lo[1] > 0.3], key=lambda b: b[0][2])
+    assert len(boards) == 10 and all(cm(lo[1], hi[1]) == 33 and cm(lo[0], hi[0]) == 76 for lo, hi in boards)
+    assert all(19 <= cm(a[1][2], b[0][2]) <= 20 for a, b in zip(boards, boards[1:]))          # nine levels of ~20
+    assert abs(max(hi[2] for m, lo, hi in rack) - 2.0) < 1e-6                                # 2 m high (#61)
+    shoes = [(m, lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Kleidung")) if lo[1] < g.YF + g.SHOE_D + 0.01
+             and lo[0] < g.WO and hi[0] > g.SX]
+    soles = [(lo, hi) for m, lo, hi in shoes if m == "Gummi"]
+    assert len(soles) == 2 * g.SHOE_PAIRS and 12 <= g.SHOE_PAIRS <= 15                     # about half of 27 places
+    tops = [z + g.SHOE_T for z in g.SHOE_Z[:-1]]
+    per = [sum(abs(lo[2] - t) < 0.003 for lo, hi in soles) for t in tops]
+    assert sum(per) == len(soles) and max(per) <= 6 and sum(1 for n in per if n) >= 6           # spread, not all below
+    assert any(n for n in per[5:])                                                            # also high up
     for m, lo, hi in shoes:
-        level = max(b for b in boards if b <= lo[2] + 0.003)
-        assert hi[2] < level + 0.20 - 0.02 and hi[1] < g.YS + g.SHOE_D, (m, lo, hi)
-    # no clash with the house: walls, lamps, the Garderobe (the rod only with the hanger hooks), the leaves
+        level = max(t for t in tops if t <= lo[2] + 0.003)
+        assert hi[2] < level + 0.20 - 0.02 and hi[1] < g.YF + g.SHOE_D, (m, lo, hi)
     others = [("EG", "EG_" + n) for n in ("Waende", "Wandlampen", "Fenster_Tueren", "Innentueren", "Hintertuer",
                                          "WC_Tuer", "Windfangtuer")]
-    boxes = [(lo, hi) for k in others for m, lo, hi in _parts(BP, k)]
-    _clear(gar, boxes, "Garderobe")                                                  # hooks, rod, shelves
-    boxes += [(lo, hi) for m, lo, hi in gar if m != "Stahl"]
-    _clear([p for p in kl if p[0] != "Stahl"], boxes, "Kleidung")
-    hooks = [p for p in kl if p[0] == "Stahl"]
-    assert len(hooks) >= 5
-    _clear(hooks, [(lo, hi) for k in others for m, lo, hi in _parts(BP, k)], "Bügelhaken")
+    _clear(rack + [p for p in shoes], [(lo, hi) for k in others for m, lo, hi in _parts(BP, k)], "Schuhregal")
     for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):                             # the leaves swung
         (px, py, _), vs = BP.pivot["EG_" + n], BP.geo[("EG", "EG_" + n)]["v"]
         a = math.radians(BP.swing["EG_" + n])
         rot = [(px + (x - px) * math.cos(a) - (y - py) * math.sin(a),
                 py + (x - px) * math.sin(a) + (y - py) * math.cos(a), z) for x, y, z in vs]
-        _clear(kl + gar, [tuple(tuple(f(v[k] for v in rot) for k in range(3)) for f in (min, max))], n)
+        _clear(rack + shoes, [tuple(tuple(f(v[k] for v in rot) for k in range(3)) for f in (min, max))], n)
 
 def test_gaeste_wc_built_into_the_house():
-    """The Gäste-WC sub-model stands in the house at WC_AT, unrotated, every part the same; the old
-    WC door (into the WC) and its toilet are gone; limestone in WC and Garderobe, none under the
-    partition."""
+    """The Duschbad sub-model stands in the house at WC_AT, unrotated, every part the same; the old
+    WC door (into the WC) and its toilet are gone; limestone in the whole room (#61: also where the partition and
+    the old north wall stood) and in the back hall."""
     import gaeste_wc as g
     sub = house_core.build_gaeste_wc()
     house_core.build()                                                    # restore the registries
     x0, y0 = g.WC_AT
-    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Garderobe", "Kleidung", "WC_Tuer", "Windfangtuer",
+    for n in ("Waende", "Innentueren", "Sanitaer", "Fliesen", "Schuhregal", "Kleidung", "WC_Tuer", "Windfangtuer",
               "Hintertuer", "Fenster_Tueren"):
         assert _solids(sub, ("GaesteWC", "GaesteWC_" + n), x0, y0) <= _solids(BP, ("EG", "EG_" + n)), n
     eg = [pts for c, pts in house_core.LEAVES if c == "EG"]
     assert not any(min(a[0], b[0]) > 1.3 and max(a[0], b[0]) < 2.3 and min(a[1], b[1]) < 6.6 and max(a[1], b[1]) > 5.5
                    for a, b in eg)                                                                 # old leaf
-    assert any(abs(max(a[0], b[0]) - 1.215) < 0.01 and max(a[1], b[1]) > 7.3 for a, b in eg)       # WC leaf
+    assert any(abs(max(a[0], b[0]) - (g.DB - 0.025)) < 0.01 and max(a[1], b[1]) > 7.5 for a, b in eg)   # WC leaf
     cist = [lo for m, lo, hi in _parts(BP, ("EG", "EG_Sanitaer")) if m == "Keramik" and abs(hi[2] - 0.78) < 1e-6
             and 5.4 < lo[1] < 6.6 and lo[0] < 2.4]
     assert len(cist) == 1 and abs(cist[0][0] + 0.20 - g.TX) < 1e-6
-    assert _floor_at("EG", 0.8, 6.0) == "Kalkstein" and _floor_at("EG", 1.9, 6.0) == "Kalkstein"
-    assert not any(lo[0] < g.PB - 1e-6 and hi[0] > g.PA + 1e-6 and lo[1] < 6.5 and hi[1] > 5.5
-                   for m, lo, hi in _parts(BP, ("EG", "EG_Bodenbelag")))
+    for x, y in ((0.8, 6.0), (1.9, 6.0), (1.37, 6.0), (1.0, 6.65), (2.0, 6.7), (1.0, 7.0)):
+        assert _floor_at("EG", x, y) == "Kalkstein", (x, y)
 
 
 def test_gaeste_wc_doors_swing():
@@ -2714,8 +2527,8 @@ def test_gaeste_wc_doors_swing():
     house_core.build()                                                    # restore the registries
     x0, y0 = g.WC_AT
     assert BP.swing == {"EG_Hintertuer": 90.0, "EG_WC_Tuer": 90.0, "EG_Windfangtuer": 90.0,   # back door, Windfang: hinged north
-                        "EG_Buerotuer": 90.0,                                                  # (and the Büro door, code/regal.py)
-                        "EG_Pendeltuer_S": 90.0, "EG_Pendeltuer_N": -90.0}                     # (and the saloon leaves, #5)
+                        "EG_Buerotuer": 90.0}                                                  # (and the Büro door, code/regal.py;
+                                                                                               # the saloon leaves gone, #61)
     assert sub.swing == {"GaesteWC_Hintertuer": 90.0, "GaesteWC_WC_Tuer": 90.0, "GaesteWC_Windfangtuer": 90.0}
     for n in ("Hintertuer", "WC_Tuer", "Windfangtuer"):
         px, py, pz = sub.pivot["GaesteWC_" + n]
@@ -2730,7 +2543,7 @@ def test_gaeste_wc_doors_swing():
         return vs if pts else ([min(v[k] for v in vs) for k in (0, 1)], [max(v[k] for v in vs) for k in (0, 1)])
 
     lo, hi = turned("EG_WC_Tuer")                                         # closed: in the WC door's lining
-    assert g.DA < lo[0] and hi[0] < g.DB and 6.574 < lo[1] and hi[1] <= 6.723 + 1e-6
+    assert g.DA < lo[0] and hi[0] < g.DB and g.YN < lo[1] and hi[1] <= g.YF + 1e-6
     lo, hi = turned("EG_Windfangtuer")                                    # closed: in the Windfang door's lining
     assert 2.358 - 0.03 < lo[0] and hi[0] < 2.657                          # (its lever 2.5 cm proud) and 7.408 < lo[1] and hi[1] < 8.506
     lo, hi = turned("EG_Hintertuer")                                      # open: in the Flur, clear of its frame
@@ -2835,100 +2648,44 @@ def test_jugend_tuer_und_stockbett():
     _clear([("Fichte", lo, hi) for lo, hi in bunks], _leaf_boxes(BP, "OG", zo), "door leaf")
 
 
-def test_essen_schrank_open_shelves_with_plates_and_glasses():
-    """#34 follow-up (user 2026-11-16): about a quarter of cabinet C's doors are gone - the door over the upper half
-    of the two columns on the dining table's axis (columns 1 and 2 from the south: 2 of 12 doors, about a quarter
-    of the doors' front area). Behind them an open niche: the carcass hollow, painted sides, back, a divider and two
-    shelf boards per column; on them, as furniture (EG_Geschirr), stacks of white plates and rows of glasses."""
-    cab = list(_parts(BP, ("EG", "EG_Essen_Schrank")))
-    ua, ub, xw, xf = 0.417, 3.712, 2.774, 3.372
-    w = (ub - ua) / 6
-    panels = [(lo, hi) for m, lo, hi in cab if m == "Front" and abs(lo[0] - 3.352) < 1e-3 and abs(hi[0] - 3.364) < 1e-3]
-    doors = [(lo, hi) for lo, hi in panels if hi[2] > 1.1]                     # (panels inside a 6 cm frame)
-    assert len(doors) == 10                                                     # 12 doors, 2 left out
-    field = lambda lo, hi: (hi[1] - lo[1] + 0.12) * (hi[2] - lo[2] + 0.12)
-    gone = 2 * (w - 0.006) * (1.995 - 1.0515)
-    assert 0.2 < gone / (gone + sum(field(lo, hi) for lo, hi in doors)) < 0.3      # about a quarter of the door area
-    ya, yb, za, zb = ua + w, ua + 3 * w, 1.0515, 1.995                         # the open fields
-    table = list(_parts(BP, ("EG", "EG_Tisch")))
-    ty = (min(lo[1] for m, lo, hi in table) + max(hi[1] for m, lo, hi in table)) / 2
-    assert abs((ya + yb) / 2 - ty) < 0.05                                       # on the table's axis
-    assert not [lo for lo, hi in panels if lo[1] < yb and hi[1] > ya and lo[2] < zb and hi[2] > za]
-    inside = lambda pt, ps: [p for p in ps if all(p[1][k] - 1e-6 <= pt[k] <= p[2][k] + 1e-6 for k in range(3))]
-    for y in (ua + 1.5 * w, ua + 2.5 * w):                                      # hollow: open from the front ...
-        for z in (1.20, 1.50, 1.85):
-            assert not inside((3.30, y, z), cab), (y, z)
-        assert inside((2.78, y, 1.50), cab) and inside((3.30, y, 1.06), cab)    # ... a back and a bottom
-        boards = [(lo, hi) for m, lo, hi in cab if m == "Front" and lo[1] < y < hi[1] and 1.1 < lo[2] < 1.9
-                  and hi[2] - lo[2] < 0.03 and hi[0] - lo[0] > 0.45]
-        assert len(boards) == 2                                                 # two shelves
-    assert inside((3.30, ua + 2 * w, 1.50), cab)                                # the divider between the columns
-    assert "EG_Geschirr" in house_core.FURNITURE and "EG_Essen_Schrank" not in house_core.FURNITURE
-    dish = list(_parts(BP, ("EG", "EG_Geschirr")))
-    assert {m for m, lo, hi in dish} == {"Keramik", "Glas"}
-    assert all(ya < lo[1] and hi[1] < yb and xw < lo[0] and hi[0] < xf - 0.02 and za < lo[2] and hi[2] < zb
-               for m, lo, hi in dish)                                            # in the open fields
-    plates = [(lo, hi) for m, lo, hi in dish if m == "Keramik" and hi[0] - lo[0] > 0.18 and hi[2] - lo[2] < 0.02]
-    glasses = [(lo, hi) for m, lo, hi in dish if m == "Glas" and hi[0] - lo[0] < 0.10 and hi[2] - lo[2] > 0.07]
-    assert len(plates) >= 20 and len(glasses) >= 12
-    _clear(dish, [(lo, hi) for m, lo, hi in cab], "Geschirr")
-
-
 def test_one_eg_layout():
     """Issue #34: the EG layout Alternativ (#5) is the only one; the default layout's own objects and
     the layout switch (VARIANT, default_layout(), the wall lights' layout tags) are gone."""
     names = {o for c, o in BP.geo}
     assert not names & {"EG_Speis_C", "EG_Speis_Schiebetuer", "EG_Speis_Waende", "EG_Wandlampen_Essen"}
     assert not [o for o in names if o.startswith("EG_Alt")]
-    assert {"EG_Essen_Schrank", "EG_Speis_Rueckwand", "EG_Pendeltuer_S", "EG_Pendeltuer_N"} <= names
+    assert "EG_Speis_Rueckwand" in names
+    assert not names & {"EG_Essen_Schrank", "EG_Geschirr", "EG_Pendeltuer_S", "EG_Pendeltuer_N"}   # #61
     assert not hasattr(house_core, "VARIANT") and not hasattr(house_core, "default_layout")
     assert not hasattr(BP, "variant") and not hasattr(BP, "wall_variant")
 
 
 def test_speis_essen():
-    """Issue #5 (the layout Alternativ, the only one since #34): cabinet C on the Essen's west wall over
-    its full width (south wall to shelf B's back), B's closed back towards the Essen, and in the opening
-    Küche -> Speis two closed half-height saloon leaves (no handles) that swing into the Speis."""
-    others = [p for o in ("EG_Waende", "EG_Fenster_Tueren", "EG_Stuehle", "EG_Moebel", "EG_Speis", "EG_Vorrat")
-              for p in _parts(BP, ("EG", o))]
+    """Issue #5, #61: B's closed back towards the Essen and the drywall in front of it; on the Essen's west wall, on the
+    middle of the wall (south wall .. drywall), a big wooden Bauernschrank (2.10 wide, 2.25 high, 60 deep: the OG Flur's, turned to face east,
+    in place of the painted cabinet C and its dishes); in the opening Küche -> Speis a panel door, hinged south, open
+    flat against the Küche face of the wall (the saloon leaves are gone)."""
+    others = [p for o in ("EG_Waende", "EG_Fenster_Tueren", "EG_Stuehle", "EG_Tisch", "EG_Speis", "EG_Vorrat",
+                          "EG_Speis_Rueckwand", "EG_Wandlampen") for p in _parts(BP, ("EG", o))]
     boxes = lambda ps: [(lo, hi) for m, lo, hi in ps]
-    cab = list(_parts(BP, ("EG", "EG_Essen_Schrank")))
-    lo = [min(p[1][k] for p in cab) for k in range(3)]
-    hi = [max(p[2][k] for p in cab) for k in range(3)]
-    assert 2.772 < lo[0] < 2.78 and 3.372 - 1e-6 <= hi[0] < 3.40                     # 60 deep, pulls proud
-    assert 0.415 < lo[1] < 0.42 and 3.70 < hi[1] < 3.73 and 2.39 <= hi[2] < 2.40       # full width, to the ceiling
-    assert {m for m, a, b in cab} == {"Front", "Metall", "Fuge"}
-    panels = [p for p in cab if p[0] == "Front" and abs(p[1][0] - 3.352) < 1e-3 and abs(p[2][0] - 3.364) < 1e-3]
-    assert len(panels) == 6 * 5 - 2                                    # six columns of five fronts, two fields open
-    _clear(cab, boxes(others), "Essen")
+    ym, xw, w, h = house_core.BAUERNSCHRANK_EG
+    cab = [(m, lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Moebel")) if 2.7 < lo[0] and hi[0] < 3.5 and lo[1] < 2.8]
+    lo = [min(p[1][k] for p in cab) for k in range(3)]; hi = [max(p[2][k] for p in cab) for k in range(3)]
+    assert (w, h) == (2.10, 2.25) and abs(ym - (0.415 + house_core.TROCKENWAND[2]) / 2) < 1e-6   # mid-wall
+    assert abs(lo[0] - 2.774) < 1e-6 and 3.37 < hi[0] < 3.43 and abs(hi[2] - 2.25) < 1e-6
+    assert abs((lo[1] + hi[1]) / 2 - ym) < 1e-6 and 2.10 < hi[1] - lo[1] < 2.20
+    assert {m for m, a, b in cab} == {"Innentuer", "StufeY", "Eisen"}                    # wood, iron fittings
+    _clear(cab, boxes(others), "Bauernschrank")
     back = list(_parts(BP, ("EG", "EG_Speis_Rueckwand")))
     assert back and all(3.70 < a[1] and b[1] < 3.732 for m, a, b in back)
     assert min(a[0] for m, a, b in back) < 2.78 and max(b[0] for m, a, b in back) > 5.23
-    _clear(back, boxes(others) + boxes(cab), "back")
-    leaves = {}
-    for s, sw in (("S", 90.0), ("N", -90.0)):
-        o = "EG_Pendeltuer_" + s
-        assert BP.swing[o] == sw and o in BP.pivot
-        ps = list(_parts(BP, ("EG", o)))
-        assert ps and {m for m, a, b in ps} == {"Innentuer"}                         # wood only, no handle
-        assert all(5.24 < a[0] and b[0] < 5.49 and 4.33 < a[1] and b[1] < 5.249 and 0.30 <= a[2] and b[2] <= 1.70
-                   for m, a, b in ps)
-        leaves[s] = ps
-        px, py, _ = BP.pivot[o]
-        t = math.radians(sw)
-        turn = lambda x, y: (px + (x - px) * math.cos(t) - (y - py) * math.sin(t),
-                             py + (x - px) * math.sin(t) + (y - py) * math.cos(t))
-        swung = []
-        for m, a, b in ps:
-            cs = [turn(x, y) for x in (a[0], b[0]) for y in (a[1], b[1])]
-            swung.append((m, [min(c[0] for c in cs), min(c[1] for c in cs), a[2]],
-                          [max(c[0] for c in cs), max(c[1] for c in cs), b[2]]))
-        assert all(b[0] < 5.40 for m, a, b in swung)                                  # into the Speis
-        _clear(swung, boxes(others), "swung " + s)
-    yS = max(b[1] for m, a, b in leaves["S"])
-    yN = min(a[1] for m, a, b in leaves["N"])
-    assert 0 < yN - yS <= 0.01                                                         # they meet in the middle
-    assert min(a[1] for m, a, b in leaves["S"]) - 4.33 <= 0.025 and 5.249 - max(b[1] for m, a, b in leaves["N"]) <= 0.025
+    door, = [d for d in BP.doors if d["c"] == "EG" and 5.2 < d["hinge"][0] < 5.6 and 4.3 < d["hinge"][1] < 4.4]
+    (lx0, ly0), (lx1, ly1) = door["leaf"]
+    assert 5.49 < lx0 and lx1 < 5.65 and ly1 <= 4.33 + 1e-6 and ly0 < 3.6                # flat on the Küche face
+    assert 0.8 < door["w"] < 0.92
+    assert not [o for o in BP.swing if "Pendeltuer" in o]
+    besen = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Kueche")) if lo[0] < 6.01 and lo[1] > 5.2]
+    _clear([("leaf", [lx0, ly0, 0.0], [lx1, ly1, 2.0])], besen + boxes(others), "Speistür")
 
 
 def test_bichlach_door_by_the_stair_double_bed_sofa_flur_desk():
@@ -2989,11 +2746,10 @@ def test_bichlach_door_by_the_stair_double_bed_sofa_flur_desk():
 def test_bath_submodels_dimension_room_width_and_depth():
     """Request 2026-11-25: every sub-model with a bath, toilet or shower (Bad Großeltern, Gäste-WC, Gästebad,
     Bad Nadine & Till) has a dimension line of the room's width (west-east, "Raumbreite") and depth
-    (south-north, "Raumtiefe"), from wall face to wall face; the Gäste-WC's room is the WC (west wall ..
-    partition)."""
+    (south-north, "Raumtiefe"), from wall face to wall face; the Gäste-WC's room is the Duschbad (#61)."""
     import bad, gaeste_wc as g, gaestebad as gb, elternbad as e
     rooms = {"build_bad": (bad.W, bad.D, 1),
-             "build_gaeste_wc": (g.PA - g.WI, g.YN - g.YS, 0),
+             "build_gaeste_wc": (g.WO - g.WI, g.YN - g.YS, 0),
              "build_gaestebad": (gb.WO - gb.WI, gb.YN - gb.YS, 0),
              "build_elternbad": (e.WO - e.WI, e.YN - e.YS, 0)}
     try:
@@ -3045,3 +2801,103 @@ def test_kleiner_schreibtisch_schlafzimmer():
     olo = [min(a[k] for a, _ in ofen) for k in range(2)]; ohi = [max(b[k] for _, b in ofen) for k in range(2)]
     assert math.hypot(*[max(olo[k] - hi[k], lo[k] - ohi[k], 0) for k in range(2)]) >= 0.60   # walkway to the Kamin
     assert lo[1] - 0.40 >= 0.60                                                         # and along the south wall
+
+
+def test_speis_trockenwand():
+    """Issue #61: a drywall 7.4 cm thick on the Essen side of shelf B's board back (1 mm off it), from the Essen's
+    west wall (cabinet C gone) to the Küche wall's end, closing the corner at that wall (x 5.24 .. 5.49, from y 3.73); full
+    height, plastered (EG_Waende: a wall on the plan sheets). Speis, B's back and C stay as they were; the Essen's two
+    Wandlampen hang on its face (test_wandlampen_eg_placements)."""
+    xa, xb, ya, yb = house_core.TROCKENWAND
+    assert (xa, xb, ya, yb) == (2.772, 5.49, 3.64, 3.714)
+    walls = [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Waende")) if m == "Putz"
+             and abs(lo[0] - xa) < 1e-6 and abs(lo[1] - ya) < 1e-6]
+    walls += [(lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Waende")) if abs(lo[0] - 5.24) < 1e-6 and abs(lo[1] - ya) < 1e-6]
+    assert walls == [([xa, ya, 0.0], [5.24, yb, house_core.Z_EG_TOP]), ([5.24, ya, 0.0], [xb, 3.73, house_core.Z_EG_TOP])]
+    back = [lo[1] for m, lo, hi in _parts(BP, ("EG", "EG_Speis_Rueckwand"))]
+    assert min(back) == 3.715 and yb < 3.715
+
+
+def test_flur_garderobe():
+    """Issue #61 (G1, the user 2026-11-27): the Garderobe moved from the back hall into the big Flur, on its south
+    wall (the Speis's back) far west, x 2.80 .. 4.80: an old-spruce hook board 2 m long (1.35 .. 2.00) with many
+    iron hooks in two staggered rows (150 / 165), a hat shelf 28 deep at 1.95 on brackets above (EG_Garderobe, a
+    built-in); six coats in five fabrics hang from the upper hooks in front of the board (EG_Kleidung, furniture),
+    their hems above 0.5; the two Flur Wandlampen there sit over the shelf (rosettes at 2.20); under it a wooden bench
+    after the user's photo. Nothing clashes with
+    walls, lamps, doors and their leaves."""
+    import garderobe as gd
+    cm = lambda a, b: round(abs(b - a) * 100)
+    assert (gd.GA, gd.GB, gd.YW) == (2.80, 4.80, 6.349)
+    assert "EG_Garderobe" not in house_core.FURNITURE and "EG_Kleidung" in house_core.FURNITURE
+    gar = list(_parts(BP, ("EG", "EG_Garderobe")))
+    assert all(gd.GA - 1e-6 <= lo[0] and hi[0] <= gd.GB + 1e-6 and gd.YW - 1e-6 <= lo[1] and hi[1] <= gd.YW + 0.30
+               for m, lo, hi in gar)
+    board = [(lo, hi) for m, lo, hi in gar if m == "FichteZ" and hi[0] - lo[0] > 1.9]
+    assert len(board) == 1 and abs(board[0][0][1] - gd.YW) < 1e-6 and cm(board[0][0][2], board[0][1][2]) == 65
+    arms = [(lo, hi) for m, lo, hi in gar if m == "Eisen" and abs(hi[1] - lo[1] - 0.10) < 1e-6]
+    rows = {}
+    for lo, hi in arms:
+        rows.setdefault(round(lo[2] + 0.005, 2), []).append(round((lo[0] + hi[0]) / 2, 4))
+    assert sorted(rows) == [1.50, 1.65] and (len(rows[1.65]), len(rows[1.50])) == (20, 19)
+    assert all(min(abs(x - u) for u in rows[1.65]) > 0.03 for x in rows[1.50])               # staggered
+    shelf = [(lo, hi) for m, lo, hi in gar if abs(lo[2] - 1.95) < 1e-6 and hi[0] - lo[0] > 1.9]
+    assert len(shelf) == 1 and cm(shelf[0][0][1], shelf[0][1][1]) == 28
+    kl = [(m, lo, hi) for m, lo, hi in _parts(BP, ("EG", "EG_Kleidung")) if lo[1] < 7.0 and lo[0] > 2.6]
+    fabrics = {"Loden", "Kamel", "Anthrazit", "Jeans", "Wolle"}
+    bodies = [(m, lo, hi) for m, lo, hi in kl if m in fabrics and hi[2] - lo[2] > 0.6]
+    assert len(bodies) == 6 and {m for m, lo, hi in bodies} == fabrics
+    assert all(gd.GA <= lo[0] and hi[0] <= gd.GB and lo[2] > 0.5 and hi[2] <= 1.70 for m, lo, hi in bodies)
+    xs = sorted([lo[0], hi[0]] for m, lo, hi in bodies)
+    assert all(a[1] < b[0] for a, b in zip(xs, xs[1:]))                                     # side by side
+    L = [r for r in _rosettes(BP, ("EG", "EG_Wandlampen")) if abs(r[0][1] - gd.YW) < 1e-6 and r[0][0] < 6.0]
+    assert len(L) == 2 and all(abs(z - 2.2) < 0.0015 for xy, z, f in L)
+    assert all(any(abs(x - w) < 0.0015 for (x, y), z, f in L) for w in (3.7813, 4.9057))
+    others = [("EG", "EG_" + n) for n in ("Waende", "Wandlampen", "Fenster_Tueren", "Innentueren")]
+    boxes = [(lo, hi) for k in others for m, lo, hi in _parts(BP, k)]
+    _clear(gar + kl, boxes + _leaf_boxes(BP, "EG", 0.0), "Garderobe")
+    _clear(kl, [(lo, hi) for m, lo, hi in gar if m != "Eisen"], "Mäntel")
+    # the bench under it (#61, after the user's photo): a dark old plank on green battens and four splayed green legs,
+    # seat at 0.45, under the board, the coats' hems above it; furniture
+    bank = list(_parts(BP, ("EG", "EG_Garderobenbank")))
+    assert "EG_Garderobenbank" in house_core.FURNITURE and {m for m, lo, hi in bank} == {"HolzX", "Gruen"}
+    blo = [min(lo[k] for m, lo, hi in bank) for k in range(3)]; bhi = [max(hi[k] for m, lo, hi in bank) for k in range(3)]
+    assert gd.GA < blo[0] and bhi[0] < gd.GB and gd.YW < blo[1] and bhi[1] < gd.YW + 0.32 and abs(bhi[2] - 0.45) < 1e-6
+    assert len([1 for m, lo, hi in bank if m == "Gruen" and hi[2] - lo[2] > 0.3]) == 4                 # four legs
+    assert min(lo[2] for m, lo, hi in bodies) > 0.45 + 0.05
+    _clear(bank, boxes + [(lo, hi) for m, lo, hi in gar + kl], "Bank")
+
+
+def test_umbau_61_keeps_the_rnd_of_untouched_parts():
+    """Issue #61 rebuilt rooms (Küche hood, Bad niche, Duschbad, Waschküche shower and cupboard, the EG floor's rooms);
+    each rebuilt builder burns the old draw count (house_core.restream), so parts built later keep the rnd they had
+    before (values from main at ad293e6): the rafters, the garden's gravel, the OG floor."""
+    r = lambda c, o: BP.geo[(c, o)]["r"][0]
+    assert r("Dach", "Dach_Sparren") == pytest.approx(0.846392514163397, abs=1e-12)
+    assert r("Umgebung", "Kiesel") == pytest.approx(0.06888543133916303, abs=1e-12)
+    assert r("OG", "OG_Bodenbelag") == pytest.approx(0.8321332667309882, abs=1e-12)
+    assert house_core.EG_FLOOR_DRAWS == 1575
+
+
+def test_og_bauernschraenke_in_place_of_the_wardrobes():
+    """Issue #61: in Saschi's room (west wall), in the Schlafzimmer Nadine & Till (north wall) and in the Bichlach (east
+    wall, north of the balcony door, 1.40 wide) a freestanding wooden Bauernschrank, like the OG Flur's, in place of the
+    built-in wardrobes; each against its wall, under the 2.20 ceiling, clear of walls, windows, doors and their leaves."""
+    zo = house_core.Z_OG
+    walls = [(lo, hi) for o in ("OG_Waende", "OG_Fenster_Tueren", "OG_Innentueren", "OG_Wandlampen")
+             for m, lo, hi in _parts(BP, ("OG", o))] + _leaf_boxes(BP, "OG", zo)
+    for name, (x0, x1, y0, y1), width, wall in (("Saschi", (2.70, 3.40, 3.4, 6.1), 1.80, ("x", 2.712)),
+                                                 ("Schlafzimmer", (11.7, 14.4, 5.3, 6.07), 1.80, ("y", 6.058)),
+                                                 ("Bichlach", (13.9, 14.58, 10.9, 12.48), 1.40, ("x", 14.573))):
+        sch = [(m, lo, hi) for m, lo, hi in _parts(BP, ("OG", "OG_Moebel"))
+               if x0 <= lo[0] and hi[0] <= x1 and y0 <= lo[1] and hi[1] <= y1 and lo[2] > zo - 0.1]
+        assert {m for m, lo, hi in sch} == {"Innentuer", "Stufe" if wall[0] == "y" else "StufeY", "Eisen"}, name
+        lo = [min(p[1][k] for p in sch) for k in range(3)]; hi = [max(p[2][k] for p in sch) for k in range(3)]
+        along = 0 if wall[0] == "y" else 1
+        assert width <= hi[along] - lo[along] <= width + 0.10, name                  # its width + cornice
+        k = 1 - along
+        assert min(abs(lo[k] - wall[1]), abs(hi[k] - wall[1])) < 1e-6 and 0.60 <= hi[k] - lo[k] <= 0.65, name
+        assert 2.0 <= hi[2] - zo <= 2.10, name
+        _clear(sch, walls, name)
+    assert not [p for p in part_list(("OG", "OG_Moebel")) if p[0] == "FichteZ" and 2.70 < p[1][0] and p[2][0] < 3.40
+                and 3.4 < p[1][1] and p[2][1] < 6.1]                                    # the built-in wardrobe gone

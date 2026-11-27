@@ -8,7 +8,7 @@ const file = new URL('../public/gaeste_wc.glb', import.meta.url);
 const glb = existsSync(file) ? readFileSync(file) : null;
 const DIMS = glb ? JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString()).scenes[0].extras.dims : [];
 
-test('Gäste-WC page draws WC, Garderobe and basin with the core dimensions, without errors', async ({ page }) => {
+test('Gäste-WC page draws the Duschbad (#61) and the shoe rack with the core dimensions, without errors', async ({ page }) => {
   const errors = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
@@ -17,8 +17,8 @@ test('Gäste-WC page draws WC, Garderobe and basin with the core dimensions, wit
   expect(await page.evaluate(() => window.__gaeste_wc.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(10);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['Raumbreite 101', 'Raumtiefe 110', 'WC 101', 'Garderobe 94', 'Tür 76', '40 frei', '83 frei', 'HWB 40', 'Spiegel 54 × 74',
-                   'Kleiderstange 94 auf 178', 'Schuhregal 33 tief', 'Hakenbrett 110']) {
+  for (const t of ['Raumbreite 205', 'Raumtiefe 130', 'Dusche 90', 'Glas 75', 'Einstieg 55', 'Tür 76', 'HWB 40', 'Spiegel 40 × 60',
+                   'Schuhregal 80', '33 tief']) {
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Vom Flur', 'Gerendert']]) {
@@ -51,8 +51,8 @@ test('in the house the doors swing too: in Eingerichtet, drawn while they move; 
   await page.goto('/?cam=1.0,8.35,1.6&at=1.5,6.2,1.0&p=4&cut=eg');               // back hall, looking south
   await page.waitForFunction(() => window.__fl?.ready === true);
   const at = () => page.evaluate(() => window.__fl.doors());
-  expect(Object.keys(await at()).sort()).toEqual(['EG_Buerotuer', 'EG_Hintertuer',   // + Büro (regal.py)
-    'EG_Pendeltuer_N', 'EG_Pendeltuer_S', 'EG_WC_Tuer', 'EG_Windfangtuer']);   // + saloon leaves (#5)
+  expect(Object.keys(await at()).sort()).toEqual(['EG_Buerotuer', 'EG_Hintertuer',   // + Büro (regal.py; the saloon
+    'EG_WC_Tuer', 'EG_Windfangtuer']);                                              // leaves are gone, #61)
   await page.waitForFunction(() => ['EG_Hintertuer', 'EG_WC_Tuer', 'EG_Windfangtuer']             // a back hall door
     .some((n) => window.__fl.doors()[n].pos > 0 && window.__fl.doors()[n].pos < 0.5), null, { timeout: 9000, polling: 16 });
   const d0 = await page.evaluate(() => window.__fl.draws);
@@ -60,9 +60,9 @@ test('in the house the doors swing too: in Eingerichtet, drawn while they move; 
   expect(await page.evaluate(() => window.__fl.draws)).toBeGreaterThan(d0 + 3);   // drawn while swinging
   await page.evaluate(() => window.__fl.setProgress(3));                            // Gebaut: as built
   await page.waitForTimeout(100);
-  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0, 0]);
+  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0]);
   await choose(page, 'Modell', 'Ganzes Haus');                      // the routes are listed there
   await choose(page, 'Standpunkt', 'Um und durch das Haus');        // Eingerichtet again,
   await page.waitForTimeout(4000);                                                  // but the tour (the film)
-  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0, 0]);       // sees them as built
+  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0]);       // sees them as built
 });
