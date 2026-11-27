@@ -30,6 +30,12 @@ edited: 2026-11-27
 - Vorlagen Bereich keeps its title "Garderobe & Gäste-WC" (accepted: e2e pins it, the photos still apply).
 - The room name "Duschbad" on the plan sheets is not in the proposal (domain.md has it) · accepted, to be confirmed by the user.
 
+## Follow-up items 8–14 (self-checked)
+
+- [HIGH] `bauernschrank(face=…)`: the new parameter was shadowed by the loop variable `s`, mirroring parts into the wall · **fixed** (renamed `face`), caught by `test_og_flur_bauernschrank_between_the_two_doors`; `test_og_bauernschraenke_in_place_of_the_wardrobes` added.
+- Removed parts' global draws (corner stove 39, wardrobes 11/9/7, Speis passage 1) burnt, counts measured as exact state matches against main; `test_umbau_61_keeps_the_rnd_of_untouched_parts` still green.
+- Route clearance re-checked against the new furniture and doors: minimum 0.25 m, unchanged.
+
 ## Verdict
 
 Defects 5 (worst: rnd stream, fixed), Standards 3 (worst: test rewrites, approved by the user), Spec 3 (worst: a wording contradiction, fixed).

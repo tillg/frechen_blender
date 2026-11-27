@@ -15,6 +15,7 @@ HOOK_Z, BOARD_Z, BOARD_TOP = (1.50, 1.65), 1.35, 2.00   # hook rows, the hook bo
 SHELF_D, SHELF_Z, BRACKET = 0.28, 1.95, 0.14             # hat shelf: depth, bottom, its brackets' reach
 N_HOOKS = 20                                # upper row; the lower one between them
 LAMPE_H = 2.20                              # the Flur's two Wandlampen there: over the hat shelf
+BANK = (2.90, 4.70, 0.28, 0.45)             # the bench under it (#61): x from, to; depth; seat top
 
 
 def garderobe_neu(c="EG"):
@@ -35,6 +36,26 @@ def garderobe_neu(c="EG"):
             B("Eisen", x - 0.006, x + 0.006, yb, yb + 0.10, z - 0.005, z + 0.007, 0.5)
             B("Eisen", x - 0.006, x + 0.006, yb + 0.088, yb + 0.10, z + 0.007, z + 0.04, 0.5)
     maentel(c, xs, yb, rng)
+    bank(c, rng)
+
+
+def bank(c, rng):
+    """The bench under the Garderobe (#61) after the user's photo (input/2026-11-27 input/bank-garderobe.jpeg): a thick old plank, dark and
+    worn, with chamfered corners, on two green battens across it, four round green legs, tapering, splayed outward to
+    the ends and the sides; along the wall, 1 cm off it. Object <c>_Garderobenbank (furniture); one draw of rng."""
+    o, r = c + "_Garderobenbank", rng.random()
+    xa, xb, d, zt = BANK
+    ya, yb, t = YW + 0.01, YW + 0.01 + d, 0.045                                  # the plank: 4.5 thick
+    ch = 0.03                                                                    # its chamfered corners
+    hc.xy_prism(c, o, "HolzX", [(xa + ch, ya), (xb - ch, ya), (xb, ya + ch), (xb, yb - ch), (xb - ch, yb),
+                                (xa + ch, yb), (xa, yb - ch), (xa, ya + ch)], zt - t, zt, r)
+    zb = zt - t - 0.035                                                           # battens under it
+    for x in (xa + 0.16, xb - 0.16):
+        hc.box(c, o, "Gruen", x - 0.03, x + 0.03, ya + 0.02, yb - 0.02, zb, zt - t, r)
+        for y, sy in ((ya + 0.06, -1), (yb - 0.06, 1)):                          # legs: from the batten, splayed
+            sx = -1 if x < (xa + xb) / 2 else 1
+            hc.turned(c, o, "Gruen", (x, y, zb + 0.01), (x + sx * 0.08, y + sy * 0.04, 0.0),
+                      [(0.019, 0), (0.017, 0.6), (0.014, 1)], 12, r)
 
 
 def maentel(c, xs, yb, rng):

@@ -1,7 +1,7 @@
 ---
 title: "Architecture: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-25
+edited: 2026-11-27
 ---
 
 # Architecture: Frechenlehen house model
@@ -10,7 +10,7 @@ edited: 2026-11-25
 
 The house is described once, in a **pure-Python core** (`code/house_core.py` plus the sub-model modules
 `code/ofen.py` (stoves), `code/desk.py` (Büro desk), `code/bad.py` (Bad Großeltern),
-`code/kueche.py` (Küche), `code/gaeste_wc.py` (Gäste-WC), `code/regal.py` (Schrank im Büro), `code/schrankbett.py` (Schrankbett), `code/gaestebad.py` (Gästebad), `code/elternbad.py` (Bad Nadine & Till) and `code/waschkueche.py` (basin and shower of the Waschküche, house only), no `bpy`). Three
+`code/kueche.py` (Küche), `code/gaeste_wc.py` (Duschbad, sub-model Gäste-WC), `code/garderobe.py` (Flur Garderobe, house only), `code/regal.py` (Schrank im Büro), `code/schrankbett.py` (Schrankbett), `code/gaestebad.py` (Gästebad), `code/elternbad.py` (Bad Nadine & Till) and `code/waschkueche.py` (basin of the Waschküche, house only), no `bpy`). Three
 **backends** turn its **Blueprint** into output
 ([ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md)):
 
@@ -98,7 +98,8 @@ flowchart LR
     GEO & MD & GL --> BP[("build() → Blueprint")]
 ```
 
-- **Stoves.** `code/ofen.py` holds the Ofen sub-model (`ofen_neu()`), its placement in the Stube
+- **Stoves.** `code/ofen.py` holds the Ofen sub-model (`ofen_neu()`: a narrow stove `OFEN_L` × `OFEN_D` = 1.20 × 0.50 along
+  the Flur wall, a straight bed `OFEN_BED_W` × `OFEN_BED_L` = 0.70 × 1.90), its placement in the Stube
   (`ofen_im_haus()`) and `werkstattofen()`; `house_core` imports it and calls them, `build_ofen()`
   stays in `house_core`. `ofen.py` uses the primitives and `GEO`/`PARTS` through `house_core` (the two
   modules import each other). Its materials are entries of `MAT_DEF`.
@@ -118,45 +119,48 @@ flowchart LR
   object space by both backends (`local()` stores the mesh unturned).
 - **Bad Großeltern.** `code/bad.py` the same way: `bad_neu(c, x0, y0)` builds the bathroom into
   collection `c` with the room's inner SW corner at (x0, y0) (`EG` at `BAD_AT`, or `Bad` at the
-  origin), after `input/2026-11-08 input/grosseltern_v4.svg`: its own walls (12 cm niche wall,
-  lintel, 1 m low wall at `SHOWER` = 0.95), glass (the main pane and its return `RET` off the north wall in
+  origin), after `input/2026-11-08 input/grosseltern_v4.svg`: its own walls (the niche's 12 cm front wall from `WP` east,
+  the lintel over the opening `0 .. WP`, 1 m low wall at `SHOWER` = 0.95), glass (the main pane and its return `RET` off the north wall in
   front of the north window `FENSTER`, defined here and used by `build_eg()`, with a wall profile), walk-in shower with limestone cladding (`stone()` → `house_core.limestone()`), the Waschbecken doppelt
   (`waschbecken(…, rng=random.Random(rng.random()))`: one draw from its stream), toilet + WC
-  tiles (`toilet()`, `wainscot()`), the white Schrank (`_Schrank`) and the two interlocking
-  sliding leaves (WC leaf open, both in `LEAVES`); own `random.Random(5)`. Its floor too, last
+  tiles (`toilet()`, `wainscot()`), the white Einbauschrank (`_Schrank`: on the east wall, `SL` long, `SD` 0.50 deep from `SCH`
+  to the west, to the ceiling, two doors towards the WC) and one sliding leaf (`_Schiebetuer`, `LW`, built open in front of the front wall,
+  in `LEAVES`; its travel in `SLIDE`); own `random.Random(5)`; the second leaf's draw is burnt. Its floor too, last
   and from its own `random.Random(7)` (`floor()`: limestone strip, oak, a `Fuge` base in
   `_Boden`, laid with `tiles(…, rng)`); the house leaves the room (`BAD_EG`) out of the EG's
   `floor_cover()`. The outer walls and the shortened bedroom wall stay in `build_eg()`.
 - **Küche.** `code/kueche.py` the same way: `kueche_neu(c, x0, y0)` builds Spülzeile, Ostzeile,
-  Halbinsel with the cooktop (`KOCHFELD`) under the hood (`_Haube`, hung from the ceiling), the Wamsler
+  Halbinsel with the cooktop (`KOCHFELD`) and its Muldenlüfter (a downdraft vent between the burners, in `_Kueche`; no hood), the Wamsler
   (`ofen.wamsler(..., shaft)`, its pipe from its left up to 1.95 and north into the Abzug with a rosette, #26b), Besenschrank and the
   Abzug (`c + "_Waende"`) straight into collection `c` with the room's inner NW corner at
   (x0, y0) (`EG` at `KUECHE_AT`, or `Kueche` at the origin, so the sub-model lies at y ≤ 0).
   Positions are written in house coordinates (those of `input/2026-11-09 input/speis_kueche_v6.svg`)
   and shifted; own `random.Random(14)`. The room's walls, the kitchen door and the Speis
   (`speis()`: shelves A/B, own `random.Random(9)`; `speis_essen()`, own `random.Random(25)`:
-  `EG_Essen_Schrank` (cabinet C on the Essen west wall, `ESSEN_SCHRANK` y 0.417–3.712, six columns, columns
-  `OPEN` with the upper half `NICHE` open, shelves `SHELVES`; stocked by `geschirr()`: `EG_Geschirr`, furniture,
-  own `random.Random(26)`),
-  `EG_Speis_Rueckwand` (B's back, vertical spruce boards) and the saloon leaves
-  `EG_Pendeltuer_S`/`_N` (half height, built closed, `PIVOT` + `SWING` ±90° into the Speis; neither
-  in `LEAVES` nor `DOORS`)) stay in `house_core`. The Speis/Küche wall ends at B; the opening over
-  the aisle has no other leaf.
-- **Gäste-WC.** `code/gaeste_wc.py` the same way: `gaeste_wc_neu(c, x0, y0)` builds WC and
-  Garderobe by the back hall into collection `c` with the old WC room's inner SW corner at
-  (x0, y0) (`EG` at `WC_AT`, or `GaesteWC` at the origin), after
-  `input/2026-11-10 input/gaeste_wc_v3.svg`; positions in house coordinates and shifted, as the
-  hand basin stands outside the room. Its walls: the partition and the WC's north wall
-  (`interior()` with the WC door and the open Garderobe passage). Toilet and WC tiles
-  (`toilet()`, `wainscot()`), the basin (`waschbecken()`, einzeln 40 × 28, `tile=WC_TILE_T`) with tiles on the back hall's
-  east wall (`wainscot(sides="e")`) and a pine-framed mirror, the Garderobe (`_Garderobe`: hook board,
-  23 hooks, hat shelf, Kleiderstange, shoe shelf; no bench) and its coats and shoes (`kleidung()`,
-  object `_Kleidung`, in `FURNITURE`, own `random.Random(27)`, explicit `rnd` per part); own `random.Random(12)`, the north wall and the toilet from the
-  global stream. It also builds the back hall's other two doors: `back_door(c, dx, dy)` and the
+  `EG_Speis_Rueckwand` (B's back, vertical spruce boards), the drywall `TROCKENWAND` behind it on the Essen side
+  (two plastered boxes in `EG_Waende`, from the Essen's west wall to the Küche wall's end, 1 mm off B's back) and
+  the Essen's Bauernschrank (`BAUERNSCHRANK_EG`: `bauernschrank(…, ax="y", W=2.10, H=2.25)` in the middle of the west
+  wall, furniture in `EG_Moebel`) stay in `house_core`. The Speis/Küche wall ends at B; the opening over the aisle
+  holds a panel door from `build_eg()` (`interior()` entry `(a, b, 1, "a")`, hinged south, open flat into the Küche).
+- **Duschbad (sub-model Gäste-WC).** `code/gaeste_wc.py` the same way: `gaeste_wc_neu(c, x0, y0)` builds the
+  Duschbad by the back hall (one room, the north wall at `YN`/`YF`) into collection `c` with the room's inner SW
+  corner at (x0, y0) (`EG` at `WC_AT`, or `GaesteWC` at the origin), after
+  `input/2026-11-27 input/hintereingang_optionen.svg` (variant B); positions in house coordinates and shifted. Its
+  walls: the north wall (`interior()` with the door `DA`..`DB`, hinged east, outward). Walk-in shower in the east
+  (`XS`, glass `GL` from the south wall, `hc.shower()` + `hc.limestone()`), toilet (`TX`) and WC tiles
+  (`toilet()`, `wainscot()`), the basin (`waschbecken()`, einzeln 40 × 28, `tile=WC_TILE_T`) on the west wall at `BM`
+  under a `wood_mirror()` 40 × 60, and in the back hall the shoe rack (`schuhregal()`: `_Schuhregal`, `SHOE_Z` nine levels
+  up to 2 m, and `SHOE_PAIRS` pairs of shoes in `_Kleidung`, both in `FURNITURE`, shoes from `random.Random(27)`); own
+  `random.Random(12)`, the north wall, the toilet and the shower from the global stream, which is then set back
+  (`OLD_DRAWS`, `restream()`). It also builds the back hall's other two doors: `back_door(c, dx, dy)` and the
   glazed Windfang door (`panel_door(…, leaf=)`; the long wall keeps an open passage there). The
   three leaves are objects of their own (`_Hintertuer`, `_WC_Tuer`, `_Windfangtuer`) with a
-  `PIVOT` at the hinge and a `SWING`. The floor stays the core's limestone (`GAESTE_WC_EG`;
-  `TRENNWAND_EG` is left out of `floor_cover()`'s slabs).
+  `PIVOT` at the hinge and a `SWING`. The floor stays the core's limestone (`GAESTE_WC_EG`).
+- **Garderobe.** `code/garderobe.py` (house only, no sub-model): `garderobe_neu(c)` builds on the big Flur's south wall
+  (`YW`, x `GA` .. `GB`) the hook board (`FichteZ`, 1.35–2.00), `N_HOOKS` iron hooks in two staggered rows (`HOOK_Z`), the hat
+  shelf on four brackets (`SHELF_Z`; board, shelf, hooks in `EG_Garderobe`, a built-in), six coats (`maentel()`, `EG_Kleidung`,
+  furniture) and under them the bench (`bank()`, `BANK`, `EG_Garderobenbank`, furniture: `HolzX` plank, `Gruen` legs, after the
+  user's photo); own `random.Random(61)`, no global draw. The Flur's two Wandlampen 18, 19 hang over the shelf at `LAMPE_H` 2.20.
 - **Schrank im Büro.** `code/regal.py` the same way: `regal_neu(c, x0, y0, walls=False)` builds the
   Tegernsee bookcase around the Bibliothek's east window into collection `c` with the room's inner
   SE corner at (x0, y0) (`EG` at `REGAL_AT` into `EG_Moebel`, i.e. furniture; or `Regal` at the
@@ -191,8 +195,7 @@ flowchart LR
   origin, `walls=True` adding the pieces of its four walls via `waende()`). Along the back (west) wall:
   the walk-in shower in the SW corner to `SN` = 6.865 (`hc.shower(tray=False)`; `hc.limestone()` to
   `CLAD` 2.0 on the west wall, above the small window's sill `WS` only beside it, and on the south wall
-  to the glass; the head on the slabs), a glass wall on `PA` (= `gaeste_wc.PA`, where the partition over
-  the EG Gäste-WC's stood) from the south wall to `YG` = 6.34, a glass pane at `SN` from the west wall's
+  to the glass; the head on the slabs), a glass wall on `PA` = 1.319 from the south wall to `YG` = 6.34, a glass pane at `SN` from the west wall's
   slabs to `GX`; north of it `wanne()`, the freestanding slipper tub (`TL` × `TW` = 1.65 × 0.75 from `YT`,
   3.5 cm off the west wall): 48 closed 8-vertex wall segments and as many rolled-rim segments (`hc.add`)
   round a superellipse that narrows to the bottom, the rim rising from `FOOT` 0.60 (north) to `HEAD`
@@ -216,31 +219,26 @@ flowchart LR
   half of the wall each: the floor runs through, drain and glass on its 0.018 top; a pane from each side
   wall to `PA`/`PB`, whose rails leave 60 clear around `YM`; the heads on the west wall's slabs `HU` = 0.30
   from the side walls; `limestone()` on the west wall and the strip's south-wall piece to 2.0, its
-  north-wall piece to `SILL` = 1.20: the north wall is the Waschküche partition with the Oberlicht above), the toilet at `TX` = 7.15 on the north wall facing south with `wainscot` on the
+  north-wall piece to `SILL` = 1.70: the north wall is the Waschküche partition with the Oberlicht above), the toilet at `TX` = 7.15 on the north wall facing south with `wainscot` on the
   north and east wall (`sides="ne"`); on the east wall north of the door the Waschbecken einzeln 60 on the
   tiles and `wood_mirror()` 80 × 85 on `BY`, two Wandlampen over it, one east of the window. Own `random.Random(3)` for mirror and cladding,
   `random.Random(4)` for the sub-model floor. It returns its dimension lines. The Oberlicht: `OBERLICHT` =
   (5.69, 8.49), `PFOSTEN` = (`XG`, `XG` + 1.0); `build_og()` and `waende()` both cut the north wall with a `wall()`
-  kind `I` op from `SILL` to the ceiling (one random draw, as the plain wall) and call `oberlicht(c, dx, dy, z0, z1)`:
+  kind `I` op from `SILL` to the ceiling (one random draw, as the plain wall; the Oberlicht half a metre high under the 2.20 room height) and call `oberlicht(c, dx, dy, z0, z1)`:
   a pine (`Innentuer`) lining of the full wall depth (sill and jambs 5 cm, mullions 6 cm, a 7 cm head board under the
   ceiling), Milchglas 8 mm in the wall's middle, beads 2 × 2 cm on both sides, one rnd (`random.Random(30)`), in
   `<c>_Innentueren`: for the plans a built-in, whose head board, cut at `ROOM_CUT` 2.15, parts Bad and Waschküche
   (frames in `_Fenster_Tueren` are skipped there). The four Waschküche table lamps in `WANDLAMPEN_OG` hang at
   `waschkueche.LAMPE_H` = 1.10, under it.
 - **Waschküche.** `code/waschkueche.py` (house only, no sub-model): `waschkueche_neu(c, z)`, called last in
-  `build_sanitary()`, builds into the OG Waschküche (x 5.59 .. 8.59, y 2.79 .. 6.06) a floor-level shower cabin
-  `DUSCHE` = (5.59, 6.69, 4.96, 6.06), 1.10 × 1.10 outer, in the NW corner right of the door as one comes in: its
-  floor is part of the room's limestone (`ROOM` = (5.59, 8.59, 2.79, 6.06) in `BATHS_OG`, issue #28: the whole
-  Waschküche tiled like the OG baths, none under its walls, top at the bathroom floors' 0.018),
-  `limestone()` on the west and north wall to 2.0, head (west wall) and drain via `shower(…, glass=[], tray=False)`;
-  its south and east side each a glass bifold door (`faltwand()`: a wall profile, two equal 8 mm panels folding into
-  the cabin, two hinges at the fold, a bar handle each side of the free panel; built closed), the two free panels
-  meeting at the corner. `basket_cupboard(…, n)` (baskets per shelf, width ≤ 0.66) runs from the table to exactly
-  20 cm before the cabin, two per shelf; the room door opens 90° (`flat=False`, leaf at x 7.15) so it clears the
-  cabin. On the east wall north of the washer tower (`machine()` × 2 in `build_furniture()`, y 3.632 .. 4.252, 4 cm from the
+  `build_sanitary()`, builds the basin of the OG Waschküche (x 5.59 .. 8.59, y 2.79 .. 6.06); the room's floor is the core's
+  limestone (`ROOM` = (5.59, 8.59, 2.79, 6.06) in `BATHS_OG`, issue #28: the whole Waschküche tiled like the OG baths, none under
+  its walls, top at the bathroom floors' 0.018). `basket_cupboard(…, n)` (baskets per shelf, width ≤ 0.66) runs from the
+  table to y 5.95, three per shelf (`build_furniture()`); the room door opens 90° (`flat=False`, leaf at x 7.15). The
+  draws of a removed shower cabin are burnt here (`SHOWER_DRAWS`) and the cupboard's old count (103) in `build_furniture()`. On the east wall north of the washer tower (`machine()` × 2 in `build_furniture()`, y 3.632 .. 4.252, 4 cm from the
   table) the Briol sink (`briol()`: deep ceramic sink 60 × 45 after `waschbecken-briol.jpeg`, rim 0.85, 30 high, lip all round, hung on the tiles, waste pipe to the wall, two wall taps with cross handles 24 cm over the rim) on `BY` = 4.70 (tiles 3 cm, basin 15 cm from the tower; away from the door) on `wainscot(sides="e")` tiles 12 cm wider each side, `wood_mirror()` 80 × 85 above; its Wandlampe
   is the `WANDLAMPEN_OG` entry (an entry may carry a 5th value, its height: here `WANDLAMPE_SPIEGEL_H`). Nothing on
-  the south wall above 1.20 (to be glazed). Own `random.Random(29)` for glass and limestone.
+  the south wall above 1.70 (the Bad's Oberlicht). Own `random.Random(29)`.
 - **Limestone cladding.** `limestone(coll, along_x, face, n, ua, ub, z0, top, rng, dx, dy)` clads a
   shower wall in `<coll>_Fliesen`: a `Fuge` backing 2 mm off the wall, `Kalkstein` slabs 6..12 mm proud,
   rows of about 0.5 m, slabs 0.4..0.8 long from `rng`, joints 4 mm. Used by `bad.stone()` and
@@ -288,14 +286,15 @@ flowchart LR
   to `WALL_LIGHTS` (50 cm out from the wall, 5 cm under the rosette; cleared in every `build*()`).
   `build_wandlampen()` (from `build_sanitary()`) builds `WANDLAMPEN_OG` and `WANDLAMPEN_EG` (wall
   point, facing, height; the EG list after `input/2026-11-14 input/lampen_eg_v1.svg`, drawn from
-  it by `lampen_eg_svg.py`, without its lamps 11, 12 on the Essen west wall, where cabinet C stands;
-  13, 14 hang on B's board back) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, the Waschküche's in `WANDLAMPEN_OG`;
-  over the Ofen bed: `ofen.py` (its light moved with the Ofen by `ofen_im_haus()`); the hood's spots:
-  `kueche.py` (one light). "Wandlampen" in `PLAN["skip_words"]`
+  it by `lampen_eg_svg.py`, without its lamps 11, 12 on the Essen west wall, where the Bauernschrank stands;
+  13, 14 hang on the drywall `TROCKENWAND` behind B; 18, 19 over the Garderobe's hat shelf; the Duschbad's 32, 35) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, the Waschküche's in `WANDLAMPEN_OG`;
+  over the Ofen bed: `ofen.py` (its light moved with the Ofen by `ofen_im_haus()`). "Wandlampen" in `PLAN["skip_words"]`
   keeps them off the Grundriss (the Ansichten show them through openings).
 - **Randomness.** `build()` clears every registry and seeds `random` with 22, so builds are
   repeatable and both backends get the same `rnd` values. The clump uses
-  `random.Random(5)` and the shrubs `random.Random(6)`.
+  `random.Random(5)` and the shrubs `random.Random(6)`. A rebuilt or removed builder that drew from the global stream keeps its
+  count: it saves `random.getstate()` and `restream(state, n)` sets the stream back and draws `n` (`OLD_DRAWS` of the
+  stove and the Duschbad, `EG_FLOOR_DRAWS`, `OLD_WARDROBE_DRAWS`, `SHOWER_DRAWS`), so every later part keeps its `rnd`.
 
 `build()` returns the **Blueprint**: `geo`, `parts`, `smooth`, `pivot`, `mat_def`, `paint`,
 `room_lights`, `wall_lights`, `garden`, `furniture` (objects shown only in the viewer stage "Eingerichtet"),
@@ -493,7 +492,7 @@ sequenceDiagram
     `FADE` 1.0 m). `prewarm(compile)` makes the pool visible, awaits
     `renderer.compileAsync`, catches a failure, and restores the day/dusk visibility; `main.js`
     awaits it after `renderer.init()`.
-  - **`hires`**: one light per site (1 fill + 69 wall + 8 outside), always in the render list, intensity
+  - **`hires`**: one light per site (1 fill + 59 wall + 8 outside), always in the render list, intensity
     `base · v`.
 - **`hires`.** `main.js` reads `?hires=on` once; it also sets the pixel ratio (full vs. ≤ 1.5)
   and whether the grass is hidden while `indoors()` (fast mode only, Rundgang included), and
@@ -560,8 +559,8 @@ sequenceDiagram
   edge lines included (`slides.js`: every 4 s one, picked at random, in 2 s, eased); nodes with
   `extras.swing` turn about their origin (the hinge) to their other state and back, their edge
   lines in a group turned about the hinge (`swingingNodes()`: every 3 s one, in 3 s; the Büro door
-  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest; the saloon leaves
-  `*_Pendeltuer_*` on one of their own, so they take no slot of the back hall's doors); nodes with `extras.lift` rise and
+  `*_Buerotuer` on a clock of its own: 2 s swing, 4 s rest; `*_Pendeltuer_*` nodes, as only a frozen version has,
+  on one of their own, so they take no slot of the back hall's doors); nodes with `extras.lift` rise and
   sink together on one clock (`liftingNodes()`: 3 s up, 4 s rest, 3 s down, 4 s rest), nodes with
   `extras.crank` turning with them (also without a lift: the Schrankbett), nodes with `extras.fold`
   folding about their own hinge in that turning frame (its feet). `main.js`
@@ -655,8 +654,8 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | The **parity test** pinned the Blender build to `tests/golden/blender_snapshot.json` (per object: counts, bbox, materials, `rnd` hash) and checked the saved `.blend`; removed with the Blender backend going dormant (below), last green at `7805879` | Visual checks only | Moving code between core and backends can change the output silently. Deliberate changes regenerated the golden. |
 | The **Blender backend is dormant** (issue #35): scripts kept, compiled by `tests/test_blender_scripts.py`; no rebuild, save, still or parity test; `frechenlehen.blend` frozen at `7805879` | Keep maintaining both outputs; delete the Blender scripts | Faster dev cycles (no Blender rebuild per change, two Blender starts less per full check); kept code makes re-enabling cheap. The compile check catches only syntax rot, not API drift against the core; the Blender BVH camera-clearance check is dormant too ([decision](../../DECISIONS.md#run-2026-11-15-1633-4)). |
 | Stages change by **crossfade** | Construction build-up | Smaller scope; build-up is a later candidate. |
-| A sub-model may bring **its own walls** (`bad.py`: niche wall, lintel, low wall; `gaeste_wc.py`: partition, the WC's north wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
-| Speis shelves and cabinet are **built-ins** (`EG_Speis`, stage Gebaut) | Furniture (`EG_Moebel`, Eingerichtet) | Cabinet C replaces a wall; floor-to-ceiling joinery belongs to the house like the kitchen. |
+| A sub-model may bring **its own walls** (`bad.py`: niche front wall, lintel, low wall; `gaeste_wc.py`: the Duschbad's north wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
+| Speis shelves and drywall are **built-ins** (`EG_Speis`, `EG_Waende`, stage Gebaut); the Essen's and the OG's Bauernschränke are **furniture** (`EG_Moebel`, Eingerichtet) | All built-ins | The shelves and the drywall are floor-to-ceiling joinery of the house like the kitchen; a freestanding wooden cupboard is movable. |
 | One **navigation panel** (`toolbar.js`: Modell, Darstellung, Standpunkt, Reset) on every page | Per-page buttons; a link per sub-model | The same controls at the same place everywhere; one page list in one place. |
 | Routes are a **group inside the Standpunkt drop-down** | A 4th "Routen" drop-down | Three drop-downs everywhere. |
 | The **cutaway is the house entries** of the Modell drop-down (Ganzes Haus `all`, Erdgeschoss `eg`, 1. Stock `noroof`) | Separate cut buttons | Today's `cut=` values stay, so `show.py`, `shot.js` and every URL stay valid. |
@@ -670,7 +669,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | The back hall's three doors **swing in the viewer** (`SWING`), the film keeps them as built | Static doors; animate in the film too | They show where the doors get in each other's way; the film camera and its clearance stay fixed. Moving only in Eingerichtet, as the Bad's leaves: the Skizze lines don't follow. |
 | The desk lifts by **own registries `LIFT` + `CRANK` on one shared clock** | Reuse `SLIDE` with a dz | `slides.js` moves one random slide node at a time: top and devices would part. The spindles ride with the top, inside the solid housings when low. |
 | The Schrankbett folds by **`CRANK` without a `LIFT`, its feet by `FOLD`** on the lift clock | A new fold registry for the bed; an axis on `SWING`; parenting the feet to the bed | `CRANK` already carries axis + angle through core → glTF → `slides.js`; `FOLD` composes one hinge turn in the node's turning frame (a few lines in `liftingNodes`) without node hierarchies. The bed folds in step with the Büro desk in the house. |
-| Back door and Windfang door are **built by the Gäste-WC sub-model** | Only the WC door in the module | The page shows all three swinging doors; one builder for house and page. |
+| Back door and Windfang door are **built by the Gäste-WC (Duschbad) sub-model** | Only the Duschbad door in the module | The page shows all three swinging doors; one builder for house and page. |
 | **GitHub Pages**, public and indexable; deploys on push to `main` | Local only; password; `noindex` | Family and friends need a link; the film is already public. The viewer names the rooms (Standpunkte). |
 | **Desktop browsers** only; **German UI**, English code and specs | Mobile too; one language | Keeps light, shadow and line budgets free of mobile limits; matches the README and the code base. The iPad gets the same build as an offline home-screen app, not tuned for it. |
 | Offline worker is **cache-first, query ignored** | Network-first | Offline works with deep links; online loads don't re-download ~60 MB. |
@@ -682,6 +681,8 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | Version id = **date**, unique | Date + slug | Short URLs; `freeze --id` allows another id. |
 | The **Version drop-down sits in the title box**, house page only | In the toolbar; on every page | Sub-models are not versioned; the toolbar is full on the iPad; the title box says what is shown. |
 | Vorlagen markers open in the **same window in a home-screen app** (`navigator.standalone`, `display-mode: standalone`) | Always the same window | Desktop keeps its new tab; a new window would leave the offline store. |
+| The Flur **Garderobe has its own module** `garderobe.py`, not part of the Duschbad's | In `house_core` or `gaeste_wc.py` | It stands in the Flur, not in the Duschbad; `house_core` is already large. |
+| Removed or rebuilt parts' **random draws are burnt** with `restream()` | Let later `rnd` shift | Untouched parts keep their look, so a change shows only where it was made. |
 | Look: **same palette, recognisably the same house** as the Blender renders | Pixel parity | A starting point, tuned in later iterations. |
 | The core holds the **garden layout**; each backend scatters and grows plants itself | Core computes every instance; web-only garden | Shared layout without forcing Geometry Nodes or `mathutils.noise` into pure Python. Blades and leaves differ in detail, by design. |
 | Browser grass at **25 %** of Blender's density, within 30 m | Full density | ~4 M triangles is too heavy; 25 % still reads as a meadow. |

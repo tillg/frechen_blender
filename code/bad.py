@@ -8,8 +8,8 @@ that turns the corner in front of the north wall: the north french door became a
 limestone, the water kept off sill and window; a Waschbecken doppelt 100 x 47 (two
 deck mixers, one bowl, input/2026-11-12 input/) on its chrome Ständer on that wall's east face; in the south a niche 1.20 m deep over the full width,
 one room since #61 (WC and Schrank were split by a 12 cm wall): the WC in the west behind an opening of 102.4 under a
-lintel, a white Einbauschrank (50 deep, to the ceiling, two doors) in the east behind the niche's front wall, 58 clear
-in front of it; one sliding leaf, built open in front of that wall, rolls over the opening and closes the room. The
+lintel, a white Einbauschrank (50 deep, to the ceiling, two doors) on the east wall behind the niche's front wall, its
+doors towards the WC, 88 clear between it and the toilet; one sliding leaf, built open in front of that wall, rolls over the opening and closes the room. The
 floor: limestone in the niche and in a strip as wide as the WC along the west wall, oak elsewhere.
 
 Pure Python like house_core.py, which imports this module: build_eg() calls bad_neu() at BAD_AT;
@@ -26,7 +26,8 @@ W, D = 2.048, 3.817                          # room (x, y); ceiling hc.Z_EG_TOP
 NICHE, NW, HALF = 1.20, 0.12, 0.964          # niche depth, its front wall's thickness, the limestone strip's width
 WP = 1.024                                   # #61: the niche's opening x 0 .. WP (over the WC), the front wall from WP
 LW = WP + 0.04                               # the one sliding leaf: 4 cm over the wall when closed
-SCH, SD = HALF + NW, 0.50                    # Einbauschrank: x from SCH to the east wall, depth with its doors
+SD, SL = 0.50, NICHE - NW - 0.002            # Einbauschrank (#61, turned 90°): depth with its doors, length on the east
+SCH = W - SD                                 # wall from the south wall to the front wall; SCH: its front (x)
 SHOWER = 0.95                                # walk-in shower width (west; 0.80 till 2026-11-25)
 GLASS = 0.35                                 # thin glass from the north wall
 FENSTER = (1.109, 2.008, 1.0, 2.0, "W", 1)   # the north window (house x; build_eg), the french door till 2026-11-25
@@ -92,26 +93,28 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
     hc.toilet(c, x0 + HALF / 2, y0, 0, 1)
     hc.wainscot(c, 0.0, x0, x0 + SCH - 0.002, y0, y0 + NICHE, None, sides="sw")
 
-    # Einbauschrank (#61), white, floor to ceiling, against the south wall east of the WC: carcass, a recessed
-    # plinth, two doors (a frame round a recessed panel) with chrome knobs at the meeting stiles; in front of it
-    # NICHE - NW - SD clear to the front wall
+    # Einbauschrank (#61; turned 90° on request): white, floor to ceiling, on the niche's east wall from the south wall
+    # to the front wall, its doors towards the WC (west): carcass, a recessed plinth, two doors (a frame round a
+    # recessed panel) with chrome knobs at the meeting stiles. Written along the wall: u from the south wall (y), t
+    # from the east wall into the room (x = W - t)
     S, m, r = "_Schrank", "Rahmen", rng.random()
-    d, zp, um = SD - 0.02, 0.10, (SCH + W) / 2
-    B(S, m, SCH, W, 0, 0.02, 0.0, H, r)                                             # back
-    B(S, m, SCH, SCH + 0.02, 0.02, d, 0.0, H, r)                                    # sides
-    B(S, m, W - 0.02, W, 0.02, d, 0.0, H, r)
-    B(S, m, SCH + 0.02, W - 0.02, 0.02, d, H - 0.02, H, r)                          # top
-    B(S, m, SCH + 0.02, W - 0.02, 0.02, d - 0.04, zp - 0.02, zp, r)                 # bottom
-    B(S, "Fuge", SCH + 0.02, W - 0.02, d - 0.06, d - 0.04, 0.0, zp - 0.02, r)       # plinth, recessed
-    for ua, ub in ((SCH + 0.002, um - 0.0015), (um + 0.0015, W - 0.002)):           # doors
+    R = lambda mm, u0, u1, t0, t1, z0, z1: B(S, mm, W - t1, W - t0, u0, u1, z0, z1, r)
+    d, zp, um = SD - 0.02, 0.10, SL / 2
+    R(m, 0, SL, 0, 0.02, 0.0, H)                                                    # back
+    R(m, 0, 0.02, 0.02, d, 0.0, H)                                                  # sides
+    R(m, SL - 0.02, SL, 0.02, d, 0.0, H)
+    R(m, 0.02, SL - 0.02, 0.02, d, H - 0.02, H)                                     # top
+    R(m, 0.02, SL - 0.02, 0.02, d - 0.04, zp - 0.02, zp)                            # bottom
+    R("Fuge", 0.02, SL - 0.02, d - 0.06, d - 0.04, 0.0, zp - 0.02)                  # plinth, recessed
+    for ua, ub in ((0.002, um - 0.0015), (um + 0.0015, SL - 0.002)):                # doors
         w, za, zb = 0.07, zp + 0.002, H - 0.003
         for a, b, zc, zd in ((ua, ua + w, za, zb), (ub - w, ub, za, zb), (ua + w, ub - w, za, za + w),
                              (ua + w, ub - w, zb - w, zb), (ua + w, ub - w, 1.25 - w / 2, 1.25 + w / 2)):
-            B(S, m, a, b, d, SD, zc, zd, r)                                         # stiles, rails
+            R(m, a, b, d, SD, zc, zd)                                               # stiles, rails
         for zc, zd in ((za + w, 1.25 - w / 2), (1.25 + w / 2, zb - w)):
-            B(S, m, ua + w, ub - w, d, SD - 0.008, zc, zd, r)                       # panels, recessed
+            R(m, ua + w, ub - w, d, SD - 0.008, zc, zd)                             # panels, recessed
         uk = ub - 0.04 if ua < um else ua + 0.04
-        B(S, "Metall", uk - 0.01, uk + 0.01, SD, SD + 0.025, 1.04, 1.06, r)        # knob
+        R("Metall", uk - 0.01, uk + 0.01, SD, SD + 0.025, 1.04, 1.06)               # knob
 
     # walk-in shower: limestone on the west and north walls to 2.0 and on the low wall's west face
     # to 1.0 (dark backing, slabs with joints); floor flush, drain, rain head on an arm
@@ -143,9 +146,9 @@ def bad_neu(c="Bad", x0=0.0, y0=0.0):
             ((SHOWER + lt / 2, lv0 - f, 0), (SHOWER + lt / 2, lv0 - f, lh), "100 hoch"),
             ((ub + f, va, tt), (ub + f, vb, tt), "Waschbecken 100"),
             ((0, NICHE + 0.35, 0.02), (WP, NICHE + 0.35, 0.02), f"Öffnung {round(WP * 100, 1):g}"),
-            ((SCH, SD + 0.05, 0.02), (W, SD + 0.05, 0.02), f"Einbauschrank {round((W - SCH) * 100, 1):g}"),
-            ((SCH - 0.03, 0, 0.02), (SCH - 0.03, SD, 0.02), f"{round(SD * 100)} tief"),
-            ((W - 0.30, SD, 0.02), (W - 0.30, NICHE - NW, 0.02), f"{round((NICHE - NW - SD) * 100)} frei"),
+            ((SCH - 0.05, 0, 0.02), (SCH - 0.05, SL, 0.02), f"Einbauschrank {round(SL * 100, 1):g}"),
+            ((SCH, SL - 0.05, 0.02), (W, SL - 0.05, 0.02), f"{round(SD * 100)} tief"),
+            ((HALF / 2 + 0.185, 0.80, 0.02), (SCH, 0.80, 0.02), f"{round((SCH - HALF / 2 - 0.185) * 100)} frei"),
             ((WP - 0.08, 0, 0.02), (WP - 0.08, NICHE, 0.02), f"{round(NICHE * 100)} tief"),
             ((0, 1.80, LIN + 0.25), (W, 1.80, LIN + 0.25), f"Raumbreite {round(W * 100, 1):g}"),   # the room (request
             ((W - 0.30, 0, LIN + 0.25), (W - 0.30, D, LIN + 0.25), f"Raumtiefe {round(D * 100, 1):g}")]   # 2026-11-25)

@@ -1,7 +1,7 @@
 ---
 title: "Functional: Frechenlehen house model"
 created: 2026-10-08
-edited: 2026-11-25
+edited: 2026-11-27
 ---
 
 # Functional: Frechenlehen house model
@@ -17,7 +17,7 @@ edited: 2026-11-25
   - eaves and gable overhangs
 - **Exterior details from photos:**
   - round-arched entrance door, back door with an oval window and black lever handles inside and
-    outside (hinged north, opening into the back hall; part of the Gäste-WC sub-model)
+    outside (hinged north, opening into the back hall; part of the Gäste-WC sub-model, the Duschbad's)
   - windows with larch frames and glazing bars; on the room side of every sash a satin-metal turn handle
     after klinke-fenster.webp (pointed rose, lever hanging down), at the sash's mid height
   - blue shutters with white cross boards
@@ -37,16 +37,15 @@ edited: 2026-11-25
   - Stube niche with a segmental arch
   - Wandlampen (brass gooseneck, opal bell) in every room of both storeys but the Speis, each centred
     in a free wall span; in the EG as agreed on `input/2026-11-14 input/lampen_eg_v1.svg` (also over the
-    Ofen bed and the back hall's mirror), the Essen's pair on the Speis's wooden back (not on its west
-    wall, where cabinet C stands); four spots in a strip under the Küche hood over the cooktop
+    Ofen bed and the Duschbad's mirror), the Essen's pair on the drywall behind the Speis shelf B (not on
+    its west wall, where the Bauernschrank stands); the Flur's two over the Garderobe's hat shelf at 2.20
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
     threshold), the Bäder (the Gästebad with its WC, shower and tub, the Bad Nadine & Till with its two showers) and
-    all four WCs (and the Garderobe beside the Gäste-WC); in the Bad Großeltern a limestone strip as wide as its WC along the west wall
-    (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip and in its
-    niche's Schrank)
-  - Ofenbett in the Stube: plastered stove with the fire behind a glass door, bench, bed above
-    with a thin cream mattress and a red-white checked blanket, one corner turned back;
+    all four WCs (the back hall's Duschbad too); in the Bad Großeltern a limestone strip as wide as its WC along the west wall
+    (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip)
+  - Ofenbett in the Stube: a narrow plastered stove (1.20 along the Flur wall, 0.50 into the room) with
+    the fire behind a glass door, bench, a straight bed above (70 × 190) with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
   - small black workshop stove after `input/2026-11-03 input/werkstattofen.jpeg` (40 × 40 × 105 cm,
     fire behind glass), three times, each in a room corner 10 cm off both walls and turned 45° to
@@ -59,9 +58,7 @@ edited: 2026-11-25
     assumed); on the east wall the 60 cm Ostzeile from the Halbinsel, then the Wamsler wood cooker
     after wamsler.jpeg (stainless steel, fire burning behind the glass, its black flue pipe from the left (north) of
     its top up to 1.95 m and there north into the Abzug, the Kaminschacht, a rosette on its face, #26b); the Halbinsel with the induction cooktop towards
-    the dining table, under an old-form steel hood hung from the ceiling (centred, lip 65 cm above the
-    cooktop, skirt with a rail on the cook's side, canopy, stack to the ceiling; a strip of 4 spots along
-    its middle); no wall cabinets; east of the sink,
+    the dining table, a Muldenlüfter (downdraft vent) in its middle between the burners, no hood; no wall cabinets; east of the sink,
     where the Herd stands in front of the Spülzeile, a blind cabinet (no drawers) and the granite
     top runs up to the Herd, as the Ostzeile's does south of it; all cabinets in the style of
     `input/2026-11-10 input/kueche_mallnitz.png` (frame fronts with a recessed panel, a chrome cup
@@ -71,11 +68,10 @@ edited: 2026-11-25
     west end free) and open shelf B (60 cm) with a closed back of vertical spruce boards towards the
     Essen, all to the ceiling; the shelves spruce, stocked for illustration (food cartons,
     flour, jars of tomato sauce and pickles, cans, now and then a grey plastic crate with a lid);
-    cabinet C (60 cm) over the full west wall of the Essen, to the ceiling, with the kitchen's
-    painted Mallnitz fronts and cup pulls, six leaf columns, each a top door, a door over the upper
-    half and three drawers below; in the two columns on the dining table's axis the upper half open
-    (no door): shelves with stacks of white plates, tumblers and wine glasses (furniture); the wall to the Küche ends at B, and in the opening over the
-    aisle two half-height saloon leaves (curved top rail, slats, no handles) that swing into the Speis
+    on the Essen side of B's back a thin drywall (7.4 cm, plastered) from the Essen's west wall to the
+    Küche wall; in the middle of the Essen's west wall a big wooden Bauernschrank (2.10 × 2.25, like the OG
+    Flur's); the wall to the Küche ends at B, and in the opening over the aisle a panel door (hinged
+    south, open flat into the Küche)
   - dining table after tisch-briol.png, one table 2.00 m long: board top, legs splayed on a flat
     foot frame with corner blocks; 8 chairs (3 per long side, one at each end)
   - Büro desk in the Bibliothek between the two north french doors: a 190 × 100 × 4 cm solid
@@ -101,7 +97,7 @@ edited: 2026-11-25
     the big windows to the Ofen, facing the pier
   - every sub-model page with a bath, toilet or shower (Bad Großeltern, Gäste-WC, Gästebad, Bad Nadine &
     Till) dimensions the room's width (west–east, "Raumbreite") and depth (south–north, "Raumtiefe") from
-    wall face to wall face (2026-11-25; the Gäste-WC's: the WC's)
+    wall face to wall face (2026-11-25)
   - Bad Großeltern after `input/2026-11-08 input/grosseltern_v4.svg` (also a sub-model page),
     open to the bedroom: walk-in shower 0.95 m in the NW corner (2026-11-25: the low wall moved 15 cm
     east) with limestone cladding to 2.0 m and a rain head; east of it a 1.20 m wall 1.00 m high and a
@@ -110,35 +106,28 @@ edited: 2026-11-25
     1.00, same jambs), its west 15 cm now in the shower, so a 20 cm return pane 2.5 cm off the wall runs
     west over the jamb onto the limestone, a wall profile closing it, and keeps water off sill and window;
     on the wall's east face a Waschbecken doppelt 100 × 47; in the south a 1.20 m niche
-    split by a 12 cm wall into WC and an open white Schrank (cabinet 60 cm deep over the full
-    width, nothing in front of it), closed by two interlocking sliding doors (the WC leaf open,
-    slid behind the Schrank leaf); 96.7 cm passage between the front leaf and the wall's end;
-    floor: limestone strip 96.4 cm wide (the WC's width) from the south wall to the north wall,
-    oak elsewhere, part of the sub-model. The sliding doors show how they work: every 4 s one
-    leaf, picked at random, rolls to the other end of its track in 2 s, on the sub-model page
-    and in the house in stage Eingerichtet; the Rundgang sees them as built (WC leaf open)
-  - Gäste-WC by the back hall after `input/2026-11-10 input/gaeste_wc_v3.svg` (also a sub-model
-    page): a 10 cm partition splits the old WC into the WC (101 cm, west) and the Garderobe (94 cm,
-    east). The WC has a new 76 cm door in the north wall, its leaf opening outward into the back
-    hall, hinged at the partition, standing open at 90°; the toilet centred on the south wall,
-    40 cm free in front of it; Taubenblau tiles in the WC only. The Garderobe is open through the
-    old 80 cm opening, without a bench: on its left (east) wall a spruce hook board over the
-    whole wall with 23 iron hooks in two staggered rows (1.50 / 1.65 m) and a hat shelf at
-    1.95 m on three brackets, after `garderobe mallnitz.jpeg`; across its back end (south wall)
-    a steel Kleiderstange from wall to wall at 1.78 m with five coats on wooden hangers, under
-    them a shoe shelf 33 cm deep with two levels of 20 cm and a dozen shoes (6 pairs; coats and
-    shoes are furniture, stage Eingerichtet, not on the plan sheets). The WC's hand basin, a Waschbecken einzeln 40/28, stands outside, centred on the back
-    hall's east wall between the WC wall and the Windfang door (top 85 cm), Taubenblau tiles
-    behind it up to the door's architrave and a mirror 40 × 60 cm in a 7 cm pine frame from
-    1.20 m. Back door, WC door and Windfang door swing to show where they get in each other's
+    one room: the WC in the west behind an opening (102.4) under a lintel, a white Einbauschrank (50 deep,
+    to the ceiling, two doors towards the WC) on the east wall behind a 12 cm front wall; one sliding
+    door, built open in front of that wall, rolls over the opening; floor: limestone strip 96.4 cm wide (the WC's width) from the south wall to the north wall,
+    oak elsewhere, part of the sub-model. The sliding door shows how it works: every 4 s it rolls to the
+    other end of its track in 2 s, on the sub-model page and in the house in stage Eingerichtet; the
+    Rundgang sees it as built (open)
+  - Duschbad by the back hall (sub-model page Gäste-WC; after `input/2026-11-27 input/hintereingang_optionen.svg`,
+    variant B): one room 204.8 × 129.9, in the east a walk-in shower 90 × 130 on the room's limestone floor
+    (limestone walls to 2.0, head on the east wall, glass 75 from the south wall, the entry 55 north of
+    it), in the west the toilet on the south wall (Taubenblau tiles on the WC part's walls) and the Waschbecken
+    einzeln 40 × 28 on the west wall north of the window under a mirror 40 × 60 in a pine frame. The 76 cm
+    door in the north wall (west part) opens outward into the back hall, hinged east, standing open at 90°.
+    In the back hall east of the door a shoe rack 80 × 33, 2 m high with nine levels, about half full of
+    shoes (furniture, stage Eingerichtet, not on the plan sheets). Back door, Duschbad door and Windfang door swing to show where they get in each other's
     way: every 3 s one, picked at random, opens or closes in 3 s, on the sub-model page and in
-    the house in stage Eingerichtet; the film and the Rundgang see them as built (WC and Windfang
+    the house in stage Eingerichtet; the film and the Rundgang see them as built (Duschbad and Windfang
     door open, back door closed)
   - Schrank im Büro after `input/2026-11-11 input/buero_regal_v2.svg` (also a sub-model page): the
     Tegernsee bookcase (2.38 m high, dark wood, books) around the Bibliothek's east window: a 94
     column on each side, the middle 94 split into a base up to 95 cm (5 cm under the sill, 48 deep)
     and a bridge from 2.02 m over the window, one cornice over all three; 42 deep; 30 cm free to the
-    north wall, 48 cm to the Flur wall. It replaces the former bookcase on the Flur wall. The set's
+    north wall, 48 cm to the Flur wall. The set's
     narrow element, a 52 vitrine (glazed door, glass shelves, wine glasses), stands opposite in the
     NW corner behind the piano (house only). The Büro
     door moved 50 cm west (106 wide, hinged east, open 90°): its leaf stands 10.5 cm in front of
@@ -164,6 +153,16 @@ edited: 2026-11-25
     at 45.5 cm, turned legs, stretchers, back posts with finials, two slats), pushed in 10 cm under
     the top. Furniture (stage Eingerichtet, not on the plan sheets); the Rundgang passes it 0.25 m
     clear in plan
+  - Garderobe in the big EG Flur (house only, on the south wall, the Speis's back, x 2.80 .. 4.80, after
+    `garderobe mallnitz.jpeg`): a spruce hook board 2 m long with 20 + 19 iron hooks in two staggered rows
+    (1.50 / 1.65 m), a hat shelf at 1.95 m on four brackets, six coats hanging from the hooks, and under
+    them a wooden bench 1.80 × 0.28 (seat 0.45, dark plank, splayed green legs) after
+    `input/2026-11-27 input/bank-garderobe.jpeg`; coats and bench are furniture, board, shelf and hooks
+    a built-in
+  - Bauernschränke (freestanding, old pine, `bauernschrank()`, furniture): beside the OG Flur's also one
+    in Saschi's room on the west wall, in the Schlafzimmer Nadine & Till on the north wall (facing
+    south) and, 1.40 wide, in the Bichlach on the east wall north of the balcony door (facing west), each in
+    place of a built-in wardrobe; the Essen's: see Speis
   - Bichlach (OG, NE; 2026-11-25): its door in the Flur wall moved towards the stair, the opening 15 cm
     east of the stair hole (11.40 .. 12.28, hinged west, opened 90°); a double bed (two mattresses, 1.86 ×
     2.00) with its head on the west wall and a nightstand either side, clear of the leaf and 90 cm before
@@ -174,15 +173,14 @@ edited: 2026-11-25
   - the five washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
     52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
-    (100 × 47), einzeln in the back hall (40 × 28), the OG WC 2,30 (50 × 40) (the OG Flur's went
+    (100 × 47), einzeln in the Duschbad (40 × 28), the OG WC 2,30 (50 × 40) (the OG Flur's went
     on 2026-11-25 for the Bauernschrank), the Gästebad and the Bad Nadine & Till (60 × 47 under a mirror 80 × 85 in the
     wooden frame)
   - Gästebad at the end of the OG Flur (NW; also a sub-model page with its four walls and
     dimensions): from the Flur door one faces the back (west, outer) wall; on the left the walk-in
     shower 101 × 141 in the SW corner on the room's limestone floor, its back and side wall in
     limestone to 2.0 (the small window left free), the head on the south wall; a glass wall 88
-    between shower and WC (where the partition over the EG one stood, reaching 19 cm further
-    forward than it did) and a glass pane between shower and tub, the way in (50 cm) between them;
+    between shower and WC and a glass pane between shower and tub, the way in (50 cm) between them;
     to the right along the back wall under the big window the freestanding slipper tub 165 × 75
     on four claw feet after `input/2026-11-15 input/badewanne.webp`, its raised head end (74) to
     the shower, the foot end 60 (both under the 75 sill, so one looks out of the window from it),
@@ -196,12 +194,12 @@ edited: 2026-11-25
     90 deep over the wall's full 2.22 (no tray: the limestone floor runs through, a drain each), a
     head in each back corner, a glass 80 per shower from its side wall and a 60 passage between them
     in the middle; the strip's walls in limestone slabs to 2 m like the Bad Großeltern's, on the north
-    wall (the Waschküche partition) only to 1.20; above it, up to the ceiling, the Oberlicht: Milchglas
+    wall (the Waschküche partition) only to 1.70; above it, up to the ceiling, the Oberlicht (half a metre high): Milchglas
     in three fields in a pine lining of the full wall depth, 10 cm short of the corners, a mullion on
     the back shower's glass line, where that pane ends, so the Bad's window lights the Waschküche; the toilet on the north wall between glass and basin on Taubenblau tiles
     (north and east wall); the Waschbecken einzeln 60 on the east wall north of the door under the
     wood-framed mirror 80 × 85 with two Wandlampen, one more left of the window
-  - the four WCs (the WC in the Bad Großeltern's niche, the Gäste-WC, the WC 2,30 and the Gästebad's WC, tiled on its south and east wall only), after
+  - the four WCs (the WC in the Bad Großeltern's niche, the Duschbad's, the WC 2,30 and the Gästebad's WC, tiled on its south and east wall only), after
     `input/2026-11-08 input/bad_mallnitz.jpeg`: subway tiles in RAL 5014 Taubenblau about 1.1 m high with a cap
     row, floor-standing toilet with a close-coupled cistern; in the WC 2,30 (next to the
     Waschküche) a Waschbecken einzeln 50 × 40 under a mirror in a black frame, clear of the open
@@ -215,13 +213,11 @@ edited: 2026-11-25
   - Waschküche: a washer tower at the east wall (a dryer stacked on the front loader), 4 cm from the table; a table
     0.80 m deep the full width of the back (south) wall, with two stacks of folded clothes; on the
     right wall from the door (west) an open spruce cupboard, 2.0 m high, continuous shelves
-    without dividers, two coarsely woven wicker laundry baskets (stakes and weavers) per shelf; 20 cm
-    beyond it, in the NW corner right of the door, a floor-level shower cabin 1.10 × 1.10 (limestone
-    floor, west and north wall; its south and east side each a glass bifold door folding inward; the
-    room door opens 90° to clear it); on the east wall north of
+    without dividers, three coarsely woven wicker laundry baskets (stakes and weavers) per shelf, running
+    up to the NW corner (the room door opens 90°); on the east wall north of
     the tower (15 cm from it) the deep ceramic sink of the Briol (`waschbecken-briol.jpeg`: 60 × 45, rim at 85, 30 high,
     hung on the wall, two wall taps with cross handles) on Taubenblau tiles under a mirror 80 × 85 in a 10 cm
-    wooden frame with one Wandlampe; the south wall's top metre is the Bad's Oberlicht, the four
+    wooden frame with one Wandlampe; the south wall's top half metre is the Bad's Oberlicht, the four
     Wandlampen over the table hang under it (rosettes at 1.10)
 - **Annex** (SW corner): Elektroraum and Heizung, larch-clad timber walls, flat roof, plank
   door outside, panel door between the rooms.
@@ -307,7 +303,7 @@ Blender backend. What the scripts make:
   - **Modell:** Ganzes Haus, Erdgeschoss, 1. Stock (the cutaway: the
     whole house, without roof, only the EG; the ground
     stays), a separator, then the sub-models by storey: under the heading Erdgeschoss Ofen, Schreibtisch,
-    Bad Oma & Opa, Küche, Gäste-WC, Schrank im Büro; under 1. Stock Schrankbett, Gästebad, Bad Nadine & Till. A house entry switches in place, a sub-model entry opens its page; the current one is
+    Bad Oma & Opa, Küche, Gäste-WC (the Duschbad), Schrank im Büro; under 1. Stock Schrankbett, Gästebad, Bad Nadine & Till. A house entry switches in place, a sub-model entry opens its page; the current one is
     selected.
   - **Darstellung:** house: the five stages below; sub-model: Drahtmodell, Masse, Gerendert. On
     Ganzes Haus a group **Pläne** follows the stages: the six plan sheets of `plans/` (Grundriss EG,
@@ -365,7 +361,7 @@ Blender backend. What the scripts make:
   film capture, `tmp/threejs_film.mjs`, always sets it) switches all of these shortcuts off.
 - **Fotos & Vorlagen** (`vorlagen.html`): every raster image of `input/` the model was built after, each photo
   once (a repeat of a shown one, another size of the same photo, is listed in `vorlagen.DOPPELT`, not shown),
-  sorted into eleven Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC, Haupteingang & Windfang,
+  sorted into eleven Bereiche (Stube, Küche & Essen, Garderobe & Gäste-WC (anchor in the Flur at the Garderobe), Haupteingang & Windfang,
   Bibliothek & Büro, Bad Oma & Opa, Gästebad, Schlafzimmer Nadine & Till (marker over its small desk), Außen & Garten, Ganzes Haus = elements found all over the house,
   Pläne); without `?b=` an index (cover picture and count per Bereich), with `?b=<key>` the
   Bereich's pictures with German captions, a click opens the copy (≤ 1600 px). Every page links the
@@ -447,7 +443,7 @@ sequenceDiagram
 
 The model has no runtime state. In Blender (dormant) the one animated part is the entrance door
 (`EG_Haustuer`), which `film.py` rotates 90° around its pivot during the film. In the viewer,
-the Bad's sliding leaves, the back hall's three doors, the Speis's saloon leaves and the Büro door move on their own clocks (each one at its
+the Bad's sliding leaf, the back hall's three doors and the Büro door move on their own clocks (each one at its
 built or its other state, or on the way); otherwise the state is the model entry (cutaway all / noroof / eg or a sub-model), the Darstellung
 (house progress `p` 0–4), the Standpunkt (or Eigene Ansicht), a forced dusk value from the light
 switch (cleared by any stage change, saved with the entry's view), the saved view per entry, the Rundgang

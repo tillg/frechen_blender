@@ -49,6 +49,12 @@ flowchart LR
 | Waschküche: basket cupboard back to 5.95, three baskets (pre-#29) | leave it short | the 20 cm gap only served the shower |
 | Tests pinning removed features are rewritten, not deleted | ask per test | the user asked for the removals and approved the rewrites (2026-11-27) |
 | Hintereingang variant B | variant A | user's choice 2026-11-27 |
+| Ofen: 50 cm measured from the Flur wall (the bed's direction), length 1.20 along it kept; fire door in the front | 50 from the west wall | the bed runs along the Flur wall and stays 70 wide over it |
+| Ofen: the long bench stays at its old place (from 1.205), not at the stove | at the stove's front | at the stove it would stand before the fire door's left half |
+| Essen Bauernschrank 2.10 × 2.25 in the middle of the west wall (user 2026-11-27; first on the table axis), `EG_Moebel` (furniture) | the OG's 1.80 × 2.05 | "groß"; 2.20 would hit the south wall with its cornice |
+| Speis door hinged south, open flat into the Küche | into the Speis; hinged north | into the Speis it would block shelf B; hinged north it would hit the Besenschrank |
+| Einbauschrank turned: on the east wall from the south wall to the front wall (107.8) | 96.4 long | a built-in fills the wall; 88 clear to the toilet |
+| Bench under the Garderobe 1.80 × 0.28, seat 0.45, `HolzX` + new `Gruen` | — | after the user's photo; the coats' hems stay above it |
 | Garderobe in a new `garderobe.py` | in `house_core` / `gaeste_wc` | not part of the Gäste-WC; `house_core` is already large |
 | Burn old draw counts | let later `rnd` shift | project idiom: untouched parts keep their look |
 

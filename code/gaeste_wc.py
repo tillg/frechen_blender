@@ -6,7 +6,7 @@ on the east wall), a glass pane 75 from the south wall on its west side, the ent
 toilet on the south wall (Taubenblau tiles on the WC part's walls) and the basin einzeln 40 x 28 on its Ständer on
 the west wall north of the window, a mirror 40 x 60 in a wooden frame above it. The door 76 in the north wall (west
 part) opens outward into the back hall, hinged east (laid flat it would cover the shoe rack). In the back hall east
-of the door a shoe rack of two 20 cm levels with six pairs of shoes. The Garderobe moved to the Flur
+of the door a shoe rack 2 m high, nine levels of about 20 cm, about half full of shoes. The Garderobe moved to the Flur
 (code/garderobe.py).
 
 Pure Python like house_core.py, which imports this module: build_eg() calls gaeste_wc_neu() at WC_AT;
@@ -27,7 +27,9 @@ BW, BD, BM = 0.40, 0.28, 6.55                # Waschbecken einzeln on the west w
 MW, MH, MF, MZ = 0.40, 0.60, 0.05, 1.20      # mirror: outer width x height, frame width, bottom
 HY, CLAD, ST = 6.05, 2.0, 0.012              # shower head on the east wall at y HY; limestone to CLAD, slab face
 SX = 1.56                                    # shoe rack: from x SX to the east wall, on the north wall's hall face
-SHOE_D, SHOE_Z, SHOE_T = 0.33, (0.04, 0.26, 0.48), 0.02  # its depth, its three boards' bottoms, thickness
+SHOE_D, SHOE_T = 0.33, 0.02                  # shoe rack: depth, board thickness
+SHOE_Z = tuple(0.04 + k * (1.98 - 0.04) / 9 for k in range(10))   # its ten boards' bottoms: 2 m high (#61), 9 levels
+SHOE_PAIRS = 14                              # pairs of shoes on it: about half of its 9 x 3 places, spread at random
 OLD_DRAWS = 44                               # global draws of the Gäste-WC + Garderobe till #61 (burnt: later parts keep theirs)
 
 
@@ -85,32 +87,35 @@ def gaeste_wc_neu(c="GaesteWC", x0=0.0, y0=0.0):
             S(SX, YF + SHOE_D + 0.05, SHOE_Z[-1] + SHOE_T + f, WO, YF + SHOE_D + 0.05, SHOE_Z[-1] + SHOE_T + f,
               f"Schuhregal {cm(SX, WO)}"),
             S((SX + WO) / 2, YF, SHOE_Z[-1] + SHOE_T + f, (SX + WO) / 2, YF + SHOE_D, SHOE_Z[-1] + SHOE_T + f,
-              f"{cm(0, SHOE_D)} tief")]
+              f"{cm(0, SHOE_D)} tief"),
+            S(WO - 0.05, YF + SHOE_D + 0.05, 0.0, WO - 0.05, YF + SHOE_D + 0.05, SHOE_Z[-1] + SHOE_T,
+              f"{cm(0, SHOE_Z[-1] + SHOE_T)} hoch")]
 
 
 def schuhregal(c, dx, dy, rng):
     """The shoe rack in the back hall (#61, object <c>_Schuhregal, furniture): on the room's north wall, from SX to
-    the east wall, SHOE_D deep, two sides, three boards (two levels of 20 cm), a recessed plinth; on its levels six
-    pairs of shoes (Halbschuhe, Turnschuhe, Stiefel), three on each, toes to the hall (<c>_Kleidung, furniture).
+    the east wall, SHOE_D deep, 2 m high (#61), two sides, ten boards (nine levels of about 20 cm), a recessed plinth;
+    SHOE_PAIRS pairs of shoes (Halbschuhe, Turnschuhe, Stiefel), about half full, at random places on all levels, toes to the hall (<c>_Kleidung, furniture).
     Spruce from one draw of rng, the shoes from an own random.Random(27), an explicit rnd for every part."""
     o, r = c + "_Schuhregal", rng.random()
     B = lambda m, xa, xb, ya, yb, za, zb, rr=r: hc.box(c, o, m, xa + dx, xb + dx, ya + dy, yb + dy, za, zb, rr)
     y0, y1 = YF, YF + SHOE_D
     for xa, xb in ((SX, SX + 0.02), (WO - 0.02, WO)):                                       # sides
         B("FichteZ", xa, xb, y0, y1, 0.0, SHOE_Z[-1] + SHOE_T)
-    for z in SHOE_Z:                                                                         # three boards
+    for z in SHOE_Z:                                                                         # ten boards
         B("FichteX", SX + 0.02, WO - 0.02, y0, y1, z, z + SHOE_T)
     B("FichteX", SX + 0.02, WO - 0.02, y0 + 0.02, y0 + 0.04, 0.0, SHOE_Z[0])                # plinth, recessed
     rk, o = random.Random(27), c + "_Kleidung"
     X = lambda m, xa, xb, prof, rr: hc.prism_x(c, o, m, xa + dx, xb + dx, [(y + dy, z) for y, z in prof], rr)
     Bx = lambda m, xa, xb, ya, yb, za, zb, rr: hc.box(c, o, m, xa + dx, xb + dx, ya + dy, yb + dy, za, zb, rr)
     kinds = [("Halbschuh", 0.08, ["Leder", "Anthrazit"]), ("Turnschuh", 0.085, ["Leinen", "Jeans", "Wolle"]),
-             ("Stiefel", 0.15, ["Leder", "Kamel"])] * 2
-    rk.shuffle(kinds)
-    xa, xb = SX + 0.02, WO - 0.02                                                            # between the sides
-    for j, (kind, hh, mats) in enumerate(kinds):
-        b = SHOE_Z[j // 3] + SHOE_T + 0.001                                                  # on its board
-        xp = xa + (xb - xa) * (j % 3 + 0.5) / 3
+             ("Stiefel", 0.15, ["Leder", "Kamel"])]
+    slots = rk.sample([(lv, k) for lv in range(len(SHOE_Z) - 1) for k in range(3)], SHOE_PAIRS)   # about half full,
+    xa, xb = SX + 0.02, WO - 0.02                                                            # spread over the levels
+    for lv, k in sorted(slots):
+        kind, hh, mats = rk.choice(kinds)
+        b = SHOE_Z[lv] + SHOE_T + 0.001                                                      # on its board
+        xp = xa + (xb - xa) * (k + 0.5) / 3
         m, ls, r0, rr = rk.choice(mats), rk.uniform(0.26, 0.29), y0 + 0.02 + rk.uniform(0, 0.01), rk.random()
         r1, z0, sh = r0 + ls, b + 0.019, 0.12 if kind == "Stiefel" else 0.09                 # heel at the wall, toe
         for xs in (xp - 0.055, xp + 0.055):                                                  # to the hall

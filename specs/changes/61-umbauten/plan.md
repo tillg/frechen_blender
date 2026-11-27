@@ -33,6 +33,18 @@ Tests that pin a removed feature are rewritten for the new state in the same ste
 - [x] [python] Flur-Garderobe G1 (`code/garderobe.py`), lamps 18/19 up
   - Test first: `test_core.py` › `test_flur_garderobe` — fails today: nothing on the Flur south wall
   - Verify: `pytest -k garderobe` → green; Show
+- [x] [python] Ofen narrow (1.20 × 0.50), straight bed 70 × 190, old corner stove's draws burnt
+  - Test first: `test_core.py` › `test_ofen_submodel_after_the_sketches` rewritten, `test_ofen_built_into_the_stube` — fail today: corner stove 1.20 × 1.20
+  - Verify: `pytest -k ofen` → green; Show
+- [x] [python] Essen Bauernschrank (`bauernschrank(ax="y")`), Speis panel door, drywall from the west wall
+  - Test first: `test_core.py` › `test_speis_essen` rewritten, `test_speis_v6`, `test_one_eg_layout` — fail today: cabinet C, saloon leaves
+  - Verify: `pytest -k "speis or essen or eg_layout"` → green; Show
+- [x] [python] Schuhregal 2 m, Einbauschrank turned 90°, bench under the Flur Garderobe
+  - Test first: `test_schuhregal`, `test_bad_submodel`, `test_flur_garderobe` extended — fail today: 0.50 high rack, cabinet on the south wall, no bench
+  - Verify: `pytest -k "schuhregal or bad or garderobe"` → green; Show
+- [x] [python] OG Bauernschränke (Saschi, Schlafzimmer, Bichlach; `bauernschrank(face=-1)`), the wardrobes' draws burnt
+  - Test first: `test_core.py` › `test_og_bauernschraenke_in_place_of_the_wardrobes` — fails today: built-in wardrobes
+  - Verify: `pytest -k bauernschr` → green; Show
 - [x] [web] Viewer and e2e follow the renamed objects (Bad leaf, Gäste-WC labels, Vorlagen anchor)
   - Test first: `web/e2e/bad.spec.js`, `gaeste_wc.spec.js` updated — fail today on the old names
   - Verify: `npx playwright test e2e/bad.spec.js e2e/gaeste_wc.spec.js e2e/vorlagen.spec.js e2e/shot.spec.js` → green

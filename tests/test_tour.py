@@ -365,16 +365,20 @@ def test_routes_and_spots_clear_the_wandlampen():
 
 
 def test_routes_clear_the_speis_and_essen_furniture():
-    """Every camera key of every route keeps 0.25 m from the Speis / Essen built-ins of the former variant
-    Alternativ (#5, the only EG layout since #34): cabinet C over the Essen's west wall with its plates and
-    glasses (#34 follow-up), B's back, the saloon leaves, as from everything else."""
+    """Every camera key of every route keeps 0.25 m from the Speis / Essen furnishings (#5, #34, #61): B's back, the
+    Essen's Bauernschrank on its west wall and the Speis door open flat in the Küche, as from everything else."""
     bp = house_core.build()
     boxes = []
-    for o in ("EG_Essen_Schrank", "EG_Speis_Rueckwand", "EG_Pendeltuer_S", "EG_Pendeltuer_N", "EG_Geschirr"):
+    for o, keep in (("EG_Speis_Rueckwand", lambda lo, hi: True),
+                    ("EG_Moebel", lambda lo, hi: lo[0] > 2.7 and hi[0] < 3.5 and lo[1] < 2.8),          # Bauernschrank
+                    ("EG_Innentueren", lambda lo, hi: 5.2 < lo[0] and hi[0] < 5.7 and 3.3 < lo[1] and hi[1] < 5.3)):
         g = bp.geo[("EG", o)]
         for first, n in bp.parts[("EG", o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
-            boxes.append(([min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]))
+            lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
+            if keep(lo, hi):
+                boxes.append((lo, hi))
+    assert len(boxes) > 30
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
@@ -387,7 +391,7 @@ def test_routes_and_spots_clear_the_garderobe():
     and the shoes."""
     bp = house_core.build()
     boxes = []
-    for o in ("Garderobe", "Kleidung", "Schuhregal"):
+    for o in ("Garderobe", "Kleidung", "Schuhregal", "Garderobenbank"):
         g = bp.geo[("EG", "EG_" + o)]
         for first, n in bp.parts[("EG", "EG_" + o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]

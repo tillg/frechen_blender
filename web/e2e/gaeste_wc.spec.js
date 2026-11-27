@@ -51,8 +51,8 @@ test('in the house the doors swing too: in Eingerichtet, drawn while they move; 
   await page.goto('/?cam=1.0,8.35,1.6&at=1.5,6.2,1.0&p=4&cut=eg');               // back hall, looking south
   await page.waitForFunction(() => window.__fl?.ready === true);
   const at = () => page.evaluate(() => window.__fl.doors());
-  expect(Object.keys(await at()).sort()).toEqual(['EG_Buerotuer', 'EG_Hintertuer',   // + Büro (regal.py)
-    'EG_Pendeltuer_N', 'EG_Pendeltuer_S', 'EG_WC_Tuer', 'EG_Windfangtuer']);   // + saloon leaves (#5)
+  expect(Object.keys(await at()).sort()).toEqual(['EG_Buerotuer', 'EG_Hintertuer',   // + Büro (regal.py; the saloon
+    'EG_WC_Tuer', 'EG_Windfangtuer']);                                              // leaves are gone, #61)
   await page.waitForFunction(() => ['EG_Hintertuer', 'EG_WC_Tuer', 'EG_Windfangtuer']             // a back hall door
     .some((n) => window.__fl.doors()[n].pos > 0 && window.__fl.doors()[n].pos < 0.5), null, { timeout: 9000, polling: 16 });
   const d0 = await page.evaluate(() => window.__fl.draws);
@@ -60,9 +60,9 @@ test('in the house the doors swing too: in Eingerichtet, drawn while they move; 
   expect(await page.evaluate(() => window.__fl.draws)).toBeGreaterThan(d0 + 3);   // drawn while swinging
   await page.evaluate(() => window.__fl.setProgress(3));                            // Gebaut: as built
   await page.waitForTimeout(100);
-  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0, 0]);
+  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0]);
   await choose(page, 'Modell', 'Ganzes Haus');                      // the routes are listed there
   await choose(page, 'Standpunkt', 'Um und durch das Haus');        // Eingerichtet again,
   await page.waitForTimeout(4000);                                                  // but the tour (the film)
-  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0, 0, 0]);       // sees them as built
+  expect(Object.values(await at()).map((s) => s.pos)).toEqual([0, 0, 0, 0]);       // sees them as built
 });
