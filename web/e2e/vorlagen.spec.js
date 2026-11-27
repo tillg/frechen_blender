@@ -98,8 +98,8 @@ test('the house page links the photo pages', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Fotos & Vorlagen' })).toHaveAttribute('href', 'vorlagen.html');
 });
 
-test('the Garderobe marker shows in the Garderobe corner', async ({ page }) => {
-  await house(page, 'cam=2.1,7.6,1.6&at=1.5,5.6,1.2&p=4&cut=all&fov=50');
+test('the Garderobe marker shows at the Garderobe in the Flur (#61)', async ({ page }) => {
+  await house(page, 'cam=3.8,8.4,1.6&at=3.8,6.4,1.4&p=4&cut=all&fov=50');
   await expect(page.locator('a.fl-vorlage[data-key="garderobe"]')).toBeVisible();
 });
 

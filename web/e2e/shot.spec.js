@@ -9,7 +9,7 @@ const ROOT = new URL('../../', import.meta.url).pathname;
 for (const [name, args, start] of [
   ['haustuer', ['EG_Haustuer'], /^http:\/\/localhost:5377\/\?cam=/],
   ['kueche', ['Kueche_Herd', '--page', 'kueche'], /^http:\/\/localhost:5377\/kueche\.html\?cam=/],
-  ['gaeste_wc', ['GaesteWC_Garderobe', '--page', 'gaeste_wc'], /^http:\/\/localhost:5377\/gaeste_wc\.html\?cam=/],
+  ['gaeste_wc', ['GaesteWC_Schuhregal', '--page', 'gaeste_wc'], /^http:\/\/localhost:5377\/gaeste_wc\.html\?cam=/],
   ['regal', ['Regal_Moebel', '--page', 'regal'], /^http:\/\/localhost:5377\/regal\.html\?cam=/],
   ['schrankbett', ['Schrankbett_Moebel', '--page', 'schrankbett'], /^http:\/\/localhost:5377\/schrankbett\.html\?cam=/],
   ['gaestebad', ['Gaestebad_Sanitaer', '--page', 'gaestebad'], /^http:\/\/localhost:5377\/gaestebad\.html\?cam=/],

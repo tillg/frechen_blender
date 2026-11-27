@@ -8,7 +8,7 @@ const file = new URL('../public/gaeste_wc.glb', import.meta.url);
 const glb = existsSync(file) ? readFileSync(file) : null;
 const DIMS = glb ? JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString()).scenes[0].extras.dims : [];
 
-test('Gäste-WC page draws WC, Garderobe and basin with the core dimensions, without errors', async ({ page }) => {
+test('Gäste-WC page draws the Duschbad (#61) and the shoe rack with the core dimensions, without errors', async ({ page }) => {
   const errors = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
@@ -17,8 +17,8 @@ test('Gäste-WC page draws WC, Garderobe and basin with the core dimensions, wit
   expect(await page.evaluate(() => window.__gaeste_wc.edges)).toBeGreaterThan(50);
   expect(DIMS.length).toBeGreaterThan(10);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
-  for (const t of ['Raumbreite 101', 'Raumtiefe 110', 'WC 101', 'Garderobe 94', 'Tür 76', '40 frei', '83 frei', 'HWB 40', 'Spiegel 54 × 74',
-                   'Kleiderstange 94 auf 178', 'Schuhregal 33 tief', 'Hakenbrett 110']) {
+  for (const t of ['Raumbreite 205', 'Raumtiefe 130', 'Dusche 90', 'Glas 75', 'Einstieg 55', 'Tür 76', 'HWB 40', 'Spiegel 40 × 60',
+                   'Schuhregal 80', '33 tief']) {
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['Vom Flur', 'Gerendert']]) {

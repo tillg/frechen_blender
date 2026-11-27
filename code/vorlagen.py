@@ -48,7 +48,7 @@ BEREICHE = [
         foto("2026-09-24 input/table_shape.png", "Tische mit Bockgestell – die Form des Esstischs"),
         foto("2026-11-05 input/stuhl.png", "Brettstuhl mit Herz – die Stühle am Esstisch"),
     ]},
-    {"key": "garderobe", "title": "Garderobe & Gäste-WC", "room": ("Garderobe", "EG"), "at": (1.85, 6.4, 1.6), "fotos": [
+    {"key": "garderobe", "title": "Garderobe & Gäste-WC", "room": ("Flur", "EG"), "at": (3.8, 6.9, 1.6), "fotos": [   # #61
         foto("2026-11-10 input/garderobe mallnitz.jpeg", "Garderobe in Mallnitz – Bank, Hakenleiste, Hutablage"),
         foto("2026-11-10 input/toilette mallnitz.jpeg", "Toilette in Mallnitz – grüne Fliesen und Spiegel, bei uns werden die Fliesen blau"),
         foto("2026-09-24 input/back_door_of_the_house.jpg", "Die Hintertür"),

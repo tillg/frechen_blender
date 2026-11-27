@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="836" height="1522" viewBox="0 0 836 1522">
+<rect width="100%" height="100%" fill="#fff"/>
+<g transform="translate(0 30)">
+<text x="10" y="-8" font-size="17" font-weight="bold" font-family="Helvetica, Arial">Variante A – Dusche West (Fenster in der Dusche)</text>
+<rect x="99.0" y="191.6" width="34.1" height="248.9" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="99.0" y="0.0" width="34.1" height="85.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="104.5" y="310.9" width="23.1" height="66.0" fill="#dff" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<text x="60.5" y="344.3" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 60.5 344.3)">Fenster</text>
+<rect x="133.1" y="404.3" width="225.3" height="36.3" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="363.1" width="45.5" height="104.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="308.1" width="411.6" height="55.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="864.6" y="308.1" width="-28.6" height="55.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="191.6" width="32.9" height="116.5" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="0.0" width="32.9" height="70.8" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="54.3" width="225.3" height="16.5" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="0.0" width="225.3" height="54.3" fill="#eee" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<rect x="391.3" y="30.1" width="192.4" height="33.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="685.9" y="30.1" width="150.2" height="33.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="403.9" y="363.1" width="271.5" height="104.4" fill="#f4efe4" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<text x="539.0" y="423.5" font-size="13" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Speis</text>
+<rect x="702.9" y="363.1" width="133.1" height="104.4" fill="#f4efe4" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<text x="770.0" y="423.5" font-size="13" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Küche</text>
+<text x="245.3" y="33.0" font-size="12" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Bad Großeltern</text>
+<text x="484.0" y="16.5" font-size="12" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Oma &amp; Opa</text>
+<rect x="133.1" y="267.0" width="225.3" height="16.4" fill="none" fill-opacity="1" stroke="#c00" stroke-width="1" stroke-dasharray="5 4"/>
+<text x="245.3" y="280.5" font-size="10" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial">alte Wand</text>
+<line x1="133.1" y1="85.0" x2="239.7" y2="85.0" stroke="#333" stroke-width="3"/><polyline points="133.1,191.6 143.5,191.1 153.9,189.6 164.0,187.0 173.9,183.5 183.3,179.0 192.3,173.7 200.7,167.4 208.5,160.4 215.5,152.6 221.7,144.2 227.1,135.3 231.6,125.8 235.1,116.0 237.6,105.8 239.2,95.5 239.7,85.0" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="49.5" y="137.5" font-size="12" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial" transform="rotate(-90 49.5 137.5)">Hintertür</text>
+<text x="19.8" y="137.5" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 19.8 137.5)">(raus in den Garten)</text>
+<line x1="358.4" y1="70.8" x2="237.6" y2="70.8" stroke="#333" stroke-width="3"/><polyline points="358.4,191.6 346.5,191.0 334.8,189.3 323.3,186.4 312.2,182.4 301.4,177.4 291.3,171.3 281.8,164.2 273.0,156.2 265.0,147.5 258.0,137.9 251.9,127.8 246.8,117.1 242.8,105.9 239.9,94.4 238.2,82.7 237.6,70.8" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="412.5" y="132.0" font-size="11" text-anchor="start" fill="#000" font-weight="normal" font-family="Helvetica, Arial">zum großen Flur</text>
+<text x="245.3" y="110.0" font-size="12" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial">Durchgang (hinterer Flur)</text>
+<text x="605.0" y="176.0" font-size="14" text-anchor="middle" fill="#555" font-weight="bold" font-family="Helvetica, Arial">großer Flur</text>
+
+<rect x="133.1" y="245.0" width="103.4" height="16.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="320.1" y="245.0" width="38.3" height="16.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="261.4" width="99.0" height="142.9" fill="#e8eef6" fill-opacity="1" stroke="none" stroke-width="1"/>
+<line x1="232.1" y1="404.3" x2="232.1" y2="321.8" stroke="#2a7ab0" stroke-width="4"/>
+<text x="182.6" y="346.5" font-size="13" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial">Dusche</text>
+<text x="182.6" y="365.2" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">90 × 130</text>
+<text x="222.2" y="297.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 222.2 297.0)">Einstieg 55</text>
+<circle cx="182.6" cy="390.5" r="6" fill="none" stroke="#333"/>
+<rect x="255.2" y="383.4" width="44.0" height="20.9" fill="#fff" fill-opacity="1" stroke="#333" stroke-width="1"/><polygon points="297.0,383.4 297.0,383.4 296.3,374.0 294.3,365.2 291.2,357.7 287.1,351.9 282.3,348.3 277.2,347.1 272.1,348.3 267.3,351.9 263.2,357.7 260.1,365.2 258.1,374.0 257.4,383.4 257.4,383.4" fill="#fff" stroke="#333" stroke-width="1.2"/><text x="277.2" y="368.0" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">WC</text>
+<rect x="327.6" y="286.0" width="30.8" height="44.0" fill="#fff" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<text x="341.0" y="308.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 341.0 308.0)">HWB</text>
+<line x1="356.4" y1="335.5" x2="356.4" y2="280.5" stroke="#2a7ab0" stroke-width="3"/>
+<line x1="320.1" y1="245.0" x2="320.1" y2="161.4" stroke="#333" stroke-width="3"/><polyline points="236.5,245.0 236.9,236.8 238.1,228.7 240.1,220.7 242.9,213.0 246.4,205.6 250.6,198.5 255.5,191.9 261.0,185.9 267.1,180.3 273.7,175.5 280.7,171.2 288.1,167.7 295.8,165.0 303.8,163.0 311.9,161.8 320.1,161.4" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="278.3" y="253.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">Tür 76</text>
+<rect x="133.1" y="212.0" width="92.4" height="33.0" fill="#d9b98a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<text x="179.3" y="232.1" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">Schuhregal</text>
+<line x1="133.1" y1="416.9" x2="358.4" y2="416.9" stroke="#c00" stroke-width="1"/><text x="245.7" y="411.4" font-size="11" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial">205</text>
+<line x1="368.5" y1="404.3" x2="368.5" y2="261.4" stroke="#c00" stroke-width="1"/><text x="368.5" y="327.3" font-size="11" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial"></text>
+<text x="377.3" y="333.3" font-size="11" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 377.3 333.3)">130</text>
+<text x="826" y="16" font-size="12" text-anchor="end" font-family="Helvetica, Arial">N ↑   1 m = 110 px</text>
+</g>
+<g transform="translate(0 538)">
+<text x="10" y="-8" font-size="17" font-weight="bold" font-family="Helvetica, Arial">Variante B – Dusche Ost</text>
+<rect x="99.0" y="191.6" width="34.1" height="248.9" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="99.0" y="0.0" width="34.1" height="85.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="104.5" y="310.9" width="23.1" height="66.0" fill="#dff" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<text x="60.5" y="344.3" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 60.5 344.3)">Fenster</text>
+<rect x="133.1" y="404.3" width="225.3" height="36.3" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="363.1" width="45.5" height="104.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="308.1" width="411.6" height="55.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="864.6" y="308.1" width="-28.6" height="55.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="191.6" width="32.9" height="116.5" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="0.0" width="32.9" height="70.8" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="54.3" width="225.3" height="16.5" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="0.0" width="225.3" height="54.3" fill="#eee" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<rect x="391.3" y="30.1" width="192.4" height="33.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="685.9" y="30.1" width="150.2" height="33.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="403.9" y="363.1" width="271.5" height="104.4" fill="#f4efe4" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<text x="539.0" y="423.5" font-size="13" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Speis</text>
+<rect x="702.9" y="363.1" width="133.1" height="104.4" fill="#f4efe4" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<text x="770.0" y="423.5" font-size="13" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Küche</text>
+<text x="245.3" y="33.0" font-size="12" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Bad Großeltern</text>
+<text x="484.0" y="16.5" font-size="12" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Oma &amp; Opa</text>
+<rect x="133.1" y="267.0" width="225.3" height="16.4" fill="none" fill-opacity="1" stroke="#c00" stroke-width="1" stroke-dasharray="5 4"/>
+<text x="245.3" y="280.5" font-size="10" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial">alte Wand</text>
+<line x1="133.1" y1="85.0" x2="239.7" y2="85.0" stroke="#333" stroke-width="3"/><polyline points="133.1,191.6 143.5,191.1 153.9,189.6 164.0,187.0 173.9,183.5 183.3,179.0 192.3,173.7 200.7,167.4 208.5,160.4 215.5,152.6 221.7,144.2 227.1,135.3 231.6,125.8 235.1,116.0 237.6,105.8 239.2,95.5 239.7,85.0" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="49.5" y="137.5" font-size="12" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial" transform="rotate(-90 49.5 137.5)">Hintertür</text>
+<text x="19.8" y="137.5" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 19.8 137.5)">(raus in den Garten)</text>
+<line x1="358.4" y1="70.8" x2="237.6" y2="70.8" stroke="#333" stroke-width="3"/><polyline points="358.4,191.6 346.5,191.0 334.8,189.3 323.3,186.4 312.2,182.4 301.4,177.4 291.3,171.3 281.8,164.2 273.0,156.2 265.0,147.5 258.0,137.9 251.9,127.8 246.8,117.1 242.8,105.9 239.9,94.4 238.2,82.7 237.6,70.8" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="412.5" y="132.0" font-size="11" text-anchor="start" fill="#000" font-weight="normal" font-family="Helvetica, Arial">zum großen Flur</text>
+<text x="245.3" y="110.0" font-size="12" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial">Durchgang (hinterer Flur)</text>
+<text x="605.0" y="176.0" font-size="14" text-anchor="middle" fill="#555" font-weight="bold" font-family="Helvetica, Arial">großer Flur</text>
+
+<rect x="133.1" y="245.0" width="37.4" height="16.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="254.1" y="245.0" width="104.3" height="16.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="259.4" y="261.4" width="99.0" height="142.9" fill="#e8eef6" fill-opacity="1" stroke="none" stroke-width="1"/>
+<line x1="259.4" y1="404.3" x2="259.4" y2="321.8" stroke="#2a7ab0" stroke-width="4"/>
+<text x="309.1" y="346.5" font-size="13" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial">Dusche</text>
+<text x="309.1" y="365.2" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">90 × 130</text>
+<text x="249.7" y="297.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 249.7 297.0)">Einstieg 55</text>
+<circle cx="309.1" cy="390.5" r="6" fill="none" stroke="#333"/>
+<rect x="170.5" y="383.4" width="44.0" height="20.9" fill="#fff" fill-opacity="1" stroke="#333" stroke-width="1"/><polygon points="212.3,383.4 212.3,383.4 211.6,374.0 209.6,365.2 206.5,357.7 202.4,351.9 197.6,348.3 192.5,347.1 187.4,348.3 182.6,351.9 178.5,357.7 175.4,365.2 173.4,374.0 172.7,383.4 172.7,383.4" fill="#fff" stroke="#333" stroke-width="1.2"/><text x="192.5" y="368.0" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">WC</text>
+<rect x="133.1" y="264.0" width="30.8" height="44.0" fill="#fff" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<text x="150.7" y="286.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 150.7 286.0)">HWB</text>
+<line x1="254.1" y1="245.0" x2="254.1" y2="161.4" stroke="#333" stroke-width="3"/><polyline points="170.5,245.0 170.9,236.8 172.1,228.7 174.1,220.7 176.9,213.0 180.4,205.6 184.6,198.5 189.5,191.9 195.0,185.9 201.1,180.3 207.7,175.5 214.7,171.2 222.1,167.7 229.8,165.0 237.8,163.0 245.9,161.8 254.1,161.4" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="212.3" y="253.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">Tür 76</text>
+<rect x="264.0" y="212.0" width="94.4" height="33.0" fill="#d9b98a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<text x="311.3" y="232.1" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">Schuhregal</text>
+<line x1="133.1" y1="416.9" x2="358.4" y2="416.9" stroke="#c00" stroke-width="1"/><text x="245.7" y="411.4" font-size="11" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial">205</text>
+<line x1="368.5" y1="404.3" x2="368.5" y2="261.4" stroke="#c00" stroke-width="1"/><text x="368.5" y="327.3" font-size="11" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial"></text>
+<text x="377.3" y="333.3" font-size="11" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 377.3 333.3)">130</text>
+<text x="826" y="16" font-size="12" text-anchor="end" font-family="Helvetica, Arial">N ↑   1 m = 110 px</text>
+</g>
+<g transform="translate(0 1045)">
+<text x="10" y="-8" font-size="17" font-weight="bold" font-family="Helvetica, Arial">Garderobe im großen Flur: G1 (Südwand) oder G2 (Nordwand)</text>
+<rect x="99.0" y="191.6" width="34.1" height="248.9" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="99.0" y="0.0" width="34.1" height="85.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="104.5" y="310.9" width="23.1" height="66.0" fill="#dff" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<text x="60.5" y="344.3" font-size="11" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 60.5 344.3)">Fenster</text>
+<rect x="133.1" y="404.3" width="225.3" height="36.3" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="363.1" width="45.5" height="104.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="308.1" width="411.6" height="55.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="864.6" y="308.1" width="-28.6" height="55.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="191.6" width="32.9" height="116.5" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="358.4" y="0.0" width="32.9" height="70.8" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="54.3" width="225.3" height="16.5" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="0.0" width="225.3" height="54.3" fill="#eee" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<rect x="391.3" y="30.1" width="192.4" height="33.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="685.9" y="30.1" width="150.2" height="33.0" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="403.9" y="363.1" width="271.5" height="104.4" fill="#f4efe4" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<text x="539.0" y="423.5" font-size="13" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Speis</text>
+<rect x="702.9" y="363.1" width="133.1" height="104.4" fill="#f4efe4" fill-opacity="1" stroke="#999" stroke-width="1"/>
+<text x="770.0" y="423.5" font-size="13" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Küche</text>
+<text x="245.3" y="33.0" font-size="12" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Bad Großeltern</text>
+<text x="484.0" y="16.5" font-size="12" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">Oma &amp; Opa</text>
+<rect x="133.1" y="267.0" width="225.3" height="16.4" fill="none" fill-opacity="1" stroke="#c00" stroke-width="1" stroke-dasharray="5 4"/>
+<text x="245.3" y="280.5" font-size="10" text-anchor="middle" fill="#c00" font-weight="normal" font-family="Helvetica, Arial">alte Wand</text>
+<line x1="133.1" y1="85.0" x2="239.7" y2="85.0" stroke="#333" stroke-width="3"/><polyline points="133.1,191.6 143.5,191.1 153.9,189.6 164.0,187.0 173.9,183.5 183.3,179.0 192.3,173.7 200.7,167.4 208.5,160.4 215.5,152.6 221.7,144.2 227.1,135.3 231.6,125.8 235.1,116.0 237.6,105.8 239.2,95.5 239.7,85.0" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="49.5" y="137.5" font-size="12" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial" transform="rotate(-90 49.5 137.5)">Hintertür</text>
+<text x="19.8" y="137.5" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial" transform="rotate(-90 19.8 137.5)">(raus in den Garten)</text>
+<line x1="358.4" y1="70.8" x2="237.6" y2="70.8" stroke="#333" stroke-width="3"/><polyline points="358.4,191.6 346.5,191.0 334.8,189.3 323.3,186.4 312.2,182.4 301.4,177.4 291.3,171.3 281.8,164.2 273.0,156.2 265.0,147.5 258.0,137.9 251.9,127.8 246.8,117.1 242.8,105.9 239.9,94.4 238.2,82.7 237.6,70.8" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="412.5" y="132.0" font-size="11" text-anchor="start" fill="#000" font-weight="normal" font-family="Helvetica, Arial">zum großen Flur</text>
+<text x="245.3" y="110.0" font-size="12" text-anchor="middle" fill="#000" font-weight="bold" font-family="Helvetica, Arial">Durchgang (hinterer Flur)</text>
+<text x="605.0" y="176.0" font-size="14" text-anchor="middle" fill="#555" font-weight="bold" font-family="Helvetica, Arial">großer Flur</text>
+
+<rect x="133.1" y="245.0" width="103.4" height="16.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="320.1" y="245.0" width="38.3" height="16.4" fill="#9a9a9a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="133.1" y="261.4" width="225.3" height="142.9" fill="#f2f2f2" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="245.3" y="335.5" font-size="11" text-anchor="middle" fill="#666" font-weight="normal" font-family="Helvetica, Arial">neues Bad (Variante A oder B)</text>
+<rect x="133.1" y="212.0" width="92.4" height="33.0" fill="#d9b98a" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="407.0" y="304.7" width="220.0" height="3.4" fill="#a0522d" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="407.0" y="269.5" width="220.0" height="35.2" fill="#a0522d" fill-opacity="0.25" stroke="#a0522d" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="517.0" y="289.3" font-size="12" text-anchor="middle" fill="#7a3a10" font-weight="bold" font-family="Helvetica, Arial">G1 Garderobe Südwand ~200</text>
+<rect x="401.5" y="63.1" width="170.5" height="3.4" fill="#3a6ea5" fill-opacity="1" stroke="#333" stroke-width="1"/>
+<rect x="401.5" y="66.6" width="170.5" height="35.2" fill="#3a6ea5" fill-opacity="0.25" stroke="#3a6ea5" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="486.2" y="88.0" font-size="12" text-anchor="middle" fill="#24507e" font-weight="bold" font-family="Helvetica, Arial">G2 Garderobe Nordwand ~155</text>
+<line x1="583.7" y1="30.1" x2="583.7" y2="-72.0" stroke="#333" stroke-width="3"/><polyline points="685.9,30.1 685.4,20.1 683.9,10.2 681.4,0.5 678.1,-9.0 673.8,-18.0 668.6,-26.6 662.7,-34.7 655.9,-42.1 648.5,-48.9 640.4,-54.8 631.8,-60.0 622.8,-64.3 613.3,-67.6 603.6,-70.1 593.7,-71.6 583.7,-72.0" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="634.7" y="77.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">Tür Oma&amp;Opa</text>
+
+<text x="792.0" y="330.0" font-size="10" text-anchor="middle" fill="#000" font-weight="normal" font-family="Helvetica, Arial">Küchentür</text>
+<text x="826" y="16" font-size="12" text-anchor="end" font-family="Helvetica, Arial">N ↑   1 m = 110 px</text>
+</g>
+</svg>

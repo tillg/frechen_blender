@@ -40,7 +40,7 @@ def test_plan_room_anchors_lie_inside_the_footprint_and_outside_every_wall():
     eg = [r[0] for r in rooms if r[1] == "EG"]
     og = [r[0] for r in rooms if r[1] == "OG"]
     assert len(eg) + len(og) == len(rooms)
-    assert {"Großeltern", "Bad Großeltern", "WC Großeltern", "Flur", "WC", "Garderobe", "Bibliothek",
+    assert {"Großeltern", "Bad Großeltern", "WC Großeltern", "Flur", "Duschbad", "Bibliothek",
             "Neuer Windfang", "Küche", "Speis", "Stube", "Elektroraum", "Heizung"} == set(eg)
     assert {"Schlafen bzw. Yoga", "Schlafen", "Bad", "WC", "Flur", "Hauswirtschaftsraum"} == set(og)
     rects = list(house_core.FOOT) + [house_core.ANNEX]

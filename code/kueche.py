@@ -3,7 +3,7 @@ input/2026-11-09 input/speis_kueche_v6.svg (the kitchen door measured from a pho
 On the north wall the Spülzeile from the kitchen door's frame into the NE corner, under the Abzug
 (flue box, from 1.80 m up); on the east wall the Ostzeile, 60 cm from the Halbinsel's front, then the
 Wamsler wood cooker, its pipe from its left (north) up and at 1.95 m into the Abzug, the Kaminschacht (#26b); the Halbinsel with the cooktop towards the
-dining table, under the old steel hood hung from the ceiling (#26); the Besenschrank in the NW corner, behind the kitchen door opened into the room. No wall
+dining table, its Muldenlüfter (downdraft vent) between the burners (#61: the hood of #26 gone); the Besenschrank in the NW corner, behind the kitchen door opened into the room. No wall
 cabinets. All cabinets in the style of input/2026-11-10 input/kueche_mallnitz.png, painted RAL 5014
 (hc.mallnitz_front); east of the sink, where the Herd stands in front of the Spülzeile, a blind
 cabinet, its granite top (like the Ostzeile's) running up to the Herd.
@@ -24,7 +24,7 @@ XW, YN, XE = 5.492, 5.847, 8.555             # wall faces (2 mm clear): Speis wa
 SINK_X0 = 7.05                               # Spülzeile: from the kitchen door's frame (7.03) ...
 HY0, HY1 = 4.30, 5.10                        # the Herd (80) along the east wall, right after the Ostzeile
 OSTZEILE = (3.66, 4.26)                      # the Ostzeile's door: 60 from the Halbinsel's front
-KOCHFELD = (7.18, 7.95, 3.12, 3.58)          # the Halbinsel's cooktop: x from, to, y from, to
+KOCHFELD = (7.18, 7.95, 3.12, 3.58)          # the Halbinsel's cooktop: x from, to, y from, to (Muldenlüfter in its middle)
 ABZUG = (8.227, 5.55, 1.80)                  # Abzug (Kaminschacht): x from, y from (depth 30 assumed), underside
 BESEN = (6.002, 5.297, 2.20)                 # Besenschrank: x to, y from (incl. door), height
 
@@ -86,30 +86,20 @@ def kueche_neu(c="Kueche", x0=0.0, y0=0.0):
                          for i in range(16)], zt + 0.005, zt + 0.006)
     ofen.wamsler(c, 7.972 + dx, HY0 + dy, rng, (ABZUG[1] + dy, ABZUG[2] + 0.15))   # pipe into the Abzug (#26b)
 
-    # hood of the old form over the cooktop (#26), hung from the ceiling: rolled lip 65 above the cooktop,
-    # straight skirt with a rail on the cook's (north) side, canopy narrowing on all sides to the stack
-    h, rh = c + "_Haube", rng.random()
-    xm, ym, zl = (KOCHFELD[0] + KOCHFELD[1]) / 2, (KOCHFELD[2] + KOCHFELD[3]) / 2, zt + 0.005 + 0.65
-    xa, xb, ya, yb, z1, z2 = xm - 0.45, xm + 0.45, ym - 0.30, ym + 0.30, zl + 0.14, zl + 0.42
-    B(h, "Stahl", xa - 0.01, xb + 0.01, ya - 0.01, yb + 0.01, zl, zl + 0.02, rh)
-    B(h, "Stahl", xa, xb, ya, yb, zl + 0.02, z1, rh)
-    v = [(xa, ya, z1), (xb, ya, z1), (xb, yb, z1), (xa, yb, z1),
-         (xm - 0.15, ym - 0.15, z2), (xm + 0.15, ym - 0.15, z2), (xm + 0.15, ym + 0.15, z2), (xm - 0.15, ym + 0.15, z2)]
-    hc.add(c, h, "Stahl", [(x + dx, y + dy, z) for x, y, z in v],
-           [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], rh)
-    B(h, "Stahl", xm - 0.135, xm + 0.135, ym - 0.135, ym + 0.135, z2, hc.Z_EG_TOP + 0.02, rh)   # into the ceiling
-    hc.prism(c, h, "Stahl", hc.frame("y"), [(yb + 0.04 + dy + 0.01 * math.cos(math.pi * i / 4),
-                                             zl + 0.08 + 0.01 * math.sin(math.pi * i / 4)) for i in range(8)],
-             xa + 0.02 + dx, xb - 0.02 + dx, rng.random())                            # rail
-    for x in (xa + 0.05, xb - 0.05):
-        B(h, "Stahl", x - 0.005, x + 0.005, yb, yb + 0.04, zl + 0.075, zl + 0.085)
-    # along its middle a strip under the lip with 4 built-in spots (#22), one light for the four under it
-    sa, sb = xa + 0.05, xb - 0.05
-    B(h, "Metall", sa, sb, ym - 0.03, ym + 0.03, zl - 0.02, zl, rh)
-    for k in range(4):
-        x = sa + (sb - sa) * (k + 0.5) / 4
-        B(h, "Opalglas", x - 0.02, x + 0.02, ym - 0.02, ym + 0.02, zl - 0.024, zl - 0.02, rh)
-    hc.WALL_LIGHTS.append((xm + dx, ym + dy, zl - 0.17))
+    # Muldenlüfter (#61, the hood of #26 gone): a vent along y between the left and the right burners, drawing the
+    # air down; a steel frame round a dark slot under five cross bars. Its one rnd and three burnt draws: the hood's
+    # four, so the Besenschrank keeps its rnd
+    rv, vx = rng.random(), (KOCHFELD[0] + KOCHFELD[1]) / 2 - 0.005
+    for _ in range(3):
+        rng.random()
+    va, vb, ya, yb, z0 = vx - 0.055, vx + 0.055, KOCHFELD[2] + 0.03, KOCHFELD[3] - 0.03, zt + 0.005
+    B(o, "Eisen", va + 0.012, vb - 0.012, ya + 0.012, yb - 0.012, z0, z0 + 0.001, rv)                     # dark slot
+    for xa, xb, yc, yd in ((va, vb, ya, ya + 0.012), (va, vb, yb - 0.012, yb),
+                           (va, va + 0.012, ya + 0.012, yb - 0.012), (vb - 0.012, vb, ya + 0.012, yb - 0.012)):
+        B(o, "Metall", xa, xb, yc, yd, z0, z0 + 0.003, rv)                                   # frame
+    for k in range(5):
+        y = ya + 0.012 + (yb - ya - 0.024) * (k + 1) / 6
+        B(o, "Metall", va + 0.012, vb - 0.012, y - 0.004, y + 0.004, z0 + 0.001, z0 + 0.002, rv)   # cross bars
     # Besenschrank in the NW corner, door to the south, on a plinth like the base units
     bx, by, bh = BESEN
     B(o, "Front", XW, bx, by + 0.02, YN, zp, bh)

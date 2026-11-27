@@ -120,7 +120,7 @@ def test_garden_extras(glb):
     assert len(ex["garden"]["no_grass"]) == len(lay.no_grass) and len(ex["garden"]["windrose"]) == 5
     assert len(ex["garden"]["shrubs"]) == len(lay.shrubs)
     assert ex["garden"]["DENSITY"] == house_core.DENSITY and ex["garden"]["FAR_DENS"] == house_core.FAR_DENS
-    assert len(ex["room_lights"]) == 1 and len(ex["wall_lights"]) == 63 and ex["Z_OG"] == house_core.Z_OG
+    assert len(ex["room_lights"]) == 1 and len(ex["wall_lights"]) == 59 and ex["Z_OG"] == house_core.Z_OG   # #61: 4 fewer
     assert ex["ROOM_LIGHT_H"] == house_core.ROOM_LIGHT_H
     assert ex["outside_lights"] == [list(p) for p in BP.outside_lights] and len(ex["outside_lights"]) == 8
     assert "lamp_lights" not in ex                                        # no always-on lamps (#22)
@@ -222,10 +222,9 @@ def test_bad_export(tmp_path):
     g = json.loads(data[20:20 + jlen])
     names = {n["name"] for n in g["nodes"]}
     assert {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank", "Bad_Bodenbelag",
-            "Bad_Boden", "Bad_Schiebetuer_hinten", "Bad_Schiebetuer_vorne"} == names
+            "Bad_Boden", "Bad_Schiebetuer"} == names
     slide = {n["name"]: n["extras"]["slide"] for n in g["nodes"] if "slide" in n["extras"]}   # glTF (x, z, -y)
-    assert {k: [round(c, 3) + 0.0 for c in v] for k, v in slide.items()} == {
-        "Bad_Schiebetuer_hinten": [-0.964, 0.0, 0.0], "Bad_Schiebetuer_vorne": [-0.964, 0.0, 0.0]}
+    assert {k: [round(c, 3) + 0.0 for c in v] for k, v in slide.items()} == {"Bad_Schiebetuer": [-0.979, 0.0, 0.0]}
     bp = house_core.build_bad()
     house_core.build()
     ex = g["scenes"][0]["extras"]
@@ -239,7 +238,7 @@ def test_kueche_export(tmp_path):
     data = out.read_bytes()
     jlen = struct.unpack_from("<I", data, 12)[0]
     g = json.loads(data[20:20 + jlen])
-    assert {n["name"] for n in g["nodes"]} == {"Kueche_Kueche", "Kueche_Herd", "Kueche_Haube", "Kueche_Waende"}
+    assert {n["name"] for n in g["nodes"]} == {"Kueche_Kueche", "Kueche_Herd", "Kueche_Waende"}
     bp = house_core.build_kueche()
     house_core.build()
     ex = g["scenes"][0]["extras"]
@@ -254,7 +253,7 @@ def test_gaeste_wc_export(tmp_path):
     jlen = struct.unpack_from("<I", data, 12)[0]
     g = json.loads(data[20:20 + jlen])
     assert {n["name"] for n in g["nodes"]} == {"GaesteWC_Waende", "GaesteWC_Innentueren", "GaesteWC_Sanitaer", "GaesteWC_Spiegel",
-                                              "GaesteWC_Fliesen", "GaesteWC_Garderobe", "GaesteWC_Kleidung", "GaesteWC_WC_Tuer",
+                                              "GaesteWC_Fliesen", "GaesteWC_Schuhregal", "GaesteWC_Kleidung", "GaesteWC_WC_Tuer",
                                               "GaesteWC_Windfangtuer", "GaesteWC_Hintertuer", "GaesteWC_Fenster_Tueren"}
     assert not any("slide" in n["extras"] for n in g["nodes"])
     swing = {n["name"]: round(n["extras"]["swing"], 6) for n in g["nodes"] if "swing" in n["extras"]}   # radians about glTF y
