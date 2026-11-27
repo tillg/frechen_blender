@@ -4,9 +4,9 @@ south end of the east wall (hinged south, open 90 deg into the Bad; 25 cm off th
 levers clears the Wandlampe left of the window). Along the back wall (west, opposite the door) two walk-in showers on
 one strip 90 deep (#33): a head in each back corner (SW, NW), one pane per shower from its side wall towards the
 middle, 60 clear between the panes (the way in), the room's limestone floor running through; the strip's walls clad
-in limestone like the Bad Großeltern's, to 2.0, but on the north wall only to 1.20: that wall is the partition to the
-Waschküche, whose top metre is the Oberlicht (#30, oberlicht(): Milchglas in a pine lining from 1.20 to the ceiling,
-the north pane ending on its first mullion), so nothing else on it reaches above 1.20. The toilet on the north wall between
+in limestone like the Bad Großeltern's, to 2.0, but on the north wall only to 1.70: that wall is the partition to the
+Waschküche, whose top half metre is the Oberlicht (#30, #61; oberlicht(): Milchglas in a pine lining from 1.70 to the
+ceiling, the north pane ending on its first mullion), so nothing else on it reaches above 1.70. The toilet on the north wall between
 the glass and the basin (Taubenblau tiles on the north wall and on the east wall down to the door); the Waschbecken
 einzeln 60 on the east wall north of the door under a mirror 80 x 85 in a 10 cm wooden frame, two Wandlampen over it,
 one left of the window (seen from inside).
@@ -29,7 +29,8 @@ XG = WI + 0.90                               # the showers' strip along the west
 YM = (YS + YN) / 2                           # the middle of the west wall: the way in
 PA, PB = YM - 0.30 - 0.012, YM + 0.30 + 0.012   # panes YS .. PA and PB .. YN: their rails (12) leave 60 clear
 HU = 0.30                                    # shower heads: 30 from the south and north wall
-SILL = 1.20                                  # north wall (Waschküche): nothing above 1.20, the Oberlicht's sill (#30)
+SILL = 1.70                                  # north wall (Waschküche): nothing above it, the Oberlicht's sill (#30; #61: half
+                                             # as high as the first 1.00, at the ceiling)
 OBERLICHT = (WI + 0.10, WO - 0.10)           # the Oberlicht in the north wall: SILL up to the ceiling, 10 cm piers
 PFOSTEN = (XG, XG + 1.0)                     # its two mullions: the first on the shower glass line (the pane ends on it)
 TX = XG + 0.66                               # toilet axis on the north wall

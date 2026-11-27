@@ -10,7 +10,7 @@ await startSubmodel({
     top: ['Von oben', [1.53, -1.4, 8.0], [1.53, -1.399, 0.0]],     // plan, north at the top
     zeile: ['Spülzeile', [1.5, -4.6, 1.6], [1.5, 0.0, 1.0]],        // from the room onto the Spülzeile at the north wall
   },
-  colors: { Kueche_Kueche: 0x8a5a2b, Kueche_Herd: 0x2b5f8e, Kueche_Haube: 0x4f7a5a, Kueche_Waende: 0x8a8a8a },
+  colors: { Kueche_Kueche: 0x8a5a2b, Kueche_Herd: 0x2b5f8e, Kueche_Waende: 0x8a8a8a },
   walls: [[2.72, 2.4, [0, -1.36, 1.2], Math.PI / 2], [3.067, 2.4, [1.5335, 0, 1.2], 0],   // west, north,
           [2.82, 2.4, [3.067, -1.41, 1.2], Math.PI / 2]],                                  // east
   grid: [1.53, -1.4],

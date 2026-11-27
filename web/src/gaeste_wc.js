@@ -1,8 +1,6 @@
-// Gäste-WC sub-model (gaeste_wc.html): the back hall's WC and Garderobe of house_core.build_gaeste_wc()
-// (code/gaeste_wc.py) with the partition, the WC's north wall and door, toilet, the Garderobe (hooks,
-// rod with coats, shoe shelf with shoes) and the hand
-// basin on the Flur wall, drawn by submodel.js. Model origin: the old WC room's inner SW corner; WC
-// and Garderobe span x 0..2.048, y 0..1.099, the Flur north of them (basin at y 1.39..1.79).
+// Gäste-WC sub-model (gaeste_wc.html): the back hall's Duschbad of house_core.build_gaeste_wc() (code/gaeste_wc.py,
+// #61) with its north wall and door, toilet, basin, walk-in shower and the shoe rack in the hall, drawn by
+// submodel.js. Model origin: the room's inner SW corner; the room spans x 0..2.048, y 0..1.299, the hall north of it.
 import { startSubmodel } from './submodel.js';
 
 await startSubmodel({
@@ -12,7 +10,7 @@ await startSubmodel({
     top: ['Von oben', [1.1, 1.0, 9.0], [1.1, 1.001, 0.0]],         // plan, north at the top
     flur: ['Vom Flur', [0.9, 4.4, 1.6], [1.1, 0.6, 1.0]],          // from the Flur looking south (the drawing's section)
   },
-  colors: { GaesteWC_Sanitaer: 0x2b5f8e, GaesteWC_Spiegel: 0x2b5f8e, GaesteWC_Innentueren: 0x8a5a2b, GaesteWC_Garderobe: 0x8a5a2b,
+  colors: { GaesteWC_Sanitaer: 0x2b5f8e, GaesteWC_Spiegel: 0x2b5f8e, GaesteWC_Innentueren: 0x8a5a2b, GaesteWC_Schuhregal: 0x8a5a2b,
             GaesteWC_Kleidung: 0x5a6b3a,
             GaesteWC_Fliesen: 0x4f7a5a, GaesteWC_Waende: 0x8a8a8a },
   walls: [[2.048, 2.4, [1.024, 0, 1.2], 0], [1.933, 2.4, [2.048, 0.9665, 1.2], Math.PI / 2]],   // south, east

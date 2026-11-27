@@ -184,19 +184,19 @@ def test_routes_and_spots_clear_the_oberlicht():
         assert gap(s[3]) >= 0.25, s[0]
 
 
-def test_routes_and_spots_clear_the_kueche_hood():
-    """Issue #26: every camera key of every route and every Standpunkt keeps 0.25 m from the Küche hood, now hung over
-    the Halbinsel's cooktop (the Rundgang passes south of it), from the Wamsler with its pipe up to 1.80 m and from
-    the Küche's cabinets (the Standpunkt moved west of the Halbinsel)."""
+def test_routes_and_spots_clear_the_kueche():
+    """Issue #26: every camera key of every route and every Standpunkt keeps 0.25 m from the Wamsler with its pipe up
+    to 1.80 m and from the Küche's cabinets (the Standpunkt moved west of the Halbinsel); the hood over the cooktop
+    is gone (#61), so nothing of the Küche reaches over the worktops but the Wamsler's pipe."""
     bp = house_core.build()
     boxes = []
-    for o in ("Haube", "Herd", "Kueche"):
+    for o in ("Herd", "Kueche"):
         g = bp.geo[("EG", "EG_" + o)]
         for first, n in bp.parts[("EG", "EG_" + o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
             lo, hi = [min(p[k] for p in vs) for k in range(3)], [max(p[k] for p in vs) for k in range(3)]
             boxes.append((lo, hi))
-    assert len(boxes) > 10 and max(hi[2] for lo, hi in boxes) > house_core.Z_EG_TOP
+    assert len(boxes) > 10 and max(hi[2] for lo, hi in boxes) > 1.80
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in boxes)
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
@@ -355,7 +355,7 @@ def test_routes_and_spots_clear_the_wandlampen():
         else:
             l, h = lamps[j]
             lamps[j] = ([min(a, b) for a, b in zip(l, lo)], [max(a, b) for a, b in zip(h, hi)])
-    assert len(lamps) == 29 + 35 - 2                                      # OG (#33: 3 fewer, #32: 1, 2026-11-25: Flur mirror's 2); EG incl. the Ofen bed (#34: 11, 12 gone)
+    assert len(lamps) == 29 + 35 - 5                                      # OG (#33: 3 fewer, #32: 1, 2026-11-25: Flur mirror's 2); EG incl. the Ofen bed (#34: 11, 12 gone; #61: 31, 33, 34)
     gap = lambda p: min(math.dist(p, [min(max(p[k], lo[k]), hi[k]) for k in range(3)]) for lo, hi in lamps)
     for name, route in tour.ROUTES:
         for f in tour.build_tour(route):
@@ -382,11 +382,12 @@ def test_routes_clear_the_speis_and_essen_furniture():
 
 
 def test_routes_and_spots_clear_the_garderobe():
-    """Issue #27: every camera key of every route and every Standpunkt keeps 0.25 m from the Parts of the
-    Garderobe by the Gäste-WC (hook board, hooks, hat shelf, rod, shoe shelf) and its coats and shoes."""
+    """Issues #27, #61: every camera key of every route and every Standpunkt keeps 0.25 m from the Parts of the
+    Garderobe in the Flur (hook board, hooks, hat shelf, brackets) and its coats, of the shoe rack in the back hall
+    and the shoes."""
     bp = house_core.build()
     boxes = []
-    for o in ("Garderobe", "Kleidung"):
+    for o in ("Garderobe", "Kleidung", "Schuhregal"):
         g = bp.geo[("EG", "EG_" + o)]
         for first, n in bp.parts[("EG", "EG_" + o)]:
             vs = [g["v"][i] for f in g["f"][first:first + n] for i in f]
