@@ -50,6 +50,7 @@ BEREICHE = [
     ]},
     {"key": "garderobe", "title": "Garderobe & Gäste-WC", "room": ("Flur", "EG"), "at": (3.8, 6.9, 1.6), "fotos": [   # #61
         foto("2026-11-10 input/garderobe mallnitz.jpeg", "Garderobe in Mallnitz – Bank, Hakenleiste, Hutablage"),
+        foto("2026-11-27 input/bank-garderobe.jpeg", "Alte Holzbank mit grünen Beinen – die Bank unter der Garderobe im Flur"),
         foto("2026-11-10 input/toilette mallnitz.jpeg", "Toilette in Mallnitz – grüne Fliesen und Spiegel, bei uns werden die Fliesen blau"),
         foto("2026-09-24 input/back_door_of_the_house.jpg", "Die Hintertür"),
     ]},

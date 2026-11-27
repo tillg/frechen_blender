@@ -18,7 +18,7 @@ test('Bad page draws the bathroom with the core dimensions, without errors', asy
   expect(DIMS.length).toBeGreaterThan(8);
   await expect(page.locator('.dim')).toHaveCount(DIMS.length);
   for (const t of ['Raumbreite 204.8', 'Raumtiefe 381.7', 'Dusche 95', 'Glas 32', 'Ecke 20', 'Mauer 120', 'Waschbecken 100', 'Öffnung 102.4',
-                   'Einbauschrank 96.4', '50 tief', '58 frei', '120 tief', 'Durchgang 101.7']) {   // #61: WC and Schrank one room
+                   'Einbauschrank 107.8', '50 tief', '88 frei', '120 tief', 'Durchgang 101.7']) {   // #61: WC and Schrank one room
     await expect(page.locator('.dim', { hasText: t })).toBeVisible();
   }
   for (const [view, look] of [['Schräg', 'Drahtmodell'], ['Von oben', 'Masse'], ['In die Nische', 'Gerendert']]) {

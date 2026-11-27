@@ -22,7 +22,7 @@ def test_every_input_image_is_assigned_once():
                    if p.suffix.lower() in RASTER)
     srcs = [nfc(f["src"]) for b in vorlagen.BEREICHE for f in b["fotos"]]
     doppelt = {nfc(a): nfc(b) for a, b in vorlagen.DOPPELT.items()}
-    assert len(files) == 60
+    assert len(files) == 61                                 # #61: + the Flur bench (bank-garderobe.jpeg)
     assert sorted(srcs + list(doppelt)) == files      # each one exactly once (shown or a duplicate), none missing or extra
     assert set(doppelt.values()) <= set(srcs) and not set(doppelt) & set(srcs)   # a duplicate's photo is shown once
     keys = [b["key"] for b in vorlagen.BEREICHE]
