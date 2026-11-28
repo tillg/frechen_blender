@@ -1,7 +1,7 @@
 """The walkthrough route ("Rundgang"): orbit around the house, in through the east entrance and
 the Windfang round the sofa to the Stube's seating corner (slow turn, pause at the sofa and Ofen) -> Essen, end of the table
-(turn, pause) -> Küche: look down the Speis aisle, out through the Küche door -> Großeltern: into their Bad (look into the shower,
-then the WC, pausing at each), then turn at the wall beside the balcony door -> along the Flur to the back door (turn, pause) -> Bibliothek, back corner (turn, pause at the
+(turn, pause) -> Küche: look down the Speis aisle, out through the Küche door -> Großeltern: into their Bad (look at basin and west window,
+then into WC and shower, pausing at each), then turn at the wall beside the balcony door -> along the Flur to the back door (turn, pause) -> Bibliothek, back corner (turn, pause at the
 piano) -> stairs -> OG: peeks into the first room on the right and the Waschküche -> Schlafen SE,
 back corner (turn, pause at the Kamin), into its Bad to the showers' glass (turn round, pause) and out ->
 peek into the NE room opposite ->
@@ -56,10 +56,10 @@ ROUTE = [
     ("path", [(3.8, 1.6), (3.8, 2.72), (5.0, 2.7), (5.95, 2.72), (6.05, 3.6), (5.95, 4.79)], EYE, WALK),
     turn((3.0, 4.79)),                                                    # down the Speis aisle
     ("path", [(5.95, 4.79), (6.55, 4.6), (6.55, 6.9), (5.3, 7.25), (4.87, 8.0),   # Küche door to the Flur
-              (4.87, 9.25), (3.45, 9.8), (2.5, 10.3), (1.2, 10.35)], EYE, WALK),   # Großeltern: into their Bad
-    turn((0.6, 12.2, 1.2)), ("hold", PAUSE),                              # the walk-in shower
-    turn((0.79, 8.9, 0.6), L), ("hold", PAUSE),                           # the WC in the niche
-    ("path", [(1.2, 10.35), (2.5, 10.6), (3.3, 12.0)], EYE, WALK),        # left of the balcony door
+              (4.87, 9.25), (3.45, 9.8), (2.5, 10.55), (1.2, 10.6)], EYE, WALK),   # Großeltern: into their Bad
+    turn((0.3, 12.0, 1.3)), ("hold", PAUSE),                              # basin and west window (#63)
+    turn((0.79, 8.9, 0.6), L), ("hold", PAUSE),                           # WC and shower in the niche
+    ("path", [(1.2, 10.6), (2.5, 10.75), (3.3, 12.0)], EYE, WALK),        # left of the balcony door
     turn((4.87, 8.75), L),                                                # round to the door
     ("path", [(3.3, 12.0), (3.45, 10.0), (4.87, 9.2), (4.87, 8.0), (3.0, 7.95), (0.95, 7.92)],
      EYE, WALK),                                                          # right, to the back door

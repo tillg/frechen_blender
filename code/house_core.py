@@ -709,9 +709,12 @@ def build_eg():
         (6.458, 7.507, 0, 2.2, "I"), (8.007, 8.476, 1.2, 2.1, "W"),
         regal.FENSTER], out=+1)
     wall(c, 14.351, W_OUT, 0.415, 6.349, z0, z1, [(1.254, 4.880, 0, 2.2, "GD")], out=+1)
+    st = random.getstate()
     wall(c, 0, 0.31, 5.145, 12.473, z0, z1, [
         (5.724, 6.324, 1.57, 2.17, "W"), (7.408, 8.377, 0, 2.3, "I"),
-        (9.12, 9.69, 1.57, 2.17, "W")], out=-1)      # WC Großeltern ("Fenster wird verschoben")
+        (9.12, 9.69, 1.57, 2.17, "W"),               # WC Großeltern ("Fenster wird verschoben")
+        (*bad.WESTFENSTER, z1, "W")], out=-1)        # Bad Großeltern (#63): sill 0.75 to the ceiling
+    restream(st, 3)                                 # the wall's draws till #63: later parts keep their rnd
     wall(c, 0.31, 2.358, 5.145, 5.475, z0, z1)              # WC south (towards the annex)
     wall(c, 2.358, 2.772, 0.415, 5.849, z0, z1)             # west wall Speis/Essen
     entrance_door()                                         # the back door: code/gaeste_wc.py
@@ -724,7 +727,7 @@ def build_eg():
     gaeste_wc.gaeste_wc_neu(c, *gaeste_wc.WC_AT)           # Duschbad (#61) with its north wall, the hall's doors
     garderobe.garderobe_neu(c)                              # the Garderobe on the Flur's south wall (#61)
     # Großeltern: the Bad is open to the bedroom from its niche front (code/bad.py) to the shaft
-    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506), (9.856, 12.33)])   # back Windfang (its door: code/gaeste_wc.py)
+    interior(c, 2.358, 2.657, 6.349, 12.473, [(7.408, 8.506), (bad.BAD_AT[1] + bad.NICHE, 12.33)])   # back Windfang (its door: code/gaeste_wc.py)
     interior(c, 2.358, 10.804, 5.849, 6.349, [(6.10, 6.96, -1, "a", False)],   # Küche door as built (photo,
              # speis_kueche_v6.svg): hinged west, opened 90 deg into the Küche beside the Besenschrank
              ops=[ofen.back_opening()])                                   # the Ofen's back door (Flur)
@@ -739,7 +742,7 @@ def build_eg():
     speis_essen()                                           # B's back, drywall, the Essen's Bauernschrank (#5, #61)
     interior(c, 9.051, 9.351, 8.876, 9.585)                 # offener Kamin – wall ends
     interior(c, 9.051, 9.351, 12.213, 12.473)
-    bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / Schrank niche
+    bad.bad_neu(c, *bad.BAD_AT)                             # Bad Großeltern with its WC / shower niche (#63)
     interior(c, 12.25, 12.38, 6.349, 8.576, [(6.5, 8.45, 1, "ab", False, "glazed")])  # Windfang
     st = random.getstate()
     ofen.ofen_im_haus()
@@ -1403,7 +1406,9 @@ def build_cladding():
             if op["kind"] == "I":                 # the back door has its own heavy frame
                 continue
             a, b, s, h = op["a"], op["b"], op["sill"], op["head"]
-            tr, r = tt(T, T + 0.02), random.random()                  # one rnd per trim (see wall)
+            tr = tt(T, T + 0.02)                                       # one rnd per trim (see wall); the
+            r = 0.5 if (face, a) == (0.0, bad.WESTFENSTER[0]) else random.random()   # Bad's west window (#63) draws
+            # none, so later parts keep their rnd
             lbox(c, o, M, P, a - 0.09, a, *tr, max(s - 0.09, zb), h + 0.09, r)
             lbox(c, o, M, P, b, b + 0.09, *tr, max(s - 0.09, zb), h + 0.09, r)
             lbox(c, o, M, P, a, b, *tr, h, h + 0.09, r)
@@ -1808,7 +1813,7 @@ WANDLAMPEN_EG = [
     (_mid(7.852, 9.051), 12.473, 0, -1, WANDLAMPE_H),        # 26 Bibliothek: north window .. fireplace stub
     (2.657, _mid(8.876, 9.856), 1, 0, WANDLAMPE_H),          # 27 Oma & Opa: the stub right of the door
     (_mid(2.657, 3.866), 12.473, 0, -1, WANDLAMPE_H),        # 28 Oma & Opa: the stub .. balcony door
-    (0.31, _mid(9.95, 10.923), 1, 0, WANDLAMPE_H),           # 29 Bad: sliding leaves .. limestone shower wall
+    (bad.BAD_AT[0] + bad.BX, 12.473, 0, -1, WANDLAMPE_SPIEGEL_H),   # 29 Bad: over the mirror (#63; the west wall's window)
     (0.792, 8.656, 0, 1, WANDLAMPE_H),                     # 30 WC Großeltern: over the cistern
     (0.31, gaeste_wc.BM, 1, 0, WANDLAMPE_SPIEGEL_H),       # 32 Duschbad (#61): over the mirror (33, 34: gone)
     (gaeste_wc.TX, 5.475, 0, 1, WANDLAMPE_H),              # 35 Duschbad: over the cistern
@@ -2462,7 +2467,7 @@ ROOM_NAMES = [
 # Where the model changed a room, the model's room wins: the Duschbad by the back hall (#61), the Bad Großeltern's
 # niche (its WC = "WC Großeltern"), and Musikraum + Büro are one open room, "Bibliothek" (2026-11-11)
 PLAN_ROOMS = [
-    ("Großeltern", "EG", 4.3, 10.8), ("Bad Großeltern", "EG", 1.7, 10.6), ("WC Großeltern", "EG", 1.45, 9.53),
+    ("Großeltern", "EG", 4.3, 10.8), ("Bad Großeltern", "EG", 1.7, 10.6), ("WC Großeltern", "EG", 1.40, 9.66),
     ("Flur", "EG", 1.75, 7.5), ("Duschbad", "EG", 0.95, 6.3), ("Flur", "EG", 5.0, 7.4),
     ("Neuer Windfang", "EG", 13.5, 7.5), ("Bibliothek", "EG", 12.9, 10.7), ("Küche", "EG", 7.0, 4.4),
     ("Speis", "EG", 3.9, 4.79), ("Stube", "EG", 11.7, 3.2), ("Elektroraum", "EG", 0.35, 3.9),

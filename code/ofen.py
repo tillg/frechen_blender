@@ -19,8 +19,11 @@ OFEN_BACK = (0.72, 0.48, 0.96)                             # back door (fed from
                                                            # the x = 0 face, width, top (sill as the front)
 OFEN_AT, WALL_FLUR = (9.06, 5.845), 6.349                  # house: the stove's wall corner; Flur face of
                                                            # the Stube/Flur wall (house_core.build_eg)
-OFEN_L, OFEN_D = 1.20, 0.50                                # #61: the stove along the Flur wall, 50 deep into
-                                                           # the Stube (was a corner stove 1.20 x 1.20)
+OFEN_A = 1.00                                              # #63: a triangle in the corner, legs OFEN_A along both
+                                                           # walls, its glass front on the hypotenuse towards the room
+                                                           # (#61: 1.20 x 0.50 along the Flur wall; before a corner
+                                                           # stove 1.20 x 1.20)
+BANK_AT = 1.205                                            # both benches start 1.205 from the corner (as before #63)
 OFEN_BED_W = 0.70                                          # the bed: 70 wide, straight (#61)
 OLD_DRAWS = 39                                             # global draws of the corner stove in the house (till #61):
                                                            # house_core burns them, so later parts keep their rnd
@@ -54,40 +57,40 @@ def filleted(pts, r, at, n=8):
 
 
 def ofen_neu():
-    """The stove after the sketches in input/2026-11-04 input, made narrow on request (#61): a block OFEN_L along the
-    Flur wall (x = 0) and OFEN_D deep into the Stube, 1.15 m high, its free corner and top edge rounded. In the front
-    face a 65 cm fire door, centred, up to 10 cm below the top, the fire behind the glass; an arched opening at the
-    floor under it (like ofenbett-1200x800.jpg); underneath it is open and stands on legs beside the arch. Benches
-    (like the photo, 60 cm deep): beside its east end, and OFEN_BANK_L along the west wall (y = 0), 70 cm clear of the
-    fire door. Bed above (\"über dem Ofen\", underside at 1.45 m): straight, OFEN_BED_W wide along the
-    Flur wall to OFEN_BED_L, on a post at the free end, with a slanted rim board along its free edge (like the photo).
+    """The stove after the sketches in input/2026-11-04 input, since #63 (input/2026-11-28 input/ofen_dreieck_optionen.svg,
+    variant B) a triangle in the corner: legs OFEN_A along the Flur wall (x = 0) and the west wall (y = 0), the front on
+    the hypotenuse facing the room at 45°, 1.15 m high, its top edge along the front rounded. In the front a 65 cm fire
+    door, centred, up to 10 cm below the top, the fire behind the glass (the firebox small as before); an arched opening
+    at the floor under it (like ofenbett-1200x800.jpg); underneath it is open and stands on legs beside the arch.
+    Benches (like the photo, 60 cm deep) where they stood: beside the stove along the Flur wall and OFEN_BANK_L along
+    the west wall, both from BANK_AT. Bed above (\"über dem Ofen\", underside at 1.45 m): straight, OFEN_BED_W wide
+    along the Flur wall to OFEN_BED_L, on a post at the free end, with a rim board along its free edge (like the photo).
     Returns the dimension lines [(p0, p1, text)] for the viewer."""
-    A, o, L, D = OFEN_ASSUMED, "Ofen_Feuertuer", OFEN_L, OFEN_D
+    A, o, a = OFEN_ASSUMED, "Ofen_Feuertuer", OFEN_A
     zp, za, zc, W = OFEN_BED, A["sill"], OFEN_DOOR_TOP, OFEN_DOOR_W / 2
-    yc = L / 2                                                       # the door's axis along the front
-    foot = filleted([(0, 0), (D, 0), (D, L), (0, L)], A["r"], (2,))
-    # fire door and the arch: u along the front face (centre yc), t outward (+x)
-    PD = lambda u, t, z: (D + t, yc + u, z)
-    # body: open underneath, on legs (thickness tl along the free outline) beside the arch; the arch head through
-    # the leg ring; the rest above it
+    q2, Lh = math.sqrt(0.5), a * math.sqrt(2)                       # the front: from (0, a) to (a, 0), Lh long
+    foot = [(0, 0), (0, a), (a, 0)]
+    # fire door and the arch: u along the front (0 at its middle, + towards the Flur wall's end), t outward
+    PD = lambda u, t, z: (a / 2 + (t - u) * q2, a / 2 + (t + u) * q2, z)
+    # body: open underneath, on two legs (thickness tl behind the front) beside the arch, each running to its wall;
+    # the arch head between them; the rest above it
     (aw, ah), tl = A["arch"], A["leg"]
-    ua, ub, zr = yc - aw / 2, yc + aw / 2, ah + 0.04
-    for leg in ([(D - tl, 0), (D, 0), (D, ua), (D - tl, ua)],                                    # by the west wall
-                [(D - tl, ub), (D, ub), *foot[2:11], (0, L), (0, L - tl), (D - tl, L - tl)]):  # round the corner
-        hc.xy_prism("Ofen", "Ofen_Koerper", "Putz", leg, 0.0, zr)
+    zr = ah + 0.04
+    F = lambda u, t: PD(u, t, 0)[:2]
+    for u0, u1 in ((-Lh / 2, -aw / 2), (aw / 2, Lh / 2)):
+        w0, w1 = (u0 + tl, u1) if u0 < 0 else (u0, u1 - tl)          # the back edge meets the wall tl further in
+        hc.xy_prism("Ofen", "Ofen_Koerper", "Putz", [F(u0, 0), F(u1, 0), F(w1, -tl), F(w0, -tl)], 0.0, zr)
     arc = [(-aw / 2 + aw / 2 * (1 - math.cos(math.pi * i / 16)), ah * math.sin(math.pi * i / 16)) for i in range(17)]
     hc.sweep("Ofen", "Ofen_Koerper", "Putz", PD, [((u, z), (u, zr)) for u, z in arc], -tl, 0.0)   # arch head
     R, H = A["r"], OFEN_H
     hc.xy_prism("Ofen", "Ofen_Koerper", "Putz", foot, zr, H - R)
-    # top edge along the free faces rounded with the corner's radius: rings inset by dd, the corner fillet
-    # concentric (radius R - dd, at least 2 mm so every ring keeps its vertex count)
+    # top edge along the front rounded: rings with the front inset by dd (their wall ends slide along the walls)
     rings = []
     for k in range(7):
-        a = math.pi / 2 * k / 6
-        dd = R * (1 - math.cos(a))
-        rings.append([(x, y, H - R + R * math.sin(a)) for x, y in filleted(
-            [(0, 0), (D - dd, 0), (D - dd, L - dd), (0, L - dd)], max(R - dd, 0.002), (2,))])
-    n = len(rings[0])
+        t = math.pi / 2 * k / 6
+        e = a - R * (1 - math.cos(t)) * math.sqrt(2)
+        rings.append([(0, 0, H - R + R * math.sin(t)), (0, e, H - R + R * math.sin(t)), (e, 0, H - R + R * math.sin(t))])
+    n = 3
     hc.add("Ofen", "Ofen_Koerper", "Putz", [p for ring in rings for p in ring],
         [list(range(n))[::-1], list(range(6 * n, 7 * n))]
         + [(k * n + i, k * n + (i + 1) % n, (k + 1) * n + (i + 1) % n, (k + 1) * n + i) for k in range(6) for i in range(n)])
@@ -101,7 +104,7 @@ def ofen_neu():
     for k in range(2):                                                             # two logs
         hc.prism("Ofen", o, "Holz", PD, rect(ia + 0.06 + 0.03 * k, ib - 0.08 + 0.03 * k, iz0 + 0.01 + 0.06 * k,
                                           iz0 + 0.07 + 0.06 * k), 0.006 + 0.004 * k, 0.012 + 0.004 * k)
-    hc.FIRES.append(dict(base=PD(0, 0.011, iz0 + 0.07), u=(0.0, 1.0), w=ib - ia - 0.04, h=0.45, d=0.008,
+    hc.FIRES.append(dict(base=PD(0, 0.011, iz0 + 0.07), u=(-q2, q2), w=ib - ia - 0.04, h=0.45, d=0.008,
                          collection="Ofen"))  # flames: fire.py
     hc.prism("Ofen", o, "Ofenglas", PD, rect(ia, ib, iz0, iz1), 0.018, 0.022)
     # back door on the wall side (x = 0, t outward = -x): the same iron frame, glass and a fire;
@@ -125,13 +128,12 @@ def ofen_neu():
             hc.box("Ofen", "Ofen_Bank", "FichteZ", x, x + 0.06, yl, yl + 0.06, 0.0, zs - 0.045)
         hc.box("Ofen", "Ofen_Bank", "FichteY", x + 0.015, x + 0.045, ya + 0.11, yb - 0.11, 0.15, 0.19)
 
-    y0, y1 = L + 0.005, L + 0.005 + OFEN_BANK_D                      # beside the stove's east end, face y = L
+    y0, y1 = BANK_AT, BANK_AT + OFEN_BANK_D                          # along the Flur wall, beside the stove
     hc.xy_prism("Ofen", "Ofen_Bank", "FichteX", filleted([(0, y0), (0.7, y0), (0.7, y1), (0, y1)], 0.08, (2,)),
                 zs - 0.045, zs)
     for x in (0.05, 0.59):
         legs(x, y0, y1)
-    x0, x1, yl = 1.205, 1.205 + OFEN_BANK_L, 0.005 + OFEN_BANK_D     # along the west wall (y = 0), where it stood
-                                                                     # before #61: 70 clear in front of the fire door
+    x0, x1, yl = BANK_AT, BANK_AT + OFEN_BANK_L, 0.005 + OFEN_BANK_D  # along the west wall (y = 0), where it stood
     hc.xy_prism("Ofen", "Ofen_Bank", "FichteX", filleted([(x0, 0.005), (x1, 0.005), (x1, yl), (x0, yl)], 0.08, (2,)),
                 zs - 0.045, zs)
     for x in (x0 + 0.85, x1 - 0.12):
@@ -165,13 +167,14 @@ def ofen_neu():
     hc.xy_prism("Ofen", "Ofen_Bettzeug", "Creme", filleted(
         [(0.005, 0.005), (BW - gm, 0.005), (BW - gm, BL - 0.01), (0.005, BL - 0.01)], 0.03, range(4)), zb, mt, 0.5)
     f = 0.15                                                        # dimension line offset
-    return [((-f, 0, 0), (-f, L, 0), f"Ofen {L * 100:.0f}"),
-            ((0, L + f, OFEN_H), (D, L + f, OFEN_H), f"{D * 100:.0f} tief"),
+    return [((-f, 0, 0), (-f, a, 0), f"Ofen {a * 100:.0f}"),
+            ((0, -f, 0), (a, -f, 0), f"{a * 100:.0f}"),
+            (PD(-Lh / 2, 0.12, OFEN_H), PD(Lh / 2, 0.12, OFEN_H), f"Front {Lh * 100:.0f}"),
             (PD(-W, 0.12, zc + 0.04), PD(W, 0.12, zc + 0.04), "Tür 65"),
             (PB(bc - bw / 2, 0.12, bt + 0.04), PB(bc + bw / 2, 0.12, bt + 0.04), f"Tür hinten {bw * 100:.0f} (Flur)"),
             (PD(W + 0.12, 0.12, za), PD(W + 0.12, 0.12, zc), f"Tür {za * 100:.0f}–{zc * 100:.0f} (Unterkante angenommen)"),
-            ((D + f, L, 0), (D + f, L, OFEN_H), f"Höhe {OFEN_H * 100:.0f}"),
-            ((D + f, L, OFEN_H), (D + f, L, zp), f"{(zp - OFEN_H) * 100:.0f}"),
+            ((-f, a, 0), (-f, a, OFEN_H), f"Höhe {OFEN_H * 100:.0f}"),
+            ((-f, a, OFEN_H), (-f, a, zp), f"{(zp - OFEN_H) * 100:.0f}"),
             (PD(-aw / 2, 0.05, zr), PD(aw / 2, 0.05, zr), "Bogen 50 × 30 (angenommen)"),
             ((x0, yl + f, zs), (x1, yl + f, zs), f"Bank {OFEN_BANK_L * 100:.0f}"),
             ((x1 + f, 0.005, zs), (x1 + f, yl, zs), "60"),
