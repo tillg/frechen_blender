@@ -21,7 +21,7 @@ edited: 2026-11-27
   - windows with larch frames and glazing bars; on the room side of every sash a satin-metal turn handle
     after klinke-fenster.webp (pointed rose, lever hanging down), at the sash's mid height
   - blue shutters with white cross boards
-  - larch terrace doors; tall OG west windows (Yoga, Bad): wall below up to a 0.75 m sill, glazed up to the ceiling
+  - larch terrace doors; tall west windows (OG Yoga, Bad; EG Bad Großeltern, #63): wall below up to a 0.75 m sill, glazed up to the ceiling
     (the Yoga room's two merged into one twice as wide, 1.98, on 2026-11-25)
   - larch cladding of the whole west side and the east gable, cut around the openings; spaced
     slats over the gable windows
@@ -37,15 +37,15 @@ edited: 2026-11-27
   - Stube niche with a segmental arch
   - Wandlampen (brass gooseneck, opal bell) in every room of both storeys but the Speis, each centred
     in a free wall span; in the EG as agreed on `input/2026-11-14 input/lampen_eg_v1.svg` (also over the
-    Ofen bed and the Duschbad's mirror), the Essen's pair on the drywall behind the Speis shelf B (not on
+    Ofen bed, the Duschbad's mirror and the Bad Großeltern's mirror), the Essen's pair on the drywall behind the Speis shelf B (not on
     its west wall, where the Bauernschrank stands); the Flur's two over the Garderobe's hat shelf at 2.20
   - open stair with turned railing, also around the OG stairwell
   - floors: limestone in the EG corridor (running through the door to the back Windfang, no
     threshold), the Bäder (the Gästebad with its WC, shower and tub, the Bad Nadine & Till with its two showers) and
-    all four WCs (the back hall's Duschbad too); in the Bad Großeltern a limestone strip as wide as its WC along the west wall
-    (WC, shower), oak planks elsewhere (also in the Bad Großeltern east of the strip)
-  - Ofenbett in the Stube: a narrow plastered stove (1.20 along the Flur wall, 0.50 into the room) with
-    the fire behind a glass door, bench, a straight bed above (70 × 190) with a thin cream mattress and a red-white checked blanket, one corner turned back;
+    all four WCs (the back hall's Duschbad too); in the Bad Großeltern the whole niche (WC, shower) and a strip along the west wall,
+    oak planks elsewhere (also in the Bad Großeltern east of the strip)
+  - Ofenbett in the Stube: a plastered triangular stove in the NW corner (legs 1.00 along the Flur and west wall, front 1.41 on the hypotenuse
+    facing the room at 45°, 1.15 high) with the fire behind a 65 cm glass door in that front, two benches, a straight bed above (70 × 190) with a thin cream mattress and a red-white checked blanket, one corner turned back;
     a fire window in the Flur wall shows the fire from the corridor too
   - small black workshop stove after `input/2026-11-03 input/werkstattofen.jpeg` (40 × 40 × 105 cm,
     fire behind glass), three times, each in a room corner 10 cm off both walls and turned 45° to
@@ -98,20 +98,20 @@ edited: 2026-11-27
   - every sub-model page with a bath, toilet or shower (Bad Großeltern, Gäste-WC, Gästebad, Bad Nadine &
     Till) dimensions the room's width (west–east, "Raumbreite") and depth (south–north, "Raumtiefe") from
     wall face to wall face (2026-11-25)
-  - Bad Großeltern after `input/2026-11-08 input/grosseltern_v4.svg` (also a sub-model page),
-    open to the bedroom: walk-in shower 0.95 m in the NW corner (2026-11-25: the low wall moved 15 cm
-    east) with limestone cladding to 2.0 m and a rain head; east of it a 1.20 m wall 1.00 m high and a
-    clear glass pane on its shower edge, on the wall to the ceiling and by the north wall down to the
-    floor, turning the corner in front of the north wall: the north french door became a window (sill
-    1.00, same jambs), its west 15 cm now in the shower, so a 20 cm return pane 2.5 cm off the wall runs
-    west over the jamb onto the limestone, a wall profile closing it, and keeps water off sill and window;
-    on the wall's east face a Waschbecken doppelt 100 × 47; in the south a 1.20 m niche
-    one room: the WC in the west behind an opening (102.4) under a lintel, a white Einbauschrank (50 deep,
-    to the ceiling, two doors towards the WC) on the east wall behind a 12 cm front wall; one sliding
-    door, built open in front of that wall, rolls over the opening; floor: limestone strip 96.4 cm wide (the WC's width) from the south wall to the north wall,
-    oak elsewhere, part of the sub-model. The sliding door shows how it works: every 4 s it rolls to the
-    other end of its track in 2 s, on the sub-model page and in the house in stage Eingerichtet; the
-    Rundgang sees it as built (open)
+  - Bad Großeltern after `input/2026-11-08 input/grosseltern_v4.svg` and, since #63, variant B of
+    `input/2026-11-28 input/bad_grosseltern_optionen.svg` (also a sub-model page), open to the bedroom:
+    on the north wall in the NW corner a Waschbecken einzeln 60 × 47 (axis 0.40 from the west wall, west
+    of the north window, which stays, sill 1.00) under a mirror 60 × 85 in an 8 cm wooden frame, a
+    Wandlampe over it; in the west wall a big window (1.98 wide, sill 0.75, up to the ceiling, like the OG's
+    west windows, larch cladding trims, centred between the niche front wall and the north wall); in the
+    south a niche 1.30 m clear, one room like the Duschbad: the WC in the west behind an opening (102.4)
+    under a lintel, east of it a walk-in shower 90 × 130 (no tray, the limestone floor runs through; limestone on its
+    walls to 2.0, head on the east wall), a glass pane 75 from the south wall on its west side, the entry
+    55; one sliding door, built open in front of the 12 cm front wall, rolls over the opening; floor:
+    limestone in the whole niche and a strip along the west wall, oak elsewhere, part of the sub-model.
+    The bedroom wall ends at the niche's front wall. The sliding door shows how it works: every 4 s it
+    rolls to the other end of its track in 2 s, on the sub-model page and in the house in stage
+    Eingerichtet; the Rundgang sees it as built (open)
   - Duschbad by the back hall (sub-model page Gäste-WC; after `input/2026-11-27 input/hintereingang_optionen.svg`,
     variant B): one room 204.8 × 129.9, in the east a walk-in shower 90 × 130 on the room's limestone floor
     (limestone walls to 2.0, head on the east wall, glass 75 from the south wall, the entry 55 north of
@@ -172,8 +172,8 @@ edited: 2026-11-27
     chair to the south; furniture. The Rundgang walks in through the new door
   - the five washbasins, all one design after `input/2026-11-12 input/`: a rectangular, bright
     white ceramic Waschbecken (top 85 cm) on a chrome Waschbeckenständer (front legs, rail at
-    52 cm, side rails to balls on wall rosettes, bottle trap); doppelt in the Bad Großeltern
-    (100 × 47), einzeln in the Duschbad (40 × 28), the OG WC 2,30 (50 × 40) (the OG Flur's went
+    52 cm, side rails to balls on wall rosettes, bottle trap); einzeln in the Bad Großeltern
+    (60 × 47 under a mirror 60 × 85, #63), in the Duschbad (40 × 28), the OG WC 2,30 (50 × 40) (the OG Flur's went
     on 2026-11-25 for the Bauernschrank), the Gästebad and the Bad Nadine & Till (60 × 47 under a mirror 80 × 85 in the
     wooden frame)
   - Gästebad at the end of the OG Flur (NW; also a sub-model page with its four walls and
@@ -238,7 +238,7 @@ change; the same model always gives byte-identical files.
   as in the architect's plan in both storeys: all 15 risers, walking line from a circle at the
   bottom step to an arrow up, in EG "15 STG 18.0/25.5". Every room labelled with the architect's
   name and its net area computed from the model (Musikraum and Büro are one room, "Bibliothek";
-  the Bad Großeltern's WC niche is "WC Großeltern"). Dimension chains on all four sides in the
+  the Bad Großeltern's niche (WC with shower) is "WC Großeltern"). Dimension chains on all four sides in the
   architect's style (ticks, cm below 1 m, superscript 5 for half centimetres): openings, walls
   and rooms, overall.
 - **Ansicht Nord / Ost / Süd / West:** hidden-line elevation of the facade (walls, windows,
@@ -264,8 +264,8 @@ Blender backend. What the scripts make:
   (`EYE`, 1.60 m above the floor) are one variable each:
   1. orbit outside, enter at the east door, which swings open
   2. EG: Stube round the sofa to the seating corner (turn, pause at the sofa and Ofen), Essen at the end of the table (turn,
-     pause), Küche: look down the Speis aisle, out through the Küche door, Großeltern: into their Bad (look into the shower and
-     the WC, pause at each), then turn at the wall beside the balcony door,
+     pause), Küche: look down the Speis aisle, out through the Küche door, Großeltern: into their Bad (look at the basin and the west window, then into the WC and
+     the shower in the niche, pause at each), then turn at the wall beside the balcony door,
      back door (turn, pause), Bibliothek back corner (turn, pause at the piano)
   3. up the stairs; OG: peeks into the first room on the right and the Waschküche, Schlafen SE
      back corner (turn, pause at the Kamin), into its Bad through the door to the west wall, turns

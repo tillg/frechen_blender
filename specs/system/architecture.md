@@ -98,8 +98,8 @@ flowchart LR
     GEO & MD & GL --> BP[("build() → Blueprint")]
 ```
 
-- **Stoves.** `code/ofen.py` holds the Ofen sub-model (`ofen_neu()`: a narrow stove `OFEN_L` × `OFEN_D` = 1.20 × 0.50 along
-  the Flur wall, a straight bed `OFEN_BED_W` × `OFEN_BED_L` = 0.70 × 1.90), its placement in the Stube
+- **Stoves.** `code/ofen.py` holds the Ofen sub-model (`ofen_neu()`: a triangular stove in the NW corner, legs `OFEN_A` = 1.00 along
+  the Flur and west wall, its front on the hypotenuse; benches from `BANK_AT`, a straight bed `OFEN_BED_W` × `OFEN_BED_L` = 0.70 × 1.90), its placement in the Stube
   (`ofen_im_haus()`) and `werkstattofen()`; `house_core` imports it and calls them, `build_ofen()`
   stays in `house_core`. `ofen.py` uses the primitives and `GEO`/`PARTS` through `house_core` (the two
   modules import each other). Its materials are entries of `MAT_DEF`.
@@ -119,16 +119,14 @@ flowchart LR
   object space by both backends (`local()` stores the mesh unturned).
 - **Bad Großeltern.** `code/bad.py` the same way: `bad_neu(c, x0, y0)` builds the bathroom into
   collection `c` with the room's inner SW corner at (x0, y0) (`EG` at `BAD_AT`, or `Bad` at the
-  origin), after `input/2026-11-08 input/grosseltern_v4.svg`: its own walls (the niche's 12 cm front wall from `WP` east,
-  the lintel over the opening `0 .. WP`, 1 m low wall at `SHOWER` = 0.95), glass (the main pane and its return `RET` off the north wall in
-  front of the north window `FENSTER`, defined here and used by `build_eg()`, with a wall profile), walk-in shower with limestone cladding (`stone()` → `house_core.limestone()`), the Waschbecken doppelt
-  (`waschbecken(…, rng=random.Random(rng.random()))`: one draw from its stream), toilet + WC
-  tiles (`toilet()`, `wainscot()`), the white Einbauschrank (`_Schrank`: on the east wall, `SL` long, `SD` 0.50 deep from `SCH`
-  to the west, to the ceiling, two doors towards the WC) and one sliding leaf (`_Schiebetuer`, `LW`, built open in front of the front wall,
-  in `LEAVES`; its travel in `SLIDE`); own `random.Random(5)`; the second leaf's draw is burnt. Its floor too, last
-  and from its own `random.Random(7)` (`floor()`: limestone strip, oak, a `Fuge` base in
+  origin), after `input/2026-11-08 input/grosseltern_v4.svg` and, since #63, variant B of `input/2026-11-28 input/bad_grosseltern_optionen.svg`: its own walls (the niche's 12 cm front wall from `WP` east, `NICHE` 1.42 to its north face (1.30 clear),
+  the lintel over the opening `0 .. WP`), the niche as one room: toilet + WC
+  tiles (`toilet()`, `wainscot()`) in the west, east of it the walk-in shower 90 × 130 (`XS`, no tray, limestone via `house_core.limestone()` to `CLAD`, head on the east wall at `HY`, glass `GL` 75 from the south wall), one sliding leaf (`_Schiebetuer`, `LW`, built open in front of the front wall,
+  in `LEAVES`; its travel in `SLIDE`), on the north wall the Waschbecken einzeln 60 × 47 at `BX`
+  (`waschbecken(…, rng=random.Random(rng.random()))`: one draw from its stream) under a wood-framed mirror 60 × 85 (`MW`, `MH`, `MF`, `MZ`). `FENSTER` (the north window, defined here and used by `build_eg()`) and `WESTFENSTER` (the 198 wide west window, house y 10.285 .. 12.265, sill 0.75 to the ceiling, with larch cladding trims; built by `build_eg()`) are taken from here. Own `random.Random(5)`; the global stream is set back and the former bathroom's draws burnt (`OLD_DRAWS`, `hc.restream()`). Its floor too, last
+  and from its own `random.Random(7)` (`floor()`: limestone in the niche and a strip along the west wall, oak, a `Fuge` base in
   `_Boden`, laid with `tiles(…, rng)`); the house leaves the room (`BAD_EG`) out of the EG's
-  `floor_cover()`. The outer walls and the shortened bedroom wall stay in `build_eg()`.
+  `floor_cover()`. The outer walls and the shortened bedroom wall (ending at `BAD_AT[1] + NICHE`) stay in `build_eg()`.
 - **Küche.** `code/kueche.py` the same way: `kueche_neu(c, x0, y0)` builds Spülzeile, Ostzeile,
   Halbinsel with the cooktop (`KOCHFELD`) and its Muldenlüfter (a downdraft vent between the burners, in `_Kueche`; no hood), the Wamsler
   (`ofen.wamsler(..., shaft)`, its pipe from its left up to 1.95 and north into the Abzug with a rosette, #26b), Besenschrank and the
@@ -287,7 +285,7 @@ flowchart LR
   `build_wandlampen()` (from `build_sanitary()`) builds `WANDLAMPEN_OG` and `WANDLAMPEN_EG` (wall
   point, facing, height; the EG list after `input/2026-11-14 input/lampen_eg_v1.svg`, drawn from
   it by `lampen_eg_svg.py`, without its lamps 11, 12 on the Essen west wall, where the Bauernschrank stands;
-  13, 14 hang on the drywall `TROCKENWAND` behind B; 18, 19 over the Garderobe's hat shelf; the Duschbad's 32, 35) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `gaestebad.py`, `elternbad.py`, the Waschküche's in `WANDLAMPEN_OG`;
+  13, 14 hang on the drywall `TROCKENWAND` behind B; 18, 19 over the Garderobe's hat shelf; the Duschbad's 32, 35) into `OG_Wandlampen` and `EG_Wandlampen`. Over mirrors: `bad.py` (#63), `gaestebad.py`, `elternbad.py`, the Waschküche's in `WANDLAMPEN_OG`;
   over the Ofen bed: `ofen.py` (its light moved with the Ofen by `ofen_im_haus()`). "Wandlampen" in `PLAN["skip_words"]`
   keeps them off the Grundriss (the Ansichten show them through openings).
 - **Randomness.** `build()` clears every registry and seeds `random` with 22, so builds are
@@ -654,7 +652,7 @@ ADRs: [ADR-001-XEWL](../architecture/adr-001-xewl-shared-python-core.md) (shared
 | The **parity test** pinned the Blender build to `tests/golden/blender_snapshot.json` (per object: counts, bbox, materials, `rnd` hash) and checked the saved `.blend`; removed with the Blender backend going dormant (below), last green at `7805879` | Visual checks only | Moving code between core and backends can change the output silently. Deliberate changes regenerated the golden. |
 | The **Blender backend is dormant** (issue #35): scripts kept, compiled by `tests/test_blender_scripts.py`; no rebuild, save, still or parity test; `frechenlehen.blend` frozen at `7805879` | Keep maintaining both outputs; delete the Blender scripts | Faster dev cycles (no Blender rebuild per change, two Blender starts less per full check); kept code makes re-enabling cheap. The compile check catches only syntax rot, not API drift against the core; the Blender BVH camera-clearance check is dormant too ([decision](../../DECISIONS.md#run-2026-11-15-1633-4)). |
 | Stages change by **crossfade** | Construction build-up | Smaller scope; build-up is a later candidate. |
-| A sub-model may bring **its own walls** (`bad.py`: niche front wall, lintel, low wall; `gaeste_wc.py`: the Duschbad's north wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
+| A sub-model may bring **its own walls** (`bad.py`: niche front wall, lintel; `gaeste_wc.py`: the Duschbad's north wall) | Walls in `build_eg()`, only fixtures in the module | The sub-model page must show them; one place describes the room (ADR-001-XEWL). Outer walls stay in `build_eg()`. |
 | Speis shelves and drywall are **built-ins** (`EG_Speis`, `EG_Waende`, stage Gebaut); the Essen's and the OG's Bauernschränke are **furniture** (`EG_Moebel`, Eingerichtet) | All built-ins | The shelves and the drywall are floor-to-ceiling joinery of the house like the kitchen; a freestanding wooden cupboard is movable. |
 | One **navigation panel** (`toolbar.js`: Modell, Darstellung, Standpunkt, Reset) on every page | Per-page buttons; a link per sub-model | The same controls at the same place everywhere; one page list in one place. |
 | Routes are a **group inside the Standpunkt drop-down** | A 4th "Routen" drop-down | Three drop-downs everywhere. |

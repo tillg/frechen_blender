@@ -221,7 +221,7 @@ def test_bad_export(tmp_path):
     jlen = struct.unpack_from("<I", data, 12)[0]
     g = json.loads(data[20:20 + jlen])
     names = {n["name"] for n in g["nodes"]}
-    assert {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Schrank", "Bad_Bodenbelag",
+    assert {"Bad_Waende", "Bad_Innentueren", "Bad_Sanitaer", "Bad_Fliesen", "Bad_Spiegel", "Bad_Bodenbelag",
             "Bad_Boden", "Bad_Schiebetuer"} == names
     slide = {n["name"]: n["extras"]["slide"] for n in g["nodes"] if "slide" in n["extras"]}   # glTF (x, z, -y)
     assert {k: [round(c, 3) + 0.0 for c in v] for k, v in slide.items()} == {"Bad_Schiebetuer": [-0.979, 0.0, 0.0]}

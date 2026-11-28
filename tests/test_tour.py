@@ -41,17 +41,20 @@ def test_route_ends_where_it_starts():
     assert max(seam) <= 1.05 * cruise
 
 
-def test_route_looks_into_the_grosseltern_shower_and_wc():
+def test_route_looks_into_the_grosseltern_bad_and_wc():
     """Request 2026-11-08: the Rundgang steps into the Bad Großeltern (code/bad.py) and looks into
-    its walk-in shower (NW corner, x 0.31-1.11, y 10.92-12.47) and into its WC (niche, west half,
-    toilet at x 0.79 on the south wall), pausing at each."""
+    its NW corner (#63: the basin on the north wall, the west window; the walk-in shower till then) and into its
+    niche (WC and, since #63, the shower; toilet at x 0.79 on the south wall), pausing at each; it keeps 25 cm off
+    the niche's front wall and the sliding leaf parked in front of it (x 1.33 .. 2.36, y 9.96 .. 10.13)."""
     def looking_at(k, tx, ty, tol=12):
         a = math.degrees(math.atan2(ty - k[1], tx - k[0]) - k[3])
         return abs((a + 180) % 360 - 180) < tol
     bad = [k for k in KEYS if 0.31 < k[0] < 2.358 and 9.9 < k[1] < 12.47 and k[2] < 2]
-    shower = [k for k in bad if looking_at(k, 0.71, 11.7)]
+    corner = [k for k in bad if looking_at(k, 0.4, 11.9)]
     wc = [k for k in bad if looking_at(k, 0.79, 9.1)]
-    assert len(shower) >= tour.PAUSE * tour.FPS and len(wc) >= tour.PAUSE * tour.FPS
+    assert len(corner) >= tour.PAUSE * tour.FPS and len(wc) >= tour.PAUSE * tour.FPS
+    gap = lambda k: math.hypot(max(1.33 - k[0], 0, k[0] - 2.36), max(9.956 - k[1], 0, k[1] - 10.13))
+    assert min(gap(k) for k in KEYS if k[2] < 2) >= 0.25
     assert min(k[4] for k in wc) < -0.3                                   # looks down at the toilet
 
 

@@ -42,7 +42,7 @@ test('offline after the first visit: house, sub-model, plan sheet, Vorlagen', as
   expect([m.name, m.display, m.start_url]).toEqual(['Frechenlehen', 'standalone', './']);
 
   await page.goto(`${BASE}bad.html?cam=6.823,-3.89,5.935&at=1.024,1.909,1.2&look=full`);
-  await expect(page.locator('.dim', { hasText: 'Waschbecken 100' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.dim', { hasText: 'HWB 60' })).toBeVisible({ timeout: 30_000 });
 
   await page.goto(`${BASE}plans/eg.svg`);
   expect(await page.content()).toContain('Grundriss EG');
@@ -177,14 +177,15 @@ test('a new deploy keeps a stored plan version: its cache is neither dropped nor
   const sw = new URL('../dist/sw.js', import.meta.url);
   const built = readFileSync(sw, 'utf8');
   const vcache = built.match(new RegExp(`"(frechenlehen-v-${VERSION_ID}-[0-9a-f]{12})":\\[`))[1];
+  const others = [...built.matchAll(/"(frechenlehen-v-[0-9-]+-[0-9a-f]{12})":\[/g)].map((m) => m[1]).filter((n) => n !== vcache);
   const keys = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('frechenlehen-')).sort());
   try {
     await firstVisit(page);
-    expect(await keys()).toEqual([liveCache(built), vcache].sort());
+    expect(await keys()).toEqual([liveCache(built), vcache, ...others].sort());   // every plan version stored
     await page.evaluate(async (n) => (await caches.open(n)).put('marker', new Response('kept')), vcache);   // survives only if kept
     writeFileSync(sw, built.replace(`"${liveCache(built)}"`, '"frechenlehen-next000build"'));        // a new deploy, same version
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
-    await expect.poll(keys, { timeout: 90_000 }).toEqual(['frechenlehen-next000build', vcache].sort());
+    await expect.poll(keys, { timeout: 90_000 }).toEqual(['frechenlehen-next000build', vcache, ...others].sort());
     expect(await page.evaluate(async (n) => (await (await caches.open(n)).match('marker'))?.text(), vcache)).toBe('kept');
   } finally {
     writeFileSync(sw, built);
